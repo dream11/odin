@@ -29,7 +29,9 @@ func (t *Publish) Run(args []string) int {
 		golog.Error(fmt.Errorf("`publish` requires exactly one argument `component dir path`, %d were given.", len(args)))
 	}
 
+	// Directory in which all required files reside
 	componentDir := args[0]
+	// File to refer for artifact properties
 	artifactFilePath := path.Join(componentDir, artifactFileName)
 	golog.Debug(fmt.Sprintf("Reading %s file from: %s", artifactFileName, artifactFilePath))
 
@@ -38,16 +40,24 @@ func (t *Publish) Run(args []string) int {
 		golog.Error(err)
 	}
 	
+	// File path of component property file, stated by artifact property file
 	propertyFilePath := path.Join(componentDir, artifact.PropertyFile)
 	golog.Debug(fmt.Sprintf("Reading %s file from: %s", artifact.PropertyFile, propertyFilePath))
 
+	// component name
 	var artifactName string = ""
+	// directory to generate artifacts
 	var artifactDir string = ""
+	// file path of artifact build
 	var artifactPath string = ""
+	// versioned tag to attach with artifact
 	var artifactTag string = ""
+	// Dockerfile content
 	var DockerFile string = ""
+	// Build arguments to pass with docker image build
 	var dockerBuildArgs map[string]*string = map[string]*string{}
 
+	// perform javaMaven specific actions
 	if artifact.Flavour.Name == "javaMaven" {
 		properties, err := javaMaven.ParseFile(propertyFilePath)
 		if err != nil {
@@ -58,11 +68,13 @@ func (t *Publish) Run(args []string) int {
 		artifactDir = path.Join(componentDir, properties.Properties.ArtifactPath)
 		artifactPath = path.Join(artifactDir, artifactName)
 		artifactTag = properties.Name + ":" + properties.Version
-		jarPath := "target/fantasy-tour/fantasy-tour-1.0.jar"
+		jarPath := path.Join(properties.Properties.ArtifactPath, artifactName)
 		
 		runSteps := strings.Join(artifact.Steps.Run, " && ")
-
+		
+		// fetch dockerfile for javaMaven type artifact
 		DockerFile = javaMaven.DockerFile()
+		// generate docker build arguments
 		dockerBuildArgs = map[string]*string{
 			"MAVEN_VERSION": &artifact.Flavour.Version.Maven,
 			"JAVA_VERSION": &artifact.Flavour.Version.Java,
@@ -77,6 +89,7 @@ func (t *Publish) Run(args []string) int {
 
 	// create container image for the component
 	dockerfilePath := path.Join(artifactDir, "Dockerfile")
+	
 	golog.Warn("Creating Dockerfile")
 	golog.Debug(fmt.Sprintf("Location: %s", artifactDir))
 	err = file.Write(dockerfilePath, DockerFile, 0644)
@@ -90,6 +103,8 @@ func (t *Publish) Run(args []string) int {
 	golog.Warn(fmt.Sprintf("Creating %s", artifactName))
 	golog.Debug(fmt.Sprintf("Location: %s", artifactDir))
 
+	// run pre steps
+	// this should include dependecy installations, structure generation etc..
 	golog.Info("Running Pre steps")
 	for i:=0; i<len(artifact.Steps.Pre); i++ {
 		exitCode := shell.Exec(fmt.Sprintf("cd %s && %s", componentDir, artifact.Steps.Pre[i]))
@@ -98,6 +113,8 @@ func (t *Publish) Run(args []string) int {
 		}
 	}
 
+	// run buils steps
+	// this should include the steps required to build the base artifact
 	golog.Info("Running Build steps")
 	for i:=0; i<len(artifact.Steps.Build); i++ {
 		exitCode := shell.Exec(fmt.Sprintf("cd %s && %s", componentDir, artifact.Steps.Build[i]))
@@ -106,6 +123,12 @@ func (t *Publish) Run(args []string) int {
 		}
 	}
 
+	// Build image accepts the following parameters 
+	// 1. Name of dockerfile
+	// 2. directory from where the dockerfile will be picked
+	//    a. This can be altered based on the files to copy (artifact dir / component dir)
+	// 3. list of tags
+	// 4. map of build arguments
 	err = docker.BuildImage("Dockerfile", artifactDir, []string{artifactTag}, dockerBuildArgs)
 	if err != nil {
 		golog.Error(err)
@@ -113,6 +136,9 @@ func (t *Publish) Run(args []string) int {
 
 	golog.Success("Artifacts Generated!")
 	golog.Debug(fmt.Sprintf("Artifact Path: %s", artifactPath))
+
+	golog.Warn(fmt.Sprintf("Publishing: %s", artifactTag))
+	// add publish steps
 
 	return 0
 }
