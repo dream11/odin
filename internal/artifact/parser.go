@@ -5,9 +5,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type version struct {
+	Maven    string    `yaml:"maven"`
+	Java     string    `yaml:"java"`
+}
+
 type flavour struct {
-	Name       string               `yaml:"name"`
-	Version    map[string]string    `yaml:"version"`
+	Name       string     `yaml:"name"`
+	Version    version    `yaml:"version"`
 }
 
 type steps struct {
@@ -19,6 +24,7 @@ type steps struct {
 type Artifact struct {
 	Flavour         flavour    `yaml:"flavour"`
 	PropertyFile    string     `yaml:"propertyFile"`
+	Port            string     `yaml:"port"`
 	Steps           steps      `yaml:"steps"`
 	ArtifactPath    string     `yaml:"artifactPath"`
 }
