@@ -13,7 +13,7 @@ type flavour struct {
 type steps struct {
 	Pre      []string    `yaml:"pre"`
 	Build    []string    `yaml:"build"`
-	Post     []string    `yaml:"post"`
+	Run      []string    `yaml:"run"`
 }
 
 type Artifact struct {
