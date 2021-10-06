@@ -7,6 +7,7 @@ import (
 	"github.com/dream11/d11-cli/internal/artifact"
 	"github.com/dream11/d11-cli/internal/artifact/javaMaven"
 	"github.com/dream11/d11-cli/pkg/shell"
+	"github.com/dream11/d11-cli/pkg/file"
 	"github.com/brownhash/golog"
 )
 
@@ -40,8 +41,9 @@ func (t *Publish) Run(args []string) int {
 
 	var artifactName string = ""
 	var artifactDir string = ""
+	var DockerFile string = ""
 
-	if artifact.Flavour.Name == "java-maven" {
+	if artifact.Flavour.Name == "javaMaven" {
 		properties, err := javaMaven.ParseFile(propertyFilePath)
 		if err != nil {
 			golog.Error(err)
@@ -49,11 +51,23 @@ func (t *Publish) Run(args []string) int {
 
 		artifactName = fmt.Sprintf("%s-%s.jar", properties.Name, properties.Version)
 		artifactDir = path.Join(componentDir, properties.Properties.ArtifactPath)
+
+		DockerFile = javaMaven.DockerFile()
 	} else {
 		golog.Error(fmt.Sprintf("Unknown flavour `%s`", artifact.Flavour.Name))
 	}
 
-	golog.Warn(fmt.Sprintf("Creating %s at %s", artifactName))
+	// create container image for the component
+	dockerfilePath := path.Join(artifactDir, "Dockerfile")
+	golog.Warn("Creating Dockerfile")
+	golog.Debug(fmt.Sprintf("Location: %s", artifactDir))
+	err = file.Write(dockerfilePath, DockerFile, 0644)
+	if err != nil {
+		golog.Error(err)
+	}
+	golog.Success("Dockerfile generated successfully")
+
+	golog.Warn(fmt.Sprintf("Creating %s", artifactName))
 	golog.Debug(fmt.Sprintf("Location: %s", artifactDir))
 
 	artifactPath := path.Join(artifactDir, artifactName)
