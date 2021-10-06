@@ -8,7 +8,7 @@ import (
 
 	"github.com/dream11/d11-cli/internal/artifact"
 	"github.com/dream11/d11-cli/internal/artifact/javaMaven"
-	// "github.com/dream11/d11-cli/pkg/shell"
+	"github.com/dream11/d11-cli/pkg/shell"
 )
 
 const (
@@ -33,11 +33,34 @@ func main() {
 		log.Fatal(err)
 	}
 
-	artifactPath := path.Join(componentDir, properties.Properties.ArtifactPath)
-	log.Println("An artifact will be generated at:", artifactPath)
+	var artifactName string = ""
+	if artifact.Flavour.Name == "java-maven" {
+		artifactName = fmt.Sprintf("%s-%s.jar", properties.Name, properties.Version)
+	}
 
-	artifactName := fmt.Sprintf("%s-%s", properties.Name, properties.Version)
-	log.Println("Artifact name:", artifactName)
+	artifactDir := path.Join(componentDir, properties.Properties.ArtifactPath)
+	log.Println("Creating", artifactName, "at", artifactDir)
+
+	artifactPath := path.Join(artifactDir, artifactName)
+
+	log.Println("Running Pre steps")
+	for i:=0; i<len(artifact.Steps.Pre); i++ {
+		exitCode := shell.Exec(fmt.Sprintf("cd %s && %s", componentDir, artifact.Steps.Pre[i]))
+		if exitCode > 0 {
+			os.Exit(exitCode)
+		}
+	}
+
+	log.Println("Running Build steps")
+	for i:=0; i<len(artifact.Steps.Build); i++ {
+		exitCode := shell.Exec(fmt.Sprintf("cd %s && %s", componentDir, artifact.Steps.Build[i]))
+		if exitCode > 0 {
+			os.Exit(exitCode)
+		}
+	}
+
+	log.Println("Artifact generated:", artifactPath)
+	
 
 	// shell.Exec(fmt.Sprintf("cd %s && %s", componentDir, artifact.Steps.Build[0]))
 }
