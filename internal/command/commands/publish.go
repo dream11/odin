@@ -3,11 +3,13 @@ package commands
 import (
 	"path"
 	"fmt"
+	"strings"
 
 	"github.com/dream11/d11-cli/internal/artifact"
 	"github.com/dream11/d11-cli/internal/artifact/javaMaven"
 	"github.com/dream11/d11-cli/pkg/shell"
 	"github.com/dream11/d11-cli/pkg/file"
+	"github.com/dream11/d11-cli/pkg/docker"
 	"github.com/brownhash/golog"
 )
 
@@ -41,7 +43,9 @@ func (t *Publish) Run(args []string) int {
 
 	var artifactName string = ""
 	var artifactDir string = ""
+	var artifactPath string = ""
 	var DockerFile string = ""
+	var dockerBuildArgs map[string]*string = map[string]*string{}
 
 	if artifact.Flavour.Name == "javaMaven" {
 		properties, err := javaMaven.ParseFile(propertyFilePath)
@@ -51,8 +55,18 @@ func (t *Publish) Run(args []string) int {
 
 		artifactName = fmt.Sprintf("%s-%s.jar", properties.Name, properties.Version)
 		artifactDir = path.Join(componentDir, properties.Properties.ArtifactPath)
+		artifactPath = path.Join(artifactDir, artifactName)
+		
+		runSteps := strings.Join(artifact.Steps.Run, " && ")
 
 		DockerFile = javaMaven.DockerFile()
+		dockerBuildArgs = map[string]*string{
+			"MAVEN_VERSION": &artifact.Flavour.Version.Maven,
+			"JAVA_VERSION": &artifact.Flavour.Version.Java,
+			"JAR_PATH": &artifactPath,
+			"PORT": &artifact.Port,
+			"RUN_COMMAND": &runSteps,
+		}
 	} else {
 		golog.Error(fmt.Sprintf("Unknown flavour `%s`", artifact.Flavour.Name))
 	}
@@ -65,13 +79,12 @@ func (t *Publish) Run(args []string) int {
 	if err != nil {
 		golog.Error(err)
 	}
+
 	golog.Success("Dockerfile Generated!")
 	golog.Debug(fmt.Sprintf("Location: %s", dockerfilePath))
 
 	golog.Warn(fmt.Sprintf("Creating %s", artifactName))
 	golog.Debug(fmt.Sprintf("Location: %s", artifactDir))
-
-	artifactPath := path.Join(artifactDir, artifactName)
 
 	golog.Info("Running Pre steps")
 	for i:=0; i<len(artifact.Steps.Pre); i++ {
@@ -87,6 +100,11 @@ func (t *Publish) Run(args []string) int {
 		if exitCode > 0 {
 			return exitCode
 		}
+	}
+
+	err = docker.BuildImage(dockerfilePath, []string{artifactName}, dockerBuildArgs)
+	if err != nil {
+		golog.Error(err)
 	}
 
 	golog.Success("Artifacts Generated!")
