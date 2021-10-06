@@ -65,7 +65,8 @@ func (t *Publish) Run(args []string) int {
 	if err != nil {
 		golog.Error(err)
 	}
-	golog.Success("Dockerfile generated successfully")
+	golog.Success("Dockerfile Generated!")
+	golog.Debug(fmt.Sprintf("Location: %s", dockerfilePath))
 
 	golog.Warn(fmt.Sprintf("Creating %s", artifactName))
 	golog.Debug(fmt.Sprintf("Location: %s", artifactDir))
@@ -88,7 +89,7 @@ func (t *Publish) Run(args []string) int {
 		}
 	}
 
-	golog.Success("Artifact Generated!")
+	golog.Success("Artifacts Generated!")
 	golog.Debug(fmt.Sprintf("Artifact Path: %s", artifactPath))
 
 	return 0
