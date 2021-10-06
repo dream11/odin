@@ -18,7 +18,7 @@ type steps struct {
 
 type Artifact struct {
 	Flavour         flavour    `yaml:"flavour"`
-	BuildFile       string     `yaml:"buildFile"`
+	PropertyFile    string     `yaml:"propertyFile"`
 	Steps           steps      `yaml:"steps"`
 	ArtifactPath    string     `yaml:"artifactPath"`
 }
