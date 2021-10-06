@@ -22,6 +22,10 @@ type Publish struct {}
 // Run implements the actual functionality of the command
 // and return exit codes based on success/failure of tasks performed
 func (t *Publish) Run(args []string) int {
+	if len(args) != 1 {
+		golog.Error(fmt.Errorf("`publish` requires exactly one argument `component dir path`, %d were given.", len(args)))
+	}
+
 	componentDir := args[0]
 	artifactFilePath := path.Join(componentDir, artifactFileName)
 	golog.Debug(fmt.Sprintf("Reading %s file from: %s", artifactFileName, artifactFilePath))
@@ -75,7 +79,7 @@ func (t *Publish) Run(args []string) int {
 // Help should return an explanatory string, 
 // that can explain the command
 func (t *Publish) Help() string {
-	return "use `publish <version>` to publish the required artifacts for the component"
+	return "use `publish <component dir path>` to publish the required artifacts for the component"
 }
 
 // Synopsis should return a breif helper text for the command
