@@ -9,6 +9,7 @@ require (
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect
 	github.com/brownhash/golog v1.2.2 // indirect
+	github.com/docker/docker v20.10.9+incompatible // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect

@@ -13,6 +13,8 @@ github.com/bgentry/speakeasy v0.1.0/go.mod h1:+zsyZBPWlz7T6j88CTgSN5bM796AkVf0kB
 github.com/brownhash/golog v1.2.2 h1:jYXElZQXdjqTPeKMZlKHaEYNr3k/efnUnWap90ORVa0=
 github.com/brownhash/golog v1.2.2/go.mod h1:kkrEFSy8rB6kfiqv28cgvcixAmKwIuHCdiOrMha9gBQ=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/docker/docker v20.10.9+incompatible h1:JlsVnETOjM2RLQa0Cc1XCIspUdXW3Zenq9P54uXBm6k=
+github.com/docker/docker v20.10.9+incompatible/go.mod h1:eEKB0N0r5NX/I1kEveEz05bcu8tLC/8azJZsviup8Sk=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/fatih/color v1.13.0 h1:8LOYc1KYPPmyKMuN8QV2DNRWNbLo6LZ0iLs8+mlH53w=
 github.com/fatih/color v1.13.0/go.mod h1:kLAiJbzzSOZDVNGyDpeOxJ47H46qBXwg5ILebYFFOfk=
