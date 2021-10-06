@@ -40,7 +40,7 @@ func (t *Publish) Run(args []string) int {
 
 	var artifactName string = ""
 	var artifactDir string = ""
-	
+
 	if artifact.Flavour.Name == "java-maven" {
 		properties, err := javaMaven.ParseFile(propertyFilePath)
 		if err != nil {
@@ -49,9 +49,10 @@ func (t *Publish) Run(args []string) int {
 
 		artifactName = fmt.Sprintf("%s-%s.jar", properties.Name, properties.Version)
 		artifactDir = path.Join(componentDir, properties.Properties.ArtifactPath)
+	} else {
+		golog.Error(fmt.Sprintf("Unknown flavour `%s`", artifact.Flavour.Name))
 	}
 
-	
 	golog.Warn(fmt.Sprintf("Creating %s at %s", artifactName))
 	golog.Debug(fmt.Sprintf("Location: %s", artifactDir))
 
