@@ -77,7 +77,7 @@ func (t *Publish) Run(args []string) int {
 	for i:=0; i<len(artifact.Steps.Pre); i++ {
 		exitCode := shell.Exec(fmt.Sprintf("cd %s && %s", componentDir, artifact.Steps.Pre[i]))
 		if exitCode > 0 {
-			return 1
+			return exitCode
 		}
 	}
 
