@@ -38,17 +38,20 @@ func (t *Publish) Run(args []string) int {
 	propertyFilePath := path.Join(componentDir, artifact.PropertyFile)
 	golog.Debug(fmt.Sprintf("Reading %s file from: %s", artifact.PropertyFile, propertyFilePath))
 
-	properties, err := javaMaven.ParseFile(propertyFilePath)
-	if err != nil {
-		golog.Error(err)
-	}
-
 	var artifactName string = ""
+	var artifactDir string = ""
+	
 	if artifact.Flavour.Name == "java-maven" {
+		properties, err := javaMaven.ParseFile(propertyFilePath)
+		if err != nil {
+			golog.Error(err)
+		}
+
 		artifactName = fmt.Sprintf("%s-%s.jar", properties.Name, properties.Version)
+		artifactDir = path.Join(componentDir, properties.Properties.ArtifactPath)
 	}
 
-	artifactDir := path.Join(componentDir, properties.Properties.ArtifactPath)
+	
 	golog.Warn(fmt.Sprintf("Creating %s at %s", artifactName))
 	golog.Debug(fmt.Sprintf("Location: %s", artifactDir))
 
