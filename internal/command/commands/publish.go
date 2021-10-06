@@ -1,13 +1,13 @@
 package commands
 
 import (
-	"log"
 	"path"
 	"fmt"
 
 	"github.com/dream11/d11-cli/internal/artifact"
 	"github.com/dream11/d11-cli/internal/artifact/javaMaven"
 	"github.com/dream11/d11-cli/pkg/shell"
+	"github.com/brownhash/golog"
 )
 
 const (
@@ -24,19 +24,19 @@ type Publish struct {}
 func (t *Publish) Run(args []string) int {
 	componentDir := args[0]
 	artifactFilePath := path.Join(componentDir, artifactFileName)
-	log.Println("Reading", artifactFilePath)
+	golog.Debug(fmt.Sprintf("Reading %s file from: %s", artifactFileName, artifactFilePath))
 
 	artifact, err := artifact.ParseFile(artifactFilePath)
 	if err != nil {
-		log.Fatal(err)
+		golog.Error(err)
 	}
 	
 	propertyFilePath := path.Join(componentDir, artifact.PropertyFile)
-	log.Println("Reading", propertyFilePath)
+	golog.Debug(fmt.Sprintf("Reading %s file from: %s", artifact.PropertyFile, propertyFilePath))
 
 	properties, err := javaMaven.ParseFile(propertyFilePath)
 	if err != nil {
-		log.Fatal(err)
+		golog.Error(err)
 	}
 
 	var artifactName string = ""
@@ -45,11 +45,12 @@ func (t *Publish) Run(args []string) int {
 	}
 
 	artifactDir := path.Join(componentDir, properties.Properties.ArtifactPath)
-	log.Println("Creating", artifactName, "at", artifactDir)
+	golog.Warn(fmt.Sprintf("Creating %s at %s", artifactName))
+	golog.Debug(fmt.Sprintf("Location: %s", artifactDir))
 
 	artifactPath := path.Join(artifactDir, artifactName)
 
-	log.Println("Running Pre steps")
+	golog.Info("Running Pre steps")
 	for i:=0; i<len(artifact.Steps.Pre); i++ {
 		exitCode := shell.Exec(fmt.Sprintf("cd %s && %s", componentDir, artifact.Steps.Pre[i]))
 		if exitCode > 0 {
@@ -57,7 +58,7 @@ func (t *Publish) Run(args []string) int {
 		}
 	}
 
-	log.Println("Running Build steps")
+	golog.Info("Running Build steps")
 	for i:=0; i<len(artifact.Steps.Build); i++ {
 		exitCode := shell.Exec(fmt.Sprintf("cd %s && %s", componentDir, artifact.Steps.Build[i]))
 		if exitCode > 0 {
@@ -65,7 +66,8 @@ func (t *Publish) Run(args []string) int {
 		}
 	}
 
-	log.Println("Artifact generated:", artifactPath)
+	golog.Success("Artifact Generated!")
+	golog.Debug(fmt.Sprintf("Artifact Path: %s", artifactPath))
 
 	return 0
 }

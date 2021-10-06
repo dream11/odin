@@ -2,10 +2,10 @@ package main
 
 import (
 	"os"
-	"log"
 
-	"github.com/mitchellh/cli"
 	"github.com/dream11/d11-cli/internal/command"
+	"github.com/mitchellh/cli"
+	"github.com/brownhash/golog"
 )
 
 const (
@@ -20,7 +20,7 @@ func main() {
 
 	exitStatus, err := c.Run()
 	if err != nil {
-		log.Println(err)
+		golog.Error(err)
 	}
 
 	os.Exit(exitStatus)

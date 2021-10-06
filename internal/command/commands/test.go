@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"log"
+	"github.com/brownhash/golog"
 )
 
 // --------------------------------------------------------
@@ -12,7 +12,7 @@ type Test struct {}
 // Run implements the actual functionality of the command
 // and return exit codes based on success/failure of tasks performed
 func (t *Test) Run(args []string) int {
-	log.Println("test run")
+	golog.Success("Test Run!")
 	return 0
 }
 

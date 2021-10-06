@@ -1,13 +1,15 @@
 package shell
 
 import (
+    "fmt"
 	"bufio"
-	"log"
 	"os/exec"
+
+    "github.com/brownhash/golog"
 )
 
 func Exec(command string) int {
-	log.Println("Executing:", command)
+    golog.Debug(fmt.Sprintf("Executing: %s", command))
     
     cmd := exec.Command("bash", "-c", command)
 	stdout, _ := cmd.StdoutPipe()
@@ -18,13 +20,13 @@ func Exec(command string) int {
 	scannerOut := bufio.NewScanner(stdout)
 	for scannerOut.Scan() {
         m := scannerOut.Text()
-        log.Println(m)
+        golog.Println(m)
     }
 
 	scannerErr := bufio.NewScanner(stderr)
     for scannerErr.Scan() {
         m := scannerErr.Text()
-        log.Println(m)
+        golog.Println(m)
     }
 
     cmd.Wait()
