@@ -44,6 +44,7 @@ func (t *Publish) Run(args []string) int {
 	var artifactName string = ""
 	var artifactDir string = ""
 	var artifactPath string = ""
+	var artifactTag string = ""
 	var DockerFile string = ""
 	var dockerBuildArgs map[string]*string = map[string]*string{}
 
@@ -56,6 +57,8 @@ func (t *Publish) Run(args []string) int {
 		artifactName = fmt.Sprintf("%s-%s.jar", properties.Name, properties.Version)
 		artifactDir = path.Join(componentDir, properties.Properties.ArtifactPath)
 		artifactPath = path.Join(artifactDir, artifactName)
+		artifactTag = properties.Name + ":" + properties.Version
+		jarPath := "target/fantasy-tour/fantasy-tour-1.0.jar"
 		
 		runSteps := strings.Join(artifact.Steps.Run, " && ")
 
@@ -63,7 +66,8 @@ func (t *Publish) Run(args []string) int {
 		dockerBuildArgs = map[string]*string{
 			"MAVEN_VERSION": &artifact.Flavour.Version.Maven,
 			"JAVA_VERSION": &artifact.Flavour.Version.Java,
-			"JAR_PATH": &artifactPath,
+			"JAR_PATH": &jarPath,
+			"JAR_NAME": &artifactName,
 			"PORT": &artifact.Port,
 			"RUN_COMMAND": &runSteps,
 		}
@@ -102,7 +106,7 @@ func (t *Publish) Run(args []string) int {
 		}
 	}
 
-	err = docker.BuildImage(dockerfilePath, []string{artifactName}, dockerBuildArgs)
+	err = docker.BuildImage("Dockerfile", artifactDir, []string{artifactTag}, dockerBuildArgs)
 	if err != nil {
 		golog.Error(err)
 	}
