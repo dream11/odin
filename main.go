@@ -3,9 +3,8 @@ package main
 import (
 	"os"
 
-	"github.com/dream11/d11-cli/internal/command"
+	"github.com/dream11/d11-cli/internal/cli"
 	"github.com/dream11/d11-cli/internal/logger"
-	"github.com/mitchellh/cli"
 	"github.com/brownhash/golog"
 )
 
@@ -18,11 +17,7 @@ func main() {
 	// handle logging format and levels
 	logger.HandleLogging()
 
-	// initiate cli
-	c := cli.NewCLI(appName, appVersion)
-	c.Args = os.Args[1:]
-	c.Commands = command.CommandCatalog()
-
+	c := cli.Cli(appName, appVersion)
 	exitStatus, err := c.Run()
 	if err != nil {
 		golog.Error(err)
