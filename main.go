@@ -25,3 +25,5 @@ func main() {
 
 	os.Exit(exitStatus)
 }
+
+// TODO: https://github.com/mitchellh/go-glint
