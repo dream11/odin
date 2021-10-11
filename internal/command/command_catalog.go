@@ -10,5 +10,9 @@ func CommandCatalog() map[string]cli.CommandFactory {
 		"publish": func() (cli.Command, error) {
 			return &commands.Publish{}, nil
 		},
+		// Sample command
+		"test": func() (cli.Command, error) {
+			return &commands.Test{}, nil
+		},
 	}
 }
