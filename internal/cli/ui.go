@@ -10,8 +10,10 @@ type ui struct {
 	cli.Ui
 }
 
+// interact with cli 
+// take inputs, secret inputs, throw outputs/error etc
+// for more, refer https://github.com/mitchellh/cli/blob/master/ui.go
 func Ui() *cli.PrefixedUi {
-	// for more, refer https://github.com/mitchellh/cli/blob/master/ui.go
 	cliUi := &cli.PrefixedUi{
 		AskPrefix: "Input:",
 		AskSecretPrefix: "Input(secret):",
