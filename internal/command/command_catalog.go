@@ -8,8 +8,14 @@ import (
 // TODO: Accept parsed flags
 func CommandCatalog() map[string]cli.CommandFactory {
 	return map[string]cli.CommandFactory{
-		"publish": func() (cli.Command, error) {
-			return &commands.Publish{}, nil // TODO: Send flags here
+		"env": func() (cli.Command, error) {
+			return &commands.Namespace{Destroy: false}, nil
+		},
+		"env create": func() (cli.Command, error) {
+			return &commands.Namespace{Destroy: false}, nil
+		},
+		"env delete": func() (cli.Command, error) {
+			return &commands.Namespace{Destroy: true}, nil
 		},
 		// Sample command
 		"test": func() (cli.Command, error) {
