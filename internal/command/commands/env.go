@@ -8,13 +8,25 @@ import (
 )
 
 type Namespace struct {
+	Create     bool
 	Destroy    bool
 }
 
 func (n *Namespace) Run(args []string) int {
-	action := "create"
-	if n.Destroy {
+	action := "" // initiate empty action
+	if n.Create {
+		action = "create"
+	} else if n.Destroy {
 		action = "delete"
+	}
+
+	if action == "" {
+		if len(args) > 0 {
+			golog.Error(fmt.Errorf("`env` requires no argument, %d were given.", len(args)))
+		}
+
+		golog.Debug("Listing all envs")
+		return shell.Exec("kubectl get ns")
 	}
 
 	if len(args) > 1 {
@@ -27,15 +39,21 @@ func (n *Namespace) Run(args []string) int {
 }
 
 func (n *Namespace) Help() string {
-	if n.Destroy {
+	if n.Create {
+		return "use `env create <env name>` to create/delete the provided env name"
+	} else if n.Destroy {
 		return "use `env delete <env name>` to delete the provided env name"
 	}
-	return "use `env create <env name>` to create/delete the provided env name"
+
+	return "use `env` to list all the created envs"
 }
 
 func (n *Namespace) Synopsis() string {
-	if n.Destroy {
+	if n.Create {
+		return "create env"
+	} else if n.Destroy {
 		return "delete env"
 	}
-	return "create env"
+	
+	return "list envs"
 }
