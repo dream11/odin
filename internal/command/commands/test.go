@@ -7,7 +7,7 @@ import (
 // --------------------------------------------------------
 // Test Command
 // --------------------------------------------------------
-type Test struct {}
+type Test struct {} // Accept flags here
 
 // Run implements the actual functionality of the command
 // and return exit codes based on success/failure of tasks performed
