@@ -20,13 +20,13 @@ func CommandCatalog() map[string]cli.CommandFactory {
 		},
 		// Profile Deploy/Destroy
 		"profile": func() (cli.Command, error) {
-			return &commands.Profile{Destroy: false}, nil
+			return &commands.Profile{Deploy: false, Destroy: false}, nil
 		},
 		"profile deploy": func() (cli.Command, error) {
-			return &commands.Profile{Destroy: false}, nil
+			return &commands.Profile{Deploy: true, Destroy: false}, nil
 		},
-		"profile delete": func() (cli.Command, error) {
-			return &commands.Profile{Destroy: true}, nil
+		"profile destroy": func() (cli.Command, error) {
+			return &commands.Profile{Deploy: false, Destroy: true}, nil
 		},
 		// Sample command
 		"test": func() (cli.Command, error) {

@@ -7,34 +7,51 @@ import (
 )
 
 type Profile struct {
-	Destroy bool
-	Name    string
-	Version string
-	Env     string
+	Deploy     bool
+	Destroy    bool
 }
 
 func (n *Profile) Run(args []string) int {
-	action := "deployed"
-	if n.Destroy {
-		action = "deleted"
+	action := "" // initiate empty action
+	if n.Deploy {
+		action = "install"
+	} else if n.Destroy {
+		action = "uninstall"
 	}
+
+	if action == "" {
+		if len(args) != 1 {
+			golog.Error(fmt.Errorf("`profile` requires exactly one argument `profile name`, %d were given.", len(args)))
+		}
+
+		golog.Success("Listing all envs") // TODO: convert this log to debug type
+		return 0
+	}
+
 	if len(args) != 3 {
-		golog.Error(fmt.Errorf("`env %s` requires exactly one argument `env name`, %d were given.", action, len(args)))
+		golog.Error(fmt.Errorf("`profile %s` requires exactly three arguments `profile name, version, env name`, %d were given.", action, len(args)))
 	}
-	golog.Success(fmt.Sprintf("Profile/%s-%s-%s %s", args[0], args[1], args[2], action))
+
+	golog.Success(fmt.Sprintf("Profile/%s@%s %sed in %s", args[0], args[1], action, args[2]))
 	return 0
 }
 
 func (n *Profile) Help() string {
-	if n.Destroy {
-		return "use `profile create <profile-name> <version> <env-name>` to deploy the provided profile in the provided env"
+	if n.Deploy {
+		return "use `profile deploy <profile-name> <version> <env-name>` to deploy the provided profile in the provided env"
+	} else if n.Destroy {
+		return "use `profile destroy <profile-name> <version> <env-name>` to destroy the provided profile in the provided env"
 	}
-	return "use `profile delete <profile-name> <version> <env-name>` to deploy the provided profile in the provided env"
+
+	return "use `profile <name>` to list the created versions for the mentioned profile"
 }
 
 func (n *Profile) Synopsis() string {
-	if n.Destroy {
-		return "delete a deployed profile in the provided env"
+	if n.Deploy {
+		return "deploy the profile"
+	} else if n.Destroy {
+		return "destroy the deployed profile"
 	}
-	return "deploy the profile in the provided env"
+	
+	return "list profile versions"
 }

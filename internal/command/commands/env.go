@@ -8,12 +8,8 @@ import (
 )
 
 type Namespace struct {
-<<<<<<< HEAD
-	Destroy bool
-=======
 	Create     bool
 	Destroy    bool
->>>>>>> a96fe98786c8cd2a762922dad8548c6b76336f9c
 }
 
 func (n *Namespace) Run(args []string) int {
@@ -58,11 +54,6 @@ func (n *Namespace) Synopsis() string {
 	} else if n.Destroy {
 		return "delete env"
 	}
-<<<<<<< HEAD
-	return "create env"
-}
-=======
 	
 	return "list envs"
 }
->>>>>>> a96fe98786c8cd2a762922dad8548c6b76336f9c
