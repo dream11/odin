@@ -81,8 +81,14 @@ func (n *Profile) Run(args []string) int {
 				if status > 0 {
 					return status
 				}
-
-				actionCommand := fmt.Sprintf("cd %s && helm upgrade --%s %s d11-helm-charts/%s -f %s -f %s -n %s", componentPath, action, component, chart.Name, path.Join(componentPath, "values.yaml"), path.Join(componentPath, "values-stag.yaml"), args[2])
+				
+				var actionCommand string = ""
+				if n.Deploy {
+					actionCommand = fmt.Sprintf("cd %s && helm upgrade --%s %s d11-helm-charts/%s -f %s -f %s -n %s", componentPath, action, component, chart.Name, path.Join(componentPath, "values.yaml"), path.Join(componentPath, "values-stag.yaml"), args[2])
+				} else if n.Destroy {
+					actionCommand = fmt.Sprintf("cd %s && helm %s %s -n %s", componentPath, action, component, args[2])
+				}
+				
 				status = shell.Exec(actionCommand)
 				if status > 0 {
 					return status
