@@ -10,13 +10,13 @@ func CommandCatalog() map[string]cli.CommandFactory {
 	return map[string]cli.CommandFactory{
 		// Env Creation/Deletion
 		"env": func() (cli.Command, error) {
-			return &commands.Namespace{Destroy: false}, nil
+			return &commands.Namespace{Create: false, Destroy: false}, nil
 		},
 		"env create": func() (cli.Command, error) {
-			return &commands.Namespace{Destroy: false}, nil
+			return &commands.Namespace{Create: true, Destroy: false}, nil
 		},
 		"env delete": func() (cli.Command, error) {
-			return &commands.Namespace{Destroy: true}, nil
+			return &commands.Namespace{Create: false, Destroy: true}, nil
 		},
 		// Profile Deploy/Destroy
 		"profile": func() (cli.Command, error) {
