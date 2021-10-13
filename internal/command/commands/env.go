@@ -8,7 +8,7 @@ import (
 )
 
 type Namespace struct {
-	Destroy    bool
+	Destroy bool
 }
 
 func (n *Namespace) Run(args []string) int {
