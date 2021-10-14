@@ -3,7 +3,6 @@ package commands
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path"
 
 	"gopkg.in/yaml.v3"
@@ -14,6 +13,7 @@ import (
 	"github.com/dream11/d11-cli/api/service"
 	"github.com/dream11/d11-cli/pkg/dir"
 	"github.com/dream11/d11-cli/pkg/shell"
+	"github.com/dream11/d11-cli/internal/structure"
 )
 
 type Chart struct {
@@ -188,7 +188,7 @@ func (n *Profile) Run(args []string) int {
 	//-------------------------------------------------------------------------
 	// FILE GENERATION & DEPLOY
 	//-------------------------------------------------------------------------
-	workDir := path.Join(os.Getenv("HOME"), ".d11-cli")
+	workDir := structure.WorkDir.Location
 	// generate required files on the required path
 	/*
 	workdir
