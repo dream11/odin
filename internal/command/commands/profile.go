@@ -13,7 +13,7 @@ import (
 	"github.com/dream11/d11-cli/api/service"
 	"github.com/dream11/d11-cli/pkg/dir"
 	"github.com/dream11/d11-cli/pkg/shell"
-	"github.com/dream11/d11-cli/internal/structure"
+	"github.com/dream11/d11-cli/d11cli"
 )
 
 type Chart struct {
@@ -188,7 +188,7 @@ func (n *Profile) Run(args []string) int {
 	//-------------------------------------------------------------------------
 	// FILE GENERATION & DEPLOY
 	//-------------------------------------------------------------------------
-	workDir := structure.WorkDir.Location
+	workDir := d11cli.WorkDir.Location
 	// generate required files on the required path
 	/*
 	workdir

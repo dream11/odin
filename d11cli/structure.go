@@ -1,4 +1,4 @@
-package structure
+package d11cli
 
 import (
 	"os"
@@ -25,6 +25,5 @@ func (w *workdir) Create() error {
 }
 
 var WorkDir workdir = workdir{
-	Location: path.Join(os.Getenv("HOME"), ".d11-cli"),
+	Location: path.Join(os.Getenv("HOME"), "."+App.Name),
 }
-
