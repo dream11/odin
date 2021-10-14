@@ -3,11 +3,15 @@ package commands
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path"
 
 	"gopkg.in/yaml.v3"
 
 	"github.com/brownhash/golog"
+	"github.com/dream11/d11-cli/api/component"
+	"github.com/dream11/d11-cli/api/profile"
+	"github.com/dream11/d11-cli/api/service"
 	"github.com/dream11/d11-cli/pkg/dir"
 	"github.com/dream11/d11-cli/pkg/shell"
 )
@@ -42,59 +46,244 @@ func (n *Profile) Run(args []string) int {
 		golog.Error(fmt.Errorf("`profile %s` requires exactly three arguments `profile name, version, env name`, %d were given.", action, len(args)))
 	}
 
-	profilePath := "/Users/harshitsharma/Documents/Dream11/poc/helm/Services"
-	services, err := dir.SubDirs(profilePath)
+	//-------------------------------------------------------------------------
+	// API IMPLEMENTATION
+	//-------------------------------------------------------------------------
+	golog.Println(fmt.Sprintf("Fetching profile: %s@%s", args[0], args[1]))
+	// fetch profile from playground using profile name and version
+	// now unmarshal the profile into api/profile.Profile
+	profile := profile.Profile{
+		Name: "p1",
+		Version: "1.0.0",
+		Services: []profile.Service{
+			{
+				Name: "fantasy-tour",
+				Version: "1.1.1",
+			},
+		},
+	}
+	// Throw error if profile not successfuly unmarshaled
+	golog.Success(fmt.Sprintf("Profile %s@%s fetched successfully!", profile.Name, profile.Version))
+
+	// on parsing the above retreived profile
+	// we now have a list of service version
+	for _, service := range profile.Services {
+		golog.Println(fmt.Sprintf("Fetching service: %s@%s", service.Name, service.Version))
+		// now fetch service details from playground
+		// now unmarshal each service into api/service.Service
+		// Throw error if services not successfuly unmarshaled
+		golog.Success(fmt.Sprintf("Service %s@%s fetched successfully!", service.Name, service.Version))
+	}
+	
+	services := service.Services{
+		{
+			Name: "fantasy-tour",
+			Version: "1.1.1",
+			Components: []service.Component{
+				{
+					Name: "bb-rds",
+					Version: "1.1.1",
+				},
+				{
+					Name: "fantasy-tour",
+					Version: "1.1.1",
+				},
+				{
+					Name: "fantasy-tour-aerospike",
+					Version: "1.1.1",
+				},
+				{
+					Name: "fantasy-tour-admin",
+					Version: "1.1.1",
+				},
+				{
+					Name: "fantasy-tour-admin-rds",
+					Version: "1.1.1",
+				},
+				{
+					Name: "fantasy-tour-admin-redis",
+					Version: "1.1.1",
+				},
+			},
+		},
+	}
+
+	// on parsing the above retreived services
+	// we now have a list of component version
+	for _, service := range services {
+		for _, component := range service.Components {
+			golog.Println(fmt.Sprintf("Fetching component: %s@%s", component.Name, component.Version))
+			// now fetch component details from playground
+			// now unmarshal each component to api/component.Component
+			// Throw error if components not successfuly unmarshaled
+			golog.Success(fmt.Sprintf("Component %s@%s fetched successfully!", component.Name, component.Version))
+		}
+	}
+	
+	components := component.Components{
+		{
+			Name: "bb-rds",
+			Version: "1.1.1",
+			Type: "datastore",
+			Artifact: component.Artifact{
+				Url: "",
+				Version: "",
+				Type: "",
+			},
+		},
+		{
+			Name: "fantasy-tour",
+			Version: "1.1.1",
+			Type: "application",
+			Artifact: component.Artifact{
+				Url: "",
+				Version: "",
+				Type: "",
+			},
+		},
+		{
+			Name: "fantasy-tour-aerospike",
+			Version: "1.1.1",
+			Type: "datastore",
+			Artifact: component.Artifact{
+				Url: "",
+				Version: "",
+				Type: "",
+			},
+		},
+		{
+			Name: "fantasy-tour-admin",
+			Version: "1.1.1",
+			Type: "application",
+			Artifact: component.Artifact{
+				Url: "",
+				Version: "",
+				Type: "",
+			},
+		},
+		{
+			Name: "fantasy-tour-admin-rds",
+			Version: "1.1.1",
+			Type: "datastore",
+			Artifact: component.Artifact{
+				Url: "",
+				Version: "",
+				Type: "",
+			},
+		},
+		{
+			Name: "fantasy-tour-admin-redis",
+			Version: "1.1.1",
+			Type: "datastore",
+			Artifact: component.Artifact{
+				Url: "",
+				Version: "",
+				Type: "",
+			},
+		},
+	}
+
+	//-------------------------------------------------------------------------
+
+	//-------------------------------------------------------------------------
+	// FILE GENERATION & DEPLOY
+	//-------------------------------------------------------------------------
+	workDir := path.Join(os.Getenv("HOME"), ".d11-cli")
+	// generate required files on the required path
+	/*
+	workdir
+	|__ profileName
+		|__ profileVersion
+			|__ serviceName
+				|__ serviceVersion
+					|__ componentName
+						|__ componentVersion
+							|__ (helm files)
+	*/
+	profileDir := path.Join(workDir, profile.Name, profile.Version)
+	golog.Warn(fmt.Sprintf("Generating files for %s@%s", profile.Name, profile.Version))
+	golog.Debug(fmt.Sprintf("Location: %s", profileDir))
+
+	profileExists, err := dir.Exists(profileDir)
 	if err != nil {
 		golog.Error(err)
 	}
 
-	for _, service := range services {
-		servicePath := path.Join(profilePath, service)
-		components, err := dir.SubDirs(servicePath)
-		if err != nil {
-			golog.Error(err)
-		}
+	if profileExists {
+		golog.Println(fmt.Sprintf("Running profile %s on %s@%s", action, profile.Name, profile.Version))
+		golog.Debug(fmt.Sprintf("Location: %s", profileDir))
 
-		for _, component := range components {
-			componentPath := path.Join(servicePath, component)
-			isDir, err := dir.IsDir(componentPath)
+		for _, service := range profile.Services {
+			serviceDir := path.Join(profileDir, service.Name, service.Version)
+			serviceExists, err := dir.Exists(serviceDir)
 			if err != nil {
 				golog.Error(err)
 			}
 
-			if isDir {
-				golog.Warn(fmt.Sprintf("Running profile %s for %s", action, component))
-				golog.Debug(fmt.Sprintf("Running profile %s in %s", action, componentPath))
-				chart, err := parseHelmChart(path.Join(componentPath, "Chart.yaml"))
+			if serviceExists {
+				golog.Println(fmt.Sprintf("Running profile %s on %s@%s/%s@%s", action, profile.Name, profile.Version, service.Name, service.Version))
+				serviceDetails, err := services.GetService(service.Name)
 				if err != nil {
 					golog.Error(err)
 				}
 
-				addRepoCommand := "helm repo add d11-helm-charts https://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@raw.githubusercontent.com/dream11/d11-helm-charts/feat/redis-operator/"
-				status := shell.Exec(addRepoCommand)
-				if status > 0 {
-					return status
-				}
+				for _, component := range serviceDetails.Components {
+					componentDir := path.Join(serviceDir, component.Name, component.Version)
+					componentExists, err := dir.Exists(componentDir)
+					if err != nil {
+						golog.Error(err)
+					}
 
-				repoUpdateCommand := "helm repo update"
-				status = shell.Exec(repoUpdateCommand)
-				if status > 0 {
-					return status
+					if componentExists {
+						golog.Println(fmt.Sprintf("Running profile %s on %s@%s/%s@%s/%s@%s", action, profile.Name, profile.Version, service.Name, service.Version, component.Name, component.Version))
+						componentDetails, err := components.GetComponent(component.Name)
+						if err != nil {
+							golog.Error(err)
+						}
+						
+						golog.Success(fmt.Sprintf("%sed %s@%s", action, componentDetails.Name, componentDetails.Version))
+
+						chart, err := parseHelmChart(path.Join(componentDir, "Chart.yaml"))
+						if err != nil {
+							golog.Error(err)
+						}
+
+						addRepoCommand := "helm repo add d11-helm-charts https://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@raw.githubusercontent.com/dream11/d11-helm-charts/feat/redis-operator/"
+						status := shell.Exec(addRepoCommand)
+						if status > 0 {
+							return status
+						}
+
+						repoUpdateCommand := "helm repo update"
+						status = shell.Exec(repoUpdateCommand)
+						if status > 0 {
+							return status
+						}
+						
+						var actionCommand string
+						if n.Deploy {
+							actionCommand = fmt.Sprintf("cd %s && helm upgrade --%s %s d11-helm-charts/%s -f %s -f %s -n %s", componentDir, action, componentDetails.Name, chart.Name, path.Join(componentDir, "values.yaml"), path.Join(componentDir, "values-stag.yaml"), args[2])
+						} else if n.Destroy {
+							actionCommand = fmt.Sprintf("cd %s && helm %s %s -n %s", componentDir, action, componentDetails.Name, args[2])
+						}
+						
+						status = shell.Exec(actionCommand)
+						if status > 0 {
+							return status
+						}
+					} else {
+						golog.Error(fmt.Sprintf("Error while reading component, does not exists. %s", componentDir))
+					}
 				}
 				
-				var actionCommand string = ""
-				if n.Deploy {
-					actionCommand = fmt.Sprintf("cd %s && helm upgrade --%s %s d11-helm-charts/%s -f %s -f %s -n %s", componentPath, action, component, chart.Name, path.Join(componentPath, "values.yaml"), path.Join(componentPath, "values-stag.yaml"), args[2])
-				} else if n.Destroy {
-					actionCommand = fmt.Sprintf("cd %s && helm %s %s -n %s", componentPath, action, component, args[2])
-				}
-				
-				status = shell.Exec(actionCommand)
-				if status > 0 {
-					return status
-				} 
+			} else {
+				golog.Error(fmt.Sprintf("Error while reading service, does not exists. %s", serviceDir))
 			}
+
+			return 0
 		}
+	} else {
+		golog.Error(fmt.Sprintf("Error while reading profile, does not exists. %s", profileDir))
 	}
 
 	golog.Success(fmt.Sprintf("Profile/%s@%s %sed in %s", args[0], args[1], action, args[2]))
