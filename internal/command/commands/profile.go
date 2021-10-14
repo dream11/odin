@@ -210,7 +210,7 @@ func (n *Profile) Run(args []string) int {
 	}
 
 	if profileExists {
-		golog.Println(fmt.Sprintf("Running profile %s on %s@%s", action, profile.Name, profile.Version))
+		golog.Warn(fmt.Sprintf("Running profile %s on %s@%s", action, profile.Name, profile.Version))
 		golog.Debug(fmt.Sprintf("Location: %s", profileDir))
 
 		for _, service := range profile.Services {
@@ -221,7 +221,7 @@ func (n *Profile) Run(args []string) int {
 			}
 
 			if serviceExists {
-				golog.Println(fmt.Sprintf("Running profile %s on %s@%s/%s@%s", action, profile.Name, profile.Version, service.Name, service.Version))
+				golog.Warn(fmt.Sprintf("Running profile %s on %s@%s/%s@%s", action, profile.Name, profile.Version, service.Name, service.Version))
 				serviceDetails, err := services.GetService(service.Name)
 				if err != nil {
 					golog.Error(err)
@@ -235,13 +235,11 @@ func (n *Profile) Run(args []string) int {
 					}
 
 					if componentExists {
-						golog.Println(fmt.Sprintf("Running profile %s on %s@%s/%s@%s/%s@%s", action, profile.Name, profile.Version, service.Name, service.Version, component.Name, component.Version))
+						golog.Warn(fmt.Sprintf("Running profile %s on %s@%s/%s@%s/%s@%s", action, profile.Name, profile.Version, service.Name, service.Version, component.Name, component.Version))
 						componentDetails, err := components.GetComponent(component.Name)
 						if err != nil {
 							golog.Error(err)
 						}
-						
-						golog.Success(fmt.Sprintf("%sed %s@%s", action, componentDetails.Name, componentDetails.Version))
 
 						chart, err := parseHelmChart(path.Join(componentDir, "Chart.yaml"))
 						if err != nil {
@@ -271,6 +269,8 @@ func (n *Profile) Run(args []string) int {
 						if status > 0 {
 							return status
 						}
+
+						golog.Success(fmt.Sprintf("%sed %s@%s", action, componentDetails.Name, componentDetails.Version))
 					} else {
 						golog.Error(fmt.Sprintf("Error while reading component, does not exists. %s", componentDir))
 					}
@@ -279,8 +279,6 @@ func (n *Profile) Run(args []string) int {
 			} else {
 				golog.Error(fmt.Sprintf("Error while reading service, does not exists. %s", serviceDir))
 			}
-
-			return 0
 		}
 	} else {
 		golog.Error(fmt.Sprintf("Error while reading profile, does not exists. %s", profileDir))
