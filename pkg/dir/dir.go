@@ -5,6 +5,15 @@ import (
 	"io/ioutil"
 )
 
+func Create(dirPath string, permission os.FileMode) error {
+    err := os.Mkdir(dirPath, permission)
+    if err != nil {
+        return err
+    }
+
+    return nil
+}
+
 func SubDirs(dirPath string) ([]string, error) {
 	subDirs := []string{}
 
