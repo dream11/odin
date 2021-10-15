@@ -32,7 +32,10 @@ func (t *Test) Run(args []string) int {
 // Help should return an explanatory string, 
 // that can explain the command
 func (t *Test) Help() string {
-	return "command help"
+	return `Usage d11-cli test [Options]
+
+Options:
+-test-flag="string value"`
 }
 
 // Synopsis should return a breif helper text for the command
