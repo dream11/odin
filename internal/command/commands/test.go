@@ -1,6 +1,10 @@
 package commands
 
 import (
+	"os"
+	"flag"
+	"fmt"
+
 	"github.com/brownhash/golog"
 )
 
@@ -12,6 +16,15 @@ type Test struct {}
 // Run implements the actual functionality of the command
 // and return exit codes based on success/failure of tasks performed
 func (t *Test) Run(args []string) int {
+	// Define a custom flagset
+	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
+	// Add required flags to the defined flagset
+	testFlag := flagSet.String("test-flag", "default value", "Help text")
+	// Positional parse the flags depending upon commands and sub commands
+	flagSet.Parse(os.Args[2:])
+	// use the parsed flags
+	golog.Debug(fmt.Sprintf("-test-flag=%s", *testFlag))
+
 	golog.Success("Test Run!")
 	return 0
 }
