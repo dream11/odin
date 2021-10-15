@@ -18,6 +18,10 @@ type Test struct {}
 func (t *Test) Run(args []string) int {
 	// Define a custom flagset
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
+	// flag.ContinueOnError allows execution if flags have errors
+	// flag.ExitOnError gracefully stops execution if flags have errors
+	// flag.PanicOnError creates a panic if flags have errors
+
 	// Add required flags to the defined flagset
 	testFlag := flagSet.String("test-flag", "default value", "Help text")
 	// Positional parse the flags depending upon commands and sub commands
