@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path"
+	"flag"
+	"os"
 
 	"gopkg.in/yaml.v3"
 
@@ -33,23 +35,40 @@ func (n *Profile) Run(args []string) int {
 		action = "uninstall"
 	}
 
+	// Define flagset
+	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
+
+	// create flags
+	profileName := flagSet.String("profile", "demo", "name of profile to be used")
+	profileVersion := flagSet.String("version", "0.0.1", "version of profile to be used")
+	envName := flagSet.String("env", "demo", "name of environment to deploy the profile in")
+
 	if action == "" {
-		if len(args) != 1 {
-			golog.Error(fmt.Errorf("`profile` requires exactly one argument `profile name`, %d were given.", len(args)))
+		// positional parse flags from [2:] due to no subcommands
+		flagSet.Parse(os.Args[2:])
+
+		if flagSet.NFlag() != 1 {
+			golog.Error(fmt.Errorf("`profile` requires exactly one flag `-profile=string`, %d were given.", flagSet.NFlag()))
 		}
 
-		golog.Success("Listing all envs") // TODO: convert this log to debug type
+		golog.Info(fmt.Sprintf("Listing all versions of %s", *envName))
+		// TODO: call profile api and display all listed versions
 		return 0
 	}
 
-	if len(args) != 3 {
-		golog.Error(fmt.Errorf("`profile %s` requires exactly three arguments `profile name, version, env name`, %d were given.", action, len(args)))
+	// positional parse flags from [3:] due to subcommands
+	flagSet.Parse(os.Args[3:])
+
+	if flagSet.NFlag() != 3 {
+		golog.Error(fmt.Errorf("`profile %s` requires exactly three flags `-profile=string, -version=string, -env=string`, %d were given.", action, flagSet.NFlag()))
 	}
+
+	golog.Debug(fmt.Sprintf("%sing %s@%s in %s", action, *profileName, *profileVersion, *envName))
 
 	//-------------------------------------------------------------------------
 	// API IMPLEMENTATION
 	//-------------------------------------------------------------------------
-	golog.Println(fmt.Sprintf("Fetching profile: %s@%s", args[0], args[1]))
+	golog.Println(fmt.Sprintf("Fetching profile: %s@%s", *profileName, *profileVersion))
 	// fetch profile from playground using profile name and version
 	// now unmarshal the profile into api/profile.Profile
 	profile := profile.Profile{
@@ -260,9 +279,9 @@ func (n *Profile) Run(args []string) int {
 						
 						var actionCommand string
 						if n.Deploy {
-							actionCommand = fmt.Sprintf("cd %s && helm upgrade --%s %s d11-helm-charts/%s -f %s -f %s -n %s", componentDir, action, componentDetails.Name, chart.Name, path.Join(componentDir, "values.yaml"), path.Join(componentDir, "values-stag.yaml"), args[2])
+							actionCommand = fmt.Sprintf("cd %s && helm upgrade --%s %s d11-helm-charts/%s -f %s -f %s -n %s", componentDir, action, componentDetails.Name, chart.Name, path.Join(componentDir, "values.yaml"), path.Join(componentDir, "values-stag.yaml"), *envName)
 						} else if n.Destroy {
-							actionCommand = fmt.Sprintf("cd %s && helm %s %s -n %s", componentDir, action, componentDetails.Name, args[2])
+							actionCommand = fmt.Sprintf("cd %s && helm %s %s -n %s", componentDir, action, componentDetails.Name, *envName)
 						}
 						
 						status = shell.Exec(actionCommand)
@@ -284,7 +303,7 @@ func (n *Profile) Run(args []string) int {
 		golog.Error(fmt.Sprintf("Error while reading profile, does not exists. %s", profileDir))
 	}
 
-	golog.Success(fmt.Sprintf("Profile/%s@%s %sed in %s", args[0], args[1], action, args[2]))
+	golog.Success(fmt.Sprintf("Profile/%s@%s %sed in %s", *profileName, *profileVersion, action, *envName))
 	return 0
 }
 
