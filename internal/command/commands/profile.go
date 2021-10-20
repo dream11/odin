@@ -308,13 +308,19 @@ func (n *Profile) Run(args []string) int {
 }
 
 func (n *Profile) Help() string {
+	options := `
+Options:
+	-profile="name of profile"
+	-version="version of profile"
+	-env="environment name to deploy/destroy the profile"`
+
 	if n.Deploy {
-		return "use `profile deploy <profile-name> <version> <env-name>` to deploy the provided profile in the provided env"
+		return "Usage d11-cli profile deploy [Options]\n" + options
 	} else if n.Destroy {
-		return "use `profile destroy <profile-name> <version> <env-name>` to destroy the provided profile in the provided env"
+		return "Usage d11-cli profile destroy [Options]\n" + options
 	}
 
-	return "use `profile <name>` to list the created versions for the mentioned profile"
+	return "Usage d11-cli profile [Options]\n" + options
 }
 
 func (n *Profile) Synopsis() string {
