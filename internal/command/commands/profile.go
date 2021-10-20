@@ -310,17 +310,17 @@ func (n *Profile) Run(args []string) int {
 func (n *Profile) Help() string {
 	options := `
 Options:
-	-profile="name of profile"
-	-version="version of profile"
-	-env="environment name to deploy/destroy the profile"`
+	--profile="name of profile"
+	--version="version of profile"
+	--env="environment name to deploy/destroy the profile"`
 
 	if n.Deploy {
-		return "Usage d11-cli profile deploy [Options]\n" + options
+		return "Usage: d11-cli profile deploy [Options]\n" + options
 	} else if n.Destroy {
-		return "Usage d11-cli profile destroy [Options]\n" + options
+		return "Usage: d11-cli profile destroy [Options]\n" + options
 	}
 
-	return "Usage d11-cli profile [Options]\n" + options
+	return "Usage: d11-cli profile [Options]\n" + options
 }
 
 func (n *Profile) Synopsis() string {

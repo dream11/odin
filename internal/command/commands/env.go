@@ -57,13 +57,17 @@ func (n *Namespace) Run(args []string) int {
 }
 
 func (n *Namespace) Help() string {
+	options := `
+Options:
+	--name="name of environment"`
+
 	if n.Create {
-		return "use `env create <env name>` to create/delete the provided env name"
+		return "Usage: d11-cli env create [Options]\n" + options
 	} else if n.Destroy {
-		return "use `env delete <env name>` to delete the provided env name"
+		return "Usage: d11-cli env delete [Options]\n" + options
 	}
 
-	return "use `env` to list all the created envs"
+	return "Usage: d11-cli env"
 }
 
 func (n *Namespace) Synopsis() string {
