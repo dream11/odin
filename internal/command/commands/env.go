@@ -1,7 +1,9 @@
 package commands
 
 import (
+	"os"
 	"fmt"
+	"flag"
 
 	"github.com/brownhash/golog"
 	"github.com/dream11/d11-cli/pkg/shell"
@@ -20,9 +22,18 @@ func (n *Namespace) Run(args []string) int {
 		action = "delete"
 	}
 
+	// Define flagset
+	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
+
+	// create flags
+	name := flagSet.String("name", "demo", "name of environment")
+
 	if action == "" {
-		if len(args) > 0 {
-			golog.Error(fmt.Errorf("`env` requires no argument, %d were given.", len(args)))
+		// positional parse flags from [2:] due to no subcommands
+		flagSet.Parse(os.Args[2:])
+
+		if flagSet.NFlag() != 0 {
+			golog.Error(fmt.Errorf("`env` requires no flag, %d were given.", flagSet.NFlag()))
 		}
 
 		golog.Debug("Listing all envs")
@@ -33,7 +44,14 @@ func (n *Namespace) Run(args []string) int {
 		golog.Error(fmt.Errorf("`env %s` requires exactly one argument `env name`, %d were given.", action, len(args)))
 	}
 
-	command := fmt.Sprintf("kubectl %s ns %s", action, args[0])
+	// positional parse flags from [3:] due to subcommands
+	flagSet.Parse(os.Args[3:])
+
+	if flagSet.NFlag() != 1 {
+		golog.Error(fmt.Errorf("`env %s` requires exactly one flag `-name=string`, %d were given.", action, flagSet.NFlag()))
+	}
+
+	command := fmt.Sprintf("kubectl %s ns %s", action, *name)
 
 	return shell.Exec(command)
 }
