@@ -40,15 +40,11 @@ func (n *Namespace) Run(args []string) int {
 		return shell.Exec("kubectl get ns")
 	}
 
-	if len(args) > 1 {
-		golog.Error(fmt.Errorf("`env %s` requires exactly one argument `env name`, %d were given.", action, len(args)))
-	}
-
 	// positional parse flags from [3:] due to subcommands
 	flagSet.Parse(os.Args[3:])
 
 	if flagSet.NFlag() != 1 {
-		golog.Error(fmt.Errorf("`env %s` requires exactly one flag `-name=string`, %d were given.", action, flagSet.NFlag()))
+		golog.Error(fmt.Errorf("`env %s` requires exactly one flag `--name=string`, %d were given.", action, flagSet.NFlag()))
 	}
 
 	command := fmt.Sprintf("kubectl %s ns %s", action, *name)

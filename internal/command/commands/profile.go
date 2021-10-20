@@ -48,7 +48,7 @@ func (n *Profile) Run(args []string) int {
 		flagSet.Parse(os.Args[2:])
 
 		if flagSet.NFlag() != 1 {
-			golog.Error(fmt.Errorf("`profile` requires exactly one flag `-profile=string`, %d were given.", flagSet.NFlag()))
+			golog.Error(fmt.Errorf("`profile` requires exactly one flag `--profile=string`, %d were given.", flagSet.NFlag()))
 		}
 
 		golog.Info(fmt.Sprintf("Listing all versions of %s", *envName))
@@ -60,7 +60,7 @@ func (n *Profile) Run(args []string) int {
 	flagSet.Parse(os.Args[3:])
 
 	if flagSet.NFlag() != 3 {
-		golog.Error(fmt.Errorf("`profile %s` requires exactly three flags `-profile=string, -version=string, -env=string`, %d were given.", action, flagSet.NFlag()))
+		golog.Error(fmt.Errorf("`profile %s` requires exactly three flags `--profile=string, --version=string, --env=string`, %d were given.", action, flagSet.NFlag()))
 	}
 
 	golog.Debug(fmt.Sprintf("%sing %s@%s in %s", action, *profileName, *profileVersion, *envName))
