@@ -9,69 +9,78 @@ import (
 	"github.com/dream11/d11-cli/pkg/shell"
 )
 
-type Namespace struct {
-	Create     bool
-	Destroy    bool
-}
+type Env command
 
-func (n *Namespace) Run(args []string) int {
-	action := "" // initiate empty action
-	if n.Create {
-		action = "create"
-	} else if n.Destroy {
-		action = "delete"
-	}
-
+func (e *Env) Run(args []string) int {
 	// Define flagset
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
-
 	// create flags
 	name := flagSet.String("name", "demo", "name of environment")
+	// positional parse flags from [3:]
+	flagSet.Parse(os.Args[3:])
 
-	if action == "" {
-		// positional parse flags from [2:] due to no subcommands
-		flagSet.Parse(os.Args[2:])
-
-		if flagSet.NFlag() != 0 {
-			golog.Error(fmt.Errorf("`env` requires no flag, %d were given.", flagSet.NFlag()))
-		}
-
-		golog.Debug("Listing all envs")
+	if e.List {
+		golog.Success("Listing all envs")
 		return shell.Exec("kubectl get ns")
 	}
 
-	// positional parse flags from [3:] due to subcommands
-	flagSet.Parse(os.Args[3:])
-
-	if flagSet.NFlag() != 1 {
-		golog.Error(fmt.Errorf("`env %s` requires exactly one flag `--name=string`, %d were given.", action, flagSet.NFlag()))
+	if e.Describe {
+		golog.Success(fmt.Sprintf("Describing env %s", *name))
+		return shell.Exec(fmt.Sprintf("kubectl describe ns %s", *name))
 	}
 
-	command := fmt.Sprintf("kubectl %s ns %s", action, *name)
-
-	return shell.Exec(command)
-}
-
-func (n *Namespace) Help() string {
-	options := `
-Options:
-	--name="name of environment"`
-
-	if n.Create {
-		return "Usage: d11-cli env create [Options]\n" + options
-	} else if n.Destroy {
-		return "Usage: d11-cli env delete [Options]\n" + options
+	if e.Deploy {
+		golog.Warn(fmt.Sprintf("Deploying env %s", *name))
+		return shell.Exec(fmt.Sprintf("kubectl create ns %s", *name))
 	}
 
-	return "Usage: d11-cli env"
-}
-
-func (n *Namespace) Synopsis() string {
-	if n.Create {
-		return "create env"
-	} else if n.Destroy {
-		return "delete env"
+	if e.Destroy {
+		golog.Warn(fmt.Sprintf("Destroying env %s", *name))
+		return shell.Exec(fmt.Sprintf("kubectl delete ns %s", *name))
 	}
+
 	
-	return "list envs"
+	golog.Error("Not a valid command")
+
+	return 1
+}
+
+func (e *Env) Help() string {
+	if e.List {
+		return commandHelper("list", "env", []string{})
+	}
+	if e.Describe {
+		return commandHelper("describe", "env", []string{
+			"--name=name of environemnt to describe",
+		})
+	}
+	if e.Deploy {
+		return commandHelper("deploy", "env", []string{
+			"--name=name of environemnt to deploy",
+		})
+	}
+	if e.Destroy {
+		return commandHelper("destroy", "env", []string{
+			"--name=name of environemnt to destroy",
+		})
+	}
+
+	return defaultHelper()
+}
+
+func (e *Env) Synopsis() string {
+	if e.List {
+		return "list all active envs"
+	}
+	if e.Describe {
+		return "describe an env"
+	}
+	if e.Deploy {
+		return "deploy an env"
+	}
+	if e.Destroy {
+		return "destroy an env"
+	}
+
+	return defaultHelper()
 }

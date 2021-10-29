@@ -7,6 +7,16 @@ import (
 	"github.com/dream11/d11-cli/internal/command"
 )
 
+// add commands to hide from help section
+var hidenCommands = []string{
+	"create test",
+	"delete test",
+	"list test",
+	"describe test",
+	"deploy test",
+	"destroy test",
+}
+
 func Cli(appName, appVersion string) *cli.CLI {
 	// initiate cli
 	// for more refer https://github.com/mitchellh/cli/blob/master/cli.go#L49
@@ -14,11 +24,11 @@ func Cli(appName, appVersion string) *cli.CLI {
 		Name: appName,
 		Version: appVersion,
 		Args: os.Args[1:],
-		Commands: command.CommandCatalog(), // TODO: Pass parsed flags here
+		Commands: command.CommandCatalog(),
 		HelpFunc: cli.BasicHelpFunc(appName),
 		Autocomplete: true,
 		HelpWriter: os.Stdout,
 		ErrorWriter: os.Stderr,
-		HiddenCommands: []string{"test"},
+		HiddenCommands: hidenCommands,
 	}
 }
