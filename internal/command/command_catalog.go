@@ -5,32 +5,82 @@ import (
 	"github.com/mitchellh/cli"
 )
 
-// TODO: Accept parsed flags
+/*
+Command Structure:
+
+	d11-cli <verb> <resource> <options>
+
+Verbs are essentially the actions that will be performed,
+like: create, list, delete, etc...
+
+Verb convention:
+	- create
+	- delete
+	- describe
+	- list
+	- deploy
+	- destroy
+
+Resources are the entities on with the verbs will run,
+like: env, profile, etc...
+
+Options are merely the flags that are required with the 
+command.
+*/
 func CommandCatalog() map[string]cli.CommandFactory {
 	return map[string]cli.CommandFactory{
-		// Env Creation/Deletion
-		"env": func() (cli.Command, error) {
-			return &commands.Namespace{Create: false, Destroy: false}, nil
+		// Verbs for `env` resource
+		"list env": func() (cli.Command, error) {
+			return &commands.Env{List: true}, nil
 		},
-		"env create": func() (cli.Command, error) {
-			return &commands.Namespace{Create: true, Destroy: false}, nil
+		"describe env": func() (cli.Command, error) {
+			return &commands.Env{Describe: true}, nil
 		},
-		"env delete": func() (cli.Command, error) {
-			return &commands.Namespace{Create: false, Destroy: true}, nil
+		"deploy env": func() (cli.Command, error) {
+			return &commands.Env{Deploy: true}, nil
 		},
-		// Profile Deploy/Destroy
-		"profile": func() (cli.Command, error) {
-			return &commands.Profile{Deploy: false, Destroy: false}, nil
+		"destroy env": func() (cli.Command, error) {
+			return &commands.Env{Destroy: true}, nil
 		},
-		"profile deploy": func() (cli.Command, error) {
-			return &commands.Profile{Deploy: true, Destroy: false}, nil
+
+		// Verbs for `profile` resource
+		"create profile": func() (cli.Command, error) {
+			return &commands.Profile{Create: true}, nil
 		},
-		"profile destroy": func() (cli.Command, error) {
-			return &commands.Profile{Deploy: false, Destroy: true}, nil
+		"delete profile": func() (cli.Command, error) {
+			return &commands.Profile{Delete: true}, nil
 		},
-		// Sample command
-		"test": func() (cli.Command, error) {
-			return &commands.Test{}, nil
+		"list profile": func() (cli.Command, error) {
+			return &commands.Profile{List: true}, nil
+		},
+		"describe profile": func() (cli.Command, error) {
+			return &commands.Profile{Describe: true}, nil
+		},
+		"deploy profile": func() (cli.Command, error) {
+			return &commands.Profile{Deploy: true}, nil
+		},
+		"destroy profile": func() (cli.Command, error) {
+			return &commands.Profile{Destroy: true}, nil
+		},
+
+		// Sample commands
+		"create test": func() (cli.Command, error) {
+			return &commands.Test{Create: true}, nil
+		},
+		"delete test": func() (cli.Command, error) {
+			return &commands.Test{Delete: true}, nil
+		},
+		"list test": func() (cli.Command, error) {
+			return &commands.Test{List: true}, nil
+		},
+		"describe test": func() (cli.Command, error) {
+			return &commands.Test{Describe: true}, nil
+		},
+		"deploy test": func() (cli.Command, error) {
+			return &commands.Test{Deploy: true}, nil
+		},
+		"destroy test": func() (cli.Command, error) {
+			return &commands.Test{Destroy: true}, nil
 		},
 	}
 }
