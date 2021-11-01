@@ -1,4 +1,4 @@
-# !["Odin"](./docs/odin-logo.jpg "Odin: Internal framework CLI for CRUD operations on environments")
+# <img src="./docs/odin-logo.jpg" alt="Odin" title="Odin: Internal framework CLI for CRUD operations on environments." width="30%" height="30%">
 
 Internal framework CLI for CRUD operations on environments.
 
