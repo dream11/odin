@@ -1,12 +1,12 @@
 package commands
 
 import (
-	"os"
-	"fmt"
 	"flag"
+	"fmt"
+	"os"
 
 	"github.com/brownhash/golog"
-	"github.com/dream11/d11-cli/pkg/shell"
+	"github.com/dream11/odin/pkg/shell"
 )
 
 type Env command

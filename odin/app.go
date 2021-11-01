@@ -1,16 +1,16 @@
-package d11cli
+package odin
 
 import (
-	"github.com/dream11/d11-cli/internal/logger"
+	"github.com/dream11/odin/internal/logger"
 )
 
 type application struct {
-	Name       string
-	Version    string
+	Name    string
+	Version string
 }
 
 var App application = application{
-	Name: "d11-cli",
+	Name:    "odin",
 	Version: "1.0.0-beta",
 }
 

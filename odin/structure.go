@@ -1,15 +1,15 @@
-package d11cli
+package odin
 
 import (
 	"os"
 	"path"
 
-	"github.com/dream11/d11-cli/pkg/dir"
 	"github.com/brownhash/golog"
+	"github.com/dream11/odin/pkg/dir"
 )
 
 type workdir struct {
-	Location    string
+	Location string
 }
 
 func (w *workdir) Create() error {

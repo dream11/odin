@@ -3,13 +3,13 @@ package main
 import (
 	"os"
 
-	"github.com/dream11/d11-cli/d11cli"
-	"github.com/dream11/d11-cli/internal/cli"
 	"github.com/brownhash/golog"
+	"github.com/dream11/odin/internal/cli"
+	"github.com/dream11/odin/odin"
 )
 
 func main() {
-	c := cli.Cli(d11cli.App.Name, d11cli.App.Version)
+	c := cli.Cli(odin.App.Name, odin.App.Version)
 	exitStatus, err := c.Run()
 	if err != nil {
 		golog.Error(err)
