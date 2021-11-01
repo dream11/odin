@@ -1,6 +1,6 @@
 # Adding a command `test` with all its `verbs`
 
-1. Create [test.go](../internal/command/commands/test.go) at `d11-ci/internal/command/commands/` and initiate it,
+1. Create [test.go](../internal/command/commands/test.go) at `odin/internal/command/commands/` and initiate it,
 
     ```go
     package commands
@@ -144,7 +144,7 @@
         }
         ```
 
-4. Create the commands at [command_catalog.go](d11-ci/internal/command/command_catalog.go) at `../internal/command/command_catalog.go` in the `CommandCatalog()` function,
+4. Create the commands at [command_catalog.go](../internal/command/command_catalog.go) at `odin/internal/command/command_catalog.go` in the `CommandCatalog()` function,
 
     For mapping `command` to `verb`, define the command as,
 
