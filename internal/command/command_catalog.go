@@ -1,14 +1,14 @@
 package command
 
 import (
-	"github.com/dream11/d11-cli/internal/command/commands"
+	"github.com/dream11/odin/internal/command/commands"
 	"github.com/mitchellh/cli"
 )
 
 /*
 Command Structure:
 
-	d11-cli <verb> <resource> <options>
+	odin <verb> <resource> <options>
 
 Verbs are essentially the actions that will be performed,
 like: create, list, delete, etc...
@@ -24,7 +24,7 @@ Verb convention:
 Resources are the entities on with the verbs will run,
 like: env, profile, etc...
 
-Options are merely the flags that are required with the 
+Options are merely the flags that are required with the
 command.
 */
 func CommandCatalog() map[string]cli.CommandFactory {

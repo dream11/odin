@@ -1,25 +1,25 @@
 package commands
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
-	"path"
-	"flag"
 	"os"
+	"path"
 
 	"gopkg.in/yaml.v3"
 
 	"github.com/brownhash/golog"
-	"github.com/dream11/d11-cli/api/component"
-	"github.com/dream11/d11-cli/api/profile"
-	"github.com/dream11/d11-cli/api/service"
-	"github.com/dream11/d11-cli/pkg/dir"
-	"github.com/dream11/d11-cli/pkg/shell"
-	"github.com/dream11/d11-cli/d11cli"
+	"github.com/dream11/odin/api/component"
+	"github.com/dream11/odin/api/profile"
+	"github.com/dream11/odin/api/service"
+	"github.com/dream11/odin/odin"
+	"github.com/dream11/odin/pkg/dir"
+	"github.com/dream11/odin/pkg/shell"
 )
 
 type Chart struct {
-	Name    string    `yaml:"name"`
+	Name string `yaml:"name"`
 }
 
 type Profile command
@@ -72,11 +72,11 @@ func (p *Profile) Run(args []string) int {
 		// fetch profile from playground using profile name and version
 		// now unmarshal the profile into api/profile.Profile
 		profile := profile.Profile{
-			Name: "p1",
+			Name:    "p1",
 			Version: "1.0.0",
 			Services: []profile.Service{
 				{
-					Name: "fantasy-tour",
+					Name:    "fantasy-tour",
 					Version: "1.1.1",
 				},
 			},
@@ -97,31 +97,31 @@ func (p *Profile) Run(args []string) int {
 
 		services := service.Services{
 			{
-				Name: "fantasy-tour",
+				Name:    "fantasy-tour",
 				Version: "1.1.1",
 				Components: []service.Component{
 					{
-						Name: "bb-rds",
+						Name:    "bb-rds",
 						Version: "1.1.1",
 					},
 					{
-						Name: "fantasy-tour",
+						Name:    "fantasy-tour",
 						Version: "1.1.1",
 					},
 					{
-						Name: "fantasy-tour-aerospike",
+						Name:    "fantasy-tour-aerospike",
 						Version: "1.1.1",
 					},
 					{
-						Name: "fantasy-tour-admin",
+						Name:    "fantasy-tour-admin",
 						Version: "1.1.1",
 					},
 					{
-						Name: "fantasy-tour-admin-rds",
+						Name:    "fantasy-tour-admin-rds",
 						Version: "1.1.1",
 					},
 					{
-						Name: "fantasy-tour-admin-redis",
+						Name:    "fantasy-tour-admin-redis",
 						Version: "1.1.1",
 					},
 				},
@@ -142,63 +142,63 @@ func (p *Profile) Run(args []string) int {
 
 		components := component.Components{
 			{
-				Name: "bb-rds",
+				Name:    "bb-rds",
 				Version: "1.1.1",
-				Type: "datastore",
+				Type:    "datastore",
 				Artifact: component.Artifact{
-					Url: "",
+					Url:     "",
 					Version: "",
-					Type: "",
+					Type:    "",
 				},
 			},
 			{
-				Name: "fantasy-tour",
+				Name:    "fantasy-tour",
 				Version: "1.1.1",
-				Type: "application",
+				Type:    "application",
 				Artifact: component.Artifact{
-					Url: "",
+					Url:     "",
 					Version: "",
-					Type: "",
+					Type:    "",
 				},
 			},
 			{
-				Name: "fantasy-tour-aerospike",
+				Name:    "fantasy-tour-aerospike",
 				Version: "1.1.1",
-				Type: "datastore",
+				Type:    "datastore",
 				Artifact: component.Artifact{
-					Url: "",
+					Url:     "",
 					Version: "",
-					Type: "",
+					Type:    "",
 				},
 			},
 			{
-				Name: "fantasy-tour-admin",
+				Name:    "fantasy-tour-admin",
 				Version: "1.1.1",
-				Type: "application",
+				Type:    "application",
 				Artifact: component.Artifact{
-					Url: "",
+					Url:     "",
 					Version: "",
-					Type: "",
+					Type:    "",
 				},
 			},
 			{
-				Name: "fantasy-tour-admin-rds",
+				Name:    "fantasy-tour-admin-rds",
 				Version: "1.1.1",
-				Type: "datastore",
+				Type:    "datastore",
 				Artifact: component.Artifact{
-					Url: "",
+					Url:     "",
 					Version: "",
-					Type: "",
+					Type:    "",
 				},
 			},
 			{
-				Name: "fantasy-tour-admin-redis",
+				Name:    "fantasy-tour-admin-redis",
 				Version: "1.1.1",
-				Type: "datastore",
+				Type:    "datastore",
 				Artifact: component.Artifact{
-					Url: "",
+					Url:     "",
 					Version: "",
-					Type: "",
+					Type:    "",
 				},
 			},
 		}
@@ -208,17 +208,17 @@ func (p *Profile) Run(args []string) int {
 		//-------------------------------------------------------------------------
 		// FILE GENERATION & DEPLOY
 		//-------------------------------------------------------------------------
-		workDir := d11cli.WorkDir.Location
+		workDir := odin.WorkDir.Location
 		// generate required files on the required path
 		/*
-		workdir
-		|__ profileName
-			|__ profileVersion
-				|__ serviceName
-					|__ serviceVersion
-						|__ componentName
-							|__ componentVersion
-								|__ (helm files)
+			workdir
+			|__ profileName
+				|__ profileVersion
+					|__ serviceName
+						|__ serviceVersion
+							|__ componentName
+								|__ componentVersion
+									|__ (helm files)
 		*/
 
 		profileDir := path.Join(workDir, profile.Name, profile.Version)
@@ -278,15 +278,15 @@ func (p *Profile) Run(args []string) int {
 							if status > 0 {
 								return status
 							}
-							
+
 							var actionCommand string
 							if p.Deploy {
-								actionCommand = fmt.Sprintf("cd %s && helm upgrade --install %s d11-helm-charts/%s -f %s -f %s -n %s", 
-									componentDir, 
-									componentDetails.Name, 
-									chart.Name, 
-									path.Join(componentDir, "values.yaml"), 
-									path.Join(componentDir, "values-stag.yaml"), 
+								actionCommand = fmt.Sprintf("cd %s && helm upgrade --install %s d11-helm-charts/%s -f %s -f %s -n %s",
+									componentDir,
+									componentDetails.Name,
+									chart.Name,
+									path.Join(componentDir, "values.yaml"),
+									path.Join(componentDir, "values-stag.yaml"),
 									*envName,
 								)
 
@@ -295,9 +295,9 @@ func (p *Profile) Run(args []string) int {
 									return status
 								}
 							} else if p.Destroy {
-								actionCommand = fmt.Sprintf("cd %s && helm uninstall %s -n %s", 
-									componentDir, 
-									componentDetails.Name, 
+								actionCommand = fmt.Sprintf("cd %s && helm uninstall %s -n %s",
+									componentDir,
+									componentDetails.Name,
 									*envName,
 								)
 
@@ -310,7 +310,7 @@ func (p *Profile) Run(args []string) int {
 							golog.Error(fmt.Sprintf("Error while reading component, does not exists. %s", componentDir))
 						}
 					}
-					
+
 				} else {
 					golog.Error(fmt.Sprintf("Error while reading service, does not exists. %s", serviceDir))
 				}
@@ -389,7 +389,6 @@ func (p *Profile) Synopsis() string {
 
 	return defaultHelper()
 }
-
 
 // parse helm chart for chart properties
 func parseHelmChart(filePath string) (Chart, error) {

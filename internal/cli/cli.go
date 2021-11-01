@@ -3,8 +3,8 @@ package cli
 import (
 	"os"
 
+	"github.com/dream11/odin/internal/command"
 	"github.com/mitchellh/cli"
-	"github.com/dream11/d11-cli/internal/command"
 )
 
 // add commands to hide from help section

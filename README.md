@@ -1,4 +1,4 @@
-# d11-cli
+# odin
 
 Internal framework CLI for CRUD operations on environments.
 
@@ -8,9 +8,9 @@ Internal framework CLI for CRUD operations on environments.
 
 2. Verify Go: `go version`
 
-3. Clone this repo: `git clone https://github.com/dream11/d11-cli`
+3. Clone this repo: `git clone https://github.com/dream11/odin`
 
-4. Enter the repository: `cd d11-cli`
+4. Enter the repository: `cd odin`
 
 5. Install dependencies: `go mod download`
 
@@ -20,15 +20,15 @@ Internal framework CLI for CRUD operations on environments.
 
 1. Build the executable: `go build .`
 
-2. Move to binary to system path: `sudo mv ./d11-cli /usr/local/bin`
+2. Move to binary to system path: `sudo mv ./odin /usr/local/bin`
 
-3. Verify the cli: `d11-cli --version`
+3. Verify the cli: `odin --version`
 
 ## Commands
 
 ### Structure
 
-All commands are formated as: d11-cli `<verb>` `<resource>` `<options>`
+All commands are formated as: odin `<verb>` `<resource>` `<options>`
 
 Here,
 
@@ -44,13 +44,13 @@ Here,
 2. `resource` - The resource on which action will be performed. Example: `env` -
 
     ```shell
-    d11-cli <verb> env <options>
+    odin <verb> env <options>
     ```
 
 3. `options` - Extra properties required to support the commands. Example: `env` -
 
     ```shell
-    d11-cli <verb> env --name=demo-1234
+    odin <verb> env --name=demo-1234
     ```
 
 ### [Adding a command](./docs/ADD_COMMAND.md)
