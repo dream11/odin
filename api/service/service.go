@@ -5,14 +5,14 @@ import (
 )
 
 type Component struct {
-	Name       string    `yaml:"name" json:"name"`
-	Version    string    `yaml:"version" json:"version"`
+	Name    string `yaml:"name" json:"name"`
+	Version string `yaml:"version" json:"version"`
 }
 
 type Service struct {
-	Name          string         `yaml:"name" json:"name"`
-	Version       string         `yaml:"version" json:"version"`
-	Components    []Component    `yaml:"components" json:"components"`
+	Name       string      `yaml:"name" json:"name"`
+	Version    string      `yaml:"version" json:"version"`
+	Components []Component `yaml:"components" json:"components"`
 }
 
 type Services []Service

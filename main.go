@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	"github.com/brownhash/golog"
 	"github.com/dream11/odin/internal/cli"
+	"github.com/dream11/odin/internal/ui"
 	"github.com/dream11/odin/odin"
 )
 
@@ -12,7 +12,8 @@ func main() {
 	c := cli.Cli(odin.App.Name, odin.App.Version)
 	exitStatus, err := c.Run()
 	if err != nil {
-		golog.Error(err)
+		ui.Interface().Error(err.Error())
+		os.Exit(1)
 	}
 
 	os.Exit(exitStatus)

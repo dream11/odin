@@ -4,7 +4,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/brownhash/golog"
+	"github.com/dream11/odin/internal/ui"
 	"github.com/dream11/odin/pkg/dir"
 )
 
@@ -22,7 +22,7 @@ func (w *workdir) Create() error {
 		return nil
 	}
 
-	return dir.Create(w.Location, 755)
+	return dir.Create(w.Location, 0755)
 }
 
 var WorkDir workdir = workdir{
@@ -33,6 +33,7 @@ var WorkDir workdir = workdir{
 func init() {
 	err := WorkDir.Create()
 	if err != nil {
-		golog.Error(err)
+		ui.Interface().Error(err.Error())
+		os.Exit(1)
 	}
 }

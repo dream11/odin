@@ -1,4 +1,4 @@
-package cli
+package ui
 
 import (
 	"os"
@@ -10,17 +10,17 @@ type ui struct {
 	cli.Ui
 }
 
-// interact with cli 
+// interact with cli
 // take inputs, secret inputs, throw outputs/error etc
 // for more, refer https://github.com/mitchellh/cli/blob/master/ui.go
-func Ui() *cli.PrefixedUi {
+func Interface() *cli.PrefixedUi {
 	cliUi := &cli.PrefixedUi{
-		AskPrefix: "Input:",
+		AskPrefix:       "Input:",
 		AskSecretPrefix: "Input(secret):",
-		OutputPrefix: "",
-		InfoPrefix: "[INFO]",
-		ErrorPrefix: "[ERROR]",
-		WarnPrefix: "[WARNING]",
+		OutputPrefix:    "",
+		InfoPrefix:      "[ INFO ] ",
+		ErrorPrefix:     "[ ERROR ] ",
+		WarnPrefix:      "[ WARNING ] ",
 		Ui: &ui{
 			&cli.BasicUi{
 				Writer:      os.Stdout,

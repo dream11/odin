@@ -14,7 +14,7 @@
         "flag"
         "fmt"
 
-        "github.com/brownhash/golog" // logger
+        "github.com/dream11/odin/internal/ui" // cli interface
     )
 
     type Test command
@@ -36,41 +36,40 @@
             // Positional parse the flags depending upon commands and sub commands
             flagSet.Parse(os.Args[3:])
             // use the parsed flags
-            golog.Debug(fmt.Sprintf("-test-flag=%s", *testFlag))
+            ui.Interface().Info(fmt.Sprintf("-test-flag=%s", *testFlag))
 
             if t.Create {
                 // Perform stuff for record creation of test resource
-                golog.Success(fmt.Sprintf("Test Run(create)! flag value = %s", *testFlag))
+                ui.Interface().Info(fmt.Sprintf("Test Run(create)! flag value = %s", *testFlag))
                 return 0
             }
             if t.Delete {
                 // Perform stuff for record deletion of test resource
-                golog.Success(fmt.Sprintf("Test Run(delete)! flag value = %s", *testFlag))
+                ui.Interface().Info(fmt.Sprintf("Test Run(delete)! flag value = %s", *testFlag))
                 return 0
             }
             if t.List {
                 // Perform stuff to list all test resource
-                golog.Success(fmt.Sprintf("Test Run(list)! flag value = %s", *testFlag))
+                ui.Interface().Info(fmt.Sprintf("Test Run(list)! flag value = %s", *testFlag))
                 return 0
             }
             if t.Describe {
                 // Perform stuff to describe a test resource
-                golog.Success(fmt.Sprintf("Test Run(describe)! flag value = %s", *testFlag))
+                ui.Interface().Info(fmt.Sprintf("Test Run(describe)! flag value = %s", *testFlag))
                 return 0
             }
             if t.Deploy {
                 // Perform stuff to deploy a test resource
-                golog.Success(fmt.Sprintf("Test Run(deploy)! flag value = %s", *testFlag))
+                ui.Interface().Info(fmt.Sprintf("Test Run(deploy)! flag value = %s", *testFlag))
                 return 0
             }
             if t.Destroy {
                 // Perform stuff to destroy a test resource
-                golog.Success(fmt.Sprintf("Test Run(destroy)! flag value = %s", *testFlag))
+                ui.Interface().Info(fmt.Sprintf("Test Run(destroy)! flag value = %s", *testFlag))
                 return 0
             }
 
-            golog.Error("Not a valid command")
-
+            ui.Interface().Error("Not a valid command")
             return 1
         }
         ```
