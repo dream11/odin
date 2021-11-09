@@ -8,11 +8,13 @@ import (
 )
 
 // add commands to hide from help section
-var hidenCommands = []string{
+var hiddenCommands = []string{
 	"create test",
 	"delete test",
 	"list test",
 	"describe test",
+	"status test",
+	"logs test",
 	"deploy test",
 	"destroy test",
 }
@@ -29,6 +31,6 @@ func Cli(appName, appVersion string) *cli.CLI {
 		Autocomplete:   true,
 		HelpWriter:     os.Stdout,
 		ErrorWriter:    os.Stderr,
-		HiddenCommands: hidenCommands,
+		HiddenCommands: hiddenCommands,
 	}
 }

@@ -1,4 +1,4 @@
-package odin
+package app
 
 type application struct {
 	Name    string

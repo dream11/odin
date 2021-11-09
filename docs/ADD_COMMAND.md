@@ -58,6 +58,16 @@
                 commandline.Interface.Info(fmt.Sprintf("Test Run(describe)! flag value = %s", *testFlag))
                 return 0
             }
+            if t.Status {
+                // Perform stuff to describe a test resource
+                commandline.Interface.Info(fmt.Sprintf("Test Run(status)! flag value = %s", *testFlag))
+                return 0
+            }
+            if t.Logs {
+                // Perform stuff to describe a test resource
+                commandline.Interface.Info(fmt.Sprintf("Test Run(logs)! flag value = %s", *testFlag))
+                return 0
+            }
             if t.Deploy {
                 // Perform stuff to deploy a test resource
                 commandline.Interface.Info(fmt.Sprintf("Test Run(deploy)! flag value = %s", *testFlag))
@@ -100,6 +110,16 @@
                     "--test-flag=required value",
                 })
             }
+            if t.Status {
+                return commandHelper("status", "test", []string{
+                    "--test-flag=required value",
+                })
+            }
+            if t.Logs {
+                return commandHelper("logs", "test", []string{
+                    "--test-flag=required value",
+                })
+            }
             if t.Deploy {
                 return commandHelper("deploy", "test", []string{
                     "--test-flag=required value",
@@ -131,6 +151,12 @@
             }
             if t.Describe {
                 return "describe a test resource"
+            }
+            if t.Status {
+                return "current status of test resource"
+            }
+            if t.Logs {
+                return "execution logs of test resource"
             }
             if t.Deploy {
                 return "deploy a test resource"
@@ -169,6 +195,12 @@
             },
             "describe test": func() (cli.Command, error) {
                 return &commands.Test{Describe: true}, nil
+            },
+            "status test": func() (cli.Command, error) {
+                return &commands.Test{Status: true}, nil
+            },
+            "logs test": func() (cli.Command, error) {
+                return &commands.Test{Logs: true}, nil
             },
             "deploy test": func() (cli.Command, error) {
                 return &commands.Test{Deploy: true}, nil

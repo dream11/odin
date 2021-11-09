@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
+	odin "github.com/dream11/odin/app"
 	"github.com/dream11/odin/internal/cli"
 	"github.com/dream11/odin/internal/commandline"
-	"github.com/dream11/odin/odin"
 )
 
 func main() {
