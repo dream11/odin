@@ -1,59 +1,59 @@
 package dir
 
 import (
-    "os"
 	"io/ioutil"
+	"os"
 )
 
 func Create(dirPath string, permission os.FileMode) error {
-    err := os.Mkdir(dirPath, permission)
-    if err != nil {
-        return err
-    }
+	err := os.Mkdir(dirPath, permission)
+	if err != nil {
+		return err
+	}
 
-    return nil
+	return nil
 }
 
 func SubDirs(dirPath string) ([]string, error) {
 	subDirs := []string{}
 
 	files, err := ioutil.ReadDir(dirPath)
-    if err != nil {
-        return subDirs, err
-    }
- 
-    for _, f := range files {
-        subDirs = append(subDirs, f.Name())
-    }
+	if err != nil {
+		return subDirs, err
+	}
+
+	for _, f := range files {
+		subDirs = append(subDirs, f.Name())
+	}
 
 	return subDirs, err
 }
 
 func IsDir(filePath string) (bool, error) {
-    file, err := os.Open(filePath)
-    if err != nil {
-        return false, err
-    }
+	file, err := os.Open(filePath)
+	if err != nil {
+		return false, err
+	}
 
-    defer file.Close()
+	defer file.Close()
 
-    fileInfo, err := file.Stat()
-    if err != nil {
-        return false, err
-    }
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return false, err
+	}
 
-    return fileInfo.IsDir(), err
+	return fileInfo.IsDir(), err
 }
 
 func Exists(path string) (bool, error) {
-    _, err := os.Stat(path)
-    if err == nil { 
-        return true, nil 
-    }
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
 
-    if os.IsNotExist(err) { 
-        return false, nil 
-    }
-    
-    return false, err
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+
+	return false, err
 }

@@ -5,16 +5,16 @@ import (
 )
 
 type Artifact struct {
-	Url        string    `yaml:"url" json:"url"`
-	Version    string    `yaml:"version" json:"version"`
-	Type       string    `yaml:"type" json:"type"`
+	Url     string `yaml:"url" json:"url"`
+	Version string `yaml:"version" json:"version"`
+	Type    string `yaml:"type" json:"type"`
 }
 
 type Component struct {
-	Name           string      `yaml:"name" json:"name"`
-	Version        string      `yaml:"version" json:"version"`
-	Type           string      `yaml:"type" json:"type"`
-	Artifact       Artifact    `yaml:"artifact" json:"artifact"`
+	Name     string   `yaml:"name" json:"name"`
+	Version  string   `yaml:"version" json:"version"`
+	Type     string   `yaml:"type" json:"type"`
+	Artifact Artifact `yaml:"artifact" json:"artifact"`
 }
 
 type Components []Component

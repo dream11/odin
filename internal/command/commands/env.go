@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/brownhash/golog"
+	"github.com/dream11/odin/internal/commandline"
 	"github.com/dream11/odin/pkg/shell"
 )
 
@@ -20,28 +20,26 @@ func (e *Env) Run(args []string) int {
 	flagSet.Parse(os.Args[3:])
 
 	if e.List {
-		golog.Success("Listing all envs")
+		commandline.Interface.Info("Listing all envs")
 		return shell.Exec("kubectl get ns")
 	}
 
 	if e.Describe {
-		golog.Success(fmt.Sprintf("Describing env %s", *name))
+		commandline.Interface.Info("Describing env:" + *name)
 		return shell.Exec(fmt.Sprintf("kubectl describe ns %s", *name))
 	}
 
 	if e.Deploy {
-		golog.Warn(fmt.Sprintf("Deploying env %s", *name))
+		commandline.Interface.Warn("Deploying env:" + *name)
 		return shell.Exec(fmt.Sprintf("kubectl create ns %s", *name))
 	}
 
 	if e.Destroy {
-		golog.Warn(fmt.Sprintf("Destroying env %s", *name))
+		commandline.Interface.Warn("Destroying env:" + *name)
 		return shell.Exec(fmt.Sprintf("kubectl delete ns %s", *name))
 	}
 
-	
-	golog.Error("Not a valid command")
-
+	commandline.Interface.Error("Not a valid command")
 	return 1
 }
 

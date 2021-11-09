@@ -10,7 +10,6 @@ require (
 	github.com/Microsoft/hcsshim v0.8.21 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect
-	github.com/brownhash/golog v1.2.2 // indirect
 	github.com/containerd/containerd v1.5.7 // indirect
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/docker v20.10.9+incompatible // indirect
