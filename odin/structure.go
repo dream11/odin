@@ -4,7 +4,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/dream11/odin/internal/ui"
+	"github.com/dream11/odin/internal/commandline"
 	"github.com/dream11/odin/pkg/dir"
 )
 
@@ -33,7 +33,7 @@ var WorkDir workdir = workdir{
 func init() {
 	err := WorkDir.Create()
 	if err != nil {
-		ui.Interface().Error(err.Error())
+		commandline.Interface.Error(err.Error())
 		os.Exit(1)
 	}
 }

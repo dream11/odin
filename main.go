@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/dream11/odin/internal/cli"
-	"github.com/dream11/odin/internal/ui"
+	"github.com/dream11/odin/internal/commandline"
 	"github.com/dream11/odin/odin"
 )
 
@@ -12,7 +12,7 @@ func main() {
 	c := cli.Cli(odin.App.Name, odin.App.Version)
 	exitStatus, err := c.Run()
 	if err != nil {
-		ui.Interface().Error(err.Error())
+		commandline.Interface.Error(err.Error())
 		os.Exit(1)
 	}
 

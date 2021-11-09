@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dream11/odin/internal/ui"
+	"github.com/dream11/odin/internal/commandline"
 	"github.com/dream11/odin/pkg/shell"
 )
 
@@ -20,26 +20,26 @@ func (e *Env) Run(args []string) int {
 	flagSet.Parse(os.Args[3:])
 
 	if e.List {
-		ui.Interface().Info("Listing all envs")
+		commandline.Interface.Info("Listing all envs")
 		return shell.Exec("kubectl get ns")
 	}
 
 	if e.Describe {
-		ui.Interface().Info("Describing env:" + *name)
+		commandline.Interface.Info("Describing env:" + *name)
 		return shell.Exec(fmt.Sprintf("kubectl describe ns %s", *name))
 	}
 
 	if e.Deploy {
-		ui.Interface().Warn("Deploying env:" + *name)
+		commandline.Interface.Warn("Deploying env:" + *name)
 		return shell.Exec(fmt.Sprintf("kubectl create ns %s", *name))
 	}
 
 	if e.Destroy {
-		ui.Interface().Warn("Destroying env:" + *name)
+		commandline.Interface.Warn("Destroying env:" + *name)
 		return shell.Exec(fmt.Sprintf("kubectl delete ns %s", *name))
 	}
 
-	ui.Interface().Error("Not a valid command")
+	commandline.Interface.Error("Not a valid command")
 	return 1
 }
 

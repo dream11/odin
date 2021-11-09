@@ -12,7 +12,7 @@ import (
 	"github.com/dream11/odin/api/component"
 	"github.com/dream11/odin/api/profile"
 	"github.com/dream11/odin/api/service"
-	"github.com/dream11/odin/internal/ui"
+	"github.com/dream11/odin/internal/commandline"
 	"github.com/dream11/odin/odin"
 	"github.com/dream11/odin/pkg/dir"
 	"github.com/dream11/odin/pkg/shell"
@@ -38,26 +38,26 @@ func (p *Profile) Run(args []string) int {
 	flagSet.Parse(os.Args[3:])
 
 	if p.Create {
-		ui.Interface().Info(fmt.Sprintf("Creating profile %s@%s", *profileName, *profileVersion))
-		ui.Interface().Info(*fileName)
+		commandline.Interface.Info(fmt.Sprintf("Creating profile %s@%s", *profileName, *profileVersion))
+		commandline.Interface.Info(*fileName)
 		// TODO: read profile yaml from given file and call profile create api
 		return 0
 	}
 
 	if p.Delete {
-		ui.Interface().Info(fmt.Sprintf("Deleting profile %s@%s", *profileName, *profileVersion))
+		commandline.Interface.Info(fmt.Sprintf("Deleting profile %s@%s", *profileName, *profileVersion))
 		// TODO: take profile name and version and call profile delete api
 		return 0
 	}
 
 	if p.List {
-		ui.Interface().Info("Listing all profiles")
+		commandline.Interface.Info("Listing all profiles")
 		// TODO: call profiles api and display all profiles
 		return 0
 	}
 
 	if p.Describe {
-		ui.Interface().Info(fmt.Sprintf("Describing %s", *envName))
+		commandline.Interface.Info(fmt.Sprintf("Describing %s", *envName))
 		// TODO: call profile api and display all listed versions
 		return 0
 	}
@@ -68,7 +68,7 @@ func (p *Profile) Run(args []string) int {
 		//-------------------------------------------------------------------------
 		// API IMPLEMENTATION
 		//-------------------------------------------------------------------------
-		ui.Interface().Info(fmt.Sprintf("Fetching profile: %s@%s", *profileName, *profileVersion))
+		commandline.Interface.Info(fmt.Sprintf("Fetching profile: %s@%s", *profileName, *profileVersion))
 		// fetch profile from playground using profile name and version
 		// now unmarshal the profile into api/profile.Profile
 		profile := profile.Profile{
@@ -83,16 +83,16 @@ func (p *Profile) Run(args []string) int {
 		}
 
 		// Throw error if profile not successfuly unmarshaled
-		ui.Interface().Info(fmt.Sprintf("Profile %s@%s fetched successfully!", profile.Name, profile.Version))
+		commandline.Interface.Info(fmt.Sprintf("Profile %s@%s fetched successfully!", profile.Name, profile.Version))
 
 		// on parsing the above retreived profile
 		// we now have a list of service version
 		for _, service := range profile.Services {
-			ui.Interface().Info(fmt.Sprintf("Fetching service: %s@%s", service.Name, service.Version))
+			commandline.Interface.Info(fmt.Sprintf("Fetching service: %s@%s", service.Name, service.Version))
 			// now fetch service details from playground
 			// now unmarshal each service into api/service.Service
 			// Throw error if services not successfuly unmarshaled
-			ui.Interface().Info(fmt.Sprintf("Service %s@%s fetched successfully!", service.Name, service.Version))
+			commandline.Interface.Info(fmt.Sprintf("Service %s@%s fetched successfully!", service.Name, service.Version))
 		}
 
 		services := service.Services{
@@ -132,11 +132,11 @@ func (p *Profile) Run(args []string) int {
 		// we now have a list of component version
 		for _, service := range services {
 			for _, component := range service.Components {
-				ui.Interface().Info(fmt.Sprintf("Fetching component: %s@%s", component.Name, component.Version))
+				commandline.Interface.Info(fmt.Sprintf("Fetching component: %s@%s", component.Name, component.Version))
 				// now fetch component details from playground
 				// now unmarshal each component to api/component.Component
 				// Throw error if components not successfuly unmarshaled
-				ui.Interface().Info(fmt.Sprintf("Component %s@%s fetched successfully!", component.Name, component.Version))
+				commandline.Interface.Info(fmt.Sprintf("Component %s@%s fetched successfully!", component.Name, component.Version))
 			}
 		}
 
@@ -222,32 +222,32 @@ func (p *Profile) Run(args []string) int {
 		*/
 
 		profileDir := path.Join(workDir, profile.Name, profile.Version)
-		ui.Interface().Warn(fmt.Sprintf("Generating files for %s@%s", profile.Name, profile.Version))
-		ui.Interface().Info(fmt.Sprintf("Location: %s", profileDir))
+		commandline.Interface.Warn(fmt.Sprintf("Generating files for %s@%s", profile.Name, profile.Version))
+		commandline.Interface.Info(fmt.Sprintf("Location: %s", profileDir))
 
 		profileExists, err := dir.Exists(profileDir)
 		if err != nil {
-			ui.Interface().Error(err.Error())
+			commandline.Interface.Error(err.Error())
 			return 1
 		}
 
 		if profileExists {
-			// ui.Interface().Warn(fmt.Sprintf("Running profile %s on %s@%s", action, profile.Name, profile.Version))
-			ui.Interface().Info(fmt.Sprintf("Location: %s", profileDir))
+			// commandline.Interface.Warn(fmt.Sprintf("Running profile %s on %s@%s", action, profile.Name, profile.Version))
+			commandline.Interface.Info(fmt.Sprintf("Location: %s", profileDir))
 
 			for _, service := range profile.Services {
 				serviceDir := path.Join(profileDir, service.Name, service.Version)
 				serviceExists, err := dir.Exists(serviceDir)
 				if err != nil {
-					ui.Interface().Error(err.Error())
+					commandline.Interface.Error(err.Error())
 					return 1
 				}
 
 				if serviceExists {
-					// ui.Interface().Warn(fmt.Sprintf("Running profile %s on %s@%s/%s@%s", action, profile.Name, profile.Version, service.Name, service.Version))
+					// commandline.Interface.Warn(fmt.Sprintf("Running profile %s on %s@%s/%s@%s", action, profile.Name, profile.Version, service.Name, service.Version))
 					serviceDetails, err := services.GetService(service.Name)
 					if err != nil {
-						ui.Interface().Error(err.Error())
+						commandline.Interface.Error(err.Error())
 						return 1
 					}
 
@@ -255,21 +255,21 @@ func (p *Profile) Run(args []string) int {
 						componentDir := path.Join(serviceDir, component.Name, component.Version)
 						componentExists, err := dir.Exists(componentDir)
 						if err != nil {
-							ui.Interface().Error(err.Error())
+							commandline.Interface.Error(err.Error())
 							return 1
 						}
 
 						if componentExists {
-							// ui.Interface().Warn(fmt.Sprintf("Running profile %s on %s@%s/%s@%s/%s@%s", action, profile.Name, profile.Version, service.Name, service.Version, component.Name, component.Version))
+							// commandline.Interface.Warn(fmt.Sprintf("Running profile %s on %s@%s/%s@%s/%s@%s", action, profile.Name, profile.Version, service.Name, service.Version, component.Name, component.Version))
 							componentDetails, err := components.GetComponent(component.Name)
 							if err != nil {
-								ui.Interface().Error(err.Error())
+								commandline.Interface.Error(err.Error())
 								return 1
 							}
 
 							chart, err := parseHelmChart(path.Join(componentDir, "Chart.yaml"))
 							if err != nil {
-								ui.Interface().Error(err.Error())
+								commandline.Interface.Error(err.Error())
 								return 1
 							}
 
@@ -313,24 +313,24 @@ func (p *Profile) Run(args []string) int {
 								}
 							}
 						} else {
-							ui.Interface().Error(fmt.Sprintf("Error while reading component, does not exists. %s", componentDir))
+							commandline.Interface.Error(fmt.Sprintf("Error while reading component, does not exists. %s", componentDir))
 							return 1
 						}
 					}
 
 				} else {
-					ui.Interface().Error(fmt.Sprintf("Error while reading service, does not exists. %s", serviceDir))
+					commandline.Interface.Error(fmt.Sprintf("Error while reading service, does not exists. %s", serviceDir))
 					return 1
 				}
 			}
 		} else {
-			ui.Interface().Error(fmt.Sprintf("Error while reading profile, does not exists. %s", profileDir))
+			commandline.Interface.Error(fmt.Sprintf("Error while reading profile, does not exists. %s", profileDir))
 			return 1
 		}
 
 	}
 
-	ui.Interface().Error("Not a valid command")
+	commandline.Interface.Error("Not a valid command")
 	return 1
 }
 

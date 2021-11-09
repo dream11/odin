@@ -4,11 +4,11 @@ import (
 	"bufio"
 	"os/exec"
 
-	"github.com/dream11/odin/internal/ui"
+	"github.com/dream11/odin/internal/commandline"
 )
 
 func Exec(command string) int {
-	ui.Interface().Warn("Executing:" + command)
+	commandline.Interface.Warn("Executing:" + command)
 
 	cmd := exec.Command("bash", "-c", command)
 	stdout, _ := cmd.StdoutPipe()
@@ -19,13 +19,13 @@ func Exec(command string) int {
 	scannerOut := bufio.NewScanner(stdout)
 	for scannerOut.Scan() {
 		m := scannerOut.Text()
-		ui.Interface().Output(m)
+		commandline.Interface.Output(m)
 	}
 
 	scannerErr := bufio.NewScanner(stderr)
 	for scannerErr.Scan() {
 		m := scannerErr.Text()
-		ui.Interface().Error(m)
+		commandline.Interface.Error(m)
 	}
 
 	cmd.Wait()
