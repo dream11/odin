@@ -57,25 +57,34 @@ Here,
 
 ### [Hidden commands](./docs/HIDDEN_COMMAND.md)
 
-## Logging
+## Command Line User Interface
 
-### Log Levels
+To interacte with user via Command Line,
 
-To set/change logging levels for the app, provide this variable in the environemnt: `D11_LOG_LEVEL=<log_level>`,
+```go
+import (
+    "github.com/dream11/odin/internal/commandline"
+)
+```
 
-Supported logging levels,
+### Logging
 
-1. `DEBUG` or `10`
+```go
+func main() {
+    commandline.Interface.Info("string")
+    commandline.Interface.Warn("string")
+    commandline.Interface.Error("string") // This should be followed by an exit call
+}
+```
 
-2. `INFO` or `20` | default
+### Inputs
 
-3. `WARN` or `30`
-
-4. `SUCCESS` or `30`
-
-5. `ERROR` or `40`
-
-> Note: The above logging levels are in decreasing order of their precedence. i.e. `DEBUG` will allow all loggers to log, while `ERROR` wont allow any other than itself.
+```go
+func main() {
+    text := commandline.Interface.Ask("Input text")
+    secretText := commandline.Interface.AskSecret("Input secret text")
+}
+```
 
 ## How to contribute?
 
