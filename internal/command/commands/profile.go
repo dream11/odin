@@ -12,8 +12,8 @@ import (
 	"github.com/dream11/odin/api/component"
 	"github.com/dream11/odin/api/profile"
 	"github.com/dream11/odin/api/service"
+	odin "github.com/dream11/odin/app"
 	"github.com/dream11/odin/internal/commandline"
-	"github.com/dream11/odin/odin"
 	"github.com/dream11/odin/pkg/dir"
 	"github.com/dream11/odin/pkg/shell"
 )

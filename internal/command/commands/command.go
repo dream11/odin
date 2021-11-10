@@ -3,7 +3,7 @@ package commands
 import (
 	"fmt"
 
-	"github.com/dream11/odin/odin"
+	odin "github.com/dream11/odin/app"
 )
 
 // Command verbs
@@ -12,6 +12,8 @@ type command struct {
 	Delete   bool // Delete a resource record
 	Describe bool // Describe a resource
 	List     bool // List the resources
+	Status   bool // Current status of resource
+	Logs     bool // Execution logs of resource
 	Deploy   bool // Deploy resource
 	Destroy  bool // Destroy the deployed resource
 }

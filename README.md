@@ -18,6 +18,10 @@ Internal framework CLI for CRUD operations on environments.
 
 ## Build & Install
 
+1. Run `make install`
+
+Or,
+
 1. Build the executable: `go build .`
 
 2. Move to binary to system path: `sudo mv ./odin /usr/local/bin`
@@ -28,16 +32,18 @@ Internal framework CLI for CRUD operations on environments.
 
 ### Structure
 
-All commands are formated as: odin `<verb>` `<resource>` `<options>`
+All commands are formatted as: odin `<verb>` `<resource>` `<options>`
 
 Here,
 
-1. `verb` - The action to be performed. Suported verbs are -
+1. `verb` - The action to be performed. Supported verbs are -
 
     - `create` - For creating/uploading a resource record for future access.
     - `delete` - For deleting a created resource record.
     - `list` - For listing all the active entities of that resource.
     - `describe` - For describing a particular resource.
+    - `status` - For current status of a particular resource
+    - `logs` - For execution logs of resource
     - `deploy` - For deploying the resource on actual infrastructure.
     - `destroy` - For destroying a deployed resource.
 
@@ -86,10 +92,19 @@ func main() {
 }
 ```
 
+## Exit status
+
+Define appropriate exit status for commands based on the success/errors,
+
+| Exit Code | Description |
+| --------- | ----------- |
+| 0 | Exit status 0 denotes that your command ran successfully |
+| 1 | Exit status 1 corresponds to any generic error |
+| 2 | Exit status 2 is a permission denied error |
+| 126 | Exit status 126 is an interesting permissions error code. |
+| 127 | Exit status 127 tells you that one of two things has happened: Either the command doesn't exist, or the command isn't in your path `$PATH` |
+| 128 | Exit status 128 is the response received when an out-of-range exit code is used in programming. |
+
 ## How to contribute?
 
-If you made changes in `xyz.go`, then ensure running
-
-1. `go vet xyz.go`
-
-2. `go fmt xyz.go`
+If you made changes in `xyz.go`, then ensure running `go fmt xyz.go`. Or to run on all files, `make lint`.

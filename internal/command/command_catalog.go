@@ -18,6 +18,8 @@ Verb convention:
 	- delete
 	- describe
 	- list
+	- status
+	- logs
 	- deploy
 	- destroy
 
@@ -36,11 +38,11 @@ func CommandCatalog() map[string]cli.CommandFactory {
 		"describe env": func() (cli.Command, error) {
 			return &commands.Env{Describe: true}, nil
 		},
-		"deploy env": func() (cli.Command, error) {
-			return &commands.Env{Deploy: true}, nil
+		"create env": func() (cli.Command, error) {
+			return &commands.Env{Create: true}, nil
 		},
-		"destroy env": func() (cli.Command, error) {
-			return &commands.Env{Destroy: true}, nil
+		"delete env": func() (cli.Command, error) {
+			return &commands.Env{Delete: true}, nil
 		},
 
 		// Verbs for `profile` resource
@@ -75,6 +77,12 @@ func CommandCatalog() map[string]cli.CommandFactory {
 		},
 		"describe test": func() (cli.Command, error) {
 			return &commands.Test{Describe: true}, nil
+		},
+		"status test": func() (cli.Command, error) {
+			return &commands.Test{Status: true}, nil
+		},
+		"logs test": func() (cli.Command, error) {
+			return &commands.Test{Logs: true}, nil
 		},
 		"deploy test": func() (cli.Command, error) {
 			return &commands.Test{Deploy: true}, nil

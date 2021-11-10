@@ -29,13 +29,23 @@ func (e *Env) Run(args []string) int {
 		return shell.Exec(fmt.Sprintf("kubectl describe ns %s", *name))
 	}
 
-	if e.Deploy {
-		commandline.Interface.Warn("Deploying env:" + *name)
+	if e.Status {
+		commandline.Interface.Info("Fetching status for:" + *name)
+		return 0
+	}
+
+	if e.Logs {
+		commandline.Interface.Info("Fetching execution logs for:" + *name)
+		return 0
+	}
+
+	if e.Create {
+		commandline.Interface.Warn("Creating env:" + *name)
 		return shell.Exec(fmt.Sprintf("kubectl create ns %s", *name))
 	}
 
-	if e.Destroy {
-		commandline.Interface.Warn("Destroying env:" + *name)
+	if e.Delete {
+		commandline.Interface.Warn("Deleting env:" + *name)
 		return shell.Exec(fmt.Sprintf("kubectl delete ns %s", *name))
 	}
 
@@ -49,17 +59,17 @@ func (e *Env) Help() string {
 	}
 	if e.Describe {
 		return commandHelper("describe", "env", []string{
-			"--name=name of environemnt to describe",
+			"--name=name of environment to describe",
 		})
 	}
-	if e.Deploy {
-		return commandHelper("deploy", "env", []string{
-			"--name=name of environemnt to deploy",
+	if e.Create {
+		return commandHelper("create", "env", []string{
+			"--name=name of environment to create",
 		})
 	}
-	if e.Destroy {
-		return commandHelper("destroy", "env", []string{
-			"--name=name of environemnt to destroy",
+	if e.Delete {
+		return commandHelper("delete", "env", []string{
+			"--name=name of environment to delete",
 		})
 	}
 
@@ -73,11 +83,11 @@ func (e *Env) Synopsis() string {
 	if e.Describe {
 		return "describe an env"
 	}
-	if e.Deploy {
-		return "deploy an env"
+	if e.Create {
+		return "create an env"
 	}
-	if e.Destroy {
-		return "destroy an env"
+	if e.Delete {
+		return "delete an env"
 	}
 
 	return defaultHelper()
