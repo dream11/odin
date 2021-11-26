@@ -1,13 +1,13 @@
 ---
 name: Help Topic
 about: Describe this issue template's purpose here.
-title: ''
-labels: ''
+title: HELP!!!
+labels: help wanted
 assignees: ''
 
 ---
 
-**Describe your query**
+**Description**
 A clear and concise description of the topic with which you want help.
 
 **Additional information**
