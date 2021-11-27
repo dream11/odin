@@ -13,12 +13,36 @@
         "os"
         "flag"
         "fmt"
-
-        "github.com/dream11/odin/internal/commandline" // cli interface
     )
 
     type Test command
     ```
+
+    Command initiation using the `command` type, inherits the `verbs` and `cli interface` from it. Using these, when writing a command in `func (t *Test) Run(args []string) int{}`
+
+    `t` can be used to fetch the following verbs -
+
+    - `t.Create`   (boolean)
+    - `t.Delete`   (boolean)
+    - `t.Describe` (boolean)
+    - `t.List`     (boolean)
+    - `t.Status`   (boolean)
+    - `t.Logs`     (boolean)
+    - `t.Deploy`   (boolean)
+    - `t.Destroy`  (boolean)
+
+    and these interfaces -
+
+    - `t.Logger`
+        - `t.Logger.Info(string)`
+        - `t.Logger.Success(string)`
+        - `t.Logger.Warn(string)`
+        - `t.Logger.Error(string)`
+        - `t.Logger.Output(string)`
+        - `t.Logger.Debug(string)`
+    - `t.Input`
+        - `t.Input.Ask(string)`
+        - `t.Input.AskSecret(string)`
 
 3. Initiate the required functions for command,
 
@@ -36,50 +60,50 @@
             // Positional parse the flags depending upon commands and sub commands
             flagSet.Parse(os.Args[3:])
             // use the parsed flags
-            commandline.Interface.Info(fmt.Sprintf("-test-flag=%s", *testFlag))
+            t.Logger.Info(fmt.Sprintf("-test-flag=%s", *testFlag))
 
             if t.Create {
                 // Perform stuff for record creation of test resource
-                commandline.Interface.Info(fmt.Sprintf("Test Run(create)! flag value = %s", *testFlag))
+                t.Logger.Info(fmt.Sprintf("Test Run(create)! flag value = %s", *testFlag))
                 return 0
             }
             if t.Delete {
                 // Perform stuff for record deletion of test resource
-                commandline.Interface.Info(fmt.Sprintf("Test Run(delete)! flag value = %s", *testFlag))
+                t.Logger.Info(fmt.Sprintf("Test Run(delete)! flag value = %s", *testFlag))
                 return 0
             }
             if t.List {
                 // Perform stuff to list all test resource
-                commandline.Interface.Info(fmt.Sprintf("Test Run(list)! flag value = %s", *testFlag))
+                t.Logger.Info(fmt.Sprintf("Test Run(list)! flag value = %s", *testFlag))
                 return 0
             }
             if t.Describe {
                 // Perform stuff to describe a test resource
-                commandline.Interface.Info(fmt.Sprintf("Test Run(describe)! flag value = %s", *testFlag))
+                t.Logger.Info(fmt.Sprintf("Test Run(describe)! flag value = %s", *testFlag))
                 return 0
             }
             if t.Status {
                 // Perform stuff to describe a test resource
-                commandline.Interface.Info(fmt.Sprintf("Test Run(status)! flag value = %s", *testFlag))
+                t.Logger.Info(fmt.Sprintf("Test Run(status)! flag value = %s", *testFlag))
                 return 0
             }
             if t.Logs {
                 // Perform stuff to describe a test resource
-                commandline.Interface.Info(fmt.Sprintf("Test Run(logs)! flag value = %s", *testFlag))
+                t.Logger.Info(fmt.Sprintf("Test Run(logs)! flag value = %s", *testFlag))
                 return 0
             }
             if t.Deploy {
                 // Perform stuff to deploy a test resource
-                commandline.Interface.Info(fmt.Sprintf("Test Run(deploy)! flag value = %s", *testFlag))
+                t.Logger.Info(fmt.Sprintf("Test Run(deploy)! flag value = %s", *testFlag))
                 return 0
             }
             if t.Destroy {
                 // Perform stuff to destroy a test resource
-                commandline.Interface.Info(fmt.Sprintf("Test Run(destroy)! flag value = %s", *testFlag))
+                t.Logger.Info(fmt.Sprintf("Test Run(destroy)! flag value = %s", *testFlag))
                 return 0
             }
 
-            commandline.Interface.Error("Not a valid command")
+            t.Logger.Error("Not a valid command")
             return 1
         }
         ```

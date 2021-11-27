@@ -3,15 +3,19 @@ package app
 import (
 	"os"
 	"path"
+	"strings"
 
-	"github.com/dream11/odin/internal/commandline"
+	"github.com/dream11/odin/internal/ui"
 	"github.com/dream11/odin/pkg/dir"
 )
 
 type workdir struct {
-	Location string
+	Location     string
+	ConfigFile   string
+	EnvVarPrefix string
 }
 
+// Create : Creates the required working directory
 func (w *workdir) Create() error {
 	wExists, err := dir.Exists(w.Location)
 	if err != nil {
@@ -25,15 +29,29 @@ func (w *workdir) Create() error {
 	return dir.Create(w.Location, 0755)
 }
 
-var WorkDir workdir = workdir{
-	Location: path.Join(os.Getenv("HOME"), "."+App.Name),
+// WorkDir structure
+var WorkDir = workdir{
+	Location:     path.Join(os.Getenv("HOME"), "."+App.Name),
+	ConfigFile:   "config",
+	EnvVarPrefix: strings.ToUpper(App.Name) + "_",
 }
+
+var logger ui.Logger
 
 // initiate dir structure on app initialization
 func init() {
 	err := WorkDir.Create()
 	if err != nil {
-		commandline.Interface.Error(err.Error())
+		logger.Error(err.Error())
 		os.Exit(1)
+	}
+
+	secretCredentialsExist, err := dir.Exists(path.Join(WorkDir.Location, WorkDir.ConfigFile))
+	if err != nil {
+		logger.Error(err.Error())
+	}
+
+	if !secretCredentialsExist {
+		logger.Warn("Run, `odin configure` to configure odin")
 	}
 }

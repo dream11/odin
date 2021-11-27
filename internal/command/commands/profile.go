@@ -1,413 +1,239 @@
 package commands
 
 import (
+	"encoding/json"
 	"flag"
-	"fmt"
-	"io/ioutil"
 	"os"
-	"path"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/dream11/odin/api/component"
-	"github.com/dream11/odin/api/profile"
-	"github.com/dream11/odin/api/service"
-	odin "github.com/dream11/odin/app"
-	"github.com/dream11/odin/internal/commandline"
-	"github.com/dream11/odin/pkg/dir"
-	"github.com/dream11/odin/pkg/shell"
+	"github.com/dream11/odin/internal/backend"
+	"github.com/dream11/odin/pkg/file"
 )
 
-type Chart struct {
-	Name string `yaml:"name"`
-}
+// initiate backend client for profile
+var profileClient backend.Profile
 
+// Profile : command declaration
 type Profile command
 
+// Run : implements the actual functionality of the command
 func (p *Profile) Run(args []string) int {
-	// Define flagset
+	// Define flag set
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
 
 	// create flags
-	fileName := flagSet.String("file", "profile.yaml", "file name of profile yaml")
-	profileName := flagSet.String("profile", "demo", "name of profile to be used")
-	profileVersion := flagSet.String("version", "0.0.1", "version of profile to be used")
-	envName := flagSet.String("env", "demo", "name of environment to deploy the profile in")
+	filePath := flagSet.String("file", "profile.yaml", "file name of profile yaml")
+	profileName := flagSet.String("name", "nil", "name of profile to be used")
+	profileVersion := flagSet.String("version", "nil", "version of profile to be used")
+	envName := flagSet.String("env", "nil", "name of environment to use")
+	infraName := flagSet.String("infra", "nil", "name of infra to deploy the profile in")
+	teamName := flagSet.String("team", "", "name of user's team")
 
 	// positional parse flags from [3:]
-	flagSet.Parse(os.Args[3:])
+	err := flagSet.Parse(os.Args[3:])
+	if err != nil {
+		p.Logger.Error("Unable to parse flags! " + err.Error())
+		return 1
+	}
 
 	if p.Create {
-		commandline.Interface.Info(fmt.Sprintf("Creating profile %s@%s", *profileName, *profileVersion))
-		commandline.Interface.Info(*fileName)
-		// TODO: read profile yaml from given file and call profile create api
-		return 0
-	}
+		configData, err := file.Read(*filePath)
+		if err != nil {
+			p.Logger.Error("Unable to read from " + *filePath + "\n" + err.Error())
+			return 1
+		}
 
-	if p.Delete {
-		commandline.Interface.Info(fmt.Sprintf("Deleting profile %s@%s", *profileName, *profileVersion))
-		// TODO: take profile name and version and call profile delete api
-		return 0
-	}
+		var parsedConfig interface{}
 
-	if p.List {
-		commandline.Interface.Info("Listing all profiles")
-		// TODO: call profiles api and display all profiles
+		if strings.Contains(*filePath, ".yaml") || strings.Contains(*filePath, ".yml") {
+			err = yaml.Unmarshal(configData, &parsedConfig)
+			if err != nil {
+				p.Logger.Error("Unable to parse YAML. " + err.Error())
+				return 1
+			}
+		} else if strings.Contains(*filePath, ".json") {
+			err = json.Unmarshal(configData, &parsedConfig)
+			if err != nil {
+				p.Logger.Error("Unable to parse JSON. " + err.Error())
+				return 1
+			}
+		} else {
+			p.Logger.Error("Unrecognized file format")
+			return 1
+		}
+
+		configJson, err := json.Marshal(parsedConfig)
+		if err != nil {
+			p.Logger.Error("Unable to translate config to Json. " + err.Error())
+			return 1
+		}
+
+		// TODO: validate request
+		profileClient.CreateProfile(configJson)
+
 		return 0
 	}
 
 	if p.Describe {
-		commandline.Interface.Info(fmt.Sprintf("Describing %s", *envName))
-		// TODO: call profile api and display all listed versions
+		p.Logger.Info("Describing profile: " + *profileName + "@" + *profileVersion)
+		// TODO: validate request & receive parsed input to display
+		profileClient.DescribeProfile(*profileName, *profileVersion)
+
 		return 0
 	}
 
-	// initiate fetching data only when
-	// deploy or destroy of a profile has to be done
-	if p.Deploy || p.Destroy {
-		//-------------------------------------------------------------------------
-		// API IMPLEMENTATION
-		//-------------------------------------------------------------------------
-		commandline.Interface.Info(fmt.Sprintf("Fetching profile: %s@%s", *profileName, *profileVersion))
-		// fetch profile from playground using profile name and version
-		// now unmarshal the profile into api/profile.Profile
-		profile := profile.Profile{
-			Name:    "p1",
-			Version: "1.0.0",
-			Services: []profile.Service{
-				{
-					Name:    "fantasy-tour",
-					Version: "1.1.1",
-				},
-			},
-		}
+	if p.List {
+		p.Logger.Info("Listing all profiles")
+		// TODO: validate request & receive parsed input to display
+		profileClient.ListProfiles(*teamName, *profileVersion)
 
-		// Throw error if profile not successfuly unmarshaled
-		commandline.Interface.Info(fmt.Sprintf("Profile %s@%s fetched successfully!", profile.Name, profile.Version))
+		return 0
+	}
 
-		// on parsing the above retreived profile
-		// we now have a list of service version
-		for _, service := range profile.Services {
-			commandline.Interface.Info(fmt.Sprintf("Fetching service: %s@%s", service.Name, service.Version))
-			// now fetch service details from playground
-			// now unmarshal each service into api/service.Service
-			// Throw error if services not successfuly unmarshaled
-			commandline.Interface.Info(fmt.Sprintf("Service %s@%s fetched successfully!", service.Name, service.Version))
-		}
+	if p.Deploy {
+		p.Logger.Info("Deploying profile: " + *profileName + "@" + *profileVersion + " in " + *envName + "/" + *infraName)
+		// TODO: call PG api deploys a profile version in given env
+		// POST /deploy?profile=<profile>&version=<version>&env=<env>
 
-		services := service.Services{
-			{
-				Name:    "fantasy-tour",
-				Version: "1.1.1",
-				Components: []service.Component{
-					{
-						Name:    "bb-rds",
-						Version: "1.1.1",
-					},
-					{
-						Name:    "fantasy-tour",
-						Version: "1.1.1",
-					},
-					{
-						Name:    "fantasy-tour-aerospike",
-						Version: "1.1.1",
-					},
-					{
-						Name:    "fantasy-tour-admin",
-						Version: "1.1.1",
-					},
-					{
-						Name:    "fantasy-tour-admin-rds",
-						Version: "1.1.1",
-					},
-					{
-						Name:    "fantasy-tour-admin-redis",
-						Version: "1.1.1",
-					},
-				},
-			},
-		}
-
-		// on parsing the above retreived services
-		// we now have a list of component version
-		for _, service := range services {
-			for _, component := range service.Components {
-				commandline.Interface.Info(fmt.Sprintf("Fetching component: %s@%s", component.Name, component.Version))
-				// now fetch component details from playground
-				// now unmarshal each component to api/component.Component
-				// Throw error if components not successfuly unmarshaled
-				commandline.Interface.Info(fmt.Sprintf("Component %s@%s fetched successfully!", component.Name, component.Version))
-			}
-		}
-
-		components := component.Components{
-			{
-				Name:    "bb-rds",
-				Version: "1.1.1",
-				Type:    "datastore",
-				Artifact: component.Artifact{
-					Url:     "",
-					Version: "",
-					Type:    "",
-				},
-			},
-			{
-				Name:    "fantasy-tour",
-				Version: "1.1.1",
-				Type:    "application",
-				Artifact: component.Artifact{
-					Url:     "",
-					Version: "",
-					Type:    "",
-				},
-			},
-			{
-				Name:    "fantasy-tour-aerospike",
-				Version: "1.1.1",
-				Type:    "datastore",
-				Artifact: component.Artifact{
-					Url:     "",
-					Version: "",
-					Type:    "",
-				},
-			},
-			{
-				Name:    "fantasy-tour-admin",
-				Version: "1.1.1",
-				Type:    "application",
-				Artifact: component.Artifact{
-					Url:     "",
-					Version: "",
-					Type:    "",
-				},
-			},
-			{
-				Name:    "fantasy-tour-admin-rds",
-				Version: "1.1.1",
-				Type:    "datastore",
-				Artifact: component.Artifact{
-					Url:     "",
-					Version: "",
-					Type:    "",
-				},
-			},
-			{
-				Name:    "fantasy-tour-admin-redis",
-				Version: "1.1.1",
-				Type:    "datastore",
-				Artifact: component.Artifact{
-					Url:     "",
-					Version: "",
-					Type:    "",
-				},
-			},
-		}
-
-		//-------------------------------------------------------------------------
-
-		//-------------------------------------------------------------------------
-		// FILE GENERATION & DEPLOY
-		//-------------------------------------------------------------------------
-		workDir := odin.WorkDir.Location
-		// generate required files on the required path
-		/*
-			workdir
-			|__ profileName
-				|__ profileVersion
-					|__ serviceName
-						|__ serviceVersion
-							|__ componentName
-								|__ componentVersion
-									|__ (helm files)
-		*/
-
-		profileDir := path.Join(workDir, profile.Name, profile.Version)
-		commandline.Interface.Warn(fmt.Sprintf("Generating files for %s@%s", profile.Name, profile.Version))
-		commandline.Interface.Info(fmt.Sprintf("Location: %s", profileDir))
-
-		profileExists, err := dir.Exists(profileDir)
-		if err != nil {
-			commandline.Interface.Error(err.Error())
-			return 1
-		}
-
-		if profileExists {
-			// commandline.Interface.Warn(fmt.Sprintf("Running profile %s on %s@%s", action, profile.Name, profile.Version))
-			commandline.Interface.Info(fmt.Sprintf("Location: %s", profileDir))
-
-			for _, service := range profile.Services {
-				serviceDir := path.Join(profileDir, service.Name, service.Version)
-				serviceExists, err := dir.Exists(serviceDir)
-				if err != nil {
-					commandline.Interface.Error(err.Error())
-					return 1
-				}
-
-				if serviceExists {
-					// commandline.Interface.Warn(fmt.Sprintf("Running profile %s on %s@%s/%s@%s", action, profile.Name, profile.Version, service.Name, service.Version))
-					serviceDetails, err := services.GetService(service.Name)
-					if err != nil {
-						commandline.Interface.Error(err.Error())
-						return 1
-					}
-
-					for _, component := range serviceDetails.Components {
-						componentDir := path.Join(serviceDir, component.Name, component.Version)
-						componentExists, err := dir.Exists(componentDir)
-						if err != nil {
-							commandline.Interface.Error(err.Error())
-							return 1
-						}
-
-						if componentExists {
-							// commandline.Interface.Warn(fmt.Sprintf("Running profile %s on %s@%s/%s@%s/%s@%s", action, profile.Name, profile.Version, service.Name, service.Version, component.Name, component.Version))
-							componentDetails, err := components.GetComponent(component.Name)
-							if err != nil {
-								commandline.Interface.Error(err.Error())
-								return 1
-							}
-
-							chart, err := parseHelmChart(path.Join(componentDir, "Chart.yaml"))
-							if err != nil {
-								commandline.Interface.Error(err.Error())
-								return 1
-							}
-
-							addRepoCommand := "helm repo add d11-helm-charts https://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@raw.githubusercontent.com/dream11/d11-helm-charts/feat/redis-operator/"
-							status := shell.Exec(addRepoCommand)
-							if status > 0 {
-								return status
-							}
-
-							repoUpdateCommand := "helm repo update"
-							status = shell.Exec(repoUpdateCommand)
-							if status > 0 {
-								return status
-							}
-
-							var actionCommand string
-							if p.Deploy {
-								actionCommand = fmt.Sprintf("cd %s && helm upgrade --install %s d11-helm-charts/%s -f %s -f %s -n %s",
-									componentDir,
-									componentDetails.Name,
-									chart.Name,
-									path.Join(componentDir, "values.yaml"),
-									path.Join(componentDir, "values-stag.yaml"),
-									*envName,
-								)
-
-								status = shell.Exec(actionCommand)
-								if status > 0 {
-									return status
-								}
-							} else if p.Destroy {
-								actionCommand = fmt.Sprintf("cd %s && helm uninstall %s -n %s",
-									componentDir,
-									componentDetails.Name,
-									*envName,
-								)
-
-								status = shell.Exec(actionCommand)
-								if status > 0 {
-									return status
-								}
-							}
-						} else {
-							commandline.Interface.Error(fmt.Sprintf("Error while reading component, does not exists. %s", componentDir))
-							return 1
-						}
-					}
-
-				} else {
-					commandline.Interface.Error(fmt.Sprintf("Error while reading service, does not exists. %s", serviceDir))
-					return 1
-				}
-			}
-		} else {
-			commandline.Interface.Error(fmt.Sprintf("Error while reading profile, does not exists. %s", profileDir))
-			return 1
-		}
+		return 0
 
 	}
 
-	commandline.Interface.Error("Not a valid command")
+	if p.Destroy {
+		p.Logger.Info("Destroying profile: " + *profileName + "@" + *profileVersion + " in " + *envName + "/" + *infraName)
+		// TODO: call PG api that destroys a profile version from given env
+		// DELETE /deploy?profile=<profile>&version=<version>&env=<env>
+
+		return 0
+
+	}
+
+	if p.Status {
+		p.Logger.Info("Fetching status for profile: " + *profileName + " in " + *envName + "/" + *infraName)
+		// TODO: call PG api that returns status of profile in env
+		// GET /profileStatus?profile=<profile>&env=<env>
+
+		return 0
+	}
+
+	if p.Logs {
+		p.Logger.Info("Fetching logs for profile: " + *profileName + " in " + *envName + "/" + *infraName)
+		// TODO: call PG api that returns execution logs of profile in env
+		// GET /profileLogs?profile=<profile>&env=<env>
+
+		return 0
+	}
+
+	if p.Delete {
+		p.Logger.Warn("Deleting profile: " + *profileName + "@" + *profileVersion)
+		// TODO: validate request
+		profileClient.DeleteProfile(*profileName, *profileVersion)
+
+		return 0
+	}
+
+	p.Logger.Error("Not a valid command")
 	return 1
 }
 
+// Help : returns an explanatory string
 func (p *Profile) Help() string {
 	if p.Create {
 		return commandHelper("create", "profile", []string{
-			"--profile=name of profile to create",
-			"--version=version of profile to create",
 			"--file=yaml file to read profile properties from",
 		})
 	}
-	if p.Delete {
-		return commandHelper("delete", "profile", []string{
-			"--profile=name of profile to delete",
-			"--version=version of profile to delete",
-		})
-	}
-	if p.List {
-		return commandHelper("list", "profile", []string{})
-	}
+
 	if p.Describe {
 		return commandHelper("describe", "profile", []string{
-			"--profile=name of profile to describe",
+			"--name=name of profile to describe",
 			"--version=version of profile to describe",
 		})
 	}
-	if p.Deploy {
-		return commandHelper("deploy", "profile", []string{
-			"--profile=name of profile to deploy",
-			"--version=version of profile to deploy",
-			"--env=name of env to deploy the profile in",
+
+	if p.List {
+		return commandHelper("list", "profile", []string{
+			"--team=team name to list profiles for",
+			"--version=version of profile to list",
 		})
 	}
+
+	if p.Deploy {
+		return commandHelper("deploy", "profile", []string{
+			"--name=name of profile to deploy",
+			"--version=version of profile to deploy",
+			"--env=name of env to use",
+			"--infra=name of infra to deploy the profile in",
+		})
+	}
+
 	if p.Destroy {
 		return commandHelper("destroy", "profile", []string{
-			"--profile=name of profile to destroy",
+			"--name=name of profile to destroy",
 			"--version=version of profile to destroy",
 			"--env=name of env to destroy the profile in",
 		})
 	}
 
+	if p.Status {
+		return commandHelper("status", "profile", []string{
+			"--name=name of profile to get status",
+			"--env=name of env to get status",
+		})
+	}
+
+	if p.Logs {
+		return commandHelper("logs", "profile", []string{
+			"--name=name of profile to get logs",
+			"--env=name of env to get logs",
+		})
+	}
+
+	if p.Delete {
+		return commandHelper("delete", "profile", []string{
+			"--name=name of profile to delete",
+			"--version=version of profile to delete",
+		})
+	}
+
 	return defaultHelper()
 }
 
+// Synopsis : returns a brief helper text for the command's verbs
 func (p *Profile) Synopsis() string {
 	if p.Create {
 		return "create a profile"
 	}
-	if p.Delete {
-		return "delete a profile"
-	}
-	if p.List {
-		return "list all active profiles"
-	}
+
 	if p.Describe {
 		return "describe a profile"
 	}
+
+	if p.List {
+		return "list all active profiles"
+	}
+
 	if p.Deploy {
 		return "deploy a profile"
 	}
+
 	if p.Destroy {
 		return "destroy a profile"
 	}
 
-	return defaultHelper()
-}
-
-// parse helm chart for chart properties
-func parseHelmChart(filePath string) (Chart, error) {
-	var chart Chart
-
-	yFile, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return chart, err
+	if p.Status {
+		return "current status of a profile"
 	}
 
-	err = yaml.Unmarshal(yFile, &chart)
+	if p.Logs {
+		return "execution logs for profile"
+	}
 
-	return chart, err
+	if p.Delete {
+		return "delete a profile version"
+	}
+
+	return defaultHelper()
 }

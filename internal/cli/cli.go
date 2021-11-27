@@ -19,6 +19,7 @@ var hiddenCommands = []string{
 	"destroy test",
 }
 
+// Cli : initiate the cli framework
 func Cli(appName, appVersion string) *cli.CLI {
 	// initiate cli
 	// for more refer https://github.com/mitchellh/cli/blob/master/cli.go#L49
@@ -26,7 +27,7 @@ func Cli(appName, appVersion string) *cli.CLI {
 		Name:           appName,
 		Version:        appVersion,
 		Args:           os.Args[1:],
-		Commands:       command.CommandCatalog(),
+		Commands:       command.CommandsCatalog(),
 		HelpFunc:       cli.BasicHelpFunc(appName),
 		Autocomplete:   true,
 		HelpWriter:     os.Stdout,

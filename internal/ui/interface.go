@@ -1,4 +1,4 @@
-package commandline
+package ui
 
 import (
 	"os"
@@ -11,11 +11,11 @@ type ui struct {
 }
 
 // interact with cli
-// take inputs, secret inputs, throw outputs/error etc
+// take inputs, secret inputs, throw outputs/error etc.
 // for more, refer https://github.com/mitchellh/cli/blob/master/ui.go
-var Interface *cli.PrefixedUi = &cli.PrefixedUi{
-	AskPrefix:       "Input:",
-	AskSecretPrefix: "Input(secret):",
+var userInterface *cli.PrefixedUi = &cli.PrefixedUi{
+	AskPrefix:       "",
+	AskSecretPrefix: "(Secret) ",
 	OutputPrefix:    "",
 	InfoPrefix:      "[ INFO ] ",
 	ErrorPrefix:     "[ ERROR ] ",

@@ -5,6 +5,7 @@ import (
 	"os"
 )
 
+// Create : create a directory
 func Create(dirPath string, permission os.FileMode) error {
 	err := os.Mkdir(dirPath, permission)
 	if err != nil {
@@ -14,6 +15,7 @@ func Create(dirPath string, permission os.FileMode) error {
 	return nil
 }
 
+// SubDirs : get a list of all subdirectories
 func SubDirs(dirPath string) ([]string, error) {
 	subDirs := []string{}
 
@@ -29,6 +31,7 @@ func SubDirs(dirPath string) ([]string, error) {
 	return subDirs, err
 }
 
+// IsDir : check if given path is dir or not
 func IsDir(filePath string) (bool, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -45,6 +48,7 @@ func IsDir(filePath string) (bool, error) {
 	return fileInfo.IsDir(), err
 }
 
+// Exists : check if directory exists or not
 func Exists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {

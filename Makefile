@@ -1,4 +1,5 @@
 install:
+	go mod download
 	go build .
 	sudo mv ./odin /usr/local/bin
 	odin --version
