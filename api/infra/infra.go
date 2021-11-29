@@ -9,3 +9,8 @@ type Infra struct {
 	State        string `yaml:"state,omitempty" json:"state,omitempty"`
 	DeletionTime string `yaml:"deletion_time,omitempty" json:"deletion_time,omitempty"`
 }
+
+// CreationResponse structure
+type CreationResponse struct {
+	InfraName string `yaml:"infra_name,omitempty" json:"infra_name,omitempty"`
+}
