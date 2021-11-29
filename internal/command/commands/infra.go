@@ -3,10 +3,15 @@ package commands
 import (
 	"flag"
 	"os"
+	"strings"
+	"encoding/json"
+
+	"gopkg.in/yaml.v3"
 
 	"github.com/dream11/odin/api/infra"
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/table"
+	"github.com/dream11/odin/pkg/file"
 )
 
 // initiate backend client for infra
@@ -25,6 +30,7 @@ func (i *Infra) Run(args []string) int {
 	purpose := flagSet.String("purpose", "", "reason to create infra")
 	env := flagSet.String("env", "", "env to attach with infra")
 	providerAccount := flagSet.String("account", "", "account name to provision the infra in")
+	filePath := flagSet.String("file", "infra.yaml", "file to read infra config")
 
 	// positional parse flags from [3:]
 	err := flagSet.Parse(os.Args[3:])
@@ -50,6 +56,39 @@ func (i *Infra) Run(args []string) int {
 		}
 
 		i.Logger.Success("Infra: " + response.Name + " created!")
+
+		return 0
+	}
+
+	if i.Update {
+		i.Logger.Warn("Updating infra: " + *name)
+
+		configData, err := file.Read(*filePath)
+		if err != nil {
+			i.Logger.Error("Unable to read from " + *filePath + "\n" + err.Error())
+			return 1
+		}
+
+		var parsedConfig interface{}
+
+		if strings.Contains(*filePath, ".yaml") || strings.Contains(*filePath, ".yml") {
+			err = yaml.Unmarshal(configData, &parsedConfig)
+			if err != nil {
+				i.Logger.Error("Unable to parse YAML. " + err.Error())
+				return 1
+			}
+		} else if strings.Contains(*filePath, ".json") {
+			err = json.Unmarshal(configData, &parsedConfig)
+			if err != nil {
+				i.Logger.Error("Unable to parse JSON. " + err.Error())
+				return 1
+			}
+		} else {
+			i.Logger.Error("Unrecognized file format")
+			return 1
+		}
+
+		infraClient.UpdateInfra(*name, parsedConfig)
 
 		return 0
 	}
@@ -131,6 +170,13 @@ func (i *Infra) Help() string {
 		})
 	}
 
+	if i.Update {
+		return commandHelper("update", "infra", []string{
+			"--name=name of infra to update",
+			"--file=file path to pick update config",
+		})
+	}
+
 	if i.List {
 		return commandHelper("list", "infra", []string{})
 	}
@@ -165,6 +211,10 @@ func (i *Infra) Help() string {
 func (i *Infra) Synopsis() string {
 	if i.Create {
 		return "create an infra"
+	}
+
+	if i.Update {
+		return "update an infra"
 	}
 
 	if i.List {
