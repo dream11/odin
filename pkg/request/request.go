@@ -44,14 +44,18 @@ func (r *Request) Make() Response {
 
 	q := request.URL.Query()
 	for key, val := range r.Query {
-		q.Add(key, val)
+		if len(val) > 0 {
+			q.Add(key, val)
+		}
 	}
 	request.URL.RawQuery = q.Encode()
 
 	logger.Debug("URL: " + request.URL.String())
 
 	for key, value := range r.Header {
-		request.Header.Set(key, value)
+		if len(value) > 0 {
+			request.Header.Set(key, value)
+		}
 	}
 
 	// what if the internet is not present on the client side
