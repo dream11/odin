@@ -20,11 +20,10 @@ func (i *Infra) Run(args []string) int {
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
 	// create flags
 	name := flagSet.String("name", "", "name of environment")
-	//detail := flagSet.Bool("detail", false, "detailed view of environments")
-	//all := flagSet.Bool("all", false, "display all environments (active & inactive)")
 	team := flagSet.String("team", "", "display environments created by a team")
-	reason := flagSet.String("reason", "", "reason to create infra")
+	purpose := flagSet.String("purpose", "", "reason to create infra")
 	env := flagSet.String("env", "", "env to attach with infra")
+	providerAccount := flagSet.String("account", "", "account name to provision the infra in")
 	state := flagSet.String("state", "", "state of infras to fetch")
 
 	// positional parse flags from [3:]
@@ -38,27 +37,19 @@ func (i *Infra) Run(args []string) int {
 		i.Logger.Warn("Creating infra: " + *name + " for team: " + *team)
 
 		infraConfig := infra.Infra{
-			Name:   *name,
-			Team:   *team,
-			Reason: *reason,
-			Env:    *env,
+			Team:    *team,
+			Purpose: *purpose,
+			Env:     *env,
+			Account: *providerAccount,
 		}
 
-		// TODO: validate no conversion required
-		//infraConfigJson, err := json.Marshal(infraConfig)
-		//if err != nil {
-		//	i.Logger.Error("Unable to generate infra config! " + err.Error())
-		//	return 1
-		//}
-
-		// TODO: validate request
-		response, err := infraClient.CreateInfra(*name, infraConfig)
+		response, err := infraClient.CreateInfra(infraConfig)
 		if err != nil {
 			i.Logger.Error(err.Error())
 			return 1
 		}
 
-		i.Logger.Success("Infra: " + response.InfraName + " created!")
+		i.Logger.Success("Infra: " + response.Name + " created!")
 
 		return 0
 	}
