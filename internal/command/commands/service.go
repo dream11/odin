@@ -10,6 +10,7 @@ import (
 
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/file"
+	"github.com/dream11/odin/pkg/table"
 )
 
 // initiate backend client for service
@@ -88,7 +89,26 @@ func (s *Service) Run(args []string) int {
 	if s.List {
 		s.Logger.Info("Listing all services")
 		// TODO: validate request & receive parsed input to display
-		serviceClient.ListServices(*teamName, *serviceVersion, *isMature)
+		serviceList, err := serviceClient.ListServices(*teamName, *serviceVersion, *isMature)
+		if err != nil {
+			s.Logger.Error(err.Error())
+			return 1
+		}
+
+		tableHeaders := []string{"Name", "Version", "Description", "Team", "Mature"}
+		var tableData [][]interface{}
+
+		for _, service := range serviceList {
+			tableData = append(tableData, []interface{}{
+				service.Name,
+				service.Version,
+				service.Description,
+				strings.Join(service.Team, ","),
+				service.Mature,
+			})
+		}
+
+		table.Write(tableHeaders, tableData)
 
 		return 0
 	}
@@ -165,7 +185,9 @@ func (s *Service) Help() string {
 
 	if s.List {
 		return commandHelper("list", "service", []string{
-			"--name=name of service to list versions",
+			"--team=name of team",
+			"--version=version of services to be listed",
+			"--mature (mature marked service versions)",
 		})
 	}
 
