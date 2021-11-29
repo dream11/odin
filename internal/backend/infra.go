@@ -56,3 +56,11 @@ func (i *Infra) DeleteInfra(infra string) {
 	response := client.action(path.Join(infraEntity, infra), "DELETE", nil)
 	response.Process(true) // process response and exit if error
 }
+
+// UpdateInfra : update a created infra
+func (i *Infra) UpdateInfra(infra string, config interface{}) {
+	client := newApiClient()
+
+	response := client.action(path.Join(infraEntity, infra) + "/", "PUT", config)
+	response.Process(true) // process response and exit if error
+}
