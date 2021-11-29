@@ -12,6 +12,7 @@ type Infra struct {
 }
 
 // CreationName structure
+// TODO: to be deprecated by Infra struct
 type CreationName struct {
 	Name string `yaml:"infra_name,omitempty" json:"infra_name,omitempty"`
 }
@@ -19,4 +20,9 @@ type CreationName struct {
 // CreationResponse structure
 type CreationResponse struct {
 	Response CreationName `yaml:"resp,omitempty" json:"resp,omitempty"`
+}
+
+// ListResponse structure
+type ListResponse struct {
+	Response []Infra `yaml:"resp,omitempty" json:"resp,omitempty"`
 }
