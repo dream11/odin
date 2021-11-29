@@ -3,6 +3,9 @@ package backend
 import (
 	"fmt"
 	"path"
+	"encoding/json"
+
+	"github.com/dream11/odin/api/service"
 )
 
 // Service entity
@@ -31,16 +34,19 @@ func (s *Service) DescribeService(service, version string) {
 }
 
 // ListServices : list services per team and describe versions
-func (s *Service) ListServices(team, version string, maturity bool) {
+func (s *Service) ListServices(team, version string, maturity bool) ([]service.Service, error) {
 	client := newApiClient()
 	client.QueryParams["team"] = team
 	client.QueryParams["version"] = version
-	client.QueryParams["mature"] = fmt.Sprintf("%v", maturity)
+	client.QueryParams["isMature"] = fmt.Sprintf("%v", maturity)
 
 	response := client.action(serviceEntity, "GET", nil)
 	response.Process(true)
 
-	// TODO: parse response.Body into required structure and return
+	var serviceResponse service.ListResponse
+	err := json.Unmarshal(response.Body, &serviceResponse)
+
+	return serviceResponse.Response, err
 }
 
 // DeleteService : delete a service version
