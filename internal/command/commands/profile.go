@@ -64,14 +64,15 @@ func (p *Profile) Run(args []string) int {
 			return 1
 		}
 
-		configJson, err := json.Marshal(parsedConfig)
-		if err != nil {
-			p.Logger.Error("Unable to translate config to Json. " + err.Error())
-			return 1
-		}
+		// TODO: validate no conversion required
+		//configJson, err := json.Marshal(parsedConfig)
+		//if err != nil {
+		//	p.Logger.Error("Unable to translate config to Json. " + err.Error())
+		//	return 1
+		//}
 
 		// TODO: validate request
-		profileClient.CreateProfile(configJson)
+		profileClient.CreateProfile(parsedConfig)
 
 		return 0
 	}
