@@ -64,14 +64,15 @@ func (s *Service) Run(args []string) int {
 			return 1
 		}
 
-		configJson, err := json.Marshal(parsedConfig)
-		if err != nil {
-			s.Logger.Error("Unable to translate config to Json. " + err.Error())
-			return 1
-		}
+		// TODO: validate no conversion required
+		//configJson, err := json.Marshal(parsedConfig)
+		//if err != nil {
+		//	s.Logger.Error("Unable to translate config to Json. " + err.Error())
+		//	return 1
+		//}
 
 		// TODO: validate request
-		serviceClient.CreateService(configJson)
+		serviceClient.CreateService(parsedConfig)
 
 		return 0
 	}
@@ -87,7 +88,7 @@ func (s *Service) Run(args []string) int {
 	if s.List {
 		s.Logger.Info("Listing all services")
 		// TODO: validate request & receive parsed input to display
-		serviceClient.ListServices(*teamName, *serviceVersion)
+		serviceClient.ListServices(*teamName, *serviceVersion, *isMature)
 
 		return 0
 	}
