@@ -2,6 +2,7 @@ package infra
 
 // Infra structure
 type Infra struct {
+	Name         string `yaml:"name,omitempty" json:"name,omitempty"`
 	Team         string `yaml:"team,omitempty" json:"team,omitempty"`
 	Purpose      string `yaml:"purpose,omitempty" json:"purpose,omitempty"`
 	Env          string `yaml:"env_type,omitempty" json:"env_type,omitempty"`
