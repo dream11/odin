@@ -53,7 +53,7 @@ func (s *Service) ListServices(team, version string, maturity bool) ([]service.S
 func (s *Service) DeleteService(service, version string) {
 	client := newApiClient()
 
-	response := client.action(path.Join(serviceEntity, service, "version", version), "DELETE", nil)
+	response := client.action(path.Join(serviceEntity, service, "version", version) + "/", "DELETE", nil)
 	response.Process(true)
 }
 
