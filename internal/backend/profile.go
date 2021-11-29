@@ -11,12 +11,11 @@ type Profile struct{}
 var profileEntity = "profiles"
 
 // CreateProfile : register a profile version with backend
-func (p *Profile) CreateProfile(profile []byte) {
+func (p *Profile) CreateProfile(profile interface{}) {
 	client := newApiClient()
 
 	response := client.action(profileEntity, "POST", profile)
 	response.Process(true) // process response and exit if error
-	// no return required
 }
 
 // DescribeProfile : describe a profile version or all versions of a profile
@@ -48,5 +47,4 @@ func (p *Profile) DeleteProfile(profile, version string) {
 
 	response := client.action(path.Join(profileEntity, profile, "version", version), "DELETE", nil)
 	response.Process(true) // process response and exit if error
-	// no return required
 }
