@@ -79,7 +79,7 @@ func (t *Test) Run(args []string) int {
 	}
 
 	t.Logger.Error("Not a valid command")
-	return 1
+	return 127
 }
 
 // Help should return an explanatory string,

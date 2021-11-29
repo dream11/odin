@@ -145,7 +145,7 @@ func (s *Service) Run(args []string) int {
 	}
 
 	s.Logger.Error("Not a valid command")
-	return 1
+	return 127
 }
 
 // Help : returns an explanatory string

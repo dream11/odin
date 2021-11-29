@@ -136,7 +136,7 @@ func (p *Profile) Run(args []string) int {
 	}
 
 	p.Logger.Error("Not a valid command")
-	return 1
+	return 127
 }
 
 // Help : returns an explanatory string

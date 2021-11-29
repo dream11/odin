@@ -21,7 +21,7 @@ func (c *Component) Run(args []string) int {
 	}
 
 	c.Logger.Error("Not a valid command")
-	return 1
+	return 127
 }
 
 // Help : returns an explanatory string

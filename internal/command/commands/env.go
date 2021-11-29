@@ -15,7 +15,7 @@ func (e *Env) Run(args []string) int {
 	}
 
 	e.Logger.Error("Not a valid command")
-	return 1
+	return 127
 }
 
 // Help : returns an explanatory string
