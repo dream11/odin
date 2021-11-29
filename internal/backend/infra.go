@@ -37,16 +37,16 @@ func (i *Infra) DescribeInfra(infra string) {
 }
 
 // ListInfra : list all infra(s) with filters
-func (i *Infra) ListInfra(team, state, env string) {
+func (i *Infra) ListInfra() ([]infraResp.Infra, error) {
 	client := newApiClient()
-	client.QueryParams["team"] = team
-	client.QueryParams["state"] = state
-	client.QueryParams["env"] = env
 
-	response := client.action(path.Join(infraEntity), "GET", nil)
+	response := client.action(infraEntity + "/", "GET", nil)
 	response.Process(true) // process response and exit if error
 
-	// TODO: parse response.Body into required structure and return
+	var infraResponse infraResp.ListResponse
+	err := json.Unmarshal(response.Body, &infraResponse)
+
+	return infraResponse.Response, err
 }
 
 // DeleteInfra : delete an created infra
