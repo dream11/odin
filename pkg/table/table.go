@@ -1,4 +1,4 @@
-package main
+package table
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ func Write(headers []string, data [][]interface{}) error {
 
 	var tabbedHeader string
 	for _, val := range headers {
-		tabbedHeader += fmt.Sprintf("%s\t|\t", val)
+		tabbedHeader += fmt.Sprintf("*%s*\t|\t", val)
 	}
 
 	_, err := fmt.Fprintln(w, tabbedHeader)
