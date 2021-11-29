@@ -98,6 +98,15 @@ func (i *Infra) Run(args []string) int {
 
 // Help : returns an explanatory string
 func (i *Infra) Help() string {
+	if i.Create {
+		return commandHelper("create", "infra", []string{
+			"--team=team name to associate the infra with",
+			"--purpose=reason to create infra",
+			"--env=env to create infra in",
+			"--account=account name to provision the infra in (optional)",
+		})
+	}
+
 	if i.List {
 		return commandHelper("list", "infra", []string{
 			"--team=team name",
@@ -124,15 +133,6 @@ func (i *Infra) Help() string {
 		})
 	}
 
-	if i.Create {
-		return commandHelper("create", "infra", []string{
-			"--name=name of infra to create",
-			"--team=team name to associate the infra with",
-			"--reason=reason to create infra",
-			"--env=env to create infra in",
-		})
-	}
-
 	if i.Delete {
 		return commandHelper("delete", "infra", []string{
 			"--name=name of environment to delete",
@@ -143,6 +143,10 @@ func (i *Infra) Help() string {
 
 // Synopsis : returns a brief helper text for the command's verbs
 func (i *Infra) Synopsis() string {
+	if i.Create {
+		return "create an infra"
+	}
+
 	if i.List {
 		return "list all active infra"
 	}
@@ -157,10 +161,6 @@ func (i *Infra) Synopsis() string {
 
 	if i.Logs {
 		return "execution logs for infra"
-	}
-
-	if i.Create {
-		return "create an infra"
 	}
 
 	if i.Delete {
