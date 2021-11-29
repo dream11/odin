@@ -61,7 +61,7 @@ func (s *Service) DeleteService(service, version string) {
 func (s *Service) MarkMature(service, version string) {
 	client := newApiClient()
 
-	response := client.action(path.Join(serviceEntity, service, "version", version, "mature"), "PUT", nil)
+	response := client.action(path.Join(serviceEntity, service, "version", version, "mature") + "/", "PUT", nil)
 	response.Process(true)
 }
 
