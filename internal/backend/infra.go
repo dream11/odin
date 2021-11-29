@@ -14,16 +14,16 @@ type Infra struct{}
 var infraEntity = "infras"
 
 // CreateInfra : create an empty infra
-func (i *Infra) CreateInfra(infra string, infraDetails interface{}) (infraResp.CreationResponse, error) {
+func (i *Infra) CreateInfra(infraDetails interface{}) (infraResp.CreationName, error) {
 	client := newApiClient()
 
-	response := client.action(path.Join(infraEntity, infra), "POST", infraDetails)
+	response := client.action(infraEntity + "/", "POST", infraDetails)
 	response.Process(true) // process response and exit if error
 
 	var infraResponse infraResp.CreationResponse
 	err := json.Unmarshal(response.Body, &infraResponse)
 
-	return infraResponse, err
+	return infraResponse.Response, err
 }
 
 // DescribeInfra : describe an infra
