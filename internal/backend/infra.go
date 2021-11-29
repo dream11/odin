@@ -1,7 +1,10 @@
 package backend
 
 import (
+	"encoding/json"
 	"path"
+
+	infraResp "github.com/dream11/odin/api/infra"
 )
 
 // Infra entity
@@ -11,12 +14,16 @@ type Infra struct{}
 var infraEntity = "infras"
 
 // CreateInfra : create an empty infra
-func (i *Infra) CreateInfra(infra string, infraDetails []byte) {
+func (i *Infra) CreateInfra(infra string, infraDetails interface{}) (infraResp.CreationResponse, error) {
 	client := newApiClient()
 
 	response := client.action(path.Join(infraEntity, infra), "POST", infraDetails)
 	response.Process(true) // process response and exit if error
-	// no return required
+
+	var infraResponse infraResp.CreationResponse
+	err := json.Unmarshal(response.Body, &infraResponse)
+
+	return infraResponse, err
 }
 
 // DescribeInfra : describe an infra
@@ -48,5 +55,4 @@ func (i *Infra) DeleteInfra(infra string) {
 
 	response := client.action(path.Join(infraEntity, infra), "DELETE", nil)
 	response.Process(true) // process response and exit if error
-	// no return required
 }
