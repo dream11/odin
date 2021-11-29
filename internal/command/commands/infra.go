@@ -94,9 +94,23 @@ func (i *Infra) Run(args []string) int {
 	}
 
 	if i.Describe {
-		i.Logger.Info("Describing infra: " + *name)
-		// TODO: validate request & receive parsed input to display
-		infraClient.DescribeInfra(*name)
+		i.Logger.Info("Describing " + *name)
+		infraResp, err := infraClient.DescribeInfra(*name)
+		if err != nil {
+			i.Logger.Error(err.Error())
+			return 1
+		}
+
+		for _, infra := range infraResp {
+			i.Logger.Info(infra.Name + " details!")
+			details, err := yaml.Marshal(infra)
+			if err != nil {
+				i.Logger.Error(err.Error())
+				return 1
+			}
+
+			i.Logger.Output(string(details))
+		}
 
 		return 0
 	}
