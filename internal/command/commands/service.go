@@ -126,31 +126,6 @@ func (s *Service) Run(args []string) int {
 		return 0
 	}
 
-	if s.Destroy {
-		s.Logger.Info("Destroying service: " + *serviceName + "@" + *serviceVersion + " in " + *envName + "/" + *infraName)
-		// TODO: call PG api that destroys a service version from given env
-		// DELETE /deploy?service=<v>&version=<version>&env=<env>&infra=<infra>
-
-		return 0
-
-	}
-
-	if s.Status {
-		s.Logger.Info("Fetching status for service: " + *serviceName + " in " + *envName + "/" + *infraName)
-		// TODO: call PG api that returns status of service in env
-		// GET /profileStatus?service=<service>&env=<env>&infra=<infra>
-
-		return 0
-	}
-
-	if s.Logs {
-		s.Logger.Info("Fetching logs for service: " + *serviceName + " in " + *envName + "/" + *infraName)
-		// TODO: call PG api that returns execution logs of service in env
-		// GET /serviceLogs?v=<service>&env=<env>&infra=<infra>
-
-		return 0
-	}
-
 	if s.Delete {
 		s.Logger.Warn("Deleting service: " + *serviceName + "@" + *serviceVersion)
 		serviceClient.DeleteService(*serviceName, *serviceVersion)
@@ -202,15 +177,6 @@ func (s *Service) Help() string {
 		})
 	}
 
-	if s.Destroy {
-		return commandHelper("destroy", "service", []string{
-			"--name=name of service to destroy",
-			"--version=version of service to destroy",
-			"--env=name of env to use",
-			"--infra=name of infra to destroy service from",
-		})
-	}
-
 	if s.Delete {
 		return commandHelper("delete", "service", []string{
 			"--name=name of service to delete",
@@ -241,10 +207,6 @@ func (s *Service) Synopsis() string {
 
 	if s.Deploy {
 		return "deploy a service"
-	}
-
-	if s.Destroy {
-		return "destroy a deployed service"
 	}
 
 	if s.Delete {

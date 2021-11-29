@@ -83,15 +83,6 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"deploy service": func() (cli.Command, error) {
 			return &commands.Service{Deploy: true}, nil
 		},
-		"destroy service": func() (cli.Command, error) {
-			return &commands.Service{Destroy: true}, nil
-		},
-		"status service": func() (cli.Command, error) {
-			return &commands.Service{Status: true}, nil
-		},
-		"logs service": func() (cli.Command, error) {
-			return &commands.Service{Logs: true}, nil
-		},
 		"delete service": func() (cli.Command, error) {
 			return &commands.Service{Delete: true}, nil
 		},
