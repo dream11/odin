@@ -6,6 +6,7 @@ import (
 
 	"github.com/dream11/odin/api/infra"
 	"github.com/dream11/odin/internal/backend"
+	"github.com/dream11/odin/pkg/table"
 )
 
 // initiate backend client for infra
@@ -24,7 +25,6 @@ func (i *Infra) Run(args []string) int {
 	purpose := flagSet.String("purpose", "", "reason to create infra")
 	env := flagSet.String("env", "", "env to attach with infra")
 	providerAccount := flagSet.String("account", "", "account name to provision the infra in")
-	state := flagSet.String("state", "", "state of infras to fetch")
 
 	// positional parse flags from [3:]
 	err := flagSet.Parse(os.Args[3:])
@@ -64,8 +64,32 @@ func (i *Infra) Run(args []string) int {
 
 	if i.List {
 		i.Logger.Info("Listing all infra(s)")
-		// TODO: validate request & receive parsed input to display
-		infraClient.ListInfra(*team, *state, *env)
+		infraList, err := infraClient.ListInfra()
+		if err != nil {
+			i.Logger.Error(err.Error())
+			return 1
+		}
+
+		tableHeaders := []string{"Name", "Purpose", "Team", "Env", "State", "Account", "Deletion Time"}
+		var tableData [][]interface{}
+
+		for _, i := range infraList {
+			tableData = append(tableData, []interface{}{
+				i.Name,
+				i.Purpose,
+				i.Team,
+				i.Env,
+				i.State,
+				i.Account,
+				i.DeletionTime,
+			})
+		}
+
+		err = table.Write(tableHeaders, tableData)
+		if err != nil {
+			i.Logger.Error(err.Error())
+			return 1
+		}
 
 		return 0
 	}
@@ -108,11 +132,7 @@ func (i *Infra) Help() string {
 	}
 
 	if i.List {
-		return commandHelper("list", "infra", []string{
-			"--team=team name",
-			"--state=current state of infra",
-			"--env=env of infra",
-		})
+		return commandHelper("list", "infra", []string{})
 	}
 
 	if i.Describe {
