@@ -27,13 +27,16 @@ func (i *Infra) CreateInfra(infraDetails interface{}) (infraResp.CreationName, e
 }
 
 // DescribeInfra : describe an infra
-func (i *Infra) DescribeInfra(infra string) {
+func (i *Infra) DescribeInfra(infra string) ([]infraResp.Infra, error) {
 	client := newApiClient()
 
-	response := client.action(path.Join(infraEntity, infra), "GET", nil)
+	response := client.action(path.Join(infraEntity, infra) + "/", "GET", nil)
 	response.Process(true) // process response and exit if error
 
-	// TODO: parse response.Body into required structure and return
+	var infraResponse infraResp.ListResponse
+	err := json.Unmarshal(response.Body, &infraResponse)
+
+	return infraResponse.Response, err
 }
 
 // ListInfra : list all infra(s) with filters
@@ -53,7 +56,7 @@ func (i *Infra) ListInfra() ([]infraResp.Infra, error) {
 func (i *Infra) DeleteInfra(infra string) {
 	client := newApiClient()
 
-	response := client.action(path.Join(infraEntity, infra), "DELETE", nil)
+	response := client.action(path.Join(infraEntity, infra) + "/", "DELETE", nil)
 	response.Process(true) // process response and exit if error
 }
 
