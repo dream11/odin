@@ -18,7 +18,7 @@ var serviceEntity = "services"
 func (s *Service) CreateService(service interface{}) {
 	client := newApiClient()
 
-	response := client.action(serviceEntity, "POST", service)
+	response := client.action(serviceEntity + "/", "POST", service)
 	response.Process(true) // process response and exit if error
 }
 
