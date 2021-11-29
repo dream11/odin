@@ -1,8 +1,7 @@
 package backend
 
 import (
-	"encoding/json"
-	"os"
+	"fmt"
 	"path"
 )
 
@@ -13,12 +12,11 @@ type Service struct{}
 var serviceEntity = "services"
 
 // CreateService : register a service version with backend
-func (s *Service) CreateService(service []byte) {
+func (s *Service) CreateService(service interface{}) {
 	client := newApiClient()
 
 	response := client.action(serviceEntity, "POST", service)
 	response.Process(true) // process response and exit if error
-	// no return required
 }
 
 // DescribeService : describe a service version or all versions of a service
@@ -33,10 +31,11 @@ func (s *Service) DescribeService(service, version string) {
 }
 
 // ListServices : list services per team and describe versions
-func (s *Service) ListServices(team, version string) {
+func (s *Service) ListServices(team, version string, maturity bool) {
 	client := newApiClient()
 	client.QueryParams["team"] = team
 	client.QueryParams["version"] = version
+	client.QueryParams["mature"] = fmt.Sprintf("%v", maturity)
 
 	response := client.action(serviceEntity, "GET", nil)
 	response.Process(true)
@@ -50,7 +49,6 @@ func (s *Service) DeleteService(service, version string) {
 
 	response := client.action(path.Join(serviceEntity, service, "version", version), "DELETE", nil)
 	response.Process(true)
-	// no return required
 }
 
 // MarkMature : mark a service as mature
@@ -59,7 +57,6 @@ func (s *Service) MarkMature(service, version string) {
 
 	response := client.action(path.Join(serviceEntity, service, "version", version, "mature"), "PUT", nil)
 	response.Process(true)
-	// no return required
 }
 
 // DeployService : deploy a service
@@ -67,16 +64,17 @@ func (s *Service) DeployService(service, version, infra, env string) {
 	client := newApiClient()
 
 	body := map[string]string{
-		"infra_name":     infra,
-		"runtime_config": env,
-	}
-	jsonBody, err := json.Marshal(body)
-	if err != nil {
-		logger.Error("Unable to format json body! " + err.Error())
-		os.Exit(1)
+		"infra_name": infra,
+		"env":        env,
 	}
 
-	response := client.action(path.Join(serviceEntity, "deploy", service, "version", version), "POST", jsonBody)
+	// TODO: validate no conversion required
+	//jsonBody, err := json.Marshal(body)
+	//if err != nil {
+	//	logger.Error("Unable to format json body! " + err.Error())
+	//	os.Exit(1)
+	//}
+
+	response := client.action(path.Join(serviceEntity, "deploy", service, "version", version), "POST", body)
 	response.Process(true)
-	// no return required
 }
