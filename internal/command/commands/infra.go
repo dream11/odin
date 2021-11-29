@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"encoding/json"
 	"flag"
 	"os"
 
@@ -45,14 +44,21 @@ func (i *Infra) Run(args []string) int {
 			Env:    *env,
 		}
 
-		infraConfigJson, err := json.Marshal(infraConfig)
+		// TODO: validate no conversion required
+		//infraConfigJson, err := json.Marshal(infraConfig)
+		//if err != nil {
+		//	i.Logger.Error("Unable to generate infra config! " + err.Error())
+		//	return 1
+		//}
+
+		// TODO: validate request
+		response, err := infraClient.CreateInfra(*name, infraConfig)
 		if err != nil {
-			i.Logger.Error("Unable to generate infra config! " + err.Error())
+			i.Logger.Error(err.Error())
 			return 1
 		}
 
-		// TODO: validate request
-		infraClient.CreateInfra(*name, infraConfigJson)
+		i.Logger.Success("Infra: " + response.InfraName + " created!")
 
 		return 0
 	}
