@@ -80,7 +80,6 @@ func (s *Service) Run(args []string) int {
 
 	if s.List {
 		s.Logger.Info("Listing all services")
-		// TODO: validate request & receive parsed input to display
 		serviceList, err := serviceClient.ListServices(*teamName, *serviceVersion, *isMature)
 		if err != nil {
 			s.Logger.Error(err.Error())
@@ -154,7 +153,6 @@ func (s *Service) Run(args []string) int {
 
 	if s.Delete {
 		s.Logger.Warn("Deleting service: " + *serviceName + "@" + *serviceVersion)
-		// TODO: validate request
 		serviceClient.DeleteService(*serviceName, *serviceVersion)
 
 		return 0
