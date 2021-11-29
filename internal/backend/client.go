@@ -32,7 +32,7 @@ func newClient() clientProperties {
 	return clientProperties{
 		address: appConfig.BackendAddr + "/",
 		Headers: map[string]string{
-			"Content-Type":   "text/JSON",
+			"Content-Type": "text/JSON",
 		},
 		QueryParams: map[string]string{},
 	}
