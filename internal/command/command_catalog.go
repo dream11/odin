@@ -46,6 +46,9 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"create infra": func() (cli.Command, error) {
 			return &commands.Infra{Create: true}, nil
 		},
+		"update infra": func() (cli.Command, error) {
+			return &commands.Infra{Update: true}, nil
+		},
 		"describe infra": func() (cli.Command, error) {
 			return &commands.Infra{Describe: true}, nil
 		},
