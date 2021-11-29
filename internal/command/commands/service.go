@@ -108,7 +108,11 @@ func (s *Service) Run(args []string) int {
 			})
 		}
 
-		table.Write(tableHeaders, tableData)
+		err = table.Write(tableHeaders, tableData)
+		if err != nil {
+			s.Logger.Error(err.Error())
+			return 1
+		}
 
 		return 0
 	}
