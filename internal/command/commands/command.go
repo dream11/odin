@@ -11,6 +11,7 @@ import (
 type command struct {
 	Create   bool // Create a resource record
 	Delete   bool // Delete a resource record
+	Update   bool // Update a resource record
 	Describe bool // Describe a resource
 	Label    bool // Label a resource
 	List     bool // List the resources
