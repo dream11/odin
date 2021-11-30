@@ -40,79 +40,94 @@ func (i *Infra) Run(args []string) int {
 	}
 
 	if i.Create {
-		i.Logger.Warn("Creating infra: " + *name + " for team: " + *team)
+		if len(*team) > 0 && len(*env) > 0 && len(*purpose) > 0 {
+			i.Logger.Warn("Creating infra: " + *name + " for team: " + *team)
 
-		infraConfig := infra.Infra{
-			Team:    *team,
-			Purpose: *purpose,
-			Env:     *env,
-			Account: *providerAccount,
-		}
-
-		response, err := infraClient.CreateInfra(infraConfig)
-		if err != nil {
-			i.Logger.Error(err.Error())
-			return 1
-		}
-
-		i.Logger.Success("Infra: " + response.Name + " created!")
-
-		return 0
-	}
-
-	if i.Update {
-		i.Logger.Warn("Updating infra: " + *name)
-
-		configData, err := file.Read(*filePath)
-		if err != nil {
-			i.Logger.Error("Unable to read from " + *filePath + "\n" + err.Error())
-			return 1
-		}
-
-		var parsedConfig interface{}
-
-		if strings.Contains(*filePath, ".yaml") || strings.Contains(*filePath, ".yml") {
-			err = yaml.Unmarshal(configData, &parsedConfig)
-			if err != nil {
-				i.Logger.Error("Unable to parse YAML. " + err.Error())
-				return 1
+			infraConfig := infra.Infra{
+				Team:    *team,
+				Purpose: *purpose,
+				Env:     *env,
+				Account: *providerAccount,
 			}
-		} else if strings.Contains(*filePath, ".json") {
-			err = json.Unmarshal(configData, &parsedConfig)
-			if err != nil {
-				i.Logger.Error("Unable to parse JSON. " + err.Error())
-				return 1
-			}
-		} else {
-			i.Logger.Error("Unrecognized file format")
-			return 1
-		}
 
-		infraClient.UpdateInfra(*name, parsedConfig)
-
-		return 0
-	}
-
-	if i.Describe {
-		i.Logger.Info("Describing " + *name)
-		infraResp, err := infraClient.DescribeInfra(*name)
-		if err != nil {
-			i.Logger.Error(err.Error())
-			return 1
-		}
-
-		for _, infra := range infraResp {
-			i.Logger.Info(infra.Name + " details!")
-			details, err := yaml.Marshal(infra)
+			response, err := infraClient.CreateInfra(infraConfig)
 			if err != nil {
 				i.Logger.Error(err.Error())
 				return 1
 			}
 
-			i.Logger.Output(string(details))
+			i.Logger.Success("Infra: " + response.Name + " created!")
+
+			return 0
 		}
 
-		return 0
+		i.Logger.Error("team name, env & purpose cannot be blank")
+		return 1
+	}
+
+	if i.Update {
+		if len(*name) > 0 {
+			i.Logger.Warn("Updating infra: " + *name)
+
+			configData, err := file.Read(*filePath)
+			if err != nil {
+				i.Logger.Error("Unable to read from " + *filePath + "\n" + err.Error())
+				return 1
+			}
+
+			var parsedConfig interface{}
+
+			if strings.Contains(*filePath, ".yaml") || strings.Contains(*filePath, ".yml") {
+				err = yaml.Unmarshal(configData, &parsedConfig)
+				if err != nil {
+					i.Logger.Error("Unable to parse YAML. " + err.Error())
+					return 1
+				}
+			} else if strings.Contains(*filePath, ".json") {
+				err = json.Unmarshal(configData, &parsedConfig)
+				if err != nil {
+					i.Logger.Error("Unable to parse JSON. " + err.Error())
+					return 1
+				}
+			} else {
+				i.Logger.Error("Unrecognized file format")
+				return 1
+			}
+
+			infraClient.UpdateInfra(*name, parsedConfig)
+
+			return 0
+		}
+
+		i.Logger.Error("infra name cannot be blank")
+		return 1
+	}
+
+	if i.Describe {
+		if len(*name) > 0 {
+			i.Logger.Info("Describing " + *name)
+			infraResp, err := infraClient.DescribeInfra(*name)
+			if err != nil {
+				i.Logger.Error(err.Error())
+				return 1
+			}
+
+			for _, infra := range infraResp {
+				i.Logger.Info(infra.Name + " details!")
+				details, err := yaml.Marshal(infra)
+				if err != nil {
+					i.Logger.Error(err.Error())
+					return 1
+				}
+
+				i.Logger.Output(string(details))
+			}
+
+			return 0
+		}
+
+		i.Logger.Error("infra name cannot be blank")
+		return 1
 	}
 
 	if i.List {
@@ -148,25 +163,15 @@ func (i *Infra) Run(args []string) int {
 	}
 
 	if i.Delete {
-		i.Logger.Warn("Deleting infra:" + *name)
-		// TODO: validate request
-		infraClient.DeleteInfra(*name)
+		if len(*name) > 0 {
+			i.Logger.Warn("Deleting infra:" + *name)
+			infraClient.DeleteInfra(*name)
 
-		return 0
-	}
+			return 0
+		}
 
-	if i.Status {
-		i.Logger.Info("Fetching status for infra: " + *name)
-		// TODO: call PG api that will fetch the status of the given infra
-		// GET /infraStatus?name=<infra name>
-		return 0
-	}
-
-	if i.Logs {
-		i.Logger.Info("Fetching logs for infra: " + *name)
-		// TODO: call PG api that will fetch the logs of the given infra
-		// GET /infraLogs?name=<infra name>
-		return 0
+		i.Logger.Error("infra name cannot be blank")
+		return 1
 	}
 
 	i.Logger.Error("Not a valid command")
@@ -201,23 +206,12 @@ func (i *Infra) Help() string {
 		})
 	}
 
-	if i.Status {
-		return commandHelper("status", "infra", []string{
-			"--name=name of infra to get status",
-		})
-	}
-
-	if i.Logs {
-		return commandHelper("logs", "infra", []string{
-			"--name=name of infra to get execution logs",
-		})
-	}
-
 	if i.Delete {
 		return commandHelper("delete", "infra", []string{
 			"--name=name of environment to delete",
 		})
 	}
+
 	return defaultHelper()
 }
 
@@ -237,14 +231,6 @@ func (i *Infra) Synopsis() string {
 
 	if i.Describe {
 		return "describe an infra"
-	}
-
-	if i.Status {
-		return "current status of an infra"
-	}
-
-	if i.Logs {
-		return "execution logs for infra"
 	}
 
 	if i.Delete {

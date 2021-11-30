@@ -71,25 +71,30 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Describe {
-		s.Logger.Info("Describing service: " + *serviceName + "@" + *serviceVersion)
-		serviceResp, err := serviceClient.DescribeService(*serviceName, *serviceVersion)
-		if err != nil {
-			s.Logger.Error(err.Error())
-			return 1
-		}
-
-		for _, service := range serviceResp {
-			s.Logger.Info(service.Name + "@" + service.Version + " details!")
-			details, err := yaml.Marshal(service)
+		if len(*serviceName) > 0 {
+			s.Logger.Info("Describing service: " + *serviceName + "@" + *serviceVersion)
+			serviceResp, err := serviceClient.DescribeService(*serviceName, *serviceVersion)
 			if err != nil {
 				s.Logger.Error(err.Error())
 				return 1
 			}
 
-			s.Logger.Output(string(details))
+			for _, service := range serviceResp {
+				s.Logger.Info(service.Name + "@" + service.Version + " details!")
+				details, err := yaml.Marshal(service)
+				if err != nil {
+					s.Logger.Error(err.Error())
+					return 1
+				}
+
+				s.Logger.Output(string(details))
+			}
+
+			return 0
 		}
 
-		return 0
+		s.Logger.Error("service name cannot be blank")
+		return 1
 	}
 
 	if s.List {
@@ -123,13 +128,16 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Label {
-		if *isMature {
-			s.Logger.Warn("Marking " + *serviceName + "@" + *serviceVersion + " as mature")
-			// TODO: validate request
-			serviceClient.MarkMature(*serviceName, *serviceVersion)
+		if len(*serviceName) > 0 && len(*serviceVersion) > 0 {
+			if *isMature {
+				s.Logger.Warn("Marking " + *serviceName + "@" + *serviceVersion + " as mature")
+				serviceClient.MarkMature(*serviceName, *serviceVersion)
+			}
+			return 0
 		}
 
-		return 0
+		s.Logger.Error("service name & version cannot be blank")
+		return 1
 	}
 
 	if s.Deploy {
@@ -141,10 +149,15 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Delete {
-		s.Logger.Warn("Deleting service: " + *serviceName + "@" + *serviceVersion)
-		serviceClient.DeleteService(*serviceName, *serviceVersion)
+		if len(*serviceName) > 0 && len(*serviceVersion) > 0 {
+			s.Logger.Warn("Deleting service: " + *serviceName + "@" + *serviceVersion)
+			serviceClient.DeleteService(*serviceName, *serviceVersion)
 
-		return 0
+			return 0
+		}
+
+		s.Logger.Error("service name & version cannot be blank")
+		return 1
 	}
 
 	s.Logger.Error("Not a valid command")
