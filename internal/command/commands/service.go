@@ -71,7 +71,7 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Describe {
-		if len(*serviceName) > 0 {
+		if emptyParameterValidation([]string{*serviceName}) {
 			s.Logger.Info("Describing service: " + *serviceName + "@" + *serviceVersion)
 			serviceResp, err := serviceClient.DescribeService(*serviceName, *serviceVersion)
 			if err != nil {
@@ -128,7 +128,7 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Label {
-		if len(*serviceName) > 0 && len(*serviceVersion) > 0 {
+		if emptyParameterValidation([]string{*serviceName, *serviceVersion}) {
 			if *isMature {
 				s.Logger.Warn("Marking " + *serviceName + "@" + *serviceVersion + " as mature")
 				serviceClient.MarkMature(*serviceName, *serviceVersion)
@@ -149,7 +149,7 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Delete {
-		if len(*serviceName) > 0 && len(*serviceVersion) > 0 {
+		if emptyParameterValidation([]string{*serviceName, *serviceVersion}) {
 			s.Logger.Warn("Deleting service: " + *serviceName + "@" + *serviceVersion)
 			serviceClient.DeleteService(*serviceName, *serviceVersion)
 

@@ -40,7 +40,7 @@ func (i *Infra) Run(args []string) int {
 	}
 
 	if i.Create {
-		if len(*team) > 0 && len(*env) > 0 && len(*purpose) > 0 {
+		if emptyParameterValidation([]string{*team, *env, *purpose}) {
 			i.Logger.Warn("Creating infra: " + *name + " for team: " + *team)
 
 			infraConfig := infra.Infra{
@@ -66,7 +66,7 @@ func (i *Infra) Run(args []string) int {
 	}
 
 	if i.Update {
-		if len(*name) > 0 {
+		if emptyParameterValidation([]string{*name}) {
 			i.Logger.Warn("Updating infra: " + *name)
 
 			configData, err := file.Read(*filePath)
@@ -104,7 +104,7 @@ func (i *Infra) Run(args []string) int {
 	}
 
 	if i.Describe {
-		if len(*name) > 0 {
+		if emptyParameterValidation([]string{*name}) {
 			i.Logger.Info("Describing " + *name)
 			infraResp, err := infraClient.DescribeInfra(*name)
 			if err != nil {
@@ -163,7 +163,7 @@ func (i *Infra) Run(args []string) int {
 	}
 
 	if i.Delete {
-		if len(*name) > 0 {
+		if emptyParameterValidation([]string{*name}) {
 			i.Logger.Warn("Deleting infra:" + *name)
 			infraClient.DeleteInfra(*name)
 
