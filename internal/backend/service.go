@@ -1,9 +1,9 @@
 package backend
 
 import (
+	"encoding/json"
 	"fmt"
 	"path"
-	"encoding/json"
 
 	"github.com/dream11/odin/api/service"
 )
@@ -18,19 +18,22 @@ var serviceEntity = "services"
 func (s *Service) CreateService(service interface{}) {
 	client := newApiClient()
 
-	response := client.action(serviceEntity + "/", "POST", service)
+	response := client.action(serviceEntity+"/", "POST", service)
 	response.Process(true) // process response and exit if error
 }
 
 // DescribeService : describe a service version or all versions of a service
-func (s *Service) DescribeService(service, version string) {
+func (s *Service) DescribeService(name, version string) ([]service.Service, error) {
 	client := newApiClient()
 	client.QueryParams["version"] = version
 
-	response := client.action(path.Join(serviceEntity, service), "GET", nil)
+	response := client.action(path.Join(serviceEntity, name), "GET", nil)
 	response.Process(true)
 
-	// TODO: parse response.Body into required structure and return
+	var serviceResponse service.ListResponse
+	err := json.Unmarshal(response.Body, &serviceResponse)
+
+	return serviceResponse.Response, err
 }
 
 // ListServices : list services per team and describe versions
@@ -53,7 +56,7 @@ func (s *Service) ListServices(team, version string, maturity bool) ([]service.S
 func (s *Service) DeleteService(service, version string) {
 	client := newApiClient()
 
-	response := client.action(path.Join(serviceEntity, service, "version", version) + "/", "DELETE", nil)
+	response := client.action(path.Join(serviceEntity, service, "version", version)+"/", "DELETE", nil)
 	response.Process(true)
 }
 
@@ -61,7 +64,7 @@ func (s *Service) DeleteService(service, version string) {
 func (s *Service) MarkMature(service, version string) {
 	client := newApiClient()
 
-	response := client.action(path.Join(serviceEntity, service, "version", version, "mature") + "/", "PUT", nil)
+	response := client.action(path.Join(serviceEntity, service, "version", version, "mature")+"/", "PUT", nil)
 	response.Process(true)
 }
 
@@ -74,13 +77,6 @@ func (s *Service) DeployService(service, version, infra, env string) {
 		"env":        env,
 	}
 
-	// TODO: validate no conversion required
-	//jsonBody, err := json.Marshal(body)
-	//if err != nil {
-	//	logger.Error("Unable to format json body! " + err.Error())
-	//	os.Exit(1)
-	//}
-
-	response := client.action(path.Join(serviceEntity, "deploy", service, "version", version), "POST", body)
+	response := client.action(path.Join(serviceEntity, "deploy", service, "version", version)+"/", "POST", body)
 	response.Process(true)
 }
