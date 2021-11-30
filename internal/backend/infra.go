@@ -17,7 +17,7 @@ var infraEntity = "infras"
 func (i *Infra) CreateInfra(infraDetails interface{}) (infraResp.CreationName, error) {
 	client := newApiClient()
 
-	response := client.action(infraEntity + "/", "POST", infraDetails)
+	response := client.action(infraEntity+"/", "POST", infraDetails)
 	response.Process(true) // process response and exit if error
 
 	var infraResponse infraResp.CreationResponse
@@ -30,7 +30,7 @@ func (i *Infra) CreateInfra(infraDetails interface{}) (infraResp.CreationName, e
 func (i *Infra) DescribeInfra(infra string) ([]infraResp.Infra, error) {
 	client := newApiClient()
 
-	response := client.action(path.Join(infraEntity, infra) + "/", "GET", nil)
+	response := client.action(path.Join(infraEntity, infra)+"/", "GET", nil)
 	response.Process(true) // process response and exit if error
 
 	var infraResponse infraResp.ListResponse
@@ -43,7 +43,7 @@ func (i *Infra) DescribeInfra(infra string) ([]infraResp.Infra, error) {
 func (i *Infra) ListInfra() ([]infraResp.Infra, error) {
 	client := newApiClient()
 
-	response := client.action(infraEntity + "/", "GET", nil)
+	response := client.action(infraEntity+"/", "GET", nil)
 	response.Process(true) // process response and exit if error
 
 	var infraResponse infraResp.ListResponse
@@ -56,7 +56,7 @@ func (i *Infra) ListInfra() ([]infraResp.Infra, error) {
 func (i *Infra) DeleteInfra(infra string) {
 	client := newApiClient()
 
-	response := client.action(path.Join(infraEntity, infra) + "/", "DELETE", nil)
+	response := client.action(path.Join(infraEntity, infra)+"/", "DELETE", nil)
 	response.Process(true) // process response and exit if error
 }
 
@@ -64,6 +64,6 @@ func (i *Infra) DeleteInfra(infra string) {
 func (i *Infra) UpdateInfra(infra string, config interface{}) {
 	client := newApiClient()
 
-	response := client.action(path.Join(infraEntity, infra) + "/", "PUT", config)
+	response := client.action(path.Join(infraEntity, infra)+"/", "PUT", config)
 	response.Process(true) // process response and exit if error
 }
