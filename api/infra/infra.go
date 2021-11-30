@@ -20,15 +20,9 @@ type Infra struct {
 	Services     []string    `yaml:"services,omitempty" json:"services,omitempty"`
 }
 
-// CreationName structure
-// TODO: to be deprecated by Infra struct
-type CreationName struct {
-	Name string `yaml:"infra_name,omitempty" json:"infra_name,omitempty"`
-}
-
 // CreationResponse structure
 type CreationResponse struct {
-	Response CreationName `yaml:"resp,omitempty" json:"resp,omitempty"`
+	Response Infra `yaml:"resp,omitempty" json:"resp,omitempty"`
 }
 
 // ListResponse structure

@@ -14,7 +14,7 @@ type Infra struct{}
 var infraEntity = "infras"
 
 // CreateInfra : create an empty infra
-func (i *Infra) CreateInfra(infraDetails interface{}) (infraResp.CreationName, error) {
+func (i *Infra) CreateInfra(infraDetails interface{}) (infraResp.Infra, error) {
 	client := newApiClient()
 
 	response := client.action(infraEntity+"/", "POST", infraDetails)
