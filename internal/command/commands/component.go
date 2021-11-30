@@ -14,8 +14,15 @@ type Component command
 func (c *Component) Run(args []string) int {
 	if c.List {
 		c.Logger.Info("Listing all components")
-		// TODO: validate request & receive parsed input to display
-		componentClient.ListComponents()
+		componentTypeList, err := componentClient.ListComponents()
+		if err != nil {
+			c.Logger.Error(err.Error())
+			return 1
+		}
+
+		for _, component := range componentTypeList {
+			c.Logger.Output(component.Name)
+		}
 
 		return 0
 	}
