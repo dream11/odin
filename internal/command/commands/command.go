@@ -39,3 +39,12 @@ func commandHelper(verb, resource string, options []string) string {
 func defaultHelper() string {
 	return fmt.Sprintf("Usage: %s --help", odin.App.Name)
 }
+
+func emptyParameterValidation(params []string) bool {
+	for _, val := range params {
+		if len(val) == 0 {
+			return false
+		}
+	}
+	return true
+}
