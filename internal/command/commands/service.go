@@ -72,8 +72,22 @@ func (s *Service) Run(args []string) int {
 
 	if s.Describe {
 		s.Logger.Info("Describing service: " + *serviceName + "@" + *serviceVersion)
-		// TODO: validate request & receive parsed input to display
-		serviceClient.DescribeService(*serviceName, *serviceVersion)
+		serviceResp, err := serviceClient.DescribeService(*serviceName, *serviceVersion)
+		if err != nil {
+			s.Logger.Error(err.Error())
+			return 1
+		}
+
+		for _, service := range serviceResp {
+			s.Logger.Info(service.Name + "@" + service.Version + " details!")
+			details, err := yaml.Marshal(service)
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return 1
+			}
+
+			s.Logger.Output(string(details))
+		}
 
 		return 0
 	}
