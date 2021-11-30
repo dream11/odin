@@ -27,7 +27,6 @@ func (s *Service) Run(args []string) int {
 	filePath := flagSet.String("file", "service.yaml", "file to read service config")
 	serviceName := flagSet.String("name", "", "name of service to be used")
 	serviceVersion := flagSet.String("version", "", "version of service to be used")
-	envName := flagSet.String("env", "", "name of environment to use")
 	infraName := flagSet.String("infra", "", "name of infra to deploy the service in")
 	teamName := flagSet.String("team", "", "name of user's team")
 	isMature := flagSet.Bool("mature", false, "mark service version as matured")
@@ -141,11 +140,41 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Deploy {
-		s.Logger.Warn("Deploying service: " + *serviceName + "@" + *serviceVersion + " in " + *envName + "/" + *infraName)
-		// TODO: validate request
-		serviceClient.DeployService(*serviceName, *serviceVersion, *infraName, *envName)
+		if emptyParameterValidation([]string{*serviceName, *serviceVersion, *infraName}) {
+			s.Logger.Warn("Deploying service: " + *serviceName + "@" + *serviceVersion + " in " + *infraName)
 
-		return 0
+			var parsedConfig interface{}
+
+			configData, err := file.Read(*filePath)
+			if err == nil {
+				if strings.Contains(*filePath, ".yaml") || strings.Contains(*filePath, ".yml") {
+					err = yaml.Unmarshal(configData, &parsedConfig)
+					if err != nil {
+						s.Logger.Error("Unable to parse YAML. " + err.Error())
+						return 1
+					}
+				} else if strings.Contains(*filePath, ".json") {
+					err = json.Unmarshal(configData, &parsedConfig)
+					if err != nil {
+						s.Logger.Error("Unable to parse JSON. " + err.Error())
+						return 1
+					}
+				} else {
+					s.Logger.Error("Unrecognized file format")
+					return 1
+				}
+			} else {
+				// initialise config as empty json
+				parsedConfig = make(map[string]string, 0)
+			}
+
+			serviceClient.DeployService(*serviceName, *serviceVersion, *infraName, parsedConfig)
+
+			return 0
+		}
+
+		s.Logger.Error("service name, version and infra name cannot be blank")
+		return 1
 	}
 
 	if s.Delete {
@@ -199,8 +228,8 @@ func (s *Service) Help() string {
 		return commandHelper("deploy", "service", []string{
 			"--name=name of service to deploy",
 			"--version=version of service to deploy",
-			"--env=name of env to use",
 			"--infra=name of infra to deploy service in",
+			"--file=name of config file",
 		})
 	}
 
