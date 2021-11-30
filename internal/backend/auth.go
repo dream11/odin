@@ -20,7 +20,7 @@ func (a *Auth) GetToken(accessKey, secretAccessKey string) (auth.Auth, error) {
 
 	// TODO: validate if reqBody needs a json conversion or not
 	// if not then remove json conversion at all backend calls
-	response := client.action("auth", "POST", reqBody)
+	response := client.action("secure/auth/", "POST", reqBody)
 	response.Process(true) // process response and exit if error
 
 	var authResponse auth.Auth
@@ -39,7 +39,7 @@ func (a *Auth) RefreshToken(refreshToken string) (auth.Auth, error) {
 
 	// TODO: validate if reqBody needs a json conversion or not
 	// if not then remove json conversion at all backend calls
-	response := client.action("refreshtoken", "POST", reqBody)
+	response := client.action("secure/refreshtoken/", "POST", reqBody)
 	response.Process(true) // process response and exit if error
 
 	var authResponse auth.Auth
