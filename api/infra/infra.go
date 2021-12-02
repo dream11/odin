@@ -1,6 +1,6 @@
 package infra
 
-// Infra structure
+// Infra interface
 type Infra struct {
 	Name         string      `yaml:"name,omitempty" json:"name,omitempty"`
 	Team         string      `yaml:"team,omitempty" json:"team,omitempty"`
@@ -20,12 +20,12 @@ type Infra struct {
 	Services     []string    `yaml:"services,omitempty" json:"services,omitempty"`
 }
 
-// CreationResponse structure
+// CreationResponse interface
 type CreationResponse struct {
 	Response Infra `yaml:"resp,omitempty" json:"resp,omitempty"`
 }
 
-// ListResponse structure
+// ListResponse interface
 type ListResponse struct {
 	Response []Infra `yaml:"resp,omitempty" json:"resp,omitempty"`
 }

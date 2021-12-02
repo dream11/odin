@@ -1,19 +1,19 @@
 package component
 
-// Artifact structure
+// Artifact interface
 type Artifact struct {
 	URL     string `yaml:"url,omitempty" json:"url,omitempty"`
 	Version string `yaml:"version,omitempty" json:"version,omitempty"`
 }
 
-// Component structure
+// Component interface
 type Component struct {
 	Name     string   `yaml:"name,omitempty" json:"name,omitempty"`
 	Type     string   `yaml:"type,omitempty" json:"type,omitempty"`
 	Artifact Artifact `yaml:"artifact,omitempty" json:"artifact,omitempty"`
 }
 
-// Type structure
+// Type interface
 type Type struct {
 	Name        string      `yaml:"name,omitempty" json:"name,omitempty"`
 	CreatedBy   string      `yaml:"created_by,omitempty" json:"created_by,omitempty"`
@@ -28,7 +28,7 @@ type Type struct {
 	EnvBehavior interface{} `yaml:"env_specific_behavior,omitempty" json:"env_specific_behavior,omitempty"`
 }
 
-// ListTypeResponse structure
+// ListTypeResponse interface
 type ListTypeResponse struct {
 	Response []Type `yaml:"resp,omitempty" json:"resp,omitempty"`
 }

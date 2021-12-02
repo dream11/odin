@@ -4,7 +4,7 @@ import (
 	"github.com/dream11/odin/api/component"
 )
 
-// Service structure
+// Service interface
 type Service struct {
 	Name        string                `yaml:"name,omitempty" json:"name,omitempty"`
 	Version     string                `yaml:"version,omitempty" json:"version,omitempty"`
@@ -21,7 +21,7 @@ type Service struct {
 	Components  []component.Component `yaml:"components,omitempty" json:"components,omitempty"`
 }
 
-// ListResponse structure
+// ListResponse interface
 type ListResponse struct {
 	Response []Service `yaml:"resp,omitempty" json:"resp,omitempty"`
 }

@@ -1,6 +1,6 @@
 package error
 
-// Error structure
+// Error interface
 type Error struct {
 	Error string `yaml:"err,omitempty" json:"err,omitempty"`
 }
