@@ -21,9 +21,9 @@ type Type struct {
 	CreatedAt   string      `yaml:"created_at,omitempty" json:"created_at,omitempty"`
 	UpdatedAt   string      `yaml:"updated_at,omitempty" json:"updated_at,omitempty"`
 	Config      interface{} `yaml:"config,omitempty" json:"config,omitempty"`
-	Deployment  interface{} `yaml:"deployment,omitempty" json:"deployment,omitempty"`
-	Scaling     interface{} `yaml:"scaling,omitempty" json:"scaling,omitempty"`
-	Discovery   interface{} `yaml:"discovery,omitempty" json:"discovery,omitempty"`
+	Deployment  interface{} `yaml:"deployment_config,omitempty" json:"deployment_config,omitempty"`
+	Scaling     interface{} `yaml:"scaling_config,omitempty" json:"scaling_config,omitempty"`
+	Discovery   interface{} `yaml:"discovery_config,omitempty" json:"discovery_config,omitempty"`
 	MetaInfo    interface{} `yaml:"meta_info,omitempty" json:"meta_info,omitempty"`
 	EnvBehavior interface{} `yaml:"env_specific_behavior,omitempty" json:"env_specific_behavior,omitempty"`
 }

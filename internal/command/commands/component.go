@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"gopkg.in/yaml.v3"
+
 	"github.com/dream11/odin/internal/backend"
 )
 
@@ -21,7 +23,14 @@ func (c *Component) Run(args []string) int {
 		}
 
 		for _, component := range componentTypeList {
-			c.Logger.Output(component.Name)
+			c.Logger.Success(component.Name)
+			componentYaml, err := yaml.Marshal(component)
+			if err != nil {
+				c.Logger.Error("Unable to parse component definition! " + err.Error())
+				return 1
+			}
+
+			c.Logger.Output(string(componentYaml))
 		}
 
 		return 0
