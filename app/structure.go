@@ -29,7 +29,7 @@ func (w *workdir) Create() error {
 	return dir.Create(w.Location, 0755)
 }
 
-// WorkDir structure
+// WorkDir interface
 var WorkDir = workdir{
 	Location:     path.Join(os.Getenv("HOME"), "."+App.Name),
 	ConfigFile:   "config",

@@ -93,6 +93,9 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"create test": func() (cli.Command, error) {
 			return &commands.Test{Create: true}, nil
 		},
+		"update test": func() (cli.Command, error) {
+			return &commands.Test{Update: true}, nil
+		},
 		"delete test": func() (cli.Command, error) {
 			return &commands.Test{Delete: true}, nil
 		},
@@ -101,6 +104,9 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		},
 		"describe test": func() (cli.Command, error) {
 			return &commands.Test{Describe: true}, nil
+		},
+		"label test": func() (cli.Command, error) {
+			return &commands.Test{Label: true}, nil
 		},
 		"status test": func() (cli.Command, error) {
 			return &commands.Test{Status: true}, nil

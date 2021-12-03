@@ -10,9 +10,11 @@ import (
 // add commands to hide from help section
 var hiddenCommands = []string{
 	"create test",
+	"update test",
 	"delete test",
 	"list test",
 	"describe test",
+	"label test",
 	"status test",
 	"logs test",
 	"deploy test",
