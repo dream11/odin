@@ -2,7 +2,7 @@ package backend
 
 import (
 	"encoding/json"
-
+	"fmt"
 	"github.com/dream11/odin/api/auth"
 )
 
@@ -38,8 +38,14 @@ func (a *Auth) RefreshToken(refreshToken string) (auth.Auth, error) {
 	response := client.action("secure/refreshtoken/", "POST", reqBody)
 	response.Process(true) // process response and exit if error
 
-	var authResponse auth.Auth
+	var authResponse []auth.Auth
 	err := json.Unmarshal(response.Body, &authResponse)
 
-	return authResponse, err
+	for _, token := range authResponse {
+		if !token.Expired {
+			return token, err
+		}
+	}
+
+	return auth.Auth{}, fmt.Errorf("unable to find a valid active token")
 }
