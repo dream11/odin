@@ -4,7 +4,7 @@ Internal framework CLI for CRUD operations on environments.
 
 ## Setup
 
-1. [Download](https://golang.org/dl/go1.17.1.darwin-amd64.pkg) and run Go setup
+1. [Download](https://golang.org/dl/go1.17.1.darwin-amd64.pkg) and run the Go installer.
 
 2. Verify Go: `go version`
 
@@ -40,6 +40,7 @@ Here,
 
     - `create` - For creating/uploading a resource record for future access.
     - `delete` - For deleting a created resource record.
+    - `update` - For updating 
     - `label` - For attaching a label to a resource.
     - `list` - For listing all the active entities of that resource.
     - `describe` - For describing a particular resource.
