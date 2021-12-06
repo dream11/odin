@@ -1,7 +1,6 @@
 package config
 
 import (
-	"os"
 	"path"
 
 	"gopkg.in/yaml.v3"
@@ -24,13 +23,11 @@ func Get() configuration.Configuration {
 	err := yaml.Unmarshal(rawConfig, &configs)
 	if err != nil {
 		logger.Error("Unable to parse configuration. " + err.Error())
-		os.Exit(1)
 	}
 
 	if len(configs.AccessToken) == 0 {
-		logger.Error("unable to load Access Token.")
+		logger.Warn("unable to load Access Token.")
 		logger.Debug("Access Token not found at: " + app.WorkDir.ConfigFile)
-		os.Exit(1)
 	}
 
 	// do not expose access key, secret access key & refresh tokens
