@@ -29,6 +29,7 @@ func (s *Service) Run(args []string) int {
 	infraName := flagSet.String("infra", "", "name of infra to deploy the service in")
 	teamName := flagSet.String("team", "", "name of user's team")
 	isMature := flagSet.Bool("mature", false, "mark service version as matured")
+	detailed := flagSet.Bool("detailed", false, "get detailed view")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -102,23 +103,37 @@ func (s *Service) Run(args []string) int {
 			return 1
 		}
 
-		tableHeaders := []string{"Name", "Version", "Description", "Team", "Mature"}
-		var tableData [][]interface{}
+		if *detailed {
+			for _, service := range serviceList {
+				s.Logger.Info("Service definition for: " + service.Name + "@" + service.Version)
 
-		for _, service := range serviceList {
-			tableData = append(tableData, []interface{}{
-				service.Name,
-				service.Version,
-				service.Description,
-				strings.Join(service.Team, ","),
-				service.Mature,
-			})
-		}
+				serviceYaml, err := yaml.Marshal(service)
+				if err != nil {
+					s.Logger.Error("Unable to parse infra definition! " + err.Error())
+					return 1
+				}
 
-		err = table.Write(tableHeaders, tableData)
-		if err != nil {
-			s.Logger.Error(err.Error())
-			return 1
+				s.Logger.Output(string(serviceYaml))
+			}
+		} else {
+			tableHeaders := []string{"Name", "Version", "Description", "Team", "Mature"}
+			var tableData [][]interface{}
+
+			for _, service := range serviceList {
+				tableData = append(tableData, []interface{}{
+					service.Name,
+					service.Version,
+					service.Description,
+					strings.Join(service.Team, ","),
+					service.Mature,
+				})
+			}
+
+			err = table.Write(tableHeaders, tableData)
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return 1
+			}
 		}
 
 		return 0
@@ -211,6 +226,7 @@ func (s *Service) Help() string {
 			"--team=name of team",
 			"--version=version of services to be listed",
 			"--mature (mature marked service versions)",
+			"--detailed (get a detailed view)",
 		})
 	}
 

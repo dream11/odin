@@ -30,6 +30,7 @@ func (i *Infra) Run(args []string) int {
 	env := flagSet.String("env", "", "env to attach with infra")
 	providerAccount := flagSet.String("account", "", "account name to provision the infra in")
 	filePath := flagSet.String("file", "infra.yaml", "file to read infra config")
+	detailed := flagSet.Bool("detailed", false, "get detailed view")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -136,25 +137,39 @@ func (i *Infra) Run(args []string) int {
 			return 1
 		}
 
-		tableHeaders := []string{"Name", "Purpose", "Team", "Env", "State", "Account", "Deletion Time"}
-		var tableData [][]interface{}
+		if *detailed {
+			for _, inf := range infraList {
+				i.Logger.Info("Infra definition for: " + inf.Name)
 
-		for _, i := range infraList {
-			tableData = append(tableData, []interface{}{
-				i.Name,
-				i.Purpose,
-				i.Team,
-				i.Env,
-				i.State,
-				i.Account,
-				i.DeletionTime,
-			})
-		}
+				infraYaml, err := yaml.Marshal(inf)
+				if err != nil {
+					i.Logger.Error("Unable to parse infra definition! " + err.Error())
+					return 1
+				}
 
-		err = table.Write(tableHeaders, tableData)
-		if err != nil {
-			i.Logger.Error(err.Error())
-			return 1
+				i.Logger.Output(string(infraYaml))
+			}
+		} else {
+			tableHeaders := []string{"Name", "Purpose", "Team", "Env", "State", "Account", "Deletion Time"}
+			var tableData [][]interface{}
+
+			for _, inf := range infraList {
+				tableData = append(tableData, []interface{}{
+					inf.Name,
+					inf.Purpose,
+					inf.Team,
+					inf.Env,
+					inf.State,
+					inf.Account,
+					inf.DeletionTime,
+				})
+			}
+
+			err = table.Write(tableHeaders, tableData)
+			if err != nil {
+				i.Logger.Error(err.Error())
+				return 1
+			}
 		}
 
 		return 0
@@ -195,7 +210,9 @@ func (i *Infra) Help() string {
 	}
 
 	if i.List {
-		return commandHelper("list", "infra", []string{})
+		return commandHelper("list", "infra", []string{
+			"--detailed (get a detailed view)",
+		})
 	}
 
 	if i.Describe {
