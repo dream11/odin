@@ -23,7 +23,7 @@ func (c *Component) Run(args []string) int {
 		}
 
 		for _, component := range componentTypeList {
-			c.Logger.Success("Component type: " + component.Name)
+			c.Logger.Info("Component definition for: " + component.Name)
 			componentYaml, err := yaml.Marshal(component)
 			if err != nil {
 				c.Logger.Error("Unable to parse component definition! " + err.Error())
