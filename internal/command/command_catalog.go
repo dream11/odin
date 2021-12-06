@@ -89,7 +89,9 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 			return &commands.Service{Delete: true}, nil
 		},
 
-		// Sample commands
+		/*
+		Sample commands -
+
 		"create test": func() (cli.Command, error) {
 			return &commands.Test{Create: true}, nil
 		},
@@ -120,5 +122,7 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"destroy test": func() (cli.Command, error) {
 			return &commands.Test{Destroy: true}, nil
 		},
+
+		*/
 	}
 }
