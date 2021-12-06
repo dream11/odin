@@ -26,11 +26,10 @@ func (c *clientProperties) action(entity, requestType string, body interface{}) 
 	return req.Make()
 }
 
-// fetch local configurations
-var appConfig = config.Get()
-
 // initiate a functional backend base-client
 func newClient() clientProperties {
+	var appConfig = config.Get()
+
 	return clientProperties{
 		address: appConfig.BackendAddr + "/",
 		Headers: map[string]string{
@@ -42,6 +41,8 @@ func newClient() clientProperties {
 
 // initiate an API integration client on top of base-client
 func newApiClient() clientProperties {
+	var appConfig = config.Get()
+
 	apiClient := newClient()
 	apiClient.address += "api/integration/cli/v1/"
 	apiClient.Headers["Authorization"] = "Bearer " + appConfig.AccessToken
