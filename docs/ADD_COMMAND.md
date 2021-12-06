@@ -57,8 +57,8 @@
 
             // Add required flags to the defined flagset
             testFlag := flagSet.String("test-flag", "default value", "Help text")
-            // Positional parse the flags depending upon commands and sub commands
-            flagSet.Parse(os.Args[3:])
+            // parse the passed flags
+            flagSet.Parse(args)
             // use the parsed flags
             t.Logger.Info(fmt.Sprintf("-test-flag=%s", *testFlag))
 

@@ -3,7 +3,6 @@ package commands
 import (
 	"encoding/json"
 	"flag"
-	"os"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -32,8 +31,7 @@ func (i *Infra) Run(args []string) int {
 	providerAccount := flagSet.String("account", "", "account name to provision the infra in")
 	filePath := flagSet.String("file", "infra.yaml", "file to read infra config")
 
-	// positional parse flags from [3:]
-	err := flagSet.Parse(os.Args[3:])
+	err := flagSet.Parse(args)
 	if err != nil {
 		i.Logger.Error("Unable to parse flags! " + err.Error())
 		return 1
@@ -41,7 +39,7 @@ func (i *Infra) Run(args []string) int {
 
 	if i.Create {
 		if emptyParameterValidation([]string{*team, *env, *purpose}) {
-			i.Logger.Warn("Creating infra: " + *name + " for team: " + *team)
+			i.Logger.Warn("Creating infra for team: " + *team)
 
 			infraConfig := infra.Infra{
 				Team:    *team,

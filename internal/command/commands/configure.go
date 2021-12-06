@@ -2,7 +2,6 @@ package commands
 
 import (
 	"flag"
-	"os"
 	"path"
 
 	"gopkg.in/yaml.v3"
@@ -27,8 +26,7 @@ func (c *Configure) Run(args []string) int {
 	refresh := flagSet.Bool("refresh", false, "refresh token using existing tokens")
 	hardRefresh := flagSet.Bool("hard", false, "hard refresh token using existing keys")
 
-	// positional parse flags from [2:]
-	err := flagSet.Parse(os.Args[2:])
+	err := flagSet.Parse(args)
 	if err != nil {
 		c.Logger.Error("Unable to parse flags! " + err.Error())
 		return 1
@@ -55,7 +53,6 @@ func (c *Configure) Run(args []string) int {
 		}
 
 		if *hardRefresh {
-			// TODO: validate request
 			authResponse, err := authClient.GetToken(config.Keys.AccessKey, config.Keys.SecretAccessKey)
 			if err != nil {
 				c.Logger.Error("Unable to hard refresh the tokens. " + err.Error())
@@ -65,7 +62,6 @@ func (c *Configure) Run(args []string) int {
 			config.AccessToken = authResponse.AccessToken
 			config.RefreshToken = authResponse.RefreshToken
 		} else {
-			// TODO: validate request
 			authResponse, err := authClient.RefreshToken(config.RefreshToken)
 			if err != nil {
 				c.Logger.Error("Unable to refresh the tokens. " + err.Error())

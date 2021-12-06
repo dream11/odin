@@ -3,7 +3,6 @@ package commands
 import (
 	"encoding/json"
 	"flag"
-	"os"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -31,8 +30,7 @@ func (s *Service) Run(args []string) int {
 	teamName := flagSet.String("team", "", "name of user's team")
 	isMature := flagSet.Bool("mature", false, "mark service version as matured")
 
-	// positional parse flags from [3:]
-	err := flagSet.Parse(os.Args[3:])
+	err := flagSet.Parse(args)
 	if err != nil {
 		s.Logger.Error("Unable to parse flags! " + err.Error())
 		return 1

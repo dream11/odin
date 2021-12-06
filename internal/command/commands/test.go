@@ -3,7 +3,6 @@ package commands
 import (
 	"flag"
 	"fmt"
-	"os"
 )
 
 // Test : Sample command declaration
@@ -21,7 +20,7 @@ func (t *Test) Run(args []string) int {
 	// Add required flags to the defined flag set
 	testFlag := flagSet.String("test-flag", "default value", "Help text")
 	// Positional parse the flags depending upon commands and sub commands
-	err := flagSet.Parse(os.Args[3:])
+	err := flagSet.Parse(args)
 	if err != nil {
 		t.Logger.Error("Unable to parse flags! " + err.Error())
 		return 1
@@ -51,6 +50,18 @@ func (t *Test) Run(args []string) int {
 	if t.Describe {
 		// Perform stuff to describe a test resource
 		t.Logger.Info(fmt.Sprintf("Test Run(describe)! flag value = %s", *testFlag))
+		return 0
+	}
+
+	if t.Label {
+		// Perform stuff to describe a test resource
+		t.Logger.Info(fmt.Sprintf("Test Run(label)! flag value = %s", *testFlag))
+		return 0
+	}
+
+	if t.Update {
+		// Perform stuff to describe a test resource
+		t.Logger.Info(fmt.Sprintf("Test Run(update)! flag value = %s", *testFlag))
 		return 0
 	}
 
@@ -109,6 +120,18 @@ func (t *Test) Help() string {
 		})
 	}
 
+	if t.Label {
+		return commandHelper("lable", "test", []string{
+			"--test-flag=required value",
+		})
+	}
+
+	if t.Update {
+		return commandHelper("update", "test", []string{
+			"--test-flag=required value",
+		})
+	}
+
 	if t.Status {
 		return commandHelper("status", "test", []string{
 			"--test-flag=required value",
@@ -152,6 +175,14 @@ func (t *Test) Synopsis() string {
 
 	if t.Describe {
 		return "describe a test resource"
+	}
+
+	if t.Label {
+		return "label a test resource"
+	}
+
+	if t.Update {
+		return "update a test resource"
 	}
 
 	if t.Status {

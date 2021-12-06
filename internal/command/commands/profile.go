@@ -3,7 +3,6 @@ package commands
 import (
 	"encoding/json"
 	"flag"
-	"os"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -31,8 +30,7 @@ func (p *Profile) Run(args []string) int {
 	infraName := flagSet.String("infra", "nil", "name of infra to deploy the profile in")
 	teamName := flagSet.String("team", "", "name of user's team")
 
-	// positional parse flags from [3:]
-	err := flagSet.Parse(os.Args[3:])
+	err := flagSet.Parse(args)
 	if err != nil {
 		p.Logger.Error("Unable to parse flags! " + err.Error())
 		return 1
