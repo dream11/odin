@@ -4,7 +4,7 @@ Internal framework CLI for CRUD operations on environments.
 
 ## Setup
 
-1. [Download](https://golang.org/dl/go1.17.1.darwin-amd64.pkg) and run Go setup
+1. [Download](https://golang.org/dl/go1.17.1.darwin-amd64.pkg) and run the Go installer.
 
 2. Verify Go: `go version`
 
@@ -40,6 +40,8 @@ Here,
 
     - `create` - For creating/uploading a resource record for future access.
     - `delete` - For deleting a created resource record.
+    - `update` - For updating 
+    - `label` - For attaching a label to a resource.
     - `list` - For listing all the active entities of that resource.
     - `describe` - For describing a particular resource.
     - `status` - For current status of a particular resource
@@ -65,32 +67,43 @@ Here,
 
 ## Command Line User Interface
 
-To interacte with user via Command Line,
+To interact with user via Command Line,
 
 ```go
 import (
-    "github.com/dream11/odin/internal/commandline"
+    "github.com/dream11/odin/internal/ui"
 )
 ```
 
 ### Logging
 
 ```go
+var Logger ui.Logger
+
 func main() {
-    commandline.Interface.Info("string")
-    commandline.Interface.Warn("string")
-    commandline.Interface.Error("string") // This should be followed by an exit call
+    Logger.Info("string")
+    Logger.Success("string")
+    Logger.Warn("string")
+    Logger.Output("string")
+    Logger.Debug("string")
+    Logger.Error("string") // This should be followed by an exit call
 }
 ```
+
+> To enable debug logs, set an environment variable `ODIN_DEBUG=yes` & unset to disable if already set.
 
 ### Inputs
 
 ```go
+var Input ui.Logger
+
 func main() {
-    text := commandline.Interface.Ask("Input text")
-    secretText := commandline.Interface.AskSecret("Input secret text")
+    text := Input.Ask("Input text")
+    secretText := Input.AskSecret("Input secret text")
 }
 ```
+
+> For using these interfaces(logging & inputs) within commands, these are available as part of the declared command struct. Follow step 2 [here](./docs/ADD_COMMAND.md).
 
 ## Exit status
 

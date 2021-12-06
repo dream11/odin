@@ -15,6 +15,7 @@ like: create, list, delete, etc...
 
 Verb convention:
 	- create
+	- update
 	- delete
 	- describe
 	- list
@@ -29,45 +30,73 @@ like: env, profile, etc...
 Options are merely the flags that are required with the
 command.
 */
-func CommandCatalog() map[string]cli.CommandFactory {
+
+/*
+TODO:
+- add verbs for env resource
+- status & logs verbs for infra resource
+- status & logs verbs for service resource
+- add verbs for profile resource
+- add verbs for env resource
+*/
+
+// CommandsCatalog : initiate commands catalog
+func CommandsCatalog() map[string]cli.CommandFactory {
 	return map[string]cli.CommandFactory{
-		// Verbs for `env` resource
-		"list env": func() (cli.Command, error) {
-			return &commands.Env{List: true}, nil
-		},
-		"describe env": func() (cli.Command, error) {
-			return &commands.Env{Describe: true}, nil
-		},
-		"create env": func() (cli.Command, error) {
-			return &commands.Env{Create: true}, nil
-		},
-		"delete env": func() (cli.Command, error) {
-			return &commands.Env{Delete: true}, nil
+		"configure": func() (cli.Command, error) {
+			return &commands.Configure{}, nil
 		},
 
-		// Verbs for `profile` resource
-		"create profile": func() (cli.Command, error) {
-			return &commands.Profile{Create: true}, nil
+		// Verbs for `infra` resource
+		"create infra": func() (cli.Command, error) {
+			return &commands.Infra{Create: true}, nil
 		},
-		"delete profile": func() (cli.Command, error) {
-			return &commands.Profile{Delete: true}, nil
+		"update infra": func() (cli.Command, error) {
+			return &commands.Infra{Update: true}, nil
 		},
-		"list profile": func() (cli.Command, error) {
-			return &commands.Profile{List: true}, nil
+		"describe infra": func() (cli.Command, error) {
+			return &commands.Infra{Describe: true}, nil
 		},
-		"describe profile": func() (cli.Command, error) {
-			return &commands.Profile{Describe: true}, nil
+		"list infra": func() (cli.Command, error) {
+			return &commands.Infra{List: true}, nil
 		},
-		"deploy profile": func() (cli.Command, error) {
-			return &commands.Profile{Deploy: true}, nil
-		},
-		"destroy profile": func() (cli.Command, error) {
-			return &commands.Profile{Destroy: true}, nil
+		"delete infra": func() (cli.Command, error) {
+			return &commands.Infra{Delete: true}, nil
 		},
 
-		// Sample commands
+		// Verbs for `component` resource
+		"list component": func() (cli.Command, error) {
+			return &commands.Component{List: true}, nil
+		},
+
+		// Verbs for `service` resource
+		"create service": func() (cli.Command, error) {
+			return &commands.Service{Create: true}, nil
+		},
+		"describe service": func() (cli.Command, error) {
+			return &commands.Service{Describe: true}, nil
+		},
+		"list service": func() (cli.Command, error) {
+			return &commands.Service{List: true}, nil
+		},
+		"label service": func() (cli.Command, error) {
+			return &commands.Service{Label: true}, nil
+		},
+		"deploy service": func() (cli.Command, error) {
+			return &commands.Service{Deploy: true}, nil
+		},
+		"delete service": func() (cli.Command, error) {
+			return &commands.Service{Delete: true}, nil
+		},
+
+		/*
+		Sample commands -
+
 		"create test": func() (cli.Command, error) {
 			return &commands.Test{Create: true}, nil
+		},
+		"update test": func() (cli.Command, error) {
+			return &commands.Test{Update: true}, nil
 		},
 		"delete test": func() (cli.Command, error) {
 			return &commands.Test{Delete: true}, nil
@@ -77,6 +106,9 @@ func CommandCatalog() map[string]cli.CommandFactory {
 		},
 		"describe test": func() (cli.Command, error) {
 			return &commands.Test{Describe: true}, nil
+		},
+		"label test": func() (cli.Command, error) {
+			return &commands.Test{Label: true}, nil
 		},
 		"status test": func() (cli.Command, error) {
 			return &commands.Test{Status: true}, nil
@@ -90,5 +122,7 @@ func CommandCatalog() map[string]cli.CommandFactory {
 		"destroy test": func() (cli.Command, error) {
 			return &commands.Test{Destroy: true}, nil
 		},
+
+		*/
 	}
 }
