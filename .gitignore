@@ -17,3 +17,7 @@
 # Editor files
 *.code-workspace
 *.idea/
+
+# Service definition files
+service.yaml
+service.json

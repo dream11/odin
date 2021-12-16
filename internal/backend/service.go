@@ -22,6 +22,14 @@ func (s *Service) CreateService(service interface{}) {
 	response.Process(true) // process response and exit if error
 }
 
+// Rebuild Service : rebuild a service
+func (s *Service) RebuildService(service, version string) {
+	client := newApiClient()
+
+	response := client.action(path.Join(serviceEntity, service, "versions", version, "rebuild")+"/", "PUT", nil)
+	response.Process(true)
+}
+
 // DescribeService : describe a service version or all versions of a service
 func (s *Service) DescribeService(name, version string) ([]service.Service, error) {
 	client := newApiClient()
@@ -37,10 +45,10 @@ func (s *Service) DescribeService(name, version string) ([]service.Service, erro
 }
 
 // ListServices : list services per team and describe versions
-func (s *Service) ListServices(team, version string, maturity bool) ([]service.Service, error) {
+func (s *Service) ListServices(team, serviceName string, maturity bool) ([]service.Service, error) {
 	client := newApiClient()
 	client.QueryParams["team"] = team
-	client.QueryParams["version"] = version
+	client.QueryParams["name"] = serviceName
 	client.QueryParams["isMature"] = fmt.Sprintf("%v", maturity)
 
 	response := client.action(serviceEntity, "GET", nil)
