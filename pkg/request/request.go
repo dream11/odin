@@ -3,10 +3,11 @@ package request
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/dream11/odin/internal/ui"
 	"io/ioutil"
 	"net/http"
 	"os"
+
+	"github.com/dream11/odin/internal/ui"
 )
 
 // Request structure

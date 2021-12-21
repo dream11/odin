@@ -5,12 +5,11 @@ import (
 	"flag"
 	"strings"
 
-	"gopkg.in/yaml.v3"
-
 	"github.com/dream11/odin/api/infra"
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/file"
 	"github.com/dream11/odin/pkg/table"
+	"gopkg.in/yaml.v3"
 )
 
 // initiate backend client for infra
