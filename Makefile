@@ -5,4 +5,4 @@ install:
 	odin --version
 
 lint:
-	find ./ -type f -name "*.go" -exec go fmt "{}" \;
+	golangci-lint run -E gofmt -E gci --fix;
