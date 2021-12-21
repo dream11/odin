@@ -28,6 +28,24 @@ Or,
 
 3. Verify the cli: `odin --version`
 
+## Contribution guide
+
+### Formatting the code
+
+1. Install Lint tool: `brew install golangci-lint`
+2. Upgrade to its latest version: `brew upgrade golangci-lint`
+3. Run linter: `make lint`
+
+> All these linting checks are also ensured in pre-commit checks provided below.
+
+### Making commits
+
+1. Install pre-commit: `pip install pre-commit`
+2. Setup pre-commit: `cd odin && pre-commit install`
+3. Now, make commits.
+
+> Now on every commit that you make, pre-commit hook will validate the `go` code and will suggest changes if any.
+
 ## Commands
 
 ### Structure
@@ -117,7 +135,3 @@ Define appropriate exit status for commands based on the success/errors,
 | 126 | Exit status 126 is an interesting permissions error code. |
 | 127 | Exit status 127 tells you that one of two things has happened: Either the command doesn't exist, or the command isn't in your path `$PATH` |
 | 128 | Exit status 128 is the response received when an out-of-range exit code is used in programming. |
-
-## How to contribute?
-
-If you made changes in `xyz.go`, then ensure running `go fmt xyz.go`. Or to run on all files, `make lint`.
