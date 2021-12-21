@@ -33,7 +33,9 @@ Or,
 ### Formatting the code
 
 1. Install Lint tool: `brew install golangci-lint`
+
 2. Upgrade to its latest version: `brew upgrade golangci-lint`
+
 3. Run linter: `make lint`
 
 > All these linting checks are also ensured in pre-commit checks provided below.
@@ -41,7 +43,9 @@ Or,
 ### Making commits
 
 1. Install pre-commit: `pip install pre-commit`
+
 2. Setup pre-commit: `cd odin && pre-commit install`
+
 3. Now, make commits.
 
 > Now on every commit that you make, pre-commit hook will validate the `go` code and will suggest changes if any.
