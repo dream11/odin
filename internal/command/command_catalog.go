@@ -47,20 +47,20 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 			return &commands.Configure{}, nil
 		},
 
-		// Verbs for `environment` resource
-		"create environment": func() (cli.Command, error) {
+		// Verbs for `env` resource
+		"create env": func() (cli.Command, error) {
 			return &commands.Env{Create: true}, nil
 		},
-		"update environment": func() (cli.Command, error) {
+		"update env": func() (cli.Command, error) {
 			return &commands.Env{Update: true}, nil
 		},
-		"describe environment": func() (cli.Command, error) {
+		"describe env": func() (cli.Command, error) {
 			return &commands.Env{Describe: true}, nil
 		},
-		"list environment": func() (cli.Command, error) {
+		"list env": func() (cli.Command, error) {
 			return &commands.Env{List: true}, nil
 		},
-		"delete environment": func() (cli.Command, error) {
+		"delete env": func() (cli.Command, error) {
 			return &commands.Env{Delete: true}, nil
 		},
 
