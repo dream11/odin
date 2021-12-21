@@ -6,3 +6,9 @@ install:
 
 lint:
 	golangci-lint run -E gofmt -E gci --fix;
+
+buildBinary:
+	go get
+	go mod download
+	env GOOS=darwin GOARCH=amd64 go build -o bin/odin_darwin_amd64
+	env GOOS=linux GOARCH=amd64 go build -o bin/odin_linux_amd64
