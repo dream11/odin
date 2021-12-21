@@ -5,7 +5,7 @@ repos:
       - id: golangci-lint
         name: golangci-lint
         description: Fast linters runner for Go.
-        entry: golangci-lint run -E gofmt -E gci -E dogsled -E exhaustivestruct -E whitespace --fix
+        entry: golangci-lint run -E gofmt -E gci --fix
         types: [ go ]
         language: golang
         pass_filenames: false
