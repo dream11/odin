@@ -6,7 +6,7 @@ jobs:
   release:
     name: odin-release
     if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'development'
-    runs-on: [self-hosted, linux, X64, devops]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
