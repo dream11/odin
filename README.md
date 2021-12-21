@@ -46,6 +46,21 @@ Or,
 
 > Now on every commit that you make, pre-commit hook will validate the `go` code and will suggest changes if any.
 
+### Managing the version
+
+Odin's application version is in the semantic version form i.e. `x.y.z` where, 
+`x` is the major version, `y` is the minor version and `z` is the patch version.
+
+The version is maintained in [odin/app/app.go](./app/app.go) inside variable named `App`.
+
+Example: if the current version is `1.0.0`, then in case of 
+
+1. a bug fix or a patch, the patch version is upgraded i.e. `1.0.1`
+2. a minor change in some existing feature, the minor version is upgraded i.e. `1.1.0`
+3. a major feature addition, the major version is upgraded i.e. `2.0.0`
+
+> Update the version responsibly as this version will be used to create a release against any master/main branch merge.
+
 ## Commands
 
 ### Structure
