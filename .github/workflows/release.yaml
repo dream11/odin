@@ -5,7 +5,7 @@ on:
 jobs:
   release:
     name: odin-release
-    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'development'
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -16,7 +16,6 @@ jobs:
         id: commit
         run: |
           echo "::set-output name=version::$(go run cmd/getVersion.go)"
-          echo "::set-output name=changelog::$(git log --pretty='- %s')\n"
       - name: Create Tag
         uses: negz/create-tag@v1
         with:
