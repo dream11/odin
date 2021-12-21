@@ -32,11 +32,11 @@ Or,
 
 ### Formatting the code
 
-1. Ensure that the code formatting satisfies at least these linting [guidelines](https://golangci-lint.run/usage/linters/#enabled-by-default-linters)
-2. Ensure formatting according to [gofmt](https://pkg.go.dev/cmd/gofmt)
-3. Ensure that the packages are always imported in a deterministic manner stated by [gci](https://github.com/daixiang0/gci)
+1. Install Lint tool: `brew install golangci-lint`
+2. Upgrade to its latest version: `brew upgrade golangci-lint`
+3. Run linter: `make lint`
 
-> All these checks are ensured in pre-commit checks provided below.
+> All these linting checks are also ensured in pre-commit checks provided below.
 
 ### Making commits
 
