@@ -33,11 +33,9 @@ command.
 
 /*
 TODO:
-- add verbs for environment resource
-- status & logs verbs for environment resource
+- status & logs verbs for env resource
 - status & logs verbs for service resource
 - add verbs for profile resource
-- add verbs for environment resource
 */
 
 // CommandsCatalog : initiate commands catalog
