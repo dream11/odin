@@ -33,6 +33,9 @@ jobs:
           release_name: Release ${{ steps.commit.outputs.version }}
           draft: false
           prerelease: false
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '1.17.1'
       - name: Create Release Asset
         run: |
           make build
