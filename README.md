@@ -59,6 +59,8 @@ Example: if the current version is `1.0.0`, then in case of
 2. a minor change in some existing feature, the minor version is upgraded i.e. `1.1.0`
 3. a major feature addition, the major version is upgraded i.e. `2.0.0`
 
+> Update the version responsibly as this version will be used to create a release against any master/main branch merge.
+
 ## Commands
 
 ### Structure
