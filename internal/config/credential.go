@@ -3,12 +3,11 @@ package config
 import (
 	"path"
 
-	"gopkg.in/yaml.v3"
-
 	"github.com/dream11/odin/api/configuration"
 	"github.com/dream11/odin/app"
 	"github.com/dream11/odin/internal/ui"
 	"github.com/dream11/odin/pkg/file"
+	"gopkg.in/yaml.v3"
 )
 
 var logger ui.Logger

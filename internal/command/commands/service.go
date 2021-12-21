@@ -5,11 +5,10 @@ import (
 	"flag"
 	"strings"
 
-	"gopkg.in/yaml.v3"
-
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/file"
 	"github.com/dream11/odin/pkg/table"
+	"gopkg.in/yaml.v3"
 )
 
 // initiate backend client for service
@@ -178,7 +177,7 @@ func (s *Service) Run(args []string) int {
 				}
 			} else {
 				// initialise config as empty json
-				parsedConfig = make(map[string]string, 0)
+				parsedConfig = make(map[string]string)
 			}
 
 			serviceClient.DeployService(*serviceName, *serviceVersion, *infraName, parsedConfig)

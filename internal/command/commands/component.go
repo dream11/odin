@@ -1,9 +1,8 @@
 package commands
 
 import (
-	"gopkg.in/yaml.v3"
-
 	"github.com/dream11/odin/internal/backend"
+	"gopkg.in/yaml.v3"
 )
 
 // initiate backend client for component

@@ -4,12 +4,11 @@ import (
 	"flag"
 	"path"
 
-	"gopkg.in/yaml.v3"
-
 	"github.com/dream11/odin/api/configuration"
 	"github.com/dream11/odin/app"
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/file"
+	"gopkg.in/yaml.v3"
 )
 
 // initiate backend client for auth
