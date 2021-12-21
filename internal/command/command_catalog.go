@@ -90,38 +90,38 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		},
 
 		/*
-		Sample commands -
+			Sample commands -
 
-		"create test": func() (cli.Command, error) {
-			return &commands.Test{Create: true}, nil
-		},
-		"update test": func() (cli.Command, error) {
-			return &commands.Test{Update: true}, nil
-		},
-		"delete test": func() (cli.Command, error) {
-			return &commands.Test{Delete: true}, nil
-		},
-		"list test": func() (cli.Command, error) {
-			return &commands.Test{List: true}, nil
-		},
-		"describe test": func() (cli.Command, error) {
-			return &commands.Test{Describe: true}, nil
-		},
-		"label test": func() (cli.Command, error) {
-			return &commands.Test{Label: true}, nil
-		},
-		"status test": func() (cli.Command, error) {
-			return &commands.Test{Status: true}, nil
-		},
-		"logs test": func() (cli.Command, error) {
-			return &commands.Test{Logs: true}, nil
-		},
-		"deploy test": func() (cli.Command, error) {
-			return &commands.Test{Deploy: true}, nil
-		},
-		"destroy test": func() (cli.Command, error) {
-			return &commands.Test{Destroy: true}, nil
-		},
+			"create test": func() (cli.Command, error) {
+				return &commands.Test{Create: true}, nil
+			},
+			"update test": func() (cli.Command, error) {
+				return &commands.Test{Update: true}, nil
+			},
+			"delete test": func() (cli.Command, error) {
+				return &commands.Test{Delete: true}, nil
+			},
+			"list test": func() (cli.Command, error) {
+				return &commands.Test{List: true}, nil
+			},
+			"describe test": func() (cli.Command, error) {
+				return &commands.Test{Describe: true}, nil
+			},
+			"label test": func() (cli.Command, error) {
+				return &commands.Test{Label: true}, nil
+			},
+			"status test": func() (cli.Command, error) {
+				return &commands.Test{Status: true}, nil
+			},
+			"logs test": func() (cli.Command, error) {
+				return &commands.Test{Logs: true}, nil
+			},
+			"deploy test": func() (cli.Command, error) {
+				return &commands.Test{Deploy: true}, nil
+			},
+			"destroy test": func() (cli.Command, error) {
+				return &commands.Test{Destroy: true}, nil
+			},
 
 		*/
 	}
