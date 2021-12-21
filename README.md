@@ -85,13 +85,13 @@ Here,
 2. `resource` - The resource on which action will be performed. Example: `env` -
 
     ```shell
-    odin <verb> env <options>
+    odin <verb> environment <options>
     ```
 
 3. `options` - Extra properties required to support the commands. Example: `env` -
 
     ```shell
-    odin <verb> env --name=demo-1234
+    odin <verb> environment --name=demo-1234
     ```
 
 ### [Adding a command](./docs/ADD_COMMAND.md)

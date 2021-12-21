@@ -25,7 +25,7 @@ func (s *Service) Run(args []string) int {
 	filePath := flagSet.String("file", "service.yaml", "file to read service config")
 	serviceName := flagSet.String("name", "", "name of service to be used")
 	serviceVersion := flagSet.String("version", "", "version of service to be used")
-	infraName := flagSet.String("infra", "", "name of infra to deploy the service in")
+	infraName := flagSet.String("environment", "", "name of environment to deploy the service in")
 	teamName := flagSet.String("team", "", "name of user's team")
 	isMature := flagSet.Bool("mature", false, "mark service version as matured")
 	detailed := flagSet.Bool("detailed", false, "get detailed view")
@@ -108,7 +108,7 @@ func (s *Service) Run(args []string) int {
 
 				serviceYaml, err := yaml.Marshal(service)
 				if err != nil {
-					s.Logger.Error("Unable to parse infra definition! " + err.Error())
+					s.Logger.Error("Unable to parse environment definition! " + err.Error())
 					return 1
 				}
 
@@ -185,7 +185,7 @@ func (s *Service) Run(args []string) int {
 			return 0
 		}
 
-		s.Logger.Error("service name, version and infra name cannot be blank")
+		s.Logger.Error("service name, version and environment name cannot be blank")
 		return 1
 	}
 
@@ -241,7 +241,7 @@ func (s *Service) Help() string {
 		return commandHelper("deploy", "service", []string{
 			"--name=name of service to deploy",
 			"--version=version of service to deploy",
-			"--infra=name of infra to deploy service in",
+			"--environment=name of environment to deploy service in",
 			"--file=name of config file",
 		})
 	}

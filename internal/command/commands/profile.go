@@ -25,8 +25,8 @@ func (p *Profile) Run(args []string) int {
 	filePath := flagSet.String("file", "profile.yaml", "file name of profile yaml")
 	profileName := flagSet.String("name", "nil", "name of profile to be used")
 	profileVersion := flagSet.String("version", "nil", "version of profile to be used")
-	envName := flagSet.String("env", "nil", "name of environment to use")
-	infraName := flagSet.String("infra", "nil", "name of infra to deploy the profile in")
+	envName := flagSet.String("environment", "nil", "name of environment to use")
+	infraName := flagSet.String("environment", "nil", "name of environment to deploy the profile in")
 	teamName := flagSet.String("team", "", "name of user's team")
 
 	err := flagSet.Parse(args)
@@ -92,8 +92,8 @@ func (p *Profile) Run(args []string) int {
 
 	if p.Deploy {
 		p.Logger.Info("Deploying profile: " + *profileName + "@" + *profileVersion + " in " + *envName + "/" + *infraName)
-		// TODO: call PG api deploys a profile version in given env
-		// POST /deploy?profile=<profile>&version=<version>&env=<env>
+		// TODO: call PG api deploys a profile version in given environment
+		// POST /deploy?profile=<profile>&version=<version>&environment=<environment>
 
 		return 0
 
@@ -101,8 +101,8 @@ func (p *Profile) Run(args []string) int {
 
 	if p.Destroy {
 		p.Logger.Info("Destroying profile: " + *profileName + "@" + *profileVersion + " in " + *envName + "/" + *infraName)
-		// TODO: call PG api that destroys a profile version from given env
-		// DELETE /deploy?profile=<profile>&version=<version>&env=<env>
+		// TODO: call PG api that destroys a profile version from given environment
+		// DELETE /deploy?profile=<profile>&version=<version>&environment=<environment>
 
 		return 0
 
@@ -110,16 +110,16 @@ func (p *Profile) Run(args []string) int {
 
 	if p.Status {
 		p.Logger.Info("Fetching status for profile: " + *profileName + " in " + *envName + "/" + *infraName)
-		// TODO: call PG api that returns status of profile in env
-		// GET /profileStatus?profile=<profile>&env=<env>
+		// TODO: call PG api that returns status of profile in environment
+		// GET /profileStatus?profile=<profile>&environment=<environment>
 
 		return 0
 	}
 
 	if p.Logs {
 		p.Logger.Info("Fetching logs for profile: " + *profileName + " in " + *envName + "/" + *infraName)
-		// TODO: call PG api that returns execution logs of profile in env
-		// GET /profileLogs?profile=<profile>&env=<env>
+		// TODO: call PG api that returns execution logs of profile in environment
+		// GET /profileLogs?profile=<profile>&environment=<environment>
 
 		return 0
 	}
@@ -162,8 +162,8 @@ func (p *Profile) Help() string {
 		return commandHelper("deploy", "profile", []string{
 			"--name=name of profile to deploy",
 			"--version=version of profile to deploy",
-			"--env=name of env to use",
-			"--infra=name of infra to deploy the profile in",
+			"--environment=name of environment to use",
+			"--environment=name of environment to deploy the profile in",
 		})
 	}
 
@@ -171,21 +171,21 @@ func (p *Profile) Help() string {
 		return commandHelper("destroy", "profile", []string{
 			"--name=name of profile to destroy",
 			"--version=version of profile to destroy",
-			"--env=name of env to destroy the profile in",
+			"--environment=name of environment to destroy the profile in",
 		})
 	}
 
 	if p.Status {
 		return commandHelper("status", "profile", []string{
 			"--name=name of profile to get status",
-			"--env=name of env to get status",
+			"--environment=name of environment to get status",
 		})
 	}
 
 	if p.Logs {
 		return commandHelper("logs", "profile", []string{
 			"--name=name of profile to get logs",
-			"--env=name of env to get logs",
+			"--environment=name of environment to get logs",
 		})
 	}
 
