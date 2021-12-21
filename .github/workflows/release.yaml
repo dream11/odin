@@ -23,27 +23,6 @@ jobs:
           version: ${{ steps.commit.outputs.version }}
           message: ${{ steps.commit.outputs.version }}
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Generate changelog
-        run: |
-          [ -e CHANGELOG.md ] && rm CHANGELOG.md
-          cat <<EOT >> CHANGELOG.md
-          # [${{ steps.commit.outputs.version }}](https://github.com/dream11/odin/tree/${{ steps.commit.outputs.version }})
-          ## Changes
-          ### Files
-          ${{ steps.changed_files.outputs.all }}
-          ### Commits
-          ${{ steps.commit.outputs.changelog }}
-          EOT
-      - name: Commit files
-        run: |
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git commit -m "Add changelog" -a
-      - name: Push Changelog
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ env.GITHUB_BASE_REF }}
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -54,6 +33,9 @@ jobs:
           release_name: Release ${{ steps.commit.outputs.version }}
           draft: false
           prerelease: false
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '1.17.1'
       - name: Create Release Asset
         run: |
           make build
