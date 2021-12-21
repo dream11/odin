@@ -15,7 +15,7 @@ jobs:
       - name: Check commit details
         id: commit
         run: |
-          echo "::set-output name=version::$(go run cmd/getVersion.go)\n"
+          echo "::set-output name=version::$(go run cmd/getVersion.go)"
           echo "::set-output name=changelog::$(git log --pretty='- %s')\n"
       - name: Create Tag
         uses: negz/create-tag@v1
