@@ -30,6 +30,16 @@ Or,
 
 ## Contribution guide
 
+### Formatting the code
+
+1. Ensure that the code formatting satisfies at least these linting [guidelines](https://golangci-lint.run/usage/linters/#enabled-by-default-linters)
+2. Ensure formatting according to [gofmt](https://pkg.go.dev/cmd/gofmt)
+3. Ensure that the packages are always imported in a deterministic manner stated by [gci](https://github.com/daixiang0/gci)
+
+> All these checks are ensured in pre-commit checks provided below.
+
+### Making commits
+
 1. Install pre-commit: `pip install pre-commit`
 2. Setup pre-commit: `cd odin && pre-commit install`
 3. Now, make commits.
