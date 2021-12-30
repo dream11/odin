@@ -31,14 +31,14 @@ func (s *Service) RebuildService(service, version string) {
 }
 
 // DescribeService : describe a service version or all versions of a service
-func (s *Service) DescribeService(name, version string) ([]service.Service, error) {
+func (s *Service) DescribeService(name, version string) (service.Service, error) {
 	client := newApiClient()
 	client.QueryParams["version"] = version
 
 	response := client.action(path.Join(serviceEntity, name), "GET", nil)
 	response.Process(true)
 
-	var serviceResponse service.ListResponse
+	var serviceResponse service.DetailResponse
 	err := json.Unmarshal(response.Body, &serviceResponse)
 
 	return serviceResponse.Response, err
