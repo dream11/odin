@@ -11,7 +11,7 @@ import (
 type Env struct{}
 
 // root entity
-var envEntity = "Envs"
+var envEntity = "envs"
 
 // CreateEnv : create an empty Env
 func (i *Env) CreateEnv(EnvDetails interface{}) (envResp.Env, error) {
