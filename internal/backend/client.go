@@ -44,7 +44,7 @@ func newApiClient() clientProperties {
 	var appConfig = config.Get()
 
 	apiClient := newClient()
-	apiClient.address += "api/integration/cli/v1/"
+	apiClient.address += "api/integration/cli/v2/"
 	apiClient.Headers["Authorization"] = "Bearer " + appConfig.AccessToken
 
 	return apiClient
