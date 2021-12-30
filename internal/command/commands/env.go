@@ -45,7 +45,7 @@ func (i *Env) Run(args []string) int {
 				return 1
 			}
 
-			i.Logger.Success("Env: " + response.Name + " created!")
+			i.Logger.Success("Env: " + response.Name + " creation is in progress!")
 
 			return 0
 		}
