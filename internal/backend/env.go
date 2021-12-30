@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"path"
 
-	envResp "github.com/dream11/odin/api/env"
+	envResp "github.com/dream11/odin/api/environment"
 )
 
 // Env entity

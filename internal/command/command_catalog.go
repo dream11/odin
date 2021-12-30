@@ -69,6 +69,10 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 			return &commands.Component{List: true}, nil
 		},
 
+		"create env": func() (cli.Command, error) {
+			return &commands.Env{Create: true}, nil
+		},
+
 		// Verbs for `service` resource
 		"create service": func() (cli.Command, error) {
 			return &commands.Service{Create: true}, nil
