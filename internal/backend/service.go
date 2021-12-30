@@ -50,7 +50,10 @@ func (s *Service) ListServices(team, version, serviceName string, maturity bool)
 	client.QueryParams["team"] = team
 	client.QueryParams["version"] = version
 	client.QueryParams["name"] = serviceName
-	client.QueryParams["isMature"] = fmt.Sprintf("%v", maturity)
+	// if maturity then only pass isMature in query params
+	if maturity {
+		client.QueryParams["isMature"] = fmt.Sprintf("%v", maturity)
+	}
 
 	response := client.action(serviceEntity, "GET", nil)
 	response.Process(true)
