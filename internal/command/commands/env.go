@@ -5,10 +5,10 @@ import (
 
 	"github.com/dream11/odin/api/environment"
 	"github.com/dream11/odin/internal/backend"
-
 )
 
 var envClient backend.Env
+
 // Env : command declaration
 type Env command
 
@@ -64,7 +64,7 @@ func (i *Env) Help() string {
 		return commandHelper("create", "env", []string{
 			"--team=team name to associate the env with(optional)",
 			"--purpose=reason to create env(optional)",
-			"--env_type=env_type to create env in",
+			"--envType=env_type to create env in",
 			"--account=account name to provision the env in (optional)",
 		})
 	}
