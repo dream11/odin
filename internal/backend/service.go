@@ -45,9 +45,10 @@ func (s *Service) DescribeService(name, version string) ([]service.Service, erro
 }
 
 // ListServices : list services per team and describe versions
-func (s *Service) ListServices(team, serviceName string, maturity bool) ([]service.Service, error) {
+func (s *Service) ListServices(team, version, serviceName string, maturity bool) ([]service.Service, error) {
 	client := newApiClient()
 	client.QueryParams["team"] = team
+	client.QueryParams["version"] = version
 	client.QueryParams["name"] = serviceName
 	client.QueryParams["isMature"] = fmt.Sprintf("%v", maturity)
 

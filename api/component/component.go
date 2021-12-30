@@ -20,6 +20,7 @@ type Component struct {
 // Type interface
 type Type struct {
 	Name                      string      `yaml:"name,omitempty" json:"name,omitempty"`
+	Version                   string      `yaml:"version,omitempty" json:"version,omitempty"`
 	CreatedBy                 string      `yaml:"createdBy,omitempty" json:"createdBy,omitempty"`
 	UpdatedBy                 string      `yaml:"updatedBy,omitempty" json:"updatedBy,omitempty"`
 	CreatedAt                 string      `yaml:"createdAt,omitempty" json:"createdAt,omitempty"`

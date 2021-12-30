@@ -29,7 +29,7 @@ func (s *Service) Run(args []string) int {
 	teamName := flagSet.String("team", "", "name of user's team")
 	isMature := flagSet.Bool("mature", false, "mark service version as matured")
 	detailed := flagSet.Bool("detailed", false, "get detailed view")
-	rebuild := flagSet.Bool("rebuild", false, "rebuild job")
+	rebuild := flagSet.Bool("rebuild", false, "rebuild executor for creating images")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -107,7 +107,7 @@ func (s *Service) Run(args []string) int {
 
 	if s.List {
 		s.Logger.Info("Listing all services")
-		serviceList, err := serviceClient.ListServices(*teamName, *serviceName, *isMature)
+		serviceList, err := serviceClient.ListServices(*teamName, *serviceVersion, *serviceName, *isMature)
 		if err != nil {
 			s.Logger.Error(err.Error())
 			return 1
