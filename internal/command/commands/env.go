@@ -13,7 +13,7 @@ var envClient backend.Env
 type Env command
 
 // Run : implements the actual functionality of the command
-func (i *Env) Run(args []string) int {
+func (e *Env) Run(args []string) int {
 	// Define flag set
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
 	// create flags
@@ -24,13 +24,13 @@ func (i *Env) Run(args []string) int {
 
 	err := flagSet.Parse(args)
 	if err != nil {
-		i.Logger.Error("Unable to parse flags! " + err.Error())
+		e.Logger.Error("Unable to parse flags! " + err.Error())
 		return 1
 	}
 
-	if i.Create {
+	if e.Create {
 		if emptyParameterValidation([]string{*envType}) {
-			i.Logger.Warn("Creating env in  " + *envType)
+			e.Logger.Warn("Creating env in  " + *envType)
 
 			envConfig := environment.Env{
 				Team:    *team,
@@ -41,26 +41,26 @@ func (i *Env) Run(args []string) int {
 
 			response, err := envClient.CreateEnv(envConfig)
 			if err != nil {
-				i.Logger.Error(err.Error())
+				e.Logger.Error(err.Error())
 				return 1
 			}
 
-			i.Logger.Success("Env: " + response.Name + " creation is in progress!")
+			e.Logger.Success("Env: " + response.Name + " creation is in progress!")
 
 			return 0
 		}
 
-		i.Logger.Error("envType cannot be blank")
+		e.Logger.Error("envType cannot be blank")
 		return 1
 	}
 
-	i.Logger.Error("Not a valid command")
+	e.Logger.Error("Not a valid command")
 	return 127
 }
 
 // Help : returns an explanatory string
-func (i *Env) Help() string {
-	if i.Create {
+func (e *Env) Help() string {
+	if e.Create {
 		return commandHelper("create", "env", []string{
 			"--team=team name to associate the env with(optional)",
 			"--purpose=reason to create env(optional)",
@@ -73,8 +73,8 @@ func (i *Env) Help() string {
 }
 
 // Synopsis : returns a brief helper text for the command's verbs
-func (i *Env) Synopsis() string {
-	if i.Create {
+func (e *Env) Synopsis() string {
+	if e.Create {
 		return "create an env"
 	}
 	return defaultHelper()
