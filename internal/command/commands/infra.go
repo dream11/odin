@@ -26,7 +26,7 @@ func (i *Infra) Run(args []string) int {
 	name := flagSet.String("name", "", "name of environment")
 	team := flagSet.String("team", "", "display environments created by a team")
 	purpose := flagSet.String("purpose", "", "reason to create infra")
-	envType := flagSet.String("envType", "", "envType to attach with infra")
+	env := flagSet.String("env", "", "env to attach with infra")
 	providerAccount := flagSet.String("account", "", "account name to provision the infra in")
 	filePath := flagSet.String("file", "infra.yaml", "file to read infra config")
 	detailed := flagSet.Bool("detailed", false, "get detailed view")
@@ -38,13 +38,13 @@ func (i *Infra) Run(args []string) int {
 	}
 
 	if i.Create {
-		if emptyParameterValidation([]string{*envType}) {
-			i.Logger.Warn("Creating env in  " + *envType)
+		if emptyParameterValidation([]string{*team, *env, *purpose}) {
+			i.Logger.Warn("Creating infra for team: " + *team)
 
 			infraConfig := infra.Infra{
 				Team:    *team,
 				Purpose: *purpose,
-				Env:     *envType,
+				Env:     *env,
 				Account: *providerAccount,
 			}
 
@@ -59,7 +59,7 @@ func (i *Infra) Run(args []string) int {
 			return 0
 		}
 
-		i.Logger.Error("envType cannot be blank")
+		i.Logger.Error("team name, env & purpose cannot be blank")
 		return 1
 	}
 
