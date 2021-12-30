@@ -19,7 +19,7 @@ func (e *Env) Run(args []string) int {
 	// create flags
 	team := flagSet.String("team", "", "display environments created by a team")
 	purpose := flagSet.String("purpose", "", "reason to create env")
-	envType := flagSet.String("envType", "", "envType to attach with env")
+	envType := flagSet.String("envType", "kube", "envType to attach with env")
 	providerAccount := flagSet.String("account", "", "account name to provision the env in")
 
 	err := flagSet.Parse(args)
