@@ -38,7 +38,7 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Create {
-		if emptyParameterValidation([]string{*team, *env, *purpose}) {
+		if emptyParameterValidation([]string{*env}) {
 			e.Logger.Warn("Creating environment for team: " + *team)
 			envConfig := environment.Env{
 				Team:    *team,
@@ -58,7 +58,7 @@ func (e *Env) Run(args []string) int {
 			return 0
 		}
 
-		e.Logger.Error("team name, environment & purpose cannot be blank")
+		e.Logger.Error("env-type is a required parameter")
 		return 1
 	}
 
