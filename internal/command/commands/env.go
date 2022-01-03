@@ -58,7 +58,7 @@ func (e *Env) Run(args []string) int {
 			return 0
 		}
 
-		e.Logger.Error("Something went wrong")
+		e.Logger.Error("env-type is a required parameter")
 		return 1
 	}
 
