@@ -22,26 +22,38 @@ func (s *Service) CreateService(service interface{}) {
 	response.Process(true) // process response and exit if error
 }
 
+// Rebuild Service : rebuild a service
+func (s *Service) RebuildService(service, version string) {
+	client := newApiClient()
+
+	response := client.action(path.Join(serviceEntity, service, "versions", version, "rebuild")+"/", "PUT", nil)
+	response.Process(true)
+}
+
 // DescribeService : describe a service version or all versions of a service
-func (s *Service) DescribeService(name, version string) ([]service.Service, error) {
+func (s *Service) DescribeService(name, version string) (service.Service, error) {
 	client := newApiClient()
 	client.QueryParams["version"] = version
 
 	response := client.action(path.Join(serviceEntity, name), "GET", nil)
 	response.Process(true)
 
-	var serviceResponse service.ListResponse
+	var serviceResponse service.DetailResponse
 	err := json.Unmarshal(response.Body, &serviceResponse)
 
 	return serviceResponse.Response, err
 }
 
 // ListServices : list services per team and describe versions
-func (s *Service) ListServices(team, version string, maturity bool) ([]service.Service, error) {
+func (s *Service) ListServices(team, version, serviceName string, maturity bool) ([]service.Service, error) {
 	client := newApiClient()
 	client.QueryParams["team"] = team
 	client.QueryParams["version"] = version
-	client.QueryParams["isMature"] = fmt.Sprintf("%v", maturity)
+	client.QueryParams["name"] = serviceName
+	// if maturity then only pass isMature in query params
+	if maturity {
+		client.QueryParams["isMature"] = fmt.Sprintf("%v", maturity)
+	}
 
 	response := client.action(serviceEntity, "GET", nil)
 	response.Process(true)

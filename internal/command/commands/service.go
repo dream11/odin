@@ -29,6 +29,7 @@ func (s *Service) Run(args []string) int {
 	teamName := flagSet.String("team", "", "name of user's team")
 	isMature := flagSet.Bool("mature", false, "mark service version as matured")
 	detailed := flagSet.Bool("detailed", false, "get detailed view")
+	rebuild := flagSet.Bool("rebuild", false, "rebuild executor for creating images")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -37,6 +38,16 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Create {
+
+		if *rebuild {
+			if emptyParameterValidation([]string{*serviceName, *serviceVersion}) {
+				serviceClient.RebuildService(*serviceName, *serviceVersion)
+				return 0
+			}
+			s.Logger.Error("service name & version cannot be blank")
+			return 1
+		}
+
 		configData, err := file.Read(*filePath)
 		if err != nil {
 			s.Logger.Error("Unable to read from " + *filePath + "\n" + err.Error())
@@ -76,16 +87,14 @@ func (s *Service) Run(args []string) int {
 				return 1
 			}
 
-			for _, service := range serviceResp {
-				s.Logger.Info(service.Name + "@" + service.Version + " details!")
-				details, err := yaml.Marshal(service)
-				if err != nil {
-					s.Logger.Error(err.Error())
-					return 1
-				}
-
-				s.Logger.Output(string(details))
+			s.Logger.Info(serviceResp.Name + "@" + serviceResp.Version + " details!")
+			details, err := yaml.Marshal(serviceResp)
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return 1
 			}
+
+			s.Logger.Output(string(details))
 
 			return 0
 		}
@@ -96,7 +105,7 @@ func (s *Service) Run(args []string) int {
 
 	if s.List {
 		s.Logger.Info("Listing all services")
-		serviceList, err := serviceClient.ListServices(*teamName, *serviceVersion, *isMature)
+		serviceList, err := serviceClient.ListServices(*teamName, *serviceVersion, *serviceName, *isMature)
 		if err != nil {
 			s.Logger.Error(err.Error())
 			return 1
