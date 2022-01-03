@@ -41,6 +41,8 @@ Or,
       serviceName := flagSet.String("name", "", "name of service to be used")
       ```
 
+2. The project must follow the following [layout](https://github.com/golang-standards/project-layout).
+
 ### Formatting the code
 
 1. Install Lint tool: `brew install golangci-lint`
