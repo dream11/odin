@@ -4,49 +4,49 @@ import (
 	"encoding/json"
 	"path"
 
-	"github.com/dream11/odin/api/environment"
+	envResp "github.com/dream11/odin/api/environment"
 )
 
 // Env entity
 type Env struct{}
 
 // root entity
-var envEntity = "infras"
+var envEntity = "envs"
 
-// CreateEnv : create an empty environment
-func (e *Env) CreateEnv(envDetails interface{}) (environment.Env, error) {
+// CreateEnv : create an empty Env
+func (e *Env) CreateEnv(envDetails interface{}) (envResp.Env, error) {
 	client := newApiClient()
 
 	response := client.action(envEntity+"/", "POST", envDetails)
 	response.Process(true) // process response and exit if error
 
-	var envResponse environment.CreationResponse
+	var envResponse envResp.CreationResponse
 	err := json.Unmarshal(response.Body, &envResponse)
 
 	return envResponse.Response, err
 }
 
-// DescribeEnv : describe an environment
-func (e *Env) DescribeEnv(env string) ([]environment.Env, error) {
+// DescribeEnv : describe an Env
+func (e *Env) DescribeEnv(env string) ([]envResp.Env, error) {
 	client := newApiClient()
 
 	response := client.action(path.Join(envEntity, env)+"/", "GET", nil)
 	response.Process(true) // process response and exit if error
 
-	var envResponse environment.ListResponse
+	var envResponse envResp.ListResponse
 	err := json.Unmarshal(response.Body, &envResponse)
 
 	return envResponse.Response, err
 }
 
 // ListEnv : list all environment(s) with filters
-func (e *Env) ListEnv() ([]environment.Env, error) {
+func (e *Env) ListEnv() ([]envResp.Env, error) {
 	client := newApiClient()
 
 	response := client.action(envEntity+"/", "GET", nil)
 	response.Process(true) // process response and exit if error
 
-	var envResponse environment.ListResponse
+	var envResponse envResp.ListResponse
 	err := json.Unmarshal(response.Body, &envResponse)
 
 	return envResponse.Response, err
