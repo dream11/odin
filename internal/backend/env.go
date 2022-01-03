@@ -14,10 +14,10 @@ type Env struct{}
 var envEntity = "envs"
 
 // CreateEnv : create an empty Env
-func (e *Env) CreateEnv(EnvDetails interface{}) (envResp.Env, error) {
+func (e *Env) CreateEnv(envDetails interface{}) (envResp.Env, error) {
 	client := newApiClient()
 
-	response := client.action(envEntity+"/", "POST", EnvDetails)
+	response := client.action(envEntity+"/", "POST", envDetails)
 	response.Process(true) // process response and exit if error
 
 	var envResponse envResp.CreationResponse
@@ -27,10 +27,10 @@ func (e *Env) CreateEnv(EnvDetails interface{}) (envResp.Env, error) {
 }
 
 // DescribeEnv : describe an Env
-func (e *Env) DescribeEnv(Env string) ([]envResp.Env, error) {
+func (e *Env) DescribeEnv(env string) ([]envResp.Env, error) {
 	client := newApiClient()
 
-	response := client.action(path.Join(envEntity, Env)+"/", "GET", nil)
+	response := client.action(path.Join(envEntity, env)+"/", "GET", nil)
 	response.Process(true) // process response and exit if error
 
 	var envResponse envResp.ListResponse
