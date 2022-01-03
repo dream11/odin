@@ -25,7 +25,7 @@ Verb convention:
 	- destroy
 
 Resources are the entities on with the verbs will run,
-like: env, profile, etc...
+like: environment, profile, etc...
 
 Options are merely the flags that are required with the
 command.
@@ -33,11 +33,9 @@ command.
 
 /*
 TODO:
-- add verbs for env resource
-- status & logs verbs for infra resource
+- status & logs verbs for env resource
 - status & logs verbs for service resource
 - add verbs for profile resource
-- add verbs for env resource
 */
 
 // CommandsCatalog : initiate commands catalog
@@ -47,21 +45,21 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 			return &commands.Configure{}, nil
 		},
 
-		// Verbs for `infra` resource
-		"create infra": func() (cli.Command, error) {
-			return &commands.Infra{Create: true}, nil
+		// Verbs for `env` resource
+		"create env": func() (cli.Command, error) {
+			return &commands.Env{Create: true}, nil
 		},
-		"update infra": func() (cli.Command, error) {
-			return &commands.Infra{Update: true}, nil
+		"update env": func() (cli.Command, error) {
+			return &commands.Env{Update: true}, nil
 		},
-		"describe infra": func() (cli.Command, error) {
-			return &commands.Infra{Describe: true}, nil
+		"describe env": func() (cli.Command, error) {
+			return &commands.Env{Describe: true}, nil
 		},
-		"list infra": func() (cli.Command, error) {
-			return &commands.Infra{List: true}, nil
+		"list env": func() (cli.Command, error) {
+			return &commands.Env{List: true}, nil
 		},
-		"delete infra": func() (cli.Command, error) {
-			return &commands.Infra{Delete: true}, nil
+		"delete env": func() (cli.Command, error) {
+			return &commands.Env{Delete: true}, nil
 		},
 
 		// Verbs for `component` resource
