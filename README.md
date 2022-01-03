@@ -30,6 +30,17 @@ Or,
 
 ## Contribution guide
 
+### Code conventions
+
+1. All variables and functions to be named as per Go's standards (camel case).
+   1. Only the variables & functions, that are to be used across packages should be named in exported convention `ExportedName`, rest all names should be in unexported convention `unexportedName`.
+   2. All defined command line parameters should follow the following convention - `parameter-name`
+      Example: 
+      ```go
+      envType := flagSet.String("env-type", "kube", "environment type to attach with environment")
+      serviceName := flagSet.String("name", "", "name of service to be used")
+      ```
+
 ### Formatting the code
 
 1. Install Lint tool: `brew install golangci-lint`
