@@ -1,3 +1,3 @@
 # odin/bin
 
-Target dir for `make buildBinary` command
+Target dir for `make build` command

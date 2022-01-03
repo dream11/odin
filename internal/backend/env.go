@@ -14,7 +14,7 @@ type Env struct{}
 var envEntity = "envs"
 
 // CreateEnv : create an empty Env
-func (i *Env) CreateEnv(EnvDetails interface{}) (envResp.Env, error) {
+func (e *Env) CreateEnv(EnvDetails interface{}) (envResp.Env, error) {
 	client := newApiClient()
 
 	response := client.action(envEntity+"/", "POST", EnvDetails)
@@ -27,7 +27,7 @@ func (i *Env) CreateEnv(EnvDetails interface{}) (envResp.Env, error) {
 }
 
 // DescribeEnv : describe an Env
-func (i *Env) DescribeEnv(Env string) ([]envResp.Env, error) {
+func (e *Env) DescribeEnv(Env string) ([]envResp.Env, error) {
 	client := newApiClient()
 
 	response := client.action(path.Join(envEntity, Env)+"/", "GET", nil)
@@ -39,8 +39,8 @@ func (i *Env) DescribeEnv(Env string) ([]envResp.Env, error) {
 	return envResponse.Response, err
 }
 
-// ListEnv : list all Env(s) with filters
-func (i *Env) ListEnv() ([]envResp.Env, error) {
+// ListEnv : list all environment(s) with filters
+func (e *Env) ListEnv() ([]envResp.Env, error) {
 	client := newApiClient()
 
 	response := client.action(envEntity+"/", "GET", nil)
@@ -52,18 +52,18 @@ func (i *Env) ListEnv() ([]envResp.Env, error) {
 	return envResponse.Response, err
 }
 
-// DeleteEnv : delete an created Env
-func (i *Env) DeleteEnv(Env string) {
+// DeleteEnv : delete an created environment
+func (e *Env) DeleteEnv(env string) {
 	client := newApiClient()
 
-	response := client.action(path.Join(envEntity, Env)+"/", "DELETE", nil)
+	response := client.action(path.Join(envEntity, env)+"/", "DELETE", nil)
 	response.Process(true) // process response and exit if error
 }
 
-// UpdateEnv : update a created Env
-func (i *Env) UpdateEnv(Env string, config interface{}) {
+// UpdateEnv : update a created environment
+func (e *Env) UpdateEnv(env string, config interface{}) {
 	client := newApiClient()
 
-	response := client.action(path.Join(envEntity, Env)+"/", "PUT", config)
+	response := client.action(path.Join(envEntity, env)+"/", "PUT", config)
 	response.Process(true) // process response and exit if error
 }
