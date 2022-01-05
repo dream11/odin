@@ -2,7 +2,7 @@
 @Library('d11-jenkins-lib@master') _
 pipeline {
     agent {
-        label "${agentLabel}"
+        label "devx-auto"
     }
 
     options {
