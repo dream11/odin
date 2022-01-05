@@ -20,17 +20,15 @@ pipeline {
         }
     }
 
-    stages {
-        stage('Installation') {
-            steps {
-                script {
-                  sh """
-                    make install
-                    go build .
-                    sudo mv ./odin /usr/local/bin
-                    odin --version
-                  """
-                }
+    stage('Installation') {
+        steps {
+            script {
+                sh """
+                make install
+                go build .
+                sudo mv ./odin /usr/local/bin
+                odin --version
+                """
             }
         }
     }
