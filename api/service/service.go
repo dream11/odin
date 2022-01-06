@@ -30,3 +30,8 @@ type ListResponse struct {
 type DetailResponse struct {
 	Response Service `yaml:"resp,omitempty" json:"resp,omitempty"`
 }
+
+// StatusResponse interface
+type StatusResponse struct {
+	Response map[string]map[string]string `yaml:"resp,omitempty" json:"resp,omitempty"`
+}
