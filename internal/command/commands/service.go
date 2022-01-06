@@ -211,22 +211,21 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Status {
-        if emptyParameterValidation([]string{*serviceName, *serviceVersion}) {
-            s.Logger.Warn("Getting status of service: " + *serviceName + "@" + *serviceVersion)
+		if emptyParameterValidation([]string{*serviceName, *serviceVersion}) {
+			s.Logger.Info("Getting status of service: " + *serviceName + "@" + *serviceVersion)
 			serviceStatus, err := serviceClient.StatusService(*serviceName, *serviceVersion)
 			if err != nil {
 				s.Logger.Error(err.Error())
 				return 1
 			}
-			
+
 			tableHeaders := []string{"Component Name", "AMI", "DOCKER IMAGE"}
 			var tableData [][]interface{}
-
-			for componentName, componentStatus := range serviceStatus {
+			for _, componentStatus := range serviceStatus {
 				tableData = append(tableData, []interface{}{
-					componentName,
-					componentStatus["ec2"],
-					componentStatus["docker"],
+					componentStatus.Name,
+					componentStatus.Ec2,
+					componentStatus.Docker,
 				})
 			}
 
@@ -235,13 +234,12 @@ func (s *Service) Run(args []string) int {
 				s.Logger.Error(err.Error())
 				return 1
 			}
-            return 0
-        }
-		
+			return 0
+		}
 
-        s.Logger.Error("service name & version cannot be blank")
-        return 1
-    }
+		s.Logger.Error("service name & version cannot be blank")
+		return 1
+	}
 
 	s.Logger.Error("Not a valid command")
 	return 127
@@ -296,11 +294,11 @@ func (s *Service) Help() string {
 	}
 
 	if s.Status {
-        return commandHelper("status", "service", []string{
-            "--name=name of service",
-            "--version=version of service",
-        })
-    }
+		return commandHelper("status", "service", []string{
+			"--name=name of service",
+			"--version=version of service",
+		})
+	}
 
 	return defaultHelper()
 }

@@ -31,7 +31,14 @@ type DetailResponse struct {
 	Response Service `yaml:"resp,omitempty" json:"resp,omitempty"`
 }
 
+// Status interface
+type Status struct {
+	Name   string `yaml:"name,omitempty" json:"name,omitempty"`
+	Ec2    string `yaml:"ec2,omitempty" json:"ec2,omitempty"`
+	Docker string `yaml:"docker,omitempty" json:"docker,omitempty"`
+}
+
 // StatusResponse interface
 type StatusResponse struct {
-	Response map[string]map[string]string `yaml:"resp,omitempty" json:"resp,omitempty"`
+	Response []Status `yaml:"resp,omitempty" json:"resp,omitempty"`
 }
