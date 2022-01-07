@@ -149,8 +149,15 @@ func (s *Service) Run(args []string) int {
 
 	if s.Label {
 		if emptyParameterValidation([]string{*serviceName, *serviceVersion}) {
+
+			// Add more labels to this condition
+			if !*isMature {
+				s.Logger.Error("No label specified")
+				return 1
+			}
+
 			if *isMature {
-				s.Logger.Warn("Marking " + *serviceName + "@" + *serviceVersion + " as mature")
+				s.Logger.Info("Marking " + *serviceName + "@" + *serviceVersion + " as mature")
 				serviceClient.MarkMature(*serviceName, *serviceVersion)
 			}
 			return 0
