@@ -329,7 +329,7 @@ func (s *Service) Synopsis() string {
 		return "delete a service version"
 	}
 
-	if s.Delete {
+	if s.Status {
 		return "get status of a service version"
 	}
 
