@@ -149,8 +149,15 @@ func (s *Service) Run(args []string) int {
 
 	if s.Label {
 		if emptyParameterValidation([]string{*serviceName, *serviceVersion}) {
+
+			// Add more labels to this condition
+			if !*isMature {
+				s.Logger.Error("No label specified")
+				return 1
+			}
+
 			if *isMature {
-				s.Logger.Warn("Marking " + *serviceName + "@" + *serviceVersion + " as mature")
+				s.Logger.Info("Marking " + *serviceName + "@" + *serviceVersion + " as mature")
 				serviceClient.MarkMature(*serviceName, *serviceVersion)
 			}
 			return 0
@@ -210,6 +217,37 @@ func (s *Service) Run(args []string) int {
 		return 1
 	}
 
+	if s.Status {
+		if emptyParameterValidation([]string{*serviceName, *serviceVersion}) {
+			s.Logger.Info("Getting status of service: " + *serviceName + "@" + *serviceVersion)
+			serviceStatus, err := serviceClient.StatusService(*serviceName, *serviceVersion)
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return 1
+			}
+
+			tableHeaders := []string{"Component Name", "AMI", "DOCKER IMAGE"}
+			var tableData [][]interface{}
+			for _, componentStatus := range serviceStatus {
+				tableData = append(tableData, []interface{}{
+					componentStatus.Name,
+					componentStatus.Ec2,
+					componentStatus.Docker,
+				})
+			}
+
+			err = table.Write(tableHeaders, tableData)
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return 1
+			}
+			return 0
+		}
+
+		s.Logger.Error("service name & version cannot be blank")
+		return 1
+	}
+
 	s.Logger.Error("Not a valid command")
 	return 127
 }
@@ -262,6 +300,13 @@ func (s *Service) Help() string {
 		})
 	}
 
+	if s.Status {
+		return commandHelper("status", "service", []string{
+			"--name=name of service",
+			"--version=version of service",
+		})
+	}
+
 	return defaultHelper()
 }
 
@@ -289,6 +334,10 @@ func (s *Service) Synopsis() string {
 
 	if s.Delete {
 		return "delete a service version"
+	}
+
+	if s.Status {
+		return "get status of a service version"
 	}
 
 	return defaultHelper()
