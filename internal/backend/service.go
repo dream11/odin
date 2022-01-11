@@ -88,3 +88,16 @@ func (s *Service) DeployService(service, version, env string, config interface{}
 	response := client.action(path.Join(serviceEntity, "deploy", service, "version", version)+"/", "POST", config)
 	response.Process(true)
 }
+
+// StatusService : get status of a service
+func (s *Service) StatusService(serviceName, version string) ([]service.Status, error) {
+	client := newApiClient()
+
+	response := client.action(path.Join(serviceEntity, serviceName, "versions", version, "status")+"/", "GET", nil)
+	response.Process(true)
+
+	var serviceResponse service.StatusResponse
+	err := json.Unmarshal(response.Body, &serviceResponse)
+
+	return serviceResponse.Response, err
+}
