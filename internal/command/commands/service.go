@@ -207,7 +207,7 @@ func (s *Service) Run(args []string) int {
 
 	if s.Delete {
 		if emptyParameterValidation([]string{*serviceName, *serviceVersion}) {
-			s.Logger.Warn("Deleting service: " + *serviceName + "@" + *serviceVersion)
+			s.Logger.Info("Deleting service: " + *serviceName + "@" + *serviceVersion)
 			serviceClient.DeleteService(*serviceName, *serviceVersion)
 
 			return 0
