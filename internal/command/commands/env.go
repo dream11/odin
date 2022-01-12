@@ -125,7 +125,7 @@ func (e *Env) Run(args []string) int {
 
 	if e.List {
 		e.Logger.Info("Listing all environment(s)")
-		envList, err := envClient.ListEnv()
+		envList, err := envClient.ListEnv(*team, *env, *providerAccount)
 		if err != nil {
 			e.Logger.Error(err.Error())
 			return 1
