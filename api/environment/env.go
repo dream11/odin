@@ -24,6 +24,17 @@ type Env struct {
 	Services     []service.Service `yaml:"services,omitempty" json:"services,omitempty"`
 }
 
+type History struct {
+	ID               int         `yaml:"id,omitempty" json:"id,omitempty"`
+	CreatedBy        string      `yaml:"createdBy,omitempty" json:"createdBy,omitempty"`
+	UpdatedBy        string      `yaml:"updatedBy,omitempty" json:"updatedBy,omitempty"`
+	CreatedAt        string      `yaml:"createdAt,omitempty" json:"createdAt,omitempty"`
+	UpdatedAt        string      `yaml:"updatedAt,omitempty" json:"updatedAt,omitempty"`
+	State            string      `yaml:"state,omitempty" json:"state,omitempty"`
+	AutoDeletionTime string      `yaml:"autoDeletionTime,omitempty" json:"autoDeletionTime,omitempty"`
+	EnvConfig        interface{} `yaml:"envConfig,omitempty" json:"envConfig,omitempty"`
+}
+
 // CreationResponse interface
 type CreationResponse struct {
 	Response Env `yaml:"resp,omitempty" json:"resp,omitempty"`
@@ -32,4 +43,9 @@ type CreationResponse struct {
 // ListResponse interface
 type ListResponse struct {
 	Response []Env `yaml:"resp,omitempty" json:"resp,omitempty"`
+}
+
+// HistoryListResponse interface
+type HistoryListResponse struct {
+	Response []History `yaml:"resp,omitempty" json:"resp,omitempty"`
 }

@@ -183,6 +183,38 @@ func (e *Env) Run(args []string) int {
 		return 1
 	}
 
+	if e.GetHistory {
+		if emptyParameterValidation([]string{*name}) {
+			e.Logger.Info("Fetching changelog for env: " + *name)
+			envResp, err := envClient.GetHistoryEnv(*name)
+			if err != nil {
+				e.Logger.Error(err.Error())
+				return 1
+			}
+
+			tableHeaders := []string{"ID", "Created By", "Created At", "Updated By", "Updated At", "Status"}
+			var tableData [][]interface{}
+
+			for _, env := range envResp {
+				tableData = append(tableData, []interface{}{
+					env.ID,
+					env.CreatedBy,
+					env.CreatedAt,
+					env.UpdatedBy,
+					env.UpdatedAt,
+					env.State,
+				})
+			}
+			err = table.Write(tableHeaders, tableData)
+			if err != nil {
+				e.Logger.Error(err.Error())
+				return 1
+			}
+
+			return 0
+		}
+	}
+
 	e.Logger.Error("Not a valid command")
 	return 127
 }
@@ -223,6 +255,12 @@ func (e *Env) Help() string {
 		})
 	}
 
+	if e.GetHistory {
+		return commandHelper("get-history", "environment", []string{
+			"--name=name of environment to delete",
+		})
+	}
+
 	return defaultHelper()
 }
 
@@ -246,6 +284,10 @@ func (e *Env) Synopsis() string {
 
 	if e.Delete {
 		return "delete an environment"
+	}
+
+	if e.GetHistory {
+		return "get changelog of an environment"
 	}
 	return defaultHelper()
 }

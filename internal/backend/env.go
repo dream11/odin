@@ -67,3 +67,16 @@ func (e *Env) UpdateEnv(env string, config interface{}) {
 	response := client.action(path.Join(envEntity, env)+"/", "PUT", config)
 	response.Process(true) // process response and exit if error
 }
+
+// GetHistoryEnv : get historical changes in an Env
+func (e *Env) GetHistoryEnv(env string) ([]envResp.History, error) {
+	client := newApiClient()
+
+	response := client.action(path.Join("envhistory", env)+"/", "GET", nil)
+	response.Process(true) // process response and exit if error
+
+	var envResponse envResp.HistoryListResponse
+	err := json.Unmarshal(response.Body, &envResponse)
+
+	return envResponse.Response, err
+}
