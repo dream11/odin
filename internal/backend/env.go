@@ -27,13 +27,13 @@ func (e *Env) CreateEnv(envDetails interface{}) (envResp.Env, error) {
 }
 
 // DescribeEnv : describe an Env
-func (e *Env) DescribeEnv(env string) ([]envResp.Env, error) {
+func (e *Env) DescribeEnv(env string) (envResp.Env, error) {
 	client := newApiClient()
 
 	response := client.action(path.Join(envEntity, env)+"/", "GET", nil)
 	response.Process(true) // process response and exit if error
 
-	var envResponse envResp.ListResponse
+	var envResponse envResp.DetailResponse
 	err := json.Unmarshal(response.Body, &envResponse)
 
 	return envResponse.Response, err

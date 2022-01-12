@@ -109,82 +109,79 @@ func (e *Env) Run(args []string) int {
 				return 1
 			}
 
-			for _, env := range envResp {
-				e.Logger.Info(env.Name + " details!")
-				details, err := yaml.Marshal(env)
-				if err != nil {
-					e.Logger.Error(err.Error())
-					return 1
-				}
-
-				e.Logger.Output(string(details))
-			}
-
-			return 0
-		}
-
-		if e.List {
-			e.Logger.Info("Listing all environment(s)")
-			envList, err := envClient.ListEnv()
+			details, err := yaml.Marshal(envResp)
 			if err != nil {
 				e.Logger.Error(err.Error())
 				return 1
 			}
 
-			if *detailed {
-				for _, env := range envList {
-					e.Logger.Info("Env definition for: " + env.Name)
+			e.Logger.Output(string(details))
 
-					envYaml, err := yaml.Marshal(env)
-					if err != nil {
-						e.Logger.Error("Unable to parse environment definition! " + err.Error())
-						return 1
-					}
+			return 0
+		}
+		e.Logger.Error("name is a required parameter")
+		return 1
+	}
 
-					e.Logger.Output(string(envYaml))
-				}
-			} else {
-				tableHeaders := []string{"Name", "Purpose", "Team", "Env Type", "State", "Account", "Deletion Time"}
-				var tableData [][]interface{}
-
-				for _, inf := range envList {
-					tableData = append(tableData, []interface{}{
-						inf.Name,
-						inf.Purpose,
-						inf.Team,
-						inf.EnvType,
-						inf.State,
-						inf.Account,
-						inf.DeletionTime,
-					})
-				}
-
-				err = table.Write(tableHeaders, tableData)
-				if err != nil {
-					e.Logger.Error(err.Error())
-					return 1
-				}
-			}
+	if e.List {
+		e.Logger.Info("Listing all environment(s)")
+		envList, err := envClient.ListEnv()
+		if err != nil {
+			e.Logger.Error(err.Error())
+			return 1
 		}
 
-		if e.Delete {
-			if emptyParameterValidation([]string{*name}) {
-				e.Logger.Warn("Deleting environment:" + *name)
-				envClient.DeleteEnv(*name)
+		if *detailed {
+			for _, env := range envList {
+				e.Logger.Info("Env definition for: " + env.Name)
 
-				return 0
+				envYaml, err := yaml.Marshal(env)
+				if err != nil {
+					e.Logger.Error("Unable to parse environment definition! " + err.Error())
+					return 1
+				}
+
+				e.Logger.Output(string(envYaml))
+			}
+		} else {
+			tableHeaders := []string{"Name", "Purpose", "Team", "Env Type", "State", "Account", "Deletion Time"}
+			var tableData [][]interface{}
+
+			for _, inf := range envList {
+				tableData = append(tableData, []interface{}{
+					inf.Name,
+					inf.Purpose,
+					inf.Team,
+					inf.EnvType,
+					inf.State,
+					inf.Account,
+					inf.DeletionTime,
+				})
 			}
 
-			e.Logger.Error("environment name cannot be blank")
-			return 1
+			err = table.Write(tableHeaders, tableData)
+			if err != nil {
+				e.Logger.Error(err.Error())
+				return 1
+			}
+			return 0
+		}
+	}
+
+	if e.Delete {
+		if emptyParameterValidation([]string{*name}) {
+			e.Logger.Warn("Deleting environment:" + *name)
+			envClient.DeleteEnv(*name)
+
+			return 0
 		}
 
 		e.Logger.Error("environment name cannot be blank")
 		return 1
 	}
 
-	e.Logger.Error("Not a valid command")
-	return 127
+	e.Logger.Error("not a valid command")
+	return 1
 }
 
 // Help : returns an explanatory string
