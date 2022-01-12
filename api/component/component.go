@@ -9,7 +9,7 @@ type Component struct {
 	UpdatedBy                 string      `yaml:"updatedBy,omitempty" json:"updatedBy,omitempty"`
 	CreatedAt                 string      `yaml:"createdAt,omitempty" json:"createdAt,omitempty"`
 	UpdatedAt                 string      `yaml:"updatedAt,omitempty" json:"updatedAt,omitempty"`
-	Active                    bool        `yaml:"isActive,omitempty" json:"isActive,omitempty"`
+	Active                    *bool       `yaml:"isActive,omitempty" json:"isActive,omitempty"`
 	Config                    interface{} `yaml:"config,omitempty" json:"config,omitempty"`
 	Deployment                interface{} `yaml:"deployment_config,omitempty" json:"deployment_config,omitempty"`
 	Scaling                   interface{} `yaml:"scaling_config,omitempty" json:"scaling_config,omitempty"`
