@@ -63,8 +63,18 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		},
 
 		// Verbs for `component` resource
-		"list component": func() (cli.Command, error) {
-			return &commands.Component{List: true}, nil
+		"describe component": func() (cli.Command, error) {
+			return &commands.Component{Describe: true}, nil
+		},
+
+		// Verbs for `component-type` resource
+		"list component-type": func() (cli.Command, error) {
+			return &commands.ComponentType{List: true}, nil
+		},
+
+		// Verbs for `component` resource
+		"describe component-type": func() (cli.Command, error) {
+			return &commands.ComponentType{Describe: true}, nil
 		},
 
 		// Verbs for `service` resource
