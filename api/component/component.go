@@ -37,3 +37,8 @@ type ListTypeResponse struct {
 type DetailComponentTypeResponse struct {
 	Response Type `yaml:"resp,omitempty" json:"resp,omitempty"`
 }
+
+// ListTypeResponse interface
+type DetailComponentResponse struct {
+	Response Component `yaml:"resp,omitempty" json:"resp,omitempty"`
+}

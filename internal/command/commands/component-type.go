@@ -63,8 +63,8 @@ func (c *ComponentType) Run(args []string) int {
 
 	if c.Describe {
 		if emptyParameterValidation([]string{*componentTypeName}) {
-			c.Logger.Info("Describing service: " + *componentTypeName + "@" + *componentTypeVersion)
-			componentTypeResp, err := componentTypeClient.DescribeComponentTypes(*componentTypeName, *componentTypeVersion)
+			c.Logger.Info("Describing component type: " + *componentTypeName + "@" + *componentTypeVersion)
+			componentTypeResp, err := componentTypeClient.DescribeComponentType(*componentTypeName, *componentTypeVersion)
 			if err != nil {
 				c.Logger.Error(err.Error())
 				return 1
