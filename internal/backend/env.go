@@ -40,8 +40,9 @@ func (e *Env) DescribeEnv(env string) (envResp.Env, error) {
 }
 
 // ListEnv : list all environment(s) with filters
-func (e *Env) ListEnv(team, env, providerAccount string) ([]envResp.Env, error) {
+func (e *Env) ListEnv(name, team, env, providerAccount string) ([]envResp.Env, error) {
 	client := newApiClient()
+	client.QueryParams["name"] = name
 	client.QueryParams["team"] = team
 	client.QueryParams["envType"] = env
 	client.QueryParams["cloudProviderAccount"] = providerAccount
