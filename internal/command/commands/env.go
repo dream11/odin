@@ -144,18 +144,18 @@ func (e *Env) Run(args []string) int {
 				e.Logger.Output(string(envYaml))
 			}
 		} else {
-			tableHeaders := []string{"Name", "Purpose", "Team", "Env Type", "State", "Account", "Deletion Time"}
+			tableHeaders := []string{"Name", "Team", "Env Type", "State", "Account", "Deletion Time", "Purpose"}
 			var tableData [][]interface{}
 
 			for _, inf := range envList {
 				tableData = append(tableData, []interface{}{
 					inf.Name,
-					inf.Purpose,
 					inf.Team,
 					inf.EnvType,
 					inf.State,
 					inf.Account,
 					inf.DeletionTime,
+					inf.Purpose,
 				})
 			}
 
