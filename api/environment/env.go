@@ -26,10 +26,9 @@ type Env struct {
 
 type History struct {
 	ID               int         `yaml:"id,omitempty" json:"id,omitempty"`
-	CreatedBy        string      `yaml:"createdBy,omitempty" json:"createdBy,omitempty"`
-	UpdatedBy        string      `yaml:"updatedBy,omitempty" json:"updatedBy,omitempty"`
-	CreatedAt        string      `yaml:"createdAt,omitempty" json:"createdAt,omitempty"`
-	UpdatedAt        string      `yaml:"updatedAt,omitempty" json:"updatedAt,omitempty"`
+	CreatedBy        string      `yaml:"modifiedBy,omitempty" json:"createdBy,omitempty"`
+	CreatedAt        string      `yaml:"lastModified,omitempty" json:"createdAt,omitempty"`
+	EnvId            string      `yaml:"envName,omitempty" json:"envId,omitempty"`
 	State            string      `yaml:"state,omitempty" json:"state,omitempty"`
 	AutoDeletionTime string      `yaml:"autoDeletionTime,omitempty" json:"autoDeletionTime,omitempty"`
 	EnvConfig        interface{} `yaml:"envConfig,omitempty" json:"envConfig,omitempty"`

@@ -80,3 +80,17 @@ func (e *Env) GetHistoryEnv(env string) ([]envResp.History, error) {
 
 	return envResponse.Response, err
 }
+
+// DescribeHistoryEnv : describe a historical changes in an Env
+func (e *Env) DescribeHistoryEnv(env string, id string) ([]envResp.History, error) {
+	client := newApiClient()
+	client.QueryParams["id"] = id
+
+	response := client.action(path.Join("envhistory", env)+"/", "GET", nil)
+	response.Process(true) // process response and exit if error
+
+	var envResponse envResp.HistoryListResponse
+	err := json.Unmarshal(response.Body, &envResponse)
+
+	return envResponse.Response, err
+}

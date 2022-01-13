@@ -64,6 +64,9 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"get-history env": func() (cli.Command, error) {
 			return &commands.Env{GetHistory: true}, nil
 		},
+		"describe-history env": func() (cli.Command, error) {
+			return &commands.Env{DescribeHistory: true}, nil
+		},
 
 		// Verbs for `component` resource
 		"list component": func() (cli.Command, error) {

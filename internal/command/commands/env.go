@@ -30,6 +30,7 @@ func (e *Env) Run(args []string) int {
 	providerAccount := flagSet.String("account", "", "account name to provision the environment in")
 	filePath := flagSet.String("file", "environment.yaml", "file to read environment config")
 	detailed := flagSet.Bool("detailed", false, "get detailed view")
+	id := flagSet.String("id", "", "unique id of a changelog of an env")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -192,16 +193,14 @@ func (e *Env) Run(args []string) int {
 				return 1
 			}
 
-			tableHeaders := []string{"ID", "Created By", "Created At", "Updated By", "Updated At", "Status"}
+			tableHeaders := []string{"ID", "Last Modified", "Modified by", "Status"}
 			var tableData [][]interface{}
 
 			for _, env := range envResp {
 				tableData = append(tableData, []interface{}{
 					env.ID,
-					env.CreatedBy,
 					env.CreatedAt,
-					env.UpdatedBy,
-					env.UpdatedAt,
+					env.CreatedBy,
 					env.State,
 				})
 			}
@@ -210,6 +209,33 @@ func (e *Env) Run(args []string) int {
 				e.Logger.Error(err.Error())
 				return 1
 			}
+
+			e.Logger.Info("Run the following command to describe a changelog in detail: odin describe-history env --name <env-name> --id <changelog-ID>")
+			return 0
+		}
+	}
+
+	if e.DescribeHistory {
+		if emptyParameterValidation([]string{*name}) {
+			e.Logger.Info("Detailed description of a changelog for env: " + *name + " with ID: " + *id)
+			envResp, err := envClient.DescribeHistoryEnv(*name, *id)
+			if err != nil {
+				e.Logger.Error(err.Error())
+				return 1
+			}
+
+			if len(envResp) == 0 {
+				e.Logger.Error("ID: " + *id + " does not exist for env: " + *name + "!")
+				e.Logger.Warn("Run the following command to get the correct ID of the changelog: odin get-history env --name " + *name)
+				return 1
+			}
+
+			details, err := yaml.Marshal(envResp[0])
+			if err != nil {
+				e.Logger.Error(err.Error())
+				return 1
+			}
+			e.Logger.Output(string(details))
 
 			return 0
 		}
@@ -257,7 +283,14 @@ func (e *Env) Help() string {
 
 	if e.GetHistory {
 		return commandHelper("get-history", "environment", []string{
-			"--name=name of environment to delete",
+			"--name=name of environment fetch changelog for",
+		})
+	}
+
+	if e.DescribeHistory {
+		return commandHelper("describe-history", "environment", []string{
+			"--name=name of environment to fetch changelog for",
+			"--id=unique id of a changelog for the specified env to get details for",
 		})
 	}
 
@@ -288,6 +321,10 @@ func (e *Env) Synopsis() string {
 
 	if e.GetHistory {
 		return "get changelog of an environment"
+	}
+
+	if e.DescribeHistory {
+		return "get env config details for a changelog of an environment"
 	}
 	return defaultHelper()
 }
