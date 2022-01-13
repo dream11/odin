@@ -28,7 +28,6 @@ func (s *Service) Run(args []string) int {
 	envName := flagSet.String("env", "", "name of environment to deploy the service in")
 	teamName := flagSet.String("team", "", "name of user's team")
 	isMature := flagSet.Bool("mature", false, "mark service version as matured")
-	detailed := flagSet.Bool("detailed", false, "get detailed view")
 	rebuild := flagSet.Bool("rebuild", false, "rebuild executor for creating images")
 
 	err := flagSet.Parse(args)
@@ -75,6 +74,8 @@ func (s *Service) Run(args []string) int {
 
 		serviceClient.CreateService(parsedConfig)
 
+		s.Logger.Output("\nService Created. Check status of images using")
+		s.Logger.Emphasize("odin status service --name <serviceName> --version <serviceVersion>")
 		return 0
 	}
 
@@ -95,7 +96,8 @@ func (s *Service) Run(args []string) int {
 			}
 
 			s.Logger.Output(string(details))
-
+			s.Logger.Output("\nChecked description of service. Check component description using")
+			s.Logger.Emphasize("odin describe component --name <componentName> --version <componentVersion>")
 			return 0
 		}
 
@@ -111,39 +113,26 @@ func (s *Service) Run(args []string) int {
 			return 1
 		}
 
-		if *detailed {
-			for _, service := range serviceList {
-				s.Logger.Info("Service definition for: " + service.Name + "@" + service.Version)
+		tableHeaders := []string{"Name", "Version", "Description", "Team", "Mature"}
+		var tableData [][]interface{}
 
-				serviceYaml, err := yaml.Marshal(service)
-				if err != nil {
-					s.Logger.Error("Unable to parse environment definition! " + err.Error())
-					return 1
-				}
-
-				s.Logger.Output(string(serviceYaml))
-			}
-		} else {
-			tableHeaders := []string{"Name", "Version", "Description", "Team", "Mature"}
-			var tableData [][]interface{}
-
-			for _, service := range serviceList {
-				tableData = append(tableData, []interface{}{
-					service.Name,
-					service.Version,
-					service.Description,
-					strings.Join(service.Team, ","),
-					service.Mature,
-				})
-			}
-
-			err = table.Write(tableHeaders, tableData)
-			if err != nil {
-				s.Logger.Error(err.Error())
-				return 1
-			}
+		for _, service := range serviceList {
+			tableData = append(tableData, []interface{}{
+				service.Name,
+				service.Version,
+				service.Description,
+				strings.Join(service.Team, ","),
+				service.Mature,
+			})
 		}
 
+		err = table.Write(tableHeaders, tableData)
+		if err != nil {
+			s.Logger.Error(err.Error())
+			return 1
+		}
+		s.Logger.Output("\nGot service list. You can now describe service using")
+		s.Logger.Emphasize("odin describe service --name <serviceName> --version <serviceVersion>")
 		return 0
 	}
 
@@ -241,6 +230,8 @@ func (s *Service) Run(args []string) int {
 				s.Logger.Error(err.Error())
 				return 1
 			}
+			s.Logger.Output("\nGot service image status. If status is SUCCESS you can deploy service in your env using")
+			s.Logger.Emphasize("odin deploy service --name <serviceName> --version <serviceVersion> --env <envName> --file <configFile>")
 			return 0
 		}
 
