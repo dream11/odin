@@ -2,12 +2,13 @@ package commands
 
 import (
 	"flag"
+
 	"github.com/dream11/odin/internal/backend"
 	"gopkg.in/yaml.v3"
 )
 
 // initiate backend client for component
-var componentClient backend.ComponentType
+var componentClient backend.Component
 
 // Component : command declaration
 type Component command
@@ -57,7 +58,7 @@ func (c *Component) Help() string {
 	if c.Describe {
 		return commandHelper("describe", "component", []string{
 			"--name=name of component (required)",
-			"--version=of component (required)",})
+			"--version=of component (required)"})
 	}
 
 	return defaultHelper()

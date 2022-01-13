@@ -2,14 +2,16 @@ package commands
 
 import (
 	"flag"
+
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/table"
 	"gopkg.in/yaml.v3"
 )
-// initiate backend client for component
+
+// initiate backend client for component type
 var componentTypeClient backend.ComponentType
 
-// Component : command declaration
+// Component Type : command declaration
 type ComponentType command
 
 // Run : implements the actual functionality of the command
@@ -26,7 +28,7 @@ func (c *ComponentType) Run(args []string) int {
 	}
 	if c.List {
 		c.Logger.Info("Listing all component types")
-		componentTypeList, err := componentClient.ListComponentTypes(*componentTypeName, *componentTypeVersion)
+		componentTypeList, err := componentTypeClient.ListComponentTypes(*componentTypeName, *componentTypeVersion)
 		if err != nil {
 			c.Logger.Error(err.Error())
 			return 1
@@ -70,7 +72,6 @@ func (c *ComponentType) Run(args []string) int {
 				return 1
 			}
 
-			c.Logger.Info(componentTypeResp.Name + "@" + componentTypeResp.Version + " details!")
 			details, err := yaml.Marshal(componentTypeResp)
 			if err != nil {
 				c.Logger.Error(err.Error())
@@ -94,12 +95,12 @@ func (c *ComponentType) Help() string {
 	if c.List {
 		return commandHelper("list", "component-type", []string{
 			"--name=name of component type",
-			"--version=of component type",})
+			"--version=of component type"})
 	}
 	if c.Describe {
 		return commandHelper("list", "component-type", []string{
 			"--name=name of component type (required)",
-			"--version=of component type (deafult latest)",})
+			"--version=of component type (deafult latest)"})
 	}
 
 	return defaultHelper()
@@ -111,7 +112,7 @@ func (c *ComponentType) Synopsis() string {
 		return "list all components types"
 	}
 	if c.List {
-		return "describe a particular component type"
+		return "describe component type"
 	}
 	return defaultHelper()
 }

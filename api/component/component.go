@@ -16,7 +16,7 @@ type Component struct {
 type Type struct {
 	Name                      string      `yaml:"name,omitempty" json:"name,omitempty"`
 	Version                   string      `yaml:"version,omitempty" json:"version,omitempty"`
-	TotalVersions			  int		  `yaml:"total_versions,omitempty" json:"total_versions,omitempty"`
+	TotalVersions             int         `yaml:"total_versions,omitempty" json:"total_versions,omitempty"`
 	CreatedBy                 string      `yaml:"createdBy,omitempty" json:"createdBy,omitempty"`
 	UpdatedBy                 string      `yaml:"updatedBy,omitempty" json:"updatedBy,omitempty"`
 	CreatedAt                 string      `yaml:"createdAt,omitempty" json:"createdAt,omitempty"`
