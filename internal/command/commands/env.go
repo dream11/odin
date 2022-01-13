@@ -27,6 +27,8 @@ func (e *Env) Run(args []string) int {
 	team := flagSet.String("team", "", "display environments created by a team")
 	purpose := flagSet.String("purpose", "", "reason to create environment")
 	env := flagSet.String("env-type", "kube", "environment to attach with environment")
+	service := flagSet.String("service", "", "service name to filter out describe infra")
+	component := flagSet.String("component", "", "component name to filter out describe infra")
 	providerAccount := flagSet.String("account", "", "account name to provision the environment in")
 	filePath := flagSet.String("file", "environment.yaml", "file to read environment config")
 	detailed := flagSet.Bool("detailed", false, "get detailed view")
@@ -103,7 +105,7 @@ func (e *Env) Run(args []string) int {
 	if e.Describe {
 		if emptyParameterValidation([]string{*name}) {
 			e.Logger.Info("Describing " + *name)
-			envResp, err := envClient.DescribeEnv(*name)
+			envResp, err := envClient.DescribeEnv(*name, *service, *component)
 			if err != nil {
 				e.Logger.Error(err.Error())
 				return 1
@@ -116,7 +118,12 @@ func (e *Env) Run(args []string) int {
 			}
 
 			e.Logger.Output(string(details))
-
+			if *service == "" && *component == "" {
+				e.Logger.Info("NEXT USEFUL COMMAND:- odin describe env --name " + *name + " --service <serviceName>")
+			}
+			if *service != "" && *component == "" {
+				e.Logger.Info("NEXT USEFUL COMMAND:- odin describe env --name " + *name + " --service " + *service + " --component <componentName>")
+			}
 			return 0
 		}
 		e.Logger.Error("name is a required parameter")

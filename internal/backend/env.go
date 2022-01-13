@@ -27,9 +27,10 @@ func (e *Env) CreateEnv(envDetails interface{}) (envResp.Env, error) {
 }
 
 // DescribeEnv : describe an Env
-func (e *Env) DescribeEnv(env string) (envResp.Env, error) {
+func (e *Env) DescribeEnv(env, service, component string) (envResp.Env, error) {
 	client := newApiClient()
-
+	client.QueryParams["service"] = service
+	client.QueryParams["component"] = component
 	response := client.action(path.Join(envEntity, env)+"/", "GET", nil)
 	response.Process(true) // process response and exit if error
 
