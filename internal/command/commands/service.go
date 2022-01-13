@@ -123,7 +123,7 @@ func (s *Service) Run(args []string) int {
 				service.Version,
 				service.Description,
 				strings.Join(service.Team, ","),
-				service.Mature,
+				*service.Mature,
 			})
 		}
 
