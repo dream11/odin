@@ -59,7 +59,8 @@ func (c *ComponentType) Run(args []string) int {
 			c.Logger.Error(err.Error())
 			return 1
 		}
-		c.Logger.Output("Got component type list. You can now describe component type using\nodin describe component-type --name <componentName> --version <componentVersion>")
+		c.Logger.Output("\nGot component type list. You can now describe component type using")
+		c.Logger.Output("odin describe component-type --name <componentTypeName> --version <componentTypeVersion>")
 		return 0
 	}
 
