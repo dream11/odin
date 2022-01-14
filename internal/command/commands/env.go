@@ -193,14 +193,14 @@ func (e *Env) Run(args []string) int {
 				return 1
 			}
 
-			tableHeaders := []string{"ID", "Last Modified", "Modified by", "Status"}
+			tableHeaders := []string{"ID", "Modified by", "Last Modified", "Status"}
 			var tableData [][]interface{}
 
 			for _, env := range envResp {
 				tableData = append(tableData, []interface{}{
 					env.ID,
-					env.CreatedAt,
 					env.CreatedBy,
+					env.CreatedAt,
 					env.State,
 				})
 			}
@@ -210,7 +210,7 @@ func (e *Env) Run(args []string) int {
 				return 1
 			}
 
-			e.Logger.Info("Run the following command to describe a changelog in detail: odin describe-history env --name <env-name> --id <changelog-ID>")
+			e.Logger.Info("Command to describe a changelog in detail: odin describe-history env --name <env-name> --id <changelog-ID>")
 			return 0
 		}
 	}
@@ -225,8 +225,7 @@ func (e *Env) Run(args []string) int {
 			}
 
 			if len(envResp) == 0 {
-				e.Logger.Error("ID: " + *id + " does not exist for env: " + *name + "!")
-				e.Logger.Warn("Run the following command to get the correct ID of the changelog: odin get-history env --name " + *name)
+				e.Logger.Warn("Command to get the correct ID of the changelog: odin get-history env --name " + *name)
 				return 1
 			}
 
@@ -235,6 +234,7 @@ func (e *Env) Run(args []string) int {
 				e.Logger.Error(err.Error())
 				return 1
 			}
+
 			e.Logger.Output(string(details))
 
 			return 0
