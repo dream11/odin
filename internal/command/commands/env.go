@@ -119,10 +119,7 @@ func (e *Env) Run(args []string) int {
 
 			e.Logger.Output(string(details))
 			if *service == "" && *component == "" {
-				e.Logger.Info("NEXT USEFUL COMMAND:- odin describe env --name " + *name + " --service <serviceName>")
-			}
-			if *service != "" && *component == "" {
-				e.Logger.Info("NEXT USEFUL COMMAND:- odin describe env --name " + *name + " --service " + *service + " --component <componentName>")
+				e.Logger.Info("NEXT USEFUL COMMAND:- odin describe env --name " + *name + " --service <serviceName> --component <componentName>")
 			}
 			return 0
 		}
