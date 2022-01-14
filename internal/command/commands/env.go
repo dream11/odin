@@ -184,7 +184,7 @@ func (e *Env) Run(args []string) int {
 		return 1
 	}
 
-	e.Logger.Error("not a valid command")
+	e.Logger.Error("Not a valid command")
 	return 1
 }
 
