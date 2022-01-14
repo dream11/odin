@@ -31,7 +31,6 @@ func (e *Env) Run(args []string) int {
 	component := flagSet.String("component", "", "component name to filter out describe infra")
 	providerAccount := flagSet.String("account", "", "account name to provision the environment in")
 	filePath := flagSet.String("file", "environment.yaml", "file to read environment config")
-	detailed := flagSet.Bool("detailed", false, "get detailed view")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -135,41 +134,27 @@ func (e *Env) Run(args []string) int {
 			return 1
 		}
 
-		if *detailed {
-			for _, env := range envList {
-				e.Logger.Info("Env definition for: " + env.Name)
+		tableHeaders := []string{"Name", "Team", "Env Type", "State", "Account", "Deletion Time", "Purpose"}
+		var tableData [][]interface{}
 
-				envYaml, err := yaml.Marshal(env)
-				if err != nil {
-					e.Logger.Error("Unable to parse environment definition! " + err.Error())
-					return 1
-				}
-
-				e.Logger.Output(string(envYaml))
-			}
-		} else {
-			tableHeaders := []string{"Name", "Team", "Env Type", "State", "Account", "Deletion Time", "Purpose"}
-			var tableData [][]interface{}
-
-			for _, inf := range envList {
-				tableData = append(tableData, []interface{}{
-					inf.Name,
-					inf.Team,
-					inf.EnvType,
-					inf.State,
-					inf.Account,
-					inf.DeletionTime,
-					inf.Purpose,
-				})
-			}
-
-			err = table.Write(tableHeaders, tableData)
-			if err != nil {
-				e.Logger.Error(err.Error())
-				return 1
-			}
-			return 0
+		for _, inf := range envList {
+			tableData = append(tableData, []interface{}{
+				inf.Name,
+				inf.Team,
+				inf.EnvType,
+				inf.State,
+				inf.Account,
+				inf.DeletionTime,
+				inf.Purpose,
+			})
 		}
+
+		err = table.Write(tableHeaders, tableData)
+		if err != nil {
+			e.Logger.Error(err.Error())
+			return 1
+		}
+		return 0
 	}
 
 	if e.Delete {
@@ -185,7 +170,7 @@ func (e *Env) Run(args []string) int {
 	}
 
 	e.Logger.Error("Not a valid command")
-	return 1
+	return 127
 }
 
 // Help : returns an explanatory string
@@ -208,7 +193,10 @@ func (e *Env) Help() string {
 
 	if e.List {
 		return commandHelper("list", "environment", []string{
-			"--detailed (get a detailed view)",
+			"--name=name of env",
+			"--team=name of team",
+			"--env-type=env type of the environment",
+			"--account=cloud provider account name",
 		})
 	}
 
