@@ -27,8 +27,8 @@ func (e *Env) Run(args []string) int {
 	team := flagSet.String("team", "", "display environments created by a team")
 	purpose := flagSet.String("purpose", "", "reason to create environment")
 	env := flagSet.String("env-type", "kube", "environment to attach with environment")
-	service := flagSet.String("service", "", "service name to filter out describe infra")
-	component := flagSet.String("component", "", "component name to filter out describe infra")
+	service := flagSet.String("service", "", "service name to filter out describe environment")
+	component := flagSet.String("component", "", "component name to filter out describe environment")
 	providerAccount := flagSet.String("account", "", "account name to provision the environment in")
 	filePath := flagSet.String("file", "environment.yaml", "file to read environment config")
 
@@ -122,7 +122,7 @@ func (e *Env) Run(args []string) int {
 			}
 			return 0
 		}
-		e.Logger.Error("name is a required parameter")
+		e.Logger.Error("name cannot be blank")
 		return 1
 	}
 
@@ -137,15 +137,15 @@ func (e *Env) Run(args []string) int {
 		tableHeaders := []string{"Name", "Team", "Env Type", "State", "Account", "Deletion Time", "Purpose"}
 		var tableData [][]interface{}
 
-		for _, inf := range envList {
+		for _, env := range envList {
 			tableData = append(tableData, []interface{}{
-				inf.Name,
-				inf.Team,
-				inf.EnvType,
-				inf.State,
-				inf.Account,
-				inf.DeletionTime,
-				inf.Purpose,
+				env.Name,
+				env.Team,
+				env.EnvType,
+				env.State,
+				env.Account,
+				env.DeletionTime,
+				env.Purpose,
 			})
 		}
 
@@ -203,6 +203,8 @@ func (e *Env) Help() string {
 	if e.Describe {
 		return commandHelper("describe", "environment", []string{
 			"--name=name of environment to describe",
+			"--service service config that is deployed on env",
+			"--component component config that is deployed on env",
 		})
 	}
 
