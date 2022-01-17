@@ -3,6 +3,7 @@ package commands
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"strings"
 
 	"github.com/dream11/odin/api/environment"
@@ -118,7 +119,8 @@ func (e *Env) Run(args []string) int {
 
 			e.Logger.Output(string(details))
 			if *service == "" && *component == "" {
-				e.Logger.Info("NEXT USEFUL COMMAND:- odin describe env --name " + *name + " --service <serviceName> --component <componentName>")
+				e.Logger.Output("\nCommand to descibe env")
+				e.Logger.ItalicEmphasize(fmt.Sprintf("odin describe env --name %s --service <serviceName> --component <componentName>", *name))
 			}
 			return 0
 		}
