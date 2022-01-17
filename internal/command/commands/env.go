@@ -220,7 +220,7 @@ func (e *Env) Run(args []string) int {
 			}
 
 			if len(envResp) == 0 {
-				e.Logger.Output("Command to get the correct ID of the changelog")
+				e.Logger.Output("\nCommand to get the correct ID of the changelog")
 				e.Logger.ItalicEmphasize("odin get-history env --name " + *name)
 				return 1
 			}
