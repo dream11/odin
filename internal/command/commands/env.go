@@ -3,8 +3,8 @@ package commands
 import (
 	"encoding/json"
 	"flag"
-	"strconv"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/dream11/odin/api/environment"
@@ -33,7 +33,6 @@ func (e *Env) Run(args []string) int {
 	component := flagSet.String("component", "", "component name to filter out describe environment")
 	providerAccount := flagSet.String("account", "", "account name to provision the environment in")
 	filePath := flagSet.String("file", "environment.yaml", "file to read environment config")
-	detailed := flagSet.Bool("detailed", false, "get detailed view")
 	id := flagSet.Int("id", 0, "unique id of a changelog of an env")
 
 	err := flagSet.Parse(args)
