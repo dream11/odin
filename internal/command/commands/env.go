@@ -32,7 +32,6 @@ func (e *Env) Run(args []string) int {
 	component := flagSet.String("component", "", "component name to filter out describe environment")
 	providerAccount := flagSet.String("account", "", "account name to provision the environment in")
 	filePath := flagSet.String("file", "environment.yaml", "file to read environment config")
-	detailed := flagSet.Bool("detailed", false, "get detailed view")
 	serviceName := flagSet.String("servicename", "", "name of service")
 	componentName := flagSet.String("componentname", "", "name of service")
 
