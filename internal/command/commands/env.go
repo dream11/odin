@@ -64,11 +64,11 @@ func (e *Env) Run(args []string) int {
 		return 1
 	}
 
-	if e.Status{
+	if e.Status {
 		if emptyParameterValidation([]string{*name}) {
-			e.Logger.Info("Fetching status for environment: " + *name+", service: "+ *serviceName+", component: "+ *componentName)
+			e.Logger.Info("Fetching status for environment: " + *name + ", service: " + *serviceName + ", component: " + *componentName)
 
-			if *componentName!="" && *serviceName==""{
+			if *componentName != "" && *serviceName == "" {
 				e.Logger.Error("serviceName cannot be blank when componentName is specified")
 				return 1
 			}
@@ -81,11 +81,11 @@ func (e *Env) Run(args []string) int {
 			tableHeaders := []string{"Name", "Version", "Status"}
 			var tableData [][]interface{}
 
-			if *componentName!=""{
-				
+			if *componentName != "" {
+
 				e.Logger.Success(envStatus.Status)
 
-			}else if *serviceName!=""{
+			} else if *serviceName != "" {
 
 				for _, component := range envStatus.Components {
 					tableData = append(tableData, []interface{}{
@@ -101,8 +101,8 @@ func (e *Env) Run(args []string) int {
 					return 1
 				}
 
-			}else{
-				
+			} else {
+
 				for _, service := range envStatus.Services {
 					tableData = append(tableData, []interface{}{
 						service.Name,
