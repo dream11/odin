@@ -3,6 +3,7 @@ package commands
 import (
 	"encoding/json"
 	"flag"
+	"strconv"
 	"strings"
 
 	"github.com/dream11/odin/api/environment"
@@ -30,7 +31,7 @@ func (e *Env) Run(args []string) int {
 	providerAccount := flagSet.String("account", "", "account name to provision the environment in")
 	filePath := flagSet.String("file", "environment.yaml", "file to read environment config")
 	detailed := flagSet.Bool("detailed", false, "get detailed view")
-	id := flagSet.String("id", "", "unique id of a changelog of an env")
+	id := flagSet.Int("id", 0, "unique id of a changelog of an env")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -210,22 +211,29 @@ func (e *Env) Run(args []string) int {
 				return 1
 			}
 
-			e.Logger.Info("Command to describe a changelog in detail: odin describe-history env --name <env-name> --id <changelog-ID>")
+			e.Logger.Output("\nCommand to describe a changelog in detail")
+			e.Logger.ItalicEmphasize("odin describe-history env --name <envName> --id <changelogId>")
 			return 0
 		}
 	}
 
 	if e.DescribeHistory {
-		if emptyParameterValidation([]string{*name}) {
-			e.Logger.Info("Detailed description of a changelog for env: " + *name + " with ID: " + *id)
-			envResp, err := envClient.DescribeHistoryEnv(*name, *id)
+		s := ""
+		if *id > 0 {
+			s = strconv.Itoa(*id)
+		}
+
+		if emptyParameterValidation([]string{s, *name}) {
+			e.Logger.Info("Detailed description of a changelog for env: " + *name + " with ID: " + s)
+			envResp, err := envClient.DescribeHistoryEnv(*name, s)
 			if err != nil {
 				e.Logger.Error(err.Error())
 				return 1
 			}
 
 			if len(envResp) == 0 {
-				e.Logger.Warn("Command to get the correct ID of the changelog: odin get-history env --name " + *name)
+				e.Logger.Output("Command to get the correct ID of the changelog")
+				e.Logger.ItalicEmphasize("odin get-history env --name " + *name)
 				return 1
 			}
 
@@ -290,7 +298,7 @@ func (e *Env) Help() string {
 	if e.DescribeHistory {
 		return commandHelper("describe-history", "environment", []string{
 			"--name=name of environment to fetch changelog for",
-			"--id=unique id of a changelog for the specified env to get details for",
+			"--id=unique id of a changelog for the specified env to get details for (positive integer)",
 		})
 	}
 
