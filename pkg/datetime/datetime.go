@@ -1,4 +1,4 @@
-package main
+package datetime
 
 import (
 	"fmt"
@@ -67,7 +67,8 @@ func diff(a, b time.Time) (out datetime) {
 	return dt
 }
 
-func dateTime(val string) string {
+// DateTime - description
+func DateTime(val string) string {
 
 	t1, err := time.Parse(layout, val)
 	if err != nil {
@@ -79,44 +80,44 @@ func dateTime(val string) string {
 	out := ""
 	if dt.Year != 0 {
 		if dt.Month != 0 {
-			out = fmt.Sprintf("%syr%smonth ago", dt.Year, dt.Month)
+			out = fmt.Sprintf("%vyr%vmonth ago", dt.Year, dt.Month)
 		} else if dt.Day != 0 {
-			out = fmt.Sprintf("%syr%sday ago", dt.Year, dt.Day)
+			out = fmt.Sprintf("%vyr%vday ago", dt.Year, dt.Day)
 		} else {
-			out = fmt.Sprintf("%syr ago", dt.Year)
+			out = fmt.Sprintf("%vyr ago", dt.Year)
 		}
 	} else if dt.Month != 0 {
 		if dt.Day != 0 {
-			out = fmt.Sprintf("%smonth%sday ago", dt.Month, dt.Day)
+			out = fmt.Sprintf("%vmonth%vday ago", dt.Month, dt.Day)
 		} else if dt.Hour != 0 {
-			out = fmt.Sprintf("%smonth%shour ago", dt.Month, dt.Hour)
+			out = fmt.Sprintf("%vmonth%vhour ago", dt.Month, dt.Hour)
 		} else {
-			out = fmt.Sprintf("%smonth ago", dt.Month)
+			out = fmt.Sprintf("%vmonth ago", dt.Month)
 		}
 	} else if dt.Day != 0 {
 		if dt.Hour != 0 {
-			out = fmt.Sprintf("%sday%shour ago", dt.Day, dt.Hour)
+			out = fmt.Sprintf("%vday%vhour ago", dt.Day, dt.Hour)
 		} else if dt.Min != 0 {
-			out = fmt.Sprintf("%sday%smin ago", dt.Day, dt.Min)
+			out = fmt.Sprintf("%vday%vmin ago", dt.Day, dt.Min)
 		} else {
-			out = fmt.Sprintf("%sday ago", dt.Day)
+			out = fmt.Sprintf("%vday ago", dt.Day)
 		}
 	} else if dt.Hour != 0 {
 		if dt.Min != 0 {
-			out = fmt.Sprintf("%hour%smin ago", dt.Hour, dt.Min)
+			out = fmt.Sprintf("%vhour%vmin ago", dt.Hour, dt.Min)
 		} else if dt.Sec != 0 {
-			out = fmt.Sprintf("%hour%ssec ago", dt.Hour, dt.Sec)
+			out = fmt.Sprintf("%vhour%vsec ago", dt.Hour, dt.Sec)
 		} else {
-			out = fmt.Sprintf("%hour ago", dt.Hour)
+			out = fmt.Sprintf("%vhour ago", dt.Hour)
 		}
 	} else if dt.Min != 0 {
 		if dt.Sec != 0 {
-			out = fmt.Sprintf("%min%ssec ago", dt.Min, dt.Sec)
+			out = fmt.Sprintf("%vmin%vsec ago", dt.Min, dt.Sec)
 		} else {
-			out = fmt.Sprintf("%min ago", dt.Min)
+			out = fmt.Sprintf("%vmin ago", dt.Min)
 		}
 	} else {
-		out = fmt.Sprintf("%ssec ago", dt.Sec)
+		out = fmt.Sprintf("%vsec ago", dt.Sec)
 	}
 	return out
 }
