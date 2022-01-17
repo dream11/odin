@@ -8,6 +8,7 @@ import (
 
 	"github.com/dream11/odin/api/environment"
 	"github.com/dream11/odin/internal/backend"
+	"github.com/dream11/odin/pkg/datetime"
 	"github.com/dream11/odin/pkg/file"
 	"github.com/dream11/odin/pkg/table"
 	"gopkg.in/yaml.v3"
@@ -198,10 +199,11 @@ func (e *Env) Run(args []string) int {
 			var tableData [][]interface{}
 
 			for _, env := range envResp {
+				val := datetime.DateTime(env.CreatedAt)
 				tableData = append(tableData, []interface{}{
 					env.ID,
 					env.CreatedBy,
-					env.CreatedAt,
+					val,
 					env.State,
 				})
 			}
@@ -212,7 +214,7 @@ func (e *Env) Run(args []string) int {
 			}
 
 			e.Logger.Output("\nCommand to describe a changelog in detail")
-			e.Logger.ItalicEmphasize("odin describe-history env --name <envName> --id <changelogId>")
+			// e.Logger.ItalicEmphasize("odin describe-history env --name <envName> --id <changelogId>")
 			return 0
 		}
 	}
@@ -233,7 +235,7 @@ func (e *Env) Run(args []string) int {
 
 			if len(envResp) == 0 {
 				e.Logger.Output("Command to get the correct ID of the changelog")
-				e.Logger.ItalicEmphasize("odin get-history env --name " + *name)
+				// e.Logger.ItalicEmphasize("odin get-history env --name " + *name)
 				return 1
 			}
 
