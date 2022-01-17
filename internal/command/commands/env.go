@@ -214,7 +214,7 @@ func (e *Env) Run(args []string) int {
 			}
 
 			e.Logger.Output("\nCommand to describe a changelog in detail")
-			// e.Logger.ItalicEmphasize("odin describe-history env --name <envName> --id <changelogId>")
+			e.Logger.ItalicEmphasize("odin describe-history env --name <envName> --id <changelogId>")
 			return 0
 		}
 	}
@@ -235,7 +235,7 @@ func (e *Env) Run(args []string) int {
 
 			if len(envResp) == 0 {
 				e.Logger.Output("Command to get the correct ID of the changelog")
-				// e.Logger.ItalicEmphasize("odin get-history env --name " + *name)
+				e.Logger.ItalicEmphasize("odin get-history env --name " + *name)
 				return 1
 			}
 
