@@ -9,10 +9,10 @@ type Env struct {
 	Name         string            `yaml:"name,omitempty" json:"name,omitempty"`
 	Team         string            `yaml:"team,omitempty" json:"team,omitempty"`
 	Purpose      string            `yaml:"purpose,omitempty" json:"purpose,omitempty"`
-	EnvType      string            `yaml:"env_type,omitempty" json:"env_type,omitempty"`
+	EnvType      string            `yaml:"envType,omitempty" json:"envType,omitempty"`
 	State        string            `yaml:"state,omitempty" json:"state,omitempty"`
-	DeletionTime string            `yaml:"deletion_time,omitempty" json:"deletion_time,omitempty"`
-	Account      string            `yaml:"provider_account,omitempty" json:"provider_account,omitempty"`
+	DeletionTime string            `yaml:"autoDeletionTime,omitempty" json:"autoDeletionTime,omitempty"`
+	Account      string            `yaml:"cloudProviderAccount,omitempty" json:"cloudProviderAccount,omitempty"`
 	CreatedBy    string            `yaml:"created_by,omitempty" json:"created_by,omitempty"`
 	UpdatedBy    string            `yaml:"updated_by,omitempty" json:"updated_by,omitempty"`
 	CreatedAt    string            `yaml:"created_at,omitempty" json:"created_at,omitempty"`
@@ -47,4 +47,9 @@ type ListResponse struct {
 // HistoryListResponse interface
 type HistoryListResponse struct {
 	Response []History `yaml:"resp,omitempty" json:"resp,omitempty"`
+}
+
+// DetailResponse interface
+type DetailResponse struct {
+	Response Env `yaml:"resp,omitempty" json:"resp,omitempty"`
 }
