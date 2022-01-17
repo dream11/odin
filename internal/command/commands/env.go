@@ -3,6 +3,7 @@ package commands
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"strings"
 
 	"github.com/dream11/odin/api/environment"
@@ -27,6 +28,8 @@ func (e *Env) Run(args []string) int {
 	team := flagSet.String("team", "", "display environments created by a team")
 	purpose := flagSet.String("purpose", "", "reason to create environment")
 	env := flagSet.String("env-type", "kube", "environment to attach with environment")
+	service := flagSet.String("service", "", "service name to filter out describe environment")
+	component := flagSet.String("component", "", "component name to filter out describe environment")
 	providerAccount := flagSet.String("account", "", "account name to provision the environment in")
 	filePath := flagSet.String("file", "environment.yaml", "file to read environment config")
 	detailed := flagSet.Bool("detailed", false, "get detailed view")
@@ -165,80 +168,66 @@ func (e *Env) Run(args []string) int {
 	if e.Describe {
 		if emptyParameterValidation([]string{*name}) {
 			e.Logger.Info("Describing " + *name)
-			envResp, err := envClient.DescribeEnv(*name)
+			envResp, err := envClient.DescribeEnv(*name, *service, *component)
 			if err != nil {
 				e.Logger.Error(err.Error())
 				return 1
 			}
 
-			for _, env := range envResp {
-				e.Logger.Info(env.Name + " details!")
-				details, err := yaml.Marshal(env)
-				if err != nil {
-					e.Logger.Error(err.Error())
-					return 1
-				}
-
-				e.Logger.Output(string(details))
+			details, err := yaml.Marshal(envResp)
+			if err != nil {
+				e.Logger.Error(err.Error())
+				return 1
 			}
 
+			e.Logger.Output(string(details))
+			if *service == "" && *component == "" {
+				e.Logger.Output("\nCommand to descibe env")
+				e.Logger.ItalicEmphasize(fmt.Sprintf("odin describe env --name %s --service <serviceName> --component <componentName>", *name))
+			}
 			return 0
 		}
+		e.Logger.Error("name cannot be blank")
+		return 1
+	}
 
-		if e.List {
-			e.Logger.Info("Listing all environment(s)")
-			envList, err := envClient.ListEnv()
-			if err != nil {
-				e.Logger.Error(err.Error())
-				return 1
-			}
-
-			if *detailed {
-				for _, env := range envList {
-					e.Logger.Info("Env definition for: " + env.Name)
-
-					envYaml, err := yaml.Marshal(env)
-					if err != nil {
-						e.Logger.Error("Unable to parse environment definition! " + err.Error())
-						return 1
-					}
-
-					e.Logger.Output(string(envYaml))
-				}
-			} else {
-				tableHeaders := []string{"Name", "Purpose", "Team", "Env Type", "State", "Account", "Deletion Time"}
-				var tableData [][]interface{}
-
-				for _, inf := range envList {
-					tableData = append(tableData, []interface{}{
-						inf.Name,
-						inf.Purpose,
-						inf.Team,
-						inf.EnvType,
-						inf.State,
-						inf.Account,
-						inf.DeletionTime,
-					})
-				}
-
-				err = table.Write(tableHeaders, tableData)
-				if err != nil {
-					e.Logger.Error(err.Error())
-					return 1
-				}
-			}
+	if e.List {
+		e.Logger.Info("Listing all environment(s)")
+		envList, err := envClient.ListEnv(*name, *team, *env, *providerAccount)
+		if err != nil {
+			e.Logger.Error(err.Error())
+			return 1
 		}
 
-		if e.Delete {
-			if emptyParameterValidation([]string{*name}) {
-				e.Logger.Warn("Deleting environment:" + *name)
-				envClient.DeleteEnv(*name)
+		tableHeaders := []string{"Name", "Team", "Env Type", "State", "Account", "Deletion Time", "Purpose"}
+		var tableData [][]interface{}
 
-				return 0
-			}
+		for _, env := range envList {
+			tableData = append(tableData, []interface{}{
+				env.Name,
+				env.Team,
+				env.EnvType,
+				env.State,
+				env.Account,
+				env.DeletionTime,
+				env.Purpose,
+			})
+		}
 
-			e.Logger.Error("environment name cannot be blank")
+		err = table.Write(tableHeaders, tableData)
+		if err != nil {
+			e.Logger.Error(err.Error())
 			return 1
+		}
+		return 0
+	}
+
+	if e.Delete {
+		if emptyParameterValidation([]string{*name}) {
+			e.Logger.Warn("Deleting environment:" + *name)
+			envClient.DeleteEnv(*name)
+
+			return 0
 		}
 
 		e.Logger.Error("environment name cannot be blank")
@@ -269,13 +258,18 @@ func (e *Env) Help() string {
 
 	if e.List {
 		return commandHelper("list", "environment", []string{
-			"--detailed (get a detailed view)",
+			"--name=name of env",
+			"--team=name of team",
+			"--env-type=env type of the environment",
+			"--account=cloud provider account name",
 		})
 	}
 
 	if e.Describe {
 		return commandHelper("describe", "environment", []string{
 			"--name=name of environment to describe",
+			"--service service config that is deployed on env",
+			"--component component config that is deployed on env",
 		})
 	}
 
