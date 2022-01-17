@@ -40,19 +40,18 @@ type StatusResponse struct {
 }
 
 type EnvStatus struct {
-	Status string `yaml:"status,omitempty" json:"status,omitempty"`
-	Services []Status `yaml:"services,omitempty" json:"services,omitempty"`
+	Status     string   `yaml:"status,omitempty" json:"status,omitempty"`
+	Services   []Status `yaml:"services,omitempty" json:"services,omitempty"`
 	Components []Status `yaml:"components,omitempty" json:"components,omitempty"`
 }
 
 type Status struct {
-	Status string `yaml:"status,omitempty" json:"status,omitempty"`
-	Name string `yaml:"name,omitempty" json:"name,omitempty"`
-	Version string `yaml:"version,omitempty" json:"version,omitempty"` 
+	Status  string `yaml:"status,omitempty" json:"status,omitempty"`
+	Name    string `yaml:"name,omitempty" json:"name,omitempty"`
+	Version string `yaml:"version,omitempty" json:"version,omitempty"`
 }
 
 // DetailResponse interface
 type DetailResponse struct {
 	Response Env `yaml:"resp,omitempty" json:"resp,omitempty"`
 }
-
