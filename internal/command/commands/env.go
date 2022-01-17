@@ -32,8 +32,6 @@ func (e *Env) Run(args []string) int {
 	component := flagSet.String("component", "", "component name to filter out describe environment")
 	providerAccount := flagSet.String("account", "", "account name to provision the environment in")
 	filePath := flagSet.String("file", "environment.yaml", "file to read environment config")
-	serviceName := flagSet.String("servicename", "", "name of service")
-	componentName := flagSet.String("componentname", "", "name of service")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -68,13 +66,13 @@ func (e *Env) Run(args []string) int {
 
 	if e.Status {
 		if emptyParameterValidation([]string{*name}) {
-			e.Logger.Info("Fetching status for environment: " + *name + ", service: " + *serviceName + ", component: " + *componentName)
+			e.Logger.Info("Fetching status for environment: " + *name + ", service: " + *service + ", component: " + *component)
 
-			if *componentName != "" && *serviceName == "" {
-				e.Logger.Error("serviceName cannot be blank when componentName is specified")
+			if *component != "" && *service == "" {
+				e.Logger.Error("service cannot be blank when component is specified")
 				return 1
 			}
-			envStatus, err := envClient.EnvStatus(*name, *serviceName, *componentName)
+			envStatus, err := envClient.EnvStatus(*name, *service, *component)
 			if err != nil {
 				e.Logger.Error(err.Error())
 				return 1
@@ -83,11 +81,11 @@ func (e *Env) Run(args []string) int {
 			tableHeaders := []string{"Name", "Version", "Status"}
 			var tableData [][]interface{}
 
-			if *componentName != "" {
+			if *component != "" {
 
 				e.Logger.Success(envStatus.Status)
 
-			} else if *serviceName != "" {
+			} else if *service != "" {
 
 				for _, component := range envStatus.Components {
 					tableData = append(tableData, []interface{}{
@@ -281,8 +279,8 @@ func (e *Env) Help() string {
 	if e.Status {
 		return commandHelper("status", "environment", []string{
 			"--name=name of environment",
-			"--servicename=name of service",
-			"--componentname=name of component",
+			"--service=name of service",
+			"--component=name of component",
 		})
 	}
 
