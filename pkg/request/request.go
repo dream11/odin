@@ -89,7 +89,6 @@ func (r *Response) Process(exitOnError bool) {
 		handleExit(1, exitOnError)
 	} else {
 		if matchStatusCode(r.StatusCode, 200) {
-			logger.Success(r.Status)
 			logger.Debug(string(r.Body))
 		} else if matchStatusCode(r.StatusCode, 300) {
 			logger.Warn(r.Status)
