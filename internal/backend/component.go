@@ -2,6 +2,7 @@ package backend
 
 import (
 	"encoding/json"
+	"path"
 
 	"github.com/dream11/odin/api/component"
 )
@@ -9,15 +10,14 @@ import (
 // Component entity
 type Component struct{}
 
-// ListComponents : list all available component types
-func (c *Component) ListComponents() ([]component.Type, error) {
+// DescribeComponent : describe a component type
+func (c *Component) DescribeComponent(componentName, version string) (component.Component, error) {
 	client := newApiClient()
-
-	response := client.action("componenttypes", "GET", nil)
+	response := client.action(path.Join("components", componentName, "versions", version), "GET", nil)
 	response.Process(true) // process response and exit if error
 
-	var componentTypeResponse component.ListTypeResponse
-	err := json.Unmarshal(response.Body, &componentTypeResponse)
+	var componentResponse component.DetailComponentResponse
+	err := json.Unmarshal(response.Body, &componentResponse)
 
-	return componentTypeResponse.Response, err
+	return componentResponse.Response, err
 }
