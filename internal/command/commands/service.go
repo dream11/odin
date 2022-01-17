@@ -3,6 +3,7 @@ package commands
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"strings"
 
 	"github.com/dream11/odin/internal/backend"
@@ -74,8 +75,8 @@ func (s *Service) Run(args []string) int {
 
 		serviceClient.CreateService(parsedConfig)
 
-		s.Logger.Output("\nService Created. Check status of images using")
-		s.Logger.Emphasize("odin status service --name <serviceName> --version <serviceVersion>")
+		s.Logger.Output("\nCommand to check status of images")
+		s.Logger.ItalicEmphasize("odin status service --name <serviceName> --version <serviceVersion>")
 		return 0
 	}
 
@@ -96,8 +97,8 @@ func (s *Service) Run(args []string) int {
 			}
 
 			s.Logger.Output(string(details))
-			s.Logger.Output("\nChecked description of service. Check component description using")
-			s.Logger.Emphasize("odin describe component --name <componentName> --version <componentVersion>")
+			s.Logger.Output("\nCommand to describe component")
+			s.Logger.ItalicEmphasize("odin describe component --name <componentName> --version <componentVersion>")
 			return 0
 		}
 
@@ -131,8 +132,8 @@ func (s *Service) Run(args []string) int {
 			s.Logger.Error(err.Error())
 			return 1
 		}
-		s.Logger.Output("\nGot service list. You can now describe service using")
-		s.Logger.Emphasize("odin describe service --name <serviceName> --version <serviceVersion>")
+		s.Logger.Output("\nCommand to describe service")
+		s.Logger.ItalicEmphasize("odin describe service --name <serviceName> --version <serviceVersion>")
 		return 0
 	}
 
@@ -230,8 +231,8 @@ func (s *Service) Run(args []string) int {
 				s.Logger.Error(err.Error())
 				return 1
 			}
-			s.Logger.Output("\nGot service image status. If status is SUCCESS you can deploy service in your env using")
-			s.Logger.Emphasize("odin deploy service --name <serviceName> --version <serviceVersion> --env <envName> --file <configFile>")
+			s.Logger.Output("\nCommand to deploy service")
+			s.Logger.ItalicEmphasize(fmt.Sprintf("odin deploy service --name %s --version %s --env <envName> --file <configFile>", *serviceName, *serviceVersion))
 			return 0
 		}
 

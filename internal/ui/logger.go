@@ -12,7 +12,7 @@ var successColor = "\033[1;32m%s\033[0m"
 var infoColor = "\033[0;34m%s\033[0m"
 var warningColor = "\033[1;33m%s\033[0m"
 var errorColor = "\033[1;31m%s\033[0m"
-var emphasizeColor = "\033[1m%s\033[0m"
+var italicEmphasize = "\033[3m\033[1m%s\033[0m"
 
 // Info : informative messages
 func (l *Logger) Info(message string) {
@@ -40,8 +40,8 @@ func (l *Logger) Output(message string) {
 }
 
 // Emphasize : generic messages
-func (l *Logger) Emphasize(message string) {
-	userInterface.Output(fmt.Sprintf(emphasizeColor, message))
+func (l *Logger) ItalicEmphasize(message string) {
+	userInterface.Output(fmt.Sprintf(italicEmphasize, message))
 }
 
 // Debug : debugging messages
