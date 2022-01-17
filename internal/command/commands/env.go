@@ -30,6 +30,8 @@ func (e *Env) Run(args []string) int {
 	providerAccount := flagSet.String("account", "", "account name to provision the environment in")
 	filePath := flagSet.String("file", "environment.yaml", "file to read environment config")
 	detailed := flagSet.Bool("detailed", false, "get detailed view")
+	serviceName := flagSet.String("servicename", "", "name of service")
+	componentName := flagSet.String("componentname", "", "name of service")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -59,6 +61,66 @@ func (e *Env) Run(args []string) int {
 		}
 
 		e.Logger.Error("env-type is a required parameter")
+		return 1
+	}
+
+	if e.Status{
+		if emptyParameterValidation([]string{*name}) {
+			e.Logger.Info("Fetching status for environment: " + *name+", service: "+ *serviceName+", component: "+ *componentName)
+
+			if *componentName!="" && *serviceName==""{
+				e.Logger.Error("serviceName cannot be blank when componentName is specified")
+				return 1
+			}
+			envStatus, err := envClient.EnvStatus(*name, *serviceName, *componentName)
+			if err != nil {
+				e.Logger.Error(err.Error())
+				return 1
+			}
+
+			tableHeaders := []string{"Name", "Version", "Status"}
+			var tableData [][]interface{}
+
+			if *componentName!=""{
+				
+				e.Logger.Success(envStatus.Status)
+
+			}else if *serviceName!=""{
+
+				for _, component := range envStatus.Components {
+					tableData = append(tableData, []interface{}{
+						component.Name,
+						component.Version,
+						component.Status,
+					})
+				}
+
+				err = table.Write(tableHeaders, tableData)
+				if err != nil {
+					e.Logger.Error(err.Error())
+					return 1
+				}
+
+			}else{
+				
+				for _, service := range envStatus.Services {
+					tableData = append(tableData, []interface{}{
+						service.Name,
+						service.Version,
+						service.Status,
+					})
+				}
+
+				err = table.Write(tableHeaders, tableData)
+				if err != nil {
+					e.Logger.Error(err.Error())
+					return 1
+				}
+			}
+
+			return 0
+		}
+		e.Logger.Error("Environment name cannot be blank")
 		return 1
 	}
 
@@ -223,6 +285,14 @@ func (e *Env) Help() string {
 		})
 	}
 
+	if e.Status {
+		return commandHelper("status", "environment", []string{
+			"--name=name of environment",
+			"--servicename=name of service",
+			"--componentname=name of component",
+		})
+	}
+
 	return defaultHelper()
 }
 
@@ -246,6 +316,10 @@ func (e *Env) Synopsis() string {
 
 	if e.Delete {
 		return "delete an environment"
+	}
+
+	if e.Status {
+		return "Fetch deployment status of the environment"
 	}
 	return defaultHelper()
 }

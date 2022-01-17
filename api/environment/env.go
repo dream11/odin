@@ -33,3 +33,22 @@ type CreationResponse struct {
 type ListResponse struct {
 	Response []Env `yaml:"resp,omitempty" json:"resp,omitempty"`
 }
+
+// EnvStatusResponse interface
+type StatusResponse struct {
+	Response EnvStatus `yaml:"resp,omitempty" json:"resp,omitempty"`
+}
+
+type EnvStatus struct {
+	Status string `yaml:"status,omitempty" json:"status,omitempty"`
+	Services []Status `yaml:"services,omitempty" json:"services,omitempty"`
+	Components []Status `yaml:"components,omitempty" json:"components,omitempty"`
+}
+
+type Status struct {
+	Status string `yaml:"status,omitempty" json:"status,omitempty"`
+	Name string `yaml:"name,omitempty" json:"name,omitempty"`
+	Version string `yaml:"version,omitempty" json:"version,omitempty"` 
+}
+
+

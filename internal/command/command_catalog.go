@@ -61,7 +61,9 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"delete env": func() (cli.Command, error) {
 			return &commands.Env{Delete: true}, nil
 		},
-
+		"status env": func() (cli.Command, error) {
+			return &commands.Env{Status: true}, nil
+		},
 		// Verbs for `component` resource
 		"list component": func() (cli.Command, error) {
 			return &commands.Component{List: true}, nil
