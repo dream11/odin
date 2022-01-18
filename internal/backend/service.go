@@ -68,7 +68,7 @@ func (s *Service) ListServices(team, version, serviceName string, maturity bool)
 func (s *Service) DeleteService(service, version string) {
 	client := newApiClient()
 
-	response := client.action(path.Join(serviceEntity, service, "version", version)+"/", "DELETE", nil)
+	response := client.action(path.Join(serviceEntity, service, "versions", version)+"/", "DELETE", nil)
 	response.Process(true)
 }
 
@@ -76,15 +76,28 @@ func (s *Service) DeleteService(service, version string) {
 func (s *Service) MarkMature(service, version string) {
 	client := newApiClient()
 
-	response := client.action(path.Join(serviceEntity, service, "version", version, "mature")+"/", "PUT", nil)
+	response := client.action(path.Join(serviceEntity, service, "versions", version, "mature")+"/", "PUT", nil)
 	response.Process(true)
 }
 
 // DeployService : deploy a service
 func (s *Service) DeployService(service, version, env string, config interface{}) {
 	client := newApiClient()
-	client.QueryParams["infra_name"] = env
+	client.QueryParams["env_name"] = env
 
-	response := client.action(path.Join(serviceEntity, "deploy", service, "version", version)+"/", "POST", config)
+	response := client.action(path.Join(serviceEntity, "deploy", service, "versions", version)+"/", "POST", config)
 	response.Process(true)
+}
+
+// StatusService : get status of a service
+func (s *Service) StatusService(serviceName, version string) ([]service.Status, error) {
+	client := newApiClient()
+
+	response := client.action(path.Join(serviceEntity, serviceName, "versions", version, "status")+"/", "GET", nil)
+	response.Process(true)
+
+	var serviceResponse service.StatusResponse
+	err := json.Unmarshal(response.Body, &serviceResponse)
+
+	return serviceResponse.Response, err
 }

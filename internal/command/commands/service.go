@@ -3,6 +3,7 @@ package commands
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"strings"
 
 	"github.com/dream11/odin/internal/backend"
@@ -28,7 +29,6 @@ func (s *Service) Run(args []string) int {
 	envName := flagSet.String("env", "", "name of environment to deploy the service in")
 	teamName := flagSet.String("team", "", "name of user's team")
 	isMature := flagSet.Bool("mature", false, "mark service version as matured")
-	detailed := flagSet.Bool("detailed", false, "get detailed view")
 	rebuild := flagSet.Bool("rebuild", false, "rebuild executor for creating images")
 
 	err := flagSet.Parse(args)
@@ -75,6 +75,8 @@ func (s *Service) Run(args []string) int {
 
 		serviceClient.CreateService(parsedConfig)
 
+		s.Logger.Output("\nCommand to check status of images")
+		s.Logger.ItalicEmphasize("odin status service --name <serviceName> --version <serviceVersion>")
 		return 0
 	}
 
@@ -95,7 +97,8 @@ func (s *Service) Run(args []string) int {
 			}
 
 			s.Logger.Output(string(details))
-
+			s.Logger.Output("\nCommand to describe component")
+			s.Logger.ItalicEmphasize("odin describe component --name <componentName> --version <componentVersion>")
 			return 0
 		}
 
@@ -111,46 +114,40 @@ func (s *Service) Run(args []string) int {
 			return 1
 		}
 
-		if *detailed {
-			for _, service := range serviceList {
-				s.Logger.Info("Service definition for: " + service.Name + "@" + service.Version)
+		tableHeaders := []string{"Name", "Version", "Description", "Team", "Mature"}
+		var tableData [][]interface{}
 
-				serviceYaml, err := yaml.Marshal(service)
-				if err != nil {
-					s.Logger.Error("Unable to parse environment definition! " + err.Error())
-					return 1
-				}
-
-				s.Logger.Output(string(serviceYaml))
-			}
-		} else {
-			tableHeaders := []string{"Name", "Version", "Description", "Team", "Mature"}
-			var tableData [][]interface{}
-
-			for _, service := range serviceList {
-				tableData = append(tableData, []interface{}{
-					service.Name,
-					service.Version,
-					service.Description,
-					strings.Join(service.Team, ","),
-					service.Mature,
-				})
-			}
-
-			err = table.Write(tableHeaders, tableData)
-			if err != nil {
-				s.Logger.Error(err.Error())
-				return 1
-			}
+		for _, service := range serviceList {
+			tableData = append(tableData, []interface{}{
+				service.Name,
+				service.Version,
+				service.Description,
+				strings.Join(service.Team, ","),
+				*service.Mature,
+			})
 		}
 
+		err = table.Write(tableHeaders, tableData)
+		if err != nil {
+			s.Logger.Error(err.Error())
+			return 1
+		}
+		s.Logger.Output("\nCommand to describe service")
+		s.Logger.ItalicEmphasize("odin describe service --name <serviceName> --version <serviceVersion>")
 		return 0
 	}
 
 	if s.Label {
 		if emptyParameterValidation([]string{*serviceName, *serviceVersion}) {
+
+			// Add more labels to this condition
+			if !*isMature {
+				s.Logger.Error("No label specified")
+				return 1
+			}
+
 			if *isMature {
-				s.Logger.Warn("Marking " + *serviceName + "@" + *serviceVersion + " as mature")
+				s.Logger.Info("Marking " + *serviceName + "@" + *serviceVersion + " as mature")
 				serviceClient.MarkMature(*serviceName, *serviceVersion)
 			}
 			return 0
@@ -200,9 +197,42 @@ func (s *Service) Run(args []string) int {
 
 	if s.Delete {
 		if emptyParameterValidation([]string{*serviceName, *serviceVersion}) {
-			s.Logger.Warn("Deleting service: " + *serviceName + "@" + *serviceVersion)
+			s.Logger.Info("Deleting service: " + *serviceName + "@" + *serviceVersion)
 			serviceClient.DeleteService(*serviceName, *serviceVersion)
 
+			return 0
+		}
+
+		s.Logger.Error("service name & version cannot be blank")
+		return 1
+	}
+
+	if s.Status {
+		if emptyParameterValidation([]string{*serviceName, *serviceVersion}) {
+			s.Logger.Info("Getting status of service: " + *serviceName + "@" + *serviceVersion)
+			serviceStatus, err := serviceClient.StatusService(*serviceName, *serviceVersion)
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return 1
+			}
+
+			tableHeaders := []string{"Component Name", "AMI", "DOCKER IMAGE"}
+			var tableData [][]interface{}
+			for _, componentStatus := range serviceStatus {
+				tableData = append(tableData, []interface{}{
+					componentStatus.Name,
+					componentStatus.Ec2,
+					componentStatus.Docker,
+				})
+			}
+
+			err = table.Write(tableHeaders, tableData)
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return 1
+			}
+			s.Logger.Output("\nCommand to deploy service")
+			s.Logger.ItalicEmphasize(fmt.Sprintf("odin deploy service --name %s --version %s --env <envName> --file <configFile>", *serviceName, *serviceVersion))
 			return 0
 		}
 
@@ -262,6 +292,13 @@ func (s *Service) Help() string {
 		})
 	}
 
+	if s.Status {
+		return commandHelper("status", "service", []string{
+			"--name=name of service",
+			"--version=version of service",
+		})
+	}
+
 	return defaultHelper()
 }
 
@@ -289,6 +326,10 @@ func (s *Service) Synopsis() string {
 
 	if s.Delete {
 		return "delete a service version"
+	}
+
+	if s.Status {
+		return "get status of a service version"
 	}
 
 	return defaultHelper()

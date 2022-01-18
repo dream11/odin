@@ -61,10 +61,22 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"delete env": func() (cli.Command, error) {
 			return &commands.Env{Delete: true}, nil
 		},
+		"status env": func() (cli.Command, error) {
+			return &commands.Env{Status: true}, nil
+		},
+		// Verbs for `component` resource
+		"describe component": func() (cli.Command, error) {
+			return &commands.Component{Describe: true}, nil
+		},
+
+		// Verbs for `component-type` resource
+		"list component-type": func() (cli.Command, error) {
+			return &commands.ComponentType{List: true}, nil
+		},
 
 		// Verbs for `component` resource
-		"list component": func() (cli.Command, error) {
-			return &commands.Component{List: true}, nil
+		"describe component-type": func() (cli.Command, error) {
+			return &commands.ComponentType{Describe: true}, nil
 		},
 
 		// Verbs for `service` resource
@@ -86,7 +98,9 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"delete service": func() (cli.Command, error) {
 			return &commands.Service{Delete: true}, nil
 		},
-
+		"status service": func() (cli.Command, error) {
+			return &commands.Service{Status: true}, nil
+		},
 		/*
 			Sample commands -
 

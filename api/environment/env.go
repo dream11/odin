@@ -9,10 +9,10 @@ type Env struct {
 	Name         string            `yaml:"name,omitempty" json:"name,omitempty"`
 	Team         string            `yaml:"team,omitempty" json:"team,omitempty"`
 	Purpose      string            `yaml:"purpose,omitempty" json:"purpose,omitempty"`
-	EnvType      string            `yaml:"env_type,omitempty" json:"env_type,omitempty"`
+	EnvType      string            `yaml:"envType,omitempty" json:"envType,omitempty"`
 	State        string            `yaml:"state,omitempty" json:"state,omitempty"`
-	DeletionTime string            `yaml:"deletion_time,omitempty" json:"deletion_time,omitempty"`
-	Account      string            `yaml:"provider_account,omitempty" json:"provider_account,omitempty"`
+	DeletionTime string            `yaml:"autoDeletionTime,omitempty" json:"autoDeletionTime,omitempty"`
+	Account      string            `yaml:"cloudProviderAccount,omitempty" json:"cloudProviderAccount,omitempty"`
 	CreatedBy    string            `yaml:"created_by,omitempty" json:"created_by,omitempty"`
 	UpdatedBy    string            `yaml:"updated_by,omitempty" json:"updated_by,omitempty"`
 	CreatedAt    string            `yaml:"created_at,omitempty" json:"created_at,omitempty"`
@@ -32,4 +32,26 @@ type CreationResponse struct {
 // ListResponse interface
 type ListResponse struct {
 	Response []Env `yaml:"resp,omitempty" json:"resp,omitempty"`
+}
+
+// EnvStatusResponse interface
+type StatusResponse struct {
+	Response EnvStatus `yaml:"resp,omitempty" json:"resp,omitempty"`
+}
+
+type EnvStatus struct {
+	Status     string   `yaml:"status,omitempty" json:"status,omitempty"`
+	Services   []Status `yaml:"services,omitempty" json:"services,omitempty"`
+	Components []Status `yaml:"components,omitempty" json:"components,omitempty"`
+}
+
+type Status struct {
+	Status  string `yaml:"status,omitempty" json:"status,omitempty"`
+	Name    string `yaml:"name,omitempty" json:"name,omitempty"`
+	Version string `yaml:"version,omitempty" json:"version,omitempty"`
+}
+
+// DetailResponse interface
+type DetailResponse struct {
+	Response Env `yaml:"resp,omitempty" json:"resp,omitempty"`
 }
