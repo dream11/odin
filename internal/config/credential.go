@@ -24,10 +24,9 @@ func Get() configuration.Configuration {
 		logger.Error("Unable to parse configuration. " + err.Error())
 	}
 
-	if len(configs.AccessToken) == 0 {
-		logger.Warn("unable to load Access Token.")
-		logger.Debug("Access Token not found at: " + app.WorkDir.ConfigFile)
-	}
+	// if len(configs.AccessToken) == 0 {
+	// 	logger.Debug("Access Token not found at: " + app.WorkDir.ConfigFile)
+	// }
 
 	// do not expose access key, secret access key & refresh tokens
 	configs.Keys = configuration.SecretKeys{
