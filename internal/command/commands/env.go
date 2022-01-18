@@ -41,7 +41,7 @@ func (e *Env) Run(args []string) int {
 
 	if e.Create {
 		if emptyParameterValidation([]string{*env}) {
-			e.Logger.Warn("Creating environment for team: " + *team)
+			e.Logger.Info("Creating environment for team: " + *team)
 			envConfig := environment.Env{
 				Team:    *team,
 				Purpose: *purpose,
