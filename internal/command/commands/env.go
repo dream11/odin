@@ -43,7 +43,7 @@ func (e *Env) Run(args []string) int {
 
 	if e.Create {
 		if emptyParameterValidation([]string{*env}) {
-			e.Logger.Warn("Creating environment for team: " + *team)
+			e.Logger.Info("Creating environment for team: " + *team)
 			envConfig := environment.Env{
 				Team:    *team,
 				Purpose: *purpose,
@@ -63,6 +63,66 @@ func (e *Env) Run(args []string) int {
 		}
 
 		e.Logger.Error("env-type is a required parameter")
+		return 1
+	}
+
+	if e.Status {
+		if emptyParameterValidation([]string{*name}) {
+			e.Logger.Info("Fetching status for environment: " + *name + ", service: " + *service + ", component: " + *component)
+
+			if *component != "" && *service == "" {
+				e.Logger.Error("service cannot be blank when component is specified")
+				return 1
+			}
+			envStatus, err := envClient.EnvStatus(*name, *service, *component)
+			if err != nil {
+				e.Logger.Error(err.Error())
+				return 1
+			}
+
+			tableHeaders := []string{"Name", "Version", "Status"}
+			var tableData [][]interface{}
+
+			if *component != "" {
+
+				e.Logger.Success(envStatus.Status)
+
+			} else if *service != "" {
+
+				for _, component := range envStatus.Components {
+					tableData = append(tableData, []interface{}{
+						component.Name,
+						component.Version,
+						component.Status,
+					})
+				}
+
+				err = table.Write(tableHeaders, tableData)
+				if err != nil {
+					e.Logger.Error(err.Error())
+					return 1
+				}
+
+			} else {
+
+				for _, service := range envStatus.Services {
+					tableData = append(tableData, []interface{}{
+						service.Name,
+						service.Version,
+						service.Status,
+					})
+				}
+
+				err = table.Write(tableHeaders, tableData)
+				if err != nil {
+					e.Logger.Error(err.Error())
+					return 1
+				}
+			}
+
+			return 0
+		}
+		e.Logger.Error("Environment name cannot be blank")
 		return 1
 	}
 
@@ -295,6 +355,14 @@ func (e *Env) Help() string {
 		})
 	}
 
+	if e.Status {
+		return commandHelper("status", "environment", []string{
+			"--name=name of environment",
+			"--service=name of service",
+			"--component=name of component",
+		})
+	}
+
 	return defaultHelper()
 }
 
@@ -326,6 +394,10 @@ func (e *Env) Synopsis() string {
 
 	if e.DescribeHistory {
 		return "get env config details for a changelog of an environment"
+	}
+
+	if e.Status {
+		return "Fetch deployment status of the environment"
 	}
 	return defaultHelper()
 }

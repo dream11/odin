@@ -98,3 +98,23 @@ func (e *Env) DescribeHistoryEnv(env string, id string) ([]envResp.History, erro
 
 	return envResponse.Response, err
 }
+
+// EnvStatus : Fetch status of the env
+func (e *Env) EnvStatus(env, serviceName, componentName string) (envResp.EnvStatus, error) {
+	client := newApiClient()
+
+	url := path.Join(envEntity, env)
+	if componentName != "" {
+		url += "/services/" + serviceName + "/components/" + componentName
+	} else if serviceName != "" {
+		url += "/services/" + serviceName
+	}
+
+	response := client.action(url+"/status", "GET", nil)
+	response.Process(true) // process response and exit if error
+
+	var envResponse envResp.StatusResponse
+	err := json.Unmarshal(response.Body, &envResponse)
+
+	return envResponse.Response, err
+}
