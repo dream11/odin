@@ -29,6 +29,8 @@ type History struct {
 	CreatedBy        string      `yaml:"modifiedBy,omitempty" json:"createdBy,omitempty"`
 	CreatedAt        string      `yaml:"lastModified,omitempty" json:"createdAt,omitempty"`
 	EnvId            string      `yaml:"envName,omitempty" json:"envId,omitempty"`
+	Action           string      `yaml:"action,omitempty" json:"action,omitempty"`
+	ResourceDetails  string      `yaml:"resourceDetails,omitempty" json:"resourceDetails,omitempty"`
 	State            string      `yaml:"state,omitempty" json:"state,omitempty"`
 	AutoDeletionTime string      `yaml:"autoDeletionTime,omitempty" json:"autoDeletionTime,omitempty"`
 	EnvConfig        interface{} `yaml:"envConfig,omitempty" json:"envConfig,omitempty"`

@@ -242,7 +242,7 @@ func (e *Env) Run(args []string) int {
 				return 1
 			}
 
-			tableHeaders := []string{"ID", "Modified by", "Last Modified", "Status"}
+			tableHeaders := []string{"ID", "Modified by", "Last Modified", "Action", "Resource Details"}
 			var tableData [][]interface{}
 
 			for _, env := range envResp {
@@ -250,7 +250,8 @@ func (e *Env) Run(args []string) int {
 					env.ID,
 					env.CreatedBy,
 					env.CreatedAt,
-					env.State,
+					env.Action,
+					env.ResourceDetails,
 				})
 			}
 			err = table.Write(tableHeaders, tableData)
