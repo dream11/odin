@@ -9,6 +9,7 @@ import (
 
 	"github.com/dream11/odin/api/environment"
 	"github.com/dream11/odin/internal/backend"
+	"github.com/dream11/odin/pkg/datetime"
 	"github.com/dream11/odin/pkg/file"
 	"github.com/dream11/odin/pkg/table"
 	"gopkg.in/yaml.v3"
@@ -202,13 +203,14 @@ func (e *Env) Run(args []string) int {
 		var tableData [][]interface{}
 
 		for _, env := range envList {
+			relativeDeletionTimestamp := datetime.DateTimeFromNow(env.DeletionTime)
 			tableData = append(tableData, []interface{}{
 				env.Name,
 				env.Team,
 				env.EnvType,
 				env.State,
 				env.Account,
-				env.DeletionTime,
+				relativeDeletionTimestamp,
 				env.Purpose,
 			})
 		}
@@ -242,16 +244,17 @@ func (e *Env) Run(args []string) int {
 				return 1
 			}
 
-			tableHeaders := []string{"ID", "Modified by", "Last Modified", "Action", "Resource Details"}
+			tableHeaders := []string{"ID", "Action", "Resource Details", "Modified by", "Last Modified"}
 			var tableData [][]interface{}
 
 			for _, env := range envResp {
+				relativeCreationTimestamp := datetime.DateTimeFromNow(env.CreatedAt)
 				tableData = append(tableData, []interface{}{
 					env.ID,
-					env.CreatedBy,
-					env.CreatedAt,
 					env.Action,
 					env.ResourceDetails,
+					env.CreatedBy,
+					relativeCreationTimestamp,
 				})
 			}
 			err = table.Write(tableHeaders, tableData)
