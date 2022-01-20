@@ -112,7 +112,7 @@ func (c *ComponentType) Synopsis() string {
 	if c.List {
 		return "list all components types"
 	}
-	if c.List {
+	if c.Describe {
 		return "describe component type"
 	}
 	return defaultHelper()
