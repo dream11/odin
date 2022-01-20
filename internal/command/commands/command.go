@@ -12,16 +12,18 @@ command : interface for resources
 The verbs can be associated with any resource
 */
 type command struct {
-	Create   bool // Create a resource record
-	Delete   bool // Delete a resource record
-	Update   bool // Update a resource record
-	Describe bool // Describe a resource
-	Label    bool // Label a resource
-	List     bool // List the resources
-	Status   bool // current Status of resource
-	Logs     bool // execution Logs of resource
-	Deploy   bool // Deploy resource
-	Destroy  bool // Destroy the deployed resource
+	Create          bool // Create a resource record
+	Delete          bool // Delete a resource record
+	Update          bool // Update a resource record
+	Describe        bool // Describe a resource
+	Label           bool // Label a resource
+	List            bool // List the resources
+	Status          bool // current Status of resource
+	Logs            bool // execution Logs of resource
+	Deploy          bool // Deploy resource
+	Destroy         bool // Destroy the deployed resource
+	GetHistory      bool // Get changelog of resource
+	DescribeHistory bool // Describe a changelog of resource
 
 	Logger ui.Logger // Use this to log messages
 	Input  ui.Input  // Use this to take inputs

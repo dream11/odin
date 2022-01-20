@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/dream11/odin/api/environment"
 	"github.com/dream11/odin/internal/backend"
+	"github.com/dream11/odin/pkg/datetime"
 	"github.com/dream11/odin/pkg/file"
 	"github.com/dream11/odin/pkg/table"
 	"gopkg.in/yaml.v3"
@@ -32,6 +34,7 @@ func (e *Env) Run(args []string) int {
 	component := flagSet.String("component", "", "component name to filter out describe environment")
 	providerAccount := flagSet.String("account", "", "account name to provision the environment in")
 	filePath := flagSet.String("file", "environment.yaml", "file to read environment config")
+	id := flagSet.Int("id", 0, "unique id of a changelog of an env")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -200,13 +203,14 @@ func (e *Env) Run(args []string) int {
 		var tableData [][]interface{}
 
 		for _, env := range envList {
+			relativeDeletionTimestamp := datetime.DateTimeFromNow(env.DeletionTime)
 			tableData = append(tableData, []interface{}{
 				env.Name,
 				env.Team,
 				env.EnvType,
 				env.State,
 				env.Account,
-				env.DeletionTime,
+				relativeDeletionTimestamp,
 				env.Purpose,
 			})
 		}
@@ -229,6 +233,72 @@ func (e *Env) Run(args []string) int {
 
 		e.Logger.Error("environment name cannot be blank")
 		return 1
+	}
+
+	if e.GetHistory {
+		if emptyParameterValidation([]string{*name}) {
+			e.Logger.Info("Fetching changelog for env: " + *name)
+			envResp, err := envClient.GetHistoryEnv(*name)
+			if err != nil {
+				e.Logger.Error(err.Error())
+				return 1
+			}
+
+			tableHeaders := []string{"ID", "Action", "Resource Details", "Modified by", "Last Modified"}
+			var tableData [][]interface{}
+
+			for _, env := range envResp {
+				relativeCreationTimestamp := datetime.DateTimeFromNow(env.CreatedAt)
+				tableData = append(tableData, []interface{}{
+					env.ID,
+					env.Action,
+					env.ResourceDetails,
+					env.CreatedBy,
+					relativeCreationTimestamp,
+				})
+			}
+			err = table.Write(tableHeaders, tableData)
+			if err != nil {
+				e.Logger.Error(err.Error())
+				return 1
+			}
+
+			e.Logger.Output("\nCommand to describe a changelog in detail")
+			e.Logger.ItalicEmphasize("odin describe-history env --name <envName> --id <changelogId>")
+			return 0
+		}
+	}
+
+	if e.DescribeHistory {
+		s := ""
+		if *id > 0 {
+			s = strconv.Itoa(*id)
+		}
+
+		if emptyParameterValidation([]string{s, *name}) {
+			e.Logger.Info("Detailed description of a changelog for env: " + *name + " with ID: " + s)
+			envResp, err := envClient.DescribeHistoryEnv(*name, s)
+			if err != nil {
+				e.Logger.Error(err.Error())
+				return 1
+			}
+
+			if len(envResp) == 0 {
+				e.Logger.Output("\nCommand to get the correct ID of the changelog")
+				e.Logger.ItalicEmphasize("odin get-history env --name " + *name)
+				return 1
+			}
+
+			details, err := yaml.Marshal(envResp[0])
+			if err != nil {
+				e.Logger.Error(err.Error())
+				return 1
+			}
+
+			e.Logger.Output(string(details))
+
+			return 0
+		}
 	}
 
 	e.Logger.Error("Not a valid command")
@@ -276,6 +346,19 @@ func (e *Env) Help() string {
 		})
 	}
 
+	if e.GetHistory {
+		return commandHelper("get-history", "environment", []string{
+			"--name=name of environment fetch changelog for",
+		})
+	}
+
+	if e.DescribeHistory {
+		return commandHelper("describe-history", "environment", []string{
+			"--name=name of environment to fetch changelog for",
+			"--id=unique id of a changelog for the specified env to get details for (positive integer)",
+		})
+	}
+
 	if e.Status {
 		return commandHelper("status", "environment", []string{
 			"--name=name of environment",
@@ -307,6 +390,14 @@ func (e *Env) Synopsis() string {
 
 	if e.Delete {
 		return "delete an environment"
+	}
+
+	if e.GetHistory {
+		return "get changelog of an environment"
+	}
+
+	if e.DescribeHistory {
+		return "get env config details for a changelog of an environment"
 	}
 
 	if e.Status {
