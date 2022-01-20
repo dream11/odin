@@ -70,7 +70,7 @@ func diff(a, current time.Time) (out datetime, suffix string) {
 }
 
 // DateTime - description
-func DateTime(val string) string {
+func DateTimeFromNow(val string) string {
 
 	t1, err := time.Parse(layout, val)
 	if err != nil {

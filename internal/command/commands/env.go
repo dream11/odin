@@ -203,7 +203,7 @@ func (e *Env) Run(args []string) int {
 		var tableData [][]interface{}
 
 		for _, env := range envList {
-			relativeDeletionTimestamp := datetime.DateTime(env.DeletionTime)
+			relativeDeletionTimestamp := datetime.DateTimeFromNow(env.DeletionTime)
 			tableData = append(tableData, []interface{}{
 				env.Name,
 				env.Team,
@@ -244,17 +244,17 @@ func (e *Env) Run(args []string) int {
 				return 1
 			}
 
-			tableHeaders := []string{"ID", "Modified by", "Last Modified", "Action", "Resource Details"}
+			tableHeaders := []string{"ID", "Action", "Resource Details", "Modified by", "Last Modified"}
 			var tableData [][]interface{}
 
 			for _, env := range envResp {
-				relativeCreationTimestamp := datetime.DateTime(env.CreatedAt)
+				relativeCreationTimestamp := datetime.DateTimeFromNow(env.CreatedAt)
 				tableData = append(tableData, []interface{}{
 					env.ID,
-					env.CreatedBy,
-					relativeCreationTimestamp,
 					env.Action,
 					env.ResourceDetails,
+					env.CreatedBy,
+					relativeCreationTimestamp,
 				})
 			}
 			err = table.Write(tableHeaders, tableData)
