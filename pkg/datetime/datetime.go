@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-var layout = "2006-01-02T15:04:05.000000Z"
+var layout = "2006-01-02T15:04:05Z"
 
 type datetime struct {
 	Year  int
@@ -41,18 +41,20 @@ func (t *datetime) normalize(y1 int, M1 time.Month) {
 	}
 }
 
-func diff(a, b time.Time) (out datetime) {
-	if a.Location() != b.Location() {
-		b = b.In(a.Location())
+func diff(a, current time.Time) (out datetime, suffix string) {
+	if a.Location() != current.Location() {
+		current = current.In(a.Location())
 	}
-	if a.After(b) {
-		a, b = b, a
+	suffix = "ago"
+	if a.After(current) {
+		a, current = current, a
+		suffix = "left"
 	}
 	y1, M1, d1 := a.Date()
-	y2, M2, d2 := b.Date()
+	y2, M2, d2 := current.Date()
 
 	h1, m1, s1 := a.Clock()
-	h2, m2, s2 := b.Clock()
+	h2, m2, s2 := current.Clock()
 
 	dt := datetime{
 		Year:  int(y2 - y1),
@@ -64,7 +66,7 @@ func diff(a, b time.Time) (out datetime) {
 	}
 
 	dt.normalize(y1, M1)
-	return dt
+	return dt, suffix
 }
 
 // DateTime - description
@@ -75,49 +77,49 @@ func DateTime(val string) string {
 		fmt.Println(err)
 	}
 
-	t2 := time.Now()
-	dt := diff(t1, t2)
+	t2 := time.Now().UTC()
+	dt, flag := diff(t1, t2)
 	out := ""
 	if dt.Year != 0 {
 		if dt.Month != 0 {
-			out = fmt.Sprintf("%vyr%vmonth ago", dt.Year, dt.Month)
+			out = fmt.Sprintf("%vyr %vmonth %v", dt.Year, dt.Month, flag)
 		} else if dt.Day != 0 {
-			out = fmt.Sprintf("%vyr%vday ago", dt.Year, dt.Day)
+			out = fmt.Sprintf("%vyr %vday %v", dt.Year, dt.Day, flag)
 		} else {
-			out = fmt.Sprintf("%vyr ago", dt.Year)
+			out = fmt.Sprintf("%vyr %v", dt.Year, flag)
 		}
 	} else if dt.Month != 0 {
 		if dt.Day != 0 {
-			out = fmt.Sprintf("%vmonth%vday ago", dt.Month, dt.Day)
+			out = fmt.Sprintf("%vmonth %vday %v", dt.Month, dt.Day, flag)
 		} else if dt.Hour != 0 {
-			out = fmt.Sprintf("%vmonth%vhour ago", dt.Month, dt.Hour)
+			out = fmt.Sprintf("%vmonth %vhour %v", dt.Month, dt.Hour, flag)
 		} else {
-			out = fmt.Sprintf("%vmonth ago", dt.Month)
+			out = fmt.Sprintf("%vmonth %v", dt.Month, flag)
 		}
 	} else if dt.Day != 0 {
 		if dt.Hour != 0 {
-			out = fmt.Sprintf("%vday%vhour ago", dt.Day, dt.Hour)
+			out = fmt.Sprintf("%vday %vhour %v", dt.Day, dt.Hour, flag)
 		} else if dt.Min != 0 {
-			out = fmt.Sprintf("%vday%vmin ago", dt.Day, dt.Min)
+			out = fmt.Sprintf("%vday %vmin %v", dt.Day, dt.Min, flag)
 		} else {
-			out = fmt.Sprintf("%vday ago", dt.Day)
+			out = fmt.Sprintf("%vday %v", dt.Day, flag)
 		}
 	} else if dt.Hour != 0 {
 		if dt.Min != 0 {
-			out = fmt.Sprintf("%vhour%vmin ago", dt.Hour, dt.Min)
+			out = fmt.Sprintf("%vhour %vmin %v", dt.Hour, dt.Min, flag)
 		} else if dt.Sec != 0 {
-			out = fmt.Sprintf("%vhour%vsec ago", dt.Hour, dt.Sec)
+			out = fmt.Sprintf("%vhour %vsec %v", dt.Hour, dt.Sec, flag)
 		} else {
-			out = fmt.Sprintf("%vhour ago", dt.Hour)
+			out = fmt.Sprintf("%vhour %v", dt.Hour, flag)
 		}
 	} else if dt.Min != 0 {
 		if dt.Sec != 0 {
-			out = fmt.Sprintf("%vmin%vsec ago", dt.Min, dt.Sec)
+			out = fmt.Sprintf("%vmin %vsec %v", dt.Min, dt.Sec, flag)
 		} else {
-			out = fmt.Sprintf("%vmin ago", dt.Min)
+			out = fmt.Sprintf("%vmin %v", dt.Min, flag)
 		}
 	} else {
-		out = fmt.Sprintf("%vsec ago", dt.Sec)
+		out = fmt.Sprintf("%vsec %v", dt.Sec, flag)
 	}
 	return out
 }

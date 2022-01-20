@@ -203,13 +203,14 @@ func (e *Env) Run(args []string) int {
 		var tableData [][]interface{}
 
 		for _, env := range envList {
+			relativeDeletionTimestamp := datetime.DateTime(env.DeletionTime)
 			tableData = append(tableData, []interface{}{
 				env.Name,
 				env.Team,
 				env.EnvType,
 				env.State,
 				env.Account,
-				env.DeletionTime,
+				relativeDeletionTimestamp,
 				env.Purpose,
 			})
 		}
@@ -247,11 +248,11 @@ func (e *Env) Run(args []string) int {
 			var tableData [][]interface{}
 
 			for _, env := range envResp {
-				val := datetime.DateTime(env.CreatedAt)
+				relativeCreationTimestamp := datetime.DateTime(env.CreatedAt)
 				tableData = append(tableData, []interface{}{
 					env.ID,
 					env.CreatedBy,
-					val,
+					relativeCreationTimestamp,
 					env.Action,
 					env.ResourceDetails,
 				})
