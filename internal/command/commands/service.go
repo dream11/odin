@@ -30,7 +30,8 @@ func (s *Service) Run(args []string) int {
 	envName := flagSet.String("env", "", "name of environment to deploy the service in")
 	teamName := flagSet.String("team", "", "name of user's team")
 	isMature := flagSet.Bool("mature", false, "mark service version as matured")
-	rebuild := flagSet.Bool("rebuild", false, "rebuild executor for creating images or deploying services")
+	rebuild := flagSet.Bool("rebuild", false, "rebuild executor for creating images")
+	component := flagSet.String("component", "", "component name to filter out describe environment")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -84,7 +85,7 @@ func (s *Service) Run(args []string) int {
 	if s.Describe {
 		if emptyParameterValidation([]string{*serviceName}) {
 			s.Logger.Info("Describing service: " + *serviceName + "@" + *serviceVersion)
-			serviceResp, err := serviceClient.DescribeService(*serviceName, *serviceVersion)
+			serviceResp, err := serviceClient.DescribeService(*serviceName, *serviceVersion, *component)
 			if err != nil {
 				s.Logger.Error(err.Error())
 				return 1
@@ -99,7 +100,7 @@ func (s *Service) Run(args []string) int {
 
 			s.Logger.Output(string(details))
 			s.Logger.Output("\nCommand to describe component")
-			s.Logger.ItalicEmphasize("odin describe component --name <componentName> --version <componentVersion>")
+			s.Logger.ItalicEmphasize(fmt.Sprintf("odin describe service --name %s --version <serviceVersion> --component <componentName>", *serviceName))
 			return 0
 		}
 
@@ -232,6 +233,7 @@ func (s *Service) Help() string {
 		return commandHelper("describe", "service", []string{
 			"--name=name of service to describe",
 			"--version=version of service to describe",
+			"--component=name of component to describe",
 		})
 	}
 
