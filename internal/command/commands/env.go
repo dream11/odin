@@ -199,11 +199,13 @@ func (e *Env) Run(args []string) int {
 			return 1
 		}
 
-		tableHeaders := []string{"Name", "Team", "Env Type", "State", "Account", "Deletion Time", "Purpose"}
+		tableHeaders := []string{"Name", "Team", "Env Type", "State", "Account", "Deletion Time", "Purpose", "CreatedAt", "CreatedBy", "UpdatedAt", "UpdatedBy"}
 		var tableData [][]interface{}
 
 		for _, env := range envList {
 			relativeDeletionTimestamp := datetime.DateTimeFromNow(env.DeletionTime)
+			relativeCreatedAtTimestamp := datetime.DateTimeFromNow(env.CreatedAt)
+			relativeUpdatedAtTimestamp := datetime.DateTimeFromNow(env.UpdatedAt)
 			tableData = append(tableData, []interface{}{
 				env.Name,
 				env.Team,
@@ -212,6 +214,10 @@ func (e *Env) Run(args []string) int {
 				env.Account,
 				relativeDeletionTimestamp,
 				env.Purpose,
+				relativeCreatedAtTimestamp,
+				env.CreatedBy,
+				relativeUpdatedAtTimestamp,
+				env.UpdatedBy,
 			})
 		}
 

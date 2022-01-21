@@ -84,7 +84,7 @@ func (s *Service) Run(args []string) int {
 
 	if s.Describe {
 		if emptyParameterValidation([]string{*serviceName}) {
-			s.Logger.Info("Describing service: " + *serviceName + "@" + *serviceVersion)
+			s.Logger.Info("Describing service: " + *serviceName)
 			serviceResp, err := serviceClient.DescribeService(*serviceName, *serviceVersion, *component)
 			if err != nil {
 				s.Logger.Error(err.Error())
@@ -99,8 +99,10 @@ func (s *Service) Run(args []string) int {
 			}
 
 			s.Logger.Output(string(details))
-			s.Logger.Output("\nCommand to describe component")
-			s.Logger.ItalicEmphasize(fmt.Sprintf("odin describe service --name %s --version <serviceVersion> --component <componentName>", *serviceName))
+			if len(*component) == 0 {
+				s.Logger.Output("Command to describe component")
+				s.Logger.ItalicEmphasize(fmt.Sprintf("odin describe service --name %s --version <serviceVersion> --component <componentName>", *serviceName))
+			}
 			return 0
 		}
 
