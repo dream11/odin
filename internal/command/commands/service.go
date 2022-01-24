@@ -162,32 +162,7 @@ func (s *Service) Run(args []string) int {
 		if emptyParameterValidation([]string{*serviceName, *serviceVersion, *envName}) {
 			s.Logger.Warn("Deploying service: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
 
-			var parsedConfig interface{}
-
-			configData, err := file.Read(*filePath)
-			if err == nil {
-				if strings.Contains(*filePath, ".yaml") || strings.Contains(*filePath, ".yml") {
-					err = yaml.Unmarshal(configData, &parsedConfig)
-					if err != nil {
-						s.Logger.Error("Unable to parse YAML. " + err.Error())
-						return 1
-					}
-				} else if strings.Contains(*filePath, ".json") {
-					err = json.Unmarshal(configData, &parsedConfig)
-					if err != nil {
-						s.Logger.Error("Unable to parse JSON. " + err.Error())
-						return 1
-					}
-				} else {
-					s.Logger.Error("Unrecognized file format")
-					return 1
-				}
-			} else {
-				// initialise config as empty json
-				parsedConfig = make(map[string]string)
-			}
-
-			serviceClient.DeployService(*serviceName, *serviceVersion, *envName, *force, *rebuild, parsedConfig)
+			serviceClient.DeployService(*serviceName, *serviceVersion, *envName, *force, *rebuild)
 
 			return 0
 		}
@@ -284,7 +259,6 @@ func (s *Service) Help() string {
 			"--force=forcefully deploy your service",
 			"--rebuild=rebuild your executor job again for service deployment",
 			"--env=name of environment to deploy service in",
-			"--file=name of config file",
 		})
 	}
 
