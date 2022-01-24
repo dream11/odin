@@ -204,7 +204,7 @@ func (s *Service) Run(args []string) int {
 				return 1
 			}
 
-			s.Logger.Success("Job Triggered to undeploy your")
+			s.Logger.Success("Job Triggered to undeploy your service " + *serviceName + " from the env " + *envName)
 
 			return 0
 		}
