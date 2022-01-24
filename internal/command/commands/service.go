@@ -198,13 +198,13 @@ func (s *Service) Run(args []string) int {
 	if s.Undeploy {
 		if emptyParameterValidation([]string{*serviceName, *envName}) {
 			s.Logger.Info("Undeploying service: " + *serviceName + " from environment" + *envName)
-			response, err := serviceClient.UndeployService(*serviceName, *envName)
+			err := serviceClient.UndeployService(*serviceName, *envName)
 			if err != nil {
 				s.Logger.Error(err.Error())
 				return 1
 			}
 
-			s.Logger.Success(response)
+			s.Logger.Success("Job Triggered to undeploy your")
 
 			return 0
 		}
