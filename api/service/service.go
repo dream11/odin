@@ -25,6 +25,11 @@ type ListResponse struct {
 	Response []Service `yaml:"resp,omitempty" json:"resp,omitempty"`
 }
 
+// UndeployResponse interface
+type UndeployResponse struct {
+	Response Service `yaml:"resp,omitempty" json:"resp,omitempty"`
+}
+
 // DetailResponse interface
 type DetailResponse struct {
 	Response Service `yaml:"resp,omitempty" json:"resp,omitempty"`

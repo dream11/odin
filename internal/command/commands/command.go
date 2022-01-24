@@ -21,6 +21,7 @@ type command struct {
 	Status          bool // current Status of resource
 	Logs            bool // execution Logs of resource
 	Deploy          bool // Deploy resource
+	Undeploy        bool // Undeploy resource
 	Destroy         bool // Destroy the deployed resource
 	GetHistory      bool // Get changelog of resource
 	DescribeHistory bool // Describe a changelog of resource
