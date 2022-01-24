@@ -26,10 +26,11 @@ func (s *Service) Run(args []string) int {
 	filePath := flagSet.String("file", "service.yaml", "file to read service config")
 	serviceName := flagSet.String("name", "", "name of service to be used")
 	serviceVersion := flagSet.String("version", "", "version of service to be used")
+	force := flagSet.Bool("force", false, "forcefully deploy the new version of the service")
 	envName := flagSet.String("env", "", "name of environment to deploy the service in")
 	teamName := flagSet.String("team", "", "name of user's team")
 	isMature := flagSet.Bool("mature", false, "mark service version as matured")
-	rebuild := flagSet.Bool("rebuild", false, "rebuild executor for creating images")
+	rebuild := flagSet.Bool("rebuild", false, "rebuild executor for creating images or deploying services")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -161,32 +162,7 @@ func (s *Service) Run(args []string) int {
 		if emptyParameterValidation([]string{*serviceName, *serviceVersion, *envName}) {
 			s.Logger.Warn("Deploying service: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
 
-			var parsedConfig interface{}
-
-			configData, err := file.Read(*filePath)
-			if err == nil {
-				if strings.Contains(*filePath, ".yaml") || strings.Contains(*filePath, ".yml") {
-					err = yaml.Unmarshal(configData, &parsedConfig)
-					if err != nil {
-						s.Logger.Error("Unable to parse YAML. " + err.Error())
-						return 1
-					}
-				} else if strings.Contains(*filePath, ".json") {
-					err = json.Unmarshal(configData, &parsedConfig)
-					if err != nil {
-						s.Logger.Error("Unable to parse JSON. " + err.Error())
-						return 1
-					}
-				} else {
-					s.Logger.Error("Unrecognized file format")
-					return 1
-				}
-			} else {
-				// initialise config as empty json
-				parsedConfig = make(map[string]string)
-			}
-
-			serviceClient.DeployService(*serviceName, *serviceVersion, *envName, parsedConfig)
+			serviceClient.DeployService(*serviceName, *serviceVersion, *envName, *force, *rebuild)
 
 			return 0
 		}
@@ -297,8 +273,9 @@ func (s *Service) Help() string {
 		return commandHelper("deploy", "service", []string{
 			"--name=name of service to deploy",
 			"--version=version of service to deploy",
+			"--force=forcefully deploy your service",
+			"--rebuild=rebuild your executor job again for service deployment",
 			"--env=name of environment to deploy service in",
-			"--file=name of config file",
 		})
 	}
 	if s.Undeploy {

@@ -95,11 +95,13 @@ func (s *Service) MarkMature(service, version string) {
 }
 
 // DeployService : deploy a service
-func (s *Service) DeployService(service, version, env string, config interface{}) {
+func (s *Service) DeployService(service, version, env string, force, rebuild bool) {
 	client := newApiClient()
 	client.QueryParams["env_name"] = env
+	client.QueryParams["force"] = fmt.Sprintf("%v", force)
+	client.QueryParams["rebuild"] = fmt.Sprintf("%v", rebuild)
 
-	response := client.action(path.Join(serviceEntity, "deploy", service, "versions", version)+"/", "POST", config)
+	response := client.action(path.Join(serviceEntity, "deploy", service, "versions", version)+"/", "POST", nil)
 	response.Process(true)
 }
 
