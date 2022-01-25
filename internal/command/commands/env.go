@@ -43,7 +43,7 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Create {
-		emptyParameters := emptyParameters(map[string]string{"env-type": *env})
+		emptyParameters := emptyParameters(map[string]string{"--env-type": *env})
 		if len(emptyParameters) == 0 {
 			e.Logger.Info("Creating environment for team: " + *team)
 			envConfig := environment.Env{
@@ -70,7 +70,7 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Status {
-		emptyParameters := emptyParameters(map[string]string{"name": *name})
+		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 			e.Logger.Info("Fetching status for environment: " + *name + ", service: " + *service + ", component: " + *component)
 
@@ -131,7 +131,7 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Update {
-		emptyParameters := emptyParameters(map[string]string{"name": *name})
+		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 			e.Logger.Warn("Updating environment: " + *name)
 
@@ -170,7 +170,7 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Describe {
-		emptyParameters := emptyParameters(map[string]string{"name": *name})
+		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 			e.Logger.Info("Describing " + *name)
 			envResp, err := envClient.DescribeEnv(*name, *service, *component)
@@ -235,7 +235,7 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Delete {
-		emptyParameters := emptyParameters(map[string]string{"name": *name})
+		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 			e.Logger.Warn("Deleting environment:" + *name)
 			envClient.DeleteEnv(*name)
@@ -248,7 +248,7 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.GetHistory {
-		emptyParameters := emptyParameters(map[string]string{"name": *name})
+		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 			e.Logger.Info("Fetching changelog for env: " + *name)
 			envResp, err := envClient.GetHistoryEnv(*name)
@@ -290,7 +290,7 @@ func (e *Env) Run(args []string) int {
 			s = strconv.Itoa(*id)
 		}
 
-		emptyParameters := emptyParameters(map[string]string{"name": *name, "id": s})
+		emptyParameters := emptyParameters(map[string]string{"--name": *name, "--id": s})
 		if len(emptyParameters) == 0 {
 			e.Logger.Info("Detailed description of a changelog for env: " + *name + " with ID: " + s)
 			envResp, err := envClient.DescribeHistoryEnv(*name, s)

@@ -42,7 +42,7 @@ func (s *Service) Run(args []string) int {
 	if s.Create {
 
 		if *rebuild {
-			emptyParameters := emptyParameters(map[string]string{"name": *serviceName, "version": *serviceVersion})
+			emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
 			if len(emptyParameters) == 0 {
 				serviceClient.RebuildService(*serviceName, *serviceVersion)
 				s.Logger.Output("Command to check status of images")
@@ -86,7 +86,7 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Describe {
-		emptyParameters := emptyParameters(map[string]string{"name": *serviceName})
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName})
 		if len(emptyParameters) == 0 {
 			s.Logger.Info("Describing service: " + *serviceName)
 			serviceResp, err := serviceClient.DescribeService(*serviceName, *serviceVersion, *component)
@@ -153,7 +153,7 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Label {
-		emptyParameters := emptyParameters(map[string]string{"name": *serviceName, "version": *serviceVersion})
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
 		if len(emptyParameters) == 0 {
 
 			// Add more labels to this condition
@@ -174,7 +174,7 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Deploy {
-		emptyParameters := emptyParameters(map[string]string{"name": *serviceName, "version": *serviceVersion, "env": *envName})
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion, "--env": *envName})
 		if len(emptyParameters) == 0 {
 			s.Logger.Warn("Deploying service: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
 
@@ -188,7 +188,7 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Delete {
-		emptyParameters := emptyParameters(map[string]string{"name": *serviceName, "version": *serviceVersion})
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
 		if len(emptyParameters) == 0 {
 			s.Logger.Info("Deleting service: " + *serviceName + "@" + *serviceVersion)
 			serviceClient.DeleteService(*serviceName, *serviceVersion)
@@ -201,7 +201,7 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Status {
-		emptyParameters := emptyParameters(map[string]string{"name": *serviceName, "version": *serviceVersion})
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
 		if len(emptyParameters) == 0 {
 			s.Logger.Info("Getting status of service: " + *serviceName + "@" + *serviceVersion)
 			serviceStatus, err := serviceClient.StatusService(*serviceName, *serviceVersion)
