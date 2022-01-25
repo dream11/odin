@@ -30,8 +30,8 @@ func (s *Service) Run(args []string) int {
 	envName := flagSet.String("env", "", "name of environment to deploy the service in")
 	teamName := flagSet.String("team", "", "name of user's team")
 	isMature := flagSet.Bool("mature", false, "mark service version as matured")
-	rebuild := flagSet.Bool("rebuild", false, "rebuild executor for creating images")
-	component := flagSet.String("component", "", "component name to filter out describe environment")
+	rebuild := flagSet.Bool("rebuild", false, "rebuild executor for creating images or deploying services")
+	component := flagSet.String("component", "", "name of service component")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -44,6 +44,8 @@ func (s *Service) Run(args []string) int {
 		if *rebuild {
 			if emptyParameterValidation([]string{*serviceName, *serviceVersion}) {
 				serviceClient.RebuildService(*serviceName, *serviceVersion)
+				s.Logger.Output("Command to check status of images")
+				s.Logger.ItalicEmphasize(fmt.Sprintf("odin status service --name %s --version %s", *serviceName, *serviceVersion))
 				return 0
 			}
 			s.Logger.Error("service name & version cannot be blank")
@@ -77,7 +79,7 @@ func (s *Service) Run(args []string) int {
 
 		serviceClient.CreateService(parsedConfig)
 
-		s.Logger.Output("\nCommand to check status of images")
+		s.Logger.Output("Command to check status of images")
 		s.Logger.ItalicEmphasize("odin status service --name <serviceName> --version <serviceVersion>")
 		return 0
 	}
@@ -218,7 +220,7 @@ func (s *Service) Run(args []string) int {
 				return 1
 			}
 			s.Logger.Output("\nCommand to deploy service")
-			s.Logger.ItalicEmphasize(fmt.Sprintf("odin deploy service --name %s --version %s --env <envName> --file <configFile>", *serviceName, *serviceVersion))
+			s.Logger.ItalicEmphasize(fmt.Sprintf("odin deploy service --name %s --version %s --env <envName>", *serviceName, *serviceVersion))
 			return 0
 		}
 
