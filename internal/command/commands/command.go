@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"strings"
 
 	odin "github.com/dream11/odin/app"
 	"github.com/dream11/odin/internal/ui"
@@ -54,4 +55,15 @@ func emptyParameterValidation(params []string) bool {
 		}
 	}
 	return true
+}
+
+// get empty parameter list
+func emptyParameters(params map[string]string) string {
+	emptyParameters := []string{}
+	for key, val := range params {
+		if len(val) == 0 {
+			emptyParameters = append(emptyParameters, key)
+		}
+	}
+	return strings.Join(emptyParameters, ", ")
 }

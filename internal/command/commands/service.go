@@ -42,13 +42,14 @@ func (s *Service) Run(args []string) int {
 	if s.Create {
 
 		if *rebuild {
-			if emptyParameterValidation([]string{*serviceName, *serviceVersion}) {
+			emptyParameters := emptyParameters(map[string]string{"name": *serviceName, "version": *serviceVersion})
+			if len(emptyParameters) == 0 {
 				serviceClient.RebuildService(*serviceName, *serviceVersion)
 				s.Logger.Output("Command to check status of images")
 				s.Logger.ItalicEmphasize(fmt.Sprintf("odin status service --name %s --version %s", *serviceName, *serviceVersion))
 				return 0
 			}
-			s.Logger.Error("service name & version cannot be blank")
+			s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
 			return 1
 		}
 
@@ -85,7 +86,8 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Describe {
-		if emptyParameterValidation([]string{*serviceName}) {
+		emptyParameters := emptyParameters(map[string]string{"name": *serviceName})
+		if len(emptyParameters) == 0 {
 			s.Logger.Info("Describing service: " + *serviceName)
 			serviceResp, err := serviceClient.DescribeService(*serviceName, *serviceVersion, *component)
 			if err != nil {
@@ -115,7 +117,7 @@ func (s *Service) Run(args []string) int {
 			return 0
 		}
 
-		s.Logger.Error("service name cannot be blank")
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
 		return 1
 	}
 
@@ -151,7 +153,8 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Label {
-		if emptyParameterValidation([]string{*serviceName, *serviceVersion}) {
+		emptyParameters := emptyParameters(map[string]string{"name": *serviceName, "version": *serviceVersion})
+		if len(emptyParameters) == 0 {
 
 			// Add more labels to this condition
 			if !*isMature {
@@ -166,12 +169,13 @@ func (s *Service) Run(args []string) int {
 			return 0
 		}
 
-		s.Logger.Error("service name & version cannot be blank")
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
 		return 1
 	}
 
 	if s.Deploy {
-		if emptyParameterValidation([]string{*serviceName, *serviceVersion, *envName}) {
+		emptyParameters := emptyParameters(map[string]string{"name": *serviceName, "version": *serviceVersion, "env": *envName})
+		if len(emptyParameters) == 0 {
 			s.Logger.Warn("Deploying service: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
 
 			serviceClient.DeployService(*serviceName, *serviceVersion, *envName, *force, *rebuild)
@@ -179,24 +183,26 @@ func (s *Service) Run(args []string) int {
 			return 0
 		}
 
-		s.Logger.Error("service name, version and environment name cannot be blank")
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
 		return 1
 	}
 
 	if s.Delete {
-		if emptyParameterValidation([]string{*serviceName, *serviceVersion}) {
+		emptyParameters := emptyParameters(map[string]string{"name": *serviceName, "version": *serviceVersion})
+		if len(emptyParameters) == 0 {
 			s.Logger.Info("Deleting service: " + *serviceName + "@" + *serviceVersion)
 			serviceClient.DeleteService(*serviceName, *serviceVersion)
 
 			return 0
 		}
 
-		s.Logger.Error("service name & version cannot be blank")
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
 		return 1
 	}
 
 	if s.Status {
-		if emptyParameterValidation([]string{*serviceName, *serviceVersion}) {
+		emptyParameters := emptyParameters(map[string]string{"name": *serviceName, "version": *serviceVersion})
+		if len(emptyParameters) == 0 {
 			s.Logger.Info("Getting status of service: " + *serviceName + "@" + *serviceVersion)
 			serviceStatus, err := serviceClient.StatusService(*serviceName, *serviceVersion)
 			if err != nil {
@@ -224,7 +230,7 @@ func (s *Service) Run(args []string) int {
 			return 0
 		}
 
-		s.Logger.Error("service name & version cannot be blank")
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
 		return 1
 	}
 

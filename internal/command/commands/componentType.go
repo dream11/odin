@@ -2,6 +2,7 @@ package commands
 
 import (
 	"flag"
+	"fmt"
 
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/table"
@@ -65,7 +66,8 @@ func (c *ComponentType) Run(args []string) int {
 	}
 
 	if c.Describe {
-		if emptyParameterValidation([]string{*componentTypeName}) {
+		emptyParameters := emptyParameters(map[string]string{"name": *componentTypeName})
+		if len(emptyParameters) == 0 {
 			c.Logger.Info("Describing component type: " + *componentTypeName + "@" + *componentTypeVersion)
 			componentTypeResp, err := componentTypeClient.DescribeComponentType(*componentTypeName, *componentTypeVersion)
 			if err != nil {
@@ -84,7 +86,8 @@ func (c *ComponentType) Run(args []string) int {
 			return 0
 		}
 
-		c.Logger.Error("component type name cannot be blank")
+		c.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+
 		return 1
 	}
 	c.Logger.Error("Not a valid command")
