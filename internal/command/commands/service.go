@@ -187,6 +187,20 @@ func (s *Service) Run(args []string) int {
 		return 1
 	}
 
+	if s.Undeploy {
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--env": *envName})
+		if len(emptyParameters) == 0 {
+			s.Logger.Info("Undeploying service: " + *serviceName + " from environment" + *envName)
+			serviceClient.UndeployService(*serviceName, *envName)
+
+			s.Logger.Success("Job Triggered to undeploy your service " + *serviceName + " from the env " + *envName)
+
+			return 0
+		}
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		return 1
+	}
+
 	if s.Delete {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
 		if len(emptyParameters) == 0 {
@@ -280,6 +294,12 @@ func (s *Service) Help() string {
 			"--env=name of environment to deploy service in",
 		})
 	}
+	if s.Undeploy {
+		return commandHelper("deploy", "service", []string{
+			"--name=name of service to undeploy",
+			"--env=name of environment to undeploy service in",
+		})
+	}
 
 	if s.Delete {
 		return commandHelper("delete", "service", []string{
@@ -318,6 +338,10 @@ func (s *Service) Synopsis() string {
 
 	if s.Deploy {
 		return "deploy a service"
+	}
+
+	if s.Undeploy {
+		return "undeploy a service"
 	}
 
 	if s.Delete {

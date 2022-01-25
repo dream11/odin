@@ -64,6 +64,16 @@ func (s *Service) ListServices(team, version, serviceName string, maturity bool)
 	return serviceResponse.Response, err
 }
 
+// UndeployService: To remove a service from a given env
+func (s *Service) UndeployService(serviceName, env_name string) {
+	client := newApiClient()
+	client.QueryParams["env_name"] = env_name
+
+	response := client.action(path.Join(serviceEntity, "undeploy", serviceName)+"/", "DELETE", nil)
+	response.Process(true)
+
+}
+
 // DeleteService : delete a service version
 func (s *Service) DeleteService(service, version string) {
 	client := newApiClient()

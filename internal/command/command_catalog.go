@@ -100,6 +100,9 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"delete service": func() (cli.Command, error) {
 			return &commands.Service{Delete: true}, nil
 		},
+		"undeploy service": func() (cli.Command, error) {
+			return &commands.Service{Undeploy: true}, nil
+		},
 		"status service": func() (cli.Command, error) {
 			return &commands.Service{Status: true}, nil
 		},
