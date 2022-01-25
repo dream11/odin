@@ -188,7 +188,8 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Undeploy {
-		if emptyParameterValidation([]string{*serviceName, *envName}) {
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--env": *envName})
+		if len(emptyParameters) == 0 {
 			s.Logger.Info("Undeploying service: " + *serviceName + " from environment" + *envName)
 			serviceClient.UndeployService(*serviceName, *envName)
 
@@ -196,7 +197,7 @@ func (s *Service) Run(args []string) int {
 
 			return 0
 		}
-		s.Logger.Error("service name and environment name cannot be blank")
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
 		return 1
 	}
 
