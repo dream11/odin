@@ -13,10 +13,10 @@ type Env struct {
 	State        string            `yaml:"state,omitempty" json:"state,omitempty"`
 	DeletionTime string            `yaml:"autoDeletionTime,omitempty" json:"autoDeletionTime,omitempty"`
 	Account      string            `yaml:"cloudProviderAccount,omitempty" json:"cloudProviderAccount,omitempty"`
-	CreatedBy    string            `yaml:"created_by,omitempty" json:"created_by,omitempty"`
-	UpdatedBy    string            `yaml:"updated_by,omitempty" json:"updated_by,omitempty"`
-	CreatedAt    string            `yaml:"created_at,omitempty" json:"created_at,omitempty"`
-	UpdatedAt    string            `yaml:"updated_at,omitempty" json:"updated_at,omitempty"`
+	CreatedBy    string            `yaml:"createdBy,omitempty" json:"createdBy,omitempty"`
+	UpdatedBy    string            `yaml:"updatedBy,omitempty" json:"updatedBy,omitempty"`
+	CreatedAt    string            `yaml:"createdAt,omitempty" json:"createdAt,omitempty"`
+	UpdatedAt    string            `yaml:"updatedAt,omitempty" json:"updatedAt,omitempty"`
 	Config       interface{}       `yaml:"config,omitempty" json:"config,omitempty"`
 	MetaInfo     interface{}       `yaml:"meta_info,omitempty" json:"meta_info,omitempty"`
 	Cost         string            `yaml:"cost,omitempty" json:"cost,omitempty"`
