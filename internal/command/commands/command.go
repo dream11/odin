@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"strings"
 
 	odin "github.com/dream11/odin/app"
 	"github.com/dream11/odin/internal/ui"
@@ -46,12 +47,13 @@ func defaultHelper() string {
 	return fmt.Sprintf("Usage: %s --help", odin.App.Name)
 }
 
-// validate if any value provided is empty or not
-func emptyParameterValidation(params []string) bool {
-	for _, val := range params {
+// get empty parameter list
+func emptyParameters(params map[string]string) string {
+	emptyParameters := []string{}
+	for key, val := range params {
 		if len(val) == 0 {
-			return false
+			emptyParameters = append(emptyParameters, key)
 		}
 	}
-	return true
+	return strings.Join(emptyParameters, ", ")
 }
