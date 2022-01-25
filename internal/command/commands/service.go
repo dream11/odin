@@ -31,6 +31,7 @@ func (s *Service) Run(args []string) int {
 	teamName := flagSet.String("team", "", "name of user's team")
 	isMature := flagSet.Bool("mature", false, "mark service version as matured")
 	rebuild := flagSet.Bool("rebuild", false, "rebuild executor for creating images or deploying services")
+	component := flagSet.String("component", "", "name of service component")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -43,6 +44,8 @@ func (s *Service) Run(args []string) int {
 		if *rebuild {
 			if emptyParameterValidation([]string{*serviceName, *serviceVersion}) {
 				serviceClient.RebuildService(*serviceName, *serviceVersion)
+				s.Logger.Output("Command to check status of images")
+				s.Logger.ItalicEmphasize(fmt.Sprintf("odin status service --name %s --version %s", *serviceName, *serviceVersion))
 				return 0
 			}
 			s.Logger.Error("service name & version cannot be blank")
@@ -76,30 +79,39 @@ func (s *Service) Run(args []string) int {
 
 		serviceClient.CreateService(parsedConfig)
 
-		s.Logger.Output("\nCommand to check status of images")
+		s.Logger.Output("Command to check status of images")
 		s.Logger.ItalicEmphasize("odin status service --name <serviceName> --version <serviceVersion>")
 		return 0
 	}
 
 	if s.Describe {
 		if emptyParameterValidation([]string{*serviceName}) {
-			s.Logger.Info("Describing service: " + *serviceName + "@" + *serviceVersion)
-			serviceResp, err := serviceClient.DescribeService(*serviceName, *serviceVersion)
+			s.Logger.Info("Describing service: " + *serviceName)
+			serviceResp, err := serviceClient.DescribeService(*serviceName, *serviceVersion, *component)
 			if err != nil {
 				s.Logger.Error(err.Error())
 				return 1
 			}
 
-			s.Logger.Info(serviceResp.Name + "@" + serviceResp.Version + " details!")
-			details, err := yaml.Marshal(serviceResp)
+			var details []byte
+			if len(*component) == 0 {
+				s.Logger.Info(serviceResp.Name + "@" + serviceResp.Version + " details!")
+				details, err = yaml.Marshal(serviceResp)
+			} else {
+				s.Logger.Info(fmt.Sprintf("%s component details for %s@%s", *component, serviceResp.Name, serviceResp.Version))
+				details, err = yaml.Marshal(serviceResp.Components[0])
+			}
+
 			if err != nil {
 				s.Logger.Error(err.Error())
 				return 1
 			}
 
 			s.Logger.Output(string(details))
-			s.Logger.Output("\nCommand to describe component")
-			s.Logger.ItalicEmphasize("odin describe component --name <componentName> --version <componentVersion>")
+			if len(*component) == 0 {
+				s.Logger.Output("Command to get component details")
+				s.Logger.ItalicEmphasize(fmt.Sprintf("odin describe service --name %s --version <serviceVersion> --component <componentName>", *serviceName))
+			}
 			return 0
 		}
 
@@ -208,7 +220,7 @@ func (s *Service) Run(args []string) int {
 				return 1
 			}
 			s.Logger.Output("\nCommand to deploy service")
-			s.Logger.ItalicEmphasize(fmt.Sprintf("odin deploy service --name %s --version %s --env <envName> --file <configFile>", *serviceName, *serviceVersion))
+			s.Logger.ItalicEmphasize(fmt.Sprintf("odin deploy service --name %s --version %s --env <envName>", *serviceName, *serviceVersion))
 			return 0
 		}
 
@@ -232,6 +244,7 @@ func (s *Service) Help() string {
 		return commandHelper("describe", "service", []string{
 			"--name=name of service to describe",
 			"--version=version of service to describe",
+			"--component=name of component to describe",
 		})
 	}
 
