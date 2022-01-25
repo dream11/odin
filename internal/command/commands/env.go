@@ -43,7 +43,8 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Create {
-		if emptyParameterValidation([]string{*env}) {
+		emptyParameters := emptyParameters(map[string]string{"env-type": *env})
+		if len(emptyParameters) == 0 {
 			e.Logger.Info("Creating environment for team: " + *team)
 			envConfig := environment.Env{
 				Team:    *team,
@@ -63,12 +64,14 @@ func (e *Env) Run(args []string) int {
 			return 0
 		}
 
-		e.Logger.Error("env-type is a required parameter")
+		e.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+
 		return 1
 	}
 
 	if e.Status {
-		if emptyParameterValidation([]string{*name}) {
+		emptyParameters := emptyParameters(map[string]string{"name": *name})
+		if len(emptyParameters) == 0 {
 			e.Logger.Info("Fetching status for environment: " + *name + ", service: " + *service + ", component: " + *component)
 
 			if *component != "" && *service == "" {
@@ -123,12 +126,13 @@ func (e *Env) Run(args []string) int {
 
 			return 0
 		}
-		e.Logger.Error("Environment name cannot be blank")
+		e.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
 		return 1
 	}
 
 	if e.Update {
-		if emptyParameterValidation([]string{*name}) {
+		emptyParameters := emptyParameters(map[string]string{"name": *name})
+		if len(emptyParameters) == 0 {
 			e.Logger.Warn("Updating environment: " + *name)
 
 			configData, err := file.Read(*filePath)
@@ -161,12 +165,13 @@ func (e *Env) Run(args []string) int {
 			return 0
 		}
 
-		e.Logger.Error("environment name cannot be blank")
+		e.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
 		return 1
 	}
 
 	if e.Describe {
-		if emptyParameterValidation([]string{*name}) {
+		emptyParameters := emptyParameters(map[string]string{"name": *name})
+		if len(emptyParameters) == 0 {
 			e.Logger.Info("Describing " + *name)
 			envResp, err := envClient.DescribeEnv(*name, *service, *component)
 			if err != nil {
@@ -187,7 +192,7 @@ func (e *Env) Run(args []string) int {
 			}
 			return 0
 		}
-		e.Logger.Error("name cannot be blank")
+		e.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
 		return 1
 	}
 
@@ -230,19 +235,21 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Delete {
-		if emptyParameterValidation([]string{*name}) {
+		emptyParameters := emptyParameters(map[string]string{"name": *name})
+		if len(emptyParameters) == 0 {
 			e.Logger.Warn("Deleting environment:" + *name)
 			envClient.DeleteEnv(*name)
 
 			return 0
 		}
 
-		e.Logger.Error("environment name cannot be blank")
+		e.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
 		return 1
 	}
 
 	if e.GetHistory {
-		if emptyParameterValidation([]string{*name}) {
+		emptyParameters := emptyParameters(map[string]string{"name": *name})
+		if len(emptyParameters) == 0 {
 			e.Logger.Info("Fetching changelog for env: " + *name)
 			envResp, err := envClient.GetHistoryEnv(*name)
 			if err != nil {
@@ -273,6 +280,8 @@ func (e *Env) Run(args []string) int {
 			e.Logger.ItalicEmphasize("odin describe-history env --name <envName> --id <changelogId>")
 			return 0
 		}
+		e.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		return 1
 	}
 
 	if e.DescribeHistory {
@@ -281,7 +290,8 @@ func (e *Env) Run(args []string) int {
 			s = strconv.Itoa(*id)
 		}
 
-		if emptyParameterValidation([]string{s, *name}) {
+		emptyParameters := emptyParameters(map[string]string{"name": *name, "id": s})
+		if len(emptyParameters) == 0 {
 			e.Logger.Info("Detailed description of a changelog for env: " + *name + " with ID: " + s)
 			envResp, err := envClient.DescribeHistoryEnv(*name, s)
 			if err != nil {
@@ -305,6 +315,8 @@ func (e *Env) Run(args []string) int {
 
 			return 0
 		}
+		e.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		return 1
 	}
 
 	e.Logger.Error("Not a valid command")

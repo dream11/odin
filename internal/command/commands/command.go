@@ -47,16 +47,6 @@ func defaultHelper() string {
 	return fmt.Sprintf("Usage: %s --help", odin.App.Name)
 }
 
-// validate if any value provided is empty or not
-func emptyParameterValidation(params []string) bool {
-	for _, val := range params {
-		if len(val) == 0 {
-			return false
-		}
-	}
-	return true
-}
-
 // get empty parameter list
 func emptyParameters(params map[string]string) string {
 	emptyParameters := []string{}
