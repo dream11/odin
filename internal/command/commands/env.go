@@ -72,28 +72,25 @@ func (e *Env) Run(args []string) int {
 	if e.Status {
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
-			e.Logger.Info("Fetching status for environment: " + *name + ", service: " + *service + ", component: " + *component)
+			e.Logger.Info("Fetching status for environment: " + *name + ", service: " + *service)
 
-			if *component != "" && *service == "" {
-				e.Logger.Error("service cannot be blank when component is specified")
-				return 1
-			}
-			envStatus, err := envClient.EnvStatus(*name, *service, *component)
-			if err != nil {
-				e.Logger.Error(err.Error())
-				return 1
-			}
+			if *service != "" {
 
-			tableHeaders := []string{"Name", "Version", "Status"}
-			var tableData [][]interface{}
+				envServiceStatus, err := envClient.EnvServiceStatus(*name, *service)
+				if err != nil {
+					e.Logger.Error(err.Error())
+					return 1
+				}
 
-			if *component != "" {
+				relativeDeployedSinceTime := datetime.DateTimeFromNow(envServiceStatus.LastDeployedAt)
+				e.Logger.Output("Service version: " + string(envServiceStatus.Version))
+				e.Logger.Output("Last deployed: " + relativeDeployedSinceTime)
+				e.Logger.Output("Component details: ")
 
-				e.Logger.Success(envStatus.Status)
+				tableHeaders := []string{"Name", "Version", "Status"}
+				var tableData [][]interface{}
 
-			} else if *service != "" {
-
-				for _, component := range envStatus.Components {
+				for _, component := range envServiceStatus.Components {
 					tableData = append(tableData, []interface{}{
 						component.Name,
 						component.Version,
@@ -109,11 +106,22 @@ func (e *Env) Run(args []string) int {
 
 			} else {
 
-				for _, service := range envStatus.Services {
+				envStatus, err := envClient.EnvStatus(*name)
+				if err != nil {
+					e.Logger.Error(err.Error())
+					return 1
+				}
+
+				tableHeaders := []string{"Name", "Version", "Status", "Last deployed"}
+				var tableData [][]interface{}
+
+				for _, serviceStatus := range envStatus.ServiceStatus {
+					relativeDeployedSinceTime := datetime.DateTimeFromNow(serviceStatus.LastDeployedAt)
 					tableData = append(tableData, []interface{}{
-						service.Name,
-						service.Version,
-						service.Status,
+						serviceStatus.Name,
+						serviceStatus.Version,
+						serviceStatus.Status,
+						relativeDeployedSinceTime,
 					})
 				}
 
@@ -381,7 +389,6 @@ func (e *Env) Help() string {
 		return commandHelper("status", "environment", []string{
 			"--name=name of environment",
 			"--service=name of service",
-			"--component=name of component",
 		})
 	}
 

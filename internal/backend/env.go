@@ -100,21 +100,26 @@ func (e *Env) DescribeHistoryEnv(env string, id string) ([]envResp.History, erro
 }
 
 // EnvStatus : Fetch status of the env
-func (e *Env) EnvStatus(env, serviceName, componentName string) (envResp.EnvStatus, error) {
+func (e *Env) EnvStatus(env string) (envResp.EnvStatus, error) {
 	client := newApiClient()
 
-	url := path.Join(envEntity, env)
-	if componentName != "" {
-		url += "/services/" + serviceName + "/components/" + componentName
-	} else if serviceName != "" {
-		url += "/services/" + serviceName
-	}
-
-	response := client.action(url+"/status", "GET", nil)
+	response := client.action(path.Join(envEntity, env)+"/status", "GET", nil)
 	response.Process(true) // process response and exit if error
 
-	var envResponse envResp.StatusResponse
+	var envResponse envResp.EnvStatusResponse
 	err := json.Unmarshal(response.Body, &envResponse)
 
-	return envResponse.Response, err
+	return envResponse.EnvResponse, err
+}
+
+func (e *Env) EnvServiceStatus(env, serviceName string) (envResp.EnvServiceStatus, error) {
+	client := newApiClient()
+
+	response := client.action(path.Join(envEntity, env)+"/services/"+serviceName+"/status", "GET", nil)
+	response.Process(true) // process response and exit if error
+
+	var envResponse envResp.EnvServiceStatusResponse
+	err := json.Unmarshal(response.Body, &envResponse)
+
+	return envResponse.ServiceResponse, err
 }

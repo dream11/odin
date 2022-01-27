@@ -52,14 +52,29 @@ type HistoryListResponse struct {
 }
 
 // EnvStatusResponse interface
-type StatusResponse struct {
-	Response EnvStatus `yaml:"resp,omitempty" json:"resp,omitempty"`
+type EnvStatusResponse struct {
+	EnvResponse EnvStatus `yaml:"resp,omitempty" json:"resp,omitempty"`
+}
+
+type EnvServiceStatusResponse struct {
+	ServiceResponse EnvServiceStatus `yaml:"resp,omitempty" json:"resp,omitempty"`
+}
+
+type EnvServiceStatus struct {
+	LastDeployedAt string   `yaml:"lastDeployedAt,omitempty" json:"lastDeployedAt,omitempty"`
+	Version        string   `yaml:"version,omitempty" json:"version,omitempty"`
+	Components     []Status `yaml:"components,omitempty" json:"components,omitempty"`
 }
 
 type EnvStatus struct {
-	Status     string   `yaml:"status,omitempty" json:"status,omitempty"`
-	Services   []Status `yaml:"services,omitempty" json:"services,omitempty"`
-	Components []Status `yaml:"components,omitempty" json:"components,omitempty"`
+	ServiceStatus []EnvStatusPerService `yaml:"services,omitempty" json:"services,omitempty"`
+}
+
+type EnvStatusPerService struct {
+	Status         string `yaml:"status,omitempty" json:"status,omitempty"`
+	Name           string `yaml:"name,omitempty" json:"name,omitempty"`
+	Version        string `yaml:"version,omitempty" json:"version,omitempty"`
+	LastDeployedAt string `yaml:"lastDeployedAt,omitempty" json:"lastDeployedAt,omitempty"`
 }
 
 type Status struct {
