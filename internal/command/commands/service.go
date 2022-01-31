@@ -176,7 +176,7 @@ func (s *Service) Run(args []string) int {
 	if s.Deploy {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion, "--env": *envName})
 		if len(emptyParameters) == 0 {
-			s.Logger.Warn("Deploying service: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
+			s.Logger.Info("Deploying service: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
 
 			serviceClient.DeployService(*serviceName, *serviceVersion, *envName, *force, *rebuild)
 
