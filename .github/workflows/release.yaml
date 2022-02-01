@@ -5,8 +5,10 @@ on:
 jobs:
   release:
     name: odin-release
-    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'development'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -16,35 +18,37 @@ jobs:
         id: commit
         run: |
           echo "::set-output name=version::$(go run cmd/getVersion.go)"
+          echo "::set-output name=changelog::$(git log --pretty='- %s')\n"
       - name: Create Tag
         uses: negz/create-tag@v1
         with:
           version: ${{ steps.commit.outputs.version }}
           message: ${{ steps.commit.outputs.version }}
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.commit.outputs.version }}
-          release_name: Release ${{ steps.commit.outputs.version }}
-          draft: false
-          prerelease: false
       - uses: actions/setup-go@v2
         with:
           go-version: '1.17.1'
       - name: Create Release Asset
         run: |
-          make build
-      - name: Upload Release Asset (darwin)
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          make compressed-builds
+      - name: Generate Asset SHA256
+        id: sha256
+        run: |
+          echo "::set-output name=darwin_amd64::$(shasum -a 256 bin/odin_darwin_amd64.tar.gz)"
+          echo "::set-output name=darwin_arm64::$(shasum -a 256 bin/odin_darwin_arm64.tar.gz)"
+          echo "::set-output name=linux_amd64::$(shasum -a 256 bin/odin_linux_amd64.tar.gz)"
+      - name: Create Release
+        uses: ncipollo/release-action@v1
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./bin/odin_darwin_amd64
-          asset_name: odin_darwin_amd64
-          asset_content_type: application/zip
+          name: Release ${{ steps.commit.outputs.version }}
+          tag: ${{ steps.commit.outputs.version }}
+          artifacts: "bin/*.tar.gz"
+          body: |
+            Changelog:
+            ${{ steps.commit.outputs.changelog }}
+
+            Assets Checksum(SHA256):
+            ${{ steps.sha256.outputs.darwin_amd64 }}
+            ${{ steps.sha256.outputs.darwin_arm64 }}
+            ${{ steps.sha256.outputs.linux_amd64 }}
+          token: ${{ secrets.GITHUB_TOKEN }}
