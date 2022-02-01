@@ -3,6 +3,7 @@ package commands
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"strings"
 
 	"github.com/dream11/odin/internal/backend"
@@ -25,10 +26,12 @@ func (s *Service) Run(args []string) int {
 	filePath := flagSet.String("file", "service.yaml", "file to read service config")
 	serviceName := flagSet.String("name", "", "name of service to be used")
 	serviceVersion := flagSet.String("version", "", "version of service to be used")
-	infraName := flagSet.String("infra", "", "name of infra to deploy the service in")
+	force := flagSet.Bool("force", false, "forcefully deploy the new version of the service")
+	envName := flagSet.String("env", "", "name of environment to deploy the service in")
 	teamName := flagSet.String("team", "", "name of user's team")
 	isMature := flagSet.Bool("mature", false, "mark service version as matured")
-	detailed := flagSet.Bool("detailed", false, "get detailed view")
+	rebuild := flagSet.Bool("rebuild", false, "rebuild executor for creating images or deploying services")
+	component := flagSet.String("component", "", "name of service component")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -37,6 +40,19 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Create {
+
+		if *rebuild {
+			emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
+			if len(emptyParameters) == 0 {
+				serviceClient.RebuildService(*serviceName, *serviceVersion)
+				s.Logger.Output("Command to check status of images")
+				s.Logger.ItalicEmphasize(fmt.Sprintf("odin status service --name %s --version %s", *serviceName, *serviceVersion))
+				return 0
+			}
+			s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+			return 1
+		}
+
 		configData, err := file.Read(*filePath)
 		if err != nil {
 			s.Logger.Error("Unable to read from " + *filePath + "\n" + err.Error())
@@ -64,67 +80,157 @@ func (s *Service) Run(args []string) int {
 
 		serviceClient.CreateService(parsedConfig)
 
+		s.Logger.Output("Command to check status of images")
+		s.Logger.ItalicEmphasize("odin status service --name <serviceName> --version <serviceVersion>")
 		return 0
 	}
 
 	if s.Describe {
-		if emptyParameterValidation([]string{*serviceName}) {
-			s.Logger.Info("Describing service: " + *serviceName + "@" + *serviceVersion)
-			serviceResp, err := serviceClient.DescribeService(*serviceName, *serviceVersion)
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName})
+		if len(emptyParameters) == 0 {
+			s.Logger.Info("Describing service: " + *serviceName)
+			serviceResp, err := serviceClient.DescribeService(*serviceName, *serviceVersion, *component)
 			if err != nil {
 				s.Logger.Error(err.Error())
 				return 1
 			}
 
-			for _, service := range serviceResp {
-				s.Logger.Info(service.Name + "@" + service.Version + " details!")
-				details, err := yaml.Marshal(service)
-				if err != nil {
-					s.Logger.Error(err.Error())
-					return 1
-				}
-
-				s.Logger.Output(string(details))
+			var details []byte
+			if len(*component) == 0 {
+				s.Logger.Info(serviceResp.Name + "@" + serviceResp.Version + " details!")
+				details, err = yaml.Marshal(serviceResp)
+			} else {
+				s.Logger.Info(fmt.Sprintf("%s component details for %s@%s", *component, serviceResp.Name, serviceResp.Version))
+				details, err = yaml.Marshal(serviceResp.Components[0])
 			}
 
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return 1
+			}
+
+			s.Logger.Output(string(details))
+			if len(*component) == 0 {
+				s.Logger.Output("Command to get component details")
+				s.Logger.ItalicEmphasize(fmt.Sprintf("odin describe service --name %s --version <serviceVersion> --component <componentName>", *serviceName))
+			}
 			return 0
 		}
 
-		s.Logger.Error("service name cannot be blank")
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
 		return 1
 	}
 
 	if s.List {
 		s.Logger.Info("Listing all services")
-		serviceList, err := serviceClient.ListServices(*teamName, *serviceVersion, *isMature)
+		serviceList, err := serviceClient.ListServices(*teamName, *serviceVersion, *serviceName, *isMature)
 		if err != nil {
 			s.Logger.Error(err.Error())
 			return 1
 		}
 
-		if *detailed {
-			for _, service := range serviceList {
-				s.Logger.Info("Service definition for: " + service.Name + "@" + service.Version)
+		tableHeaders := []string{"Name", "Version", "Description", "Team", "Mature"}
+		var tableData [][]interface{}
 
-				serviceYaml, err := yaml.Marshal(service)
-				if err != nil {
-					s.Logger.Error("Unable to parse infra definition! " + err.Error())
-					return 1
-				}
+		for _, service := range serviceList {
+			tableData = append(tableData, []interface{}{
+				service.Name,
+				service.Version,
+				service.Description,
+				strings.Join(service.Team, ","),
+				*service.Mature,
+			})
+		}
 
-				s.Logger.Output(string(serviceYaml))
+		err = table.Write(tableHeaders, tableData)
+		if err != nil {
+			s.Logger.Error(err.Error())
+			return 1
+		}
+		s.Logger.Output("\nCommand to describe service")
+		s.Logger.ItalicEmphasize("odin describe service --name <serviceName> --version <serviceVersion>")
+		return 0
+	}
+
+	if s.Label {
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
+		if len(emptyParameters) == 0 {
+
+			// Add more labels to this condition
+			if !*isMature {
+				s.Logger.Error("No label specified")
+				return 1
 			}
-		} else {
-			tableHeaders := []string{"Name", "Version", "Description", "Team", "Mature"}
-			var tableData [][]interface{}
 
-			for _, service := range serviceList {
+			if *isMature {
+				s.Logger.Info("Marking " + *serviceName + "@" + *serviceVersion + " as mature")
+				serviceClient.MarkMature(*serviceName, *serviceVersion)
+			}
+			return 0
+		}
+
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		return 1
+	}
+
+	if s.Deploy {
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion, "--env": *envName})
+		if len(emptyParameters) == 0 {
+			s.Logger.Info("Deploying service: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
+
+			serviceClient.DeployService(*serviceName, *serviceVersion, *envName, *force, *rebuild)
+
+			return 0
+		}
+
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		return 1
+	}
+
+	if s.Undeploy {
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--env": *envName})
+		if len(emptyParameters) == 0 {
+			s.Logger.Info("Undeploying service: " + *serviceName + " from environment" + *envName)
+			serviceClient.UndeployService(*serviceName, *envName)
+
+			s.Logger.Success("Job Triggered to undeploy your service " + *serviceName + " from the env " + *envName)
+
+			return 0
+		}
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		return 1
+	}
+
+	if s.Delete {
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
+		if len(emptyParameters) == 0 {
+			s.Logger.Info("Deleting service: " + *serviceName + "@" + *serviceVersion)
+			serviceClient.DeleteService(*serviceName, *serviceVersion)
+
+			return 0
+		}
+
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		return 1
+	}
+
+	if s.Status {
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
+		if len(emptyParameters) == 0 {
+			s.Logger.Info("Getting status of service: " + *serviceName + "@" + *serviceVersion)
+			serviceStatus, err := serviceClient.StatusService(*serviceName, *serviceVersion)
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return 1
+			}
+
+			tableHeaders := []string{"Component Name", "AMI", "DOCKER IMAGE"}
+			var tableData [][]interface{}
+			for _, componentStatus := range serviceStatus {
 				tableData = append(tableData, []interface{}{
-					service.Name,
-					service.Version,
-					service.Description,
-					strings.Join(service.Team, ","),
-					service.Mature,
+					componentStatus.Name,
+					componentStatus.Ec2,
+					componentStatus.Docker,
 				})
 			}
 
@@ -133,71 +239,12 @@ func (s *Service) Run(args []string) int {
 				s.Logger.Error(err.Error())
 				return 1
 			}
-		}
-
-		return 0
-	}
-
-	if s.Label {
-		if emptyParameterValidation([]string{*serviceName, *serviceVersion}) {
-			if *isMature {
-				s.Logger.Warn("Marking " + *serviceName + "@" + *serviceVersion + " as mature")
-				serviceClient.MarkMature(*serviceName, *serviceVersion)
-			}
+			s.Logger.Output("\nCommand to deploy service")
+			s.Logger.ItalicEmphasize(fmt.Sprintf("odin deploy service --name %s --version %s --env <envName>", *serviceName, *serviceVersion))
 			return 0
 		}
 
-		s.Logger.Error("service name & version cannot be blank")
-		return 1
-	}
-
-	if s.Deploy {
-		if emptyParameterValidation([]string{*serviceName, *serviceVersion, *infraName}) {
-			s.Logger.Warn("Deploying service: " + *serviceName + "@" + *serviceVersion + " in " + *infraName)
-
-			var parsedConfig interface{}
-
-			configData, err := file.Read(*filePath)
-			if err == nil {
-				if strings.Contains(*filePath, ".yaml") || strings.Contains(*filePath, ".yml") {
-					err = yaml.Unmarshal(configData, &parsedConfig)
-					if err != nil {
-						s.Logger.Error("Unable to parse YAML. " + err.Error())
-						return 1
-					}
-				} else if strings.Contains(*filePath, ".json") {
-					err = json.Unmarshal(configData, &parsedConfig)
-					if err != nil {
-						s.Logger.Error("Unable to parse JSON. " + err.Error())
-						return 1
-					}
-				} else {
-					s.Logger.Error("Unrecognized file format")
-					return 1
-				}
-			} else {
-				// initialise config as empty json
-				parsedConfig = make(map[string]string)
-			}
-
-			serviceClient.DeployService(*serviceName, *serviceVersion, *infraName, parsedConfig)
-
-			return 0
-		}
-
-		s.Logger.Error("service name, version and infra name cannot be blank")
-		return 1
-	}
-
-	if s.Delete {
-		if emptyParameterValidation([]string{*serviceName, *serviceVersion}) {
-			s.Logger.Warn("Deleting service: " + *serviceName + "@" + *serviceVersion)
-			serviceClient.DeleteService(*serviceName, *serviceVersion)
-
-			return 0
-		}
-
-		s.Logger.Error("service name & version cannot be blank")
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
 		return 1
 	}
 
@@ -217,6 +264,7 @@ func (s *Service) Help() string {
 		return commandHelper("describe", "service", []string{
 			"--name=name of service to describe",
 			"--version=version of service to describe",
+			"--component=name of component to describe",
 		})
 	}
 
@@ -241,8 +289,15 @@ func (s *Service) Help() string {
 		return commandHelper("deploy", "service", []string{
 			"--name=name of service to deploy",
 			"--version=version of service to deploy",
-			"--infra=name of infra to deploy service in",
-			"--file=name of config file",
+			"--force=forcefully deploy your service",
+			"--rebuild=rebuild your executor job again for service deployment",
+			"--env=name of environment to deploy service in",
+		})
+	}
+	if s.Undeploy {
+		return commandHelper("deploy", "service", []string{
+			"--name=name of service to undeploy",
+			"--env=name of environment to undeploy service in",
 		})
 	}
 
@@ -250,6 +305,13 @@ func (s *Service) Help() string {
 		return commandHelper("delete", "service", []string{
 			"--name=name of service to delete",
 			"--version=version of service to delete",
+		})
+	}
+
+	if s.Status {
+		return commandHelper("status", "service", []string{
+			"--name=name of service",
+			"--version=version of service",
 		})
 	}
 
@@ -278,8 +340,16 @@ func (s *Service) Synopsis() string {
 		return "deploy a service"
 	}
 
+	if s.Undeploy {
+		return "undeploy a service"
+	}
+
 	if s.Delete {
 		return "delete a service version"
+	}
+
+	if s.Status {
+		return "get status of a service version"
 	}
 
 	return defaultHelper()

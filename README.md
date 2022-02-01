@@ -30,10 +30,25 @@ Or,
 
 ## Contribution guide
 
+### Code conventions
+
+1. All variables and functions to be named as per Go's standards (camel case).
+   1. Only the variables & functions, that are to be used across packages should be named in exported convention `ExportedName`, rest all names should be in unexported convention `unexportedName`.
+   2. All defined command line parameters should follow the following convention - `parameter-name`
+      Example: 
+      ```go
+      envType := flagSet.String("env-type", "kube", "environment type to attach with environment")
+      serviceName := flagSet.String("name", "", "name of service to be used")
+      ```
+
+2. The project must follow the following [layout](https://github.com/golang-standards/project-layout).
+
 ### Formatting the code
 
 1. Install Lint tool: `brew install golangci-lint`
+
 2. Upgrade to its latest version: `brew upgrade golangci-lint`
+
 3. Run linter: `make lint`
 
 > All these linting checks are also ensured in pre-commit checks provided below.
@@ -41,7 +56,9 @@ Or,
 ### Making commits
 
 1. Install pre-commit: `pip install pre-commit`
+
 2. Setup pre-commit: `cd odin && pre-commit install`
+
 3. Now, make commits.
 
 > Now on every commit that you make, pre-commit hook will validate the `go` code and will suggest changes if any.
@@ -85,13 +102,13 @@ Here,
 2. `resource` - The resource on which action will be performed. Example: `env` -
 
     ```shell
-    odin <verb> env <options>
+    odin <verb> environment <options>
     ```
 
 3. `options` - Extra properties required to support the commands. Example: `env` -
 
     ```shell
-    odin <verb> env --name=demo-1234
+    odin <verb> environment --name=demo-1234
     ```
 
 ### [Adding a command](./docs/ADD_COMMAND.md)

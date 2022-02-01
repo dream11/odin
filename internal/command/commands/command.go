@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"strings"
 
 	odin "github.com/dream11/odin/app"
 	"github.com/dream11/odin/internal/ui"
@@ -12,16 +13,19 @@ command : interface for resources
 The verbs can be associated with any resource
 */
 type command struct {
-	Create   bool // Create a resource record
-	Delete   bool // Delete a resource record
-	Update   bool // Update a resource record
-	Describe bool // Describe a resource
-	Label    bool // Label a resource
-	List     bool // List the resources
-	Status   bool // current Status of resource
-	Logs     bool // execution Logs of resource
-	Deploy   bool // Deploy resource
-	Destroy  bool // Destroy the deployed resource
+	Create          bool // Create a resource record
+	Delete          bool // Delete a resource record
+	Update          bool // Update a resource record
+	Describe        bool // Describe a resource
+	Label           bool // Label a resource
+	List            bool // List the resources
+	Status          bool // current Status of resource
+	Logs            bool // execution Logs of resource
+	Deploy          bool // Deploy resource
+	Undeploy        bool // Undeploy resource
+	Destroy         bool // Destroy the deployed resource
+	GetHistory      bool // Get changelog of resource
+	DescribeHistory bool // Describe a changelog of resource
 
 	Logger ui.Logger // Use this to log messages
 	Input  ui.Input  // Use this to take inputs
@@ -44,12 +48,13 @@ func defaultHelper() string {
 	return fmt.Sprintf("Usage: %s --help", odin.App.Name)
 }
 
-// validate if any value provided is empty or not
-func emptyParameterValidation(params []string) bool {
-	for _, val := range params {
+// get empty parameter list
+func emptyParameters(params map[string]string) string {
+	emptyParameters := []string{}
+	for key, val := range params {
 		if len(val) == 0 {
-			return false
+			emptyParameters = append(emptyParameters, key)
 		}
 	}
-	return true
+	return strings.Join(emptyParameters, ", ")
 }
