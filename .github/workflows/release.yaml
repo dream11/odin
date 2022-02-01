@@ -5,7 +5,7 @@ on:
 jobs:
   release:
     name: odin-release
-    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'development'
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -18,7 +18,7 @@ jobs:
         id: commit
         run: |
           echo "::set-output name=version::$(go run cmd/getVersion.go)"
-          echo "::set-output name=changelog::$(git log --pretty='- %s')\n"
+          echo "::set-output name=changelog::$(git log --pretty='- %s')"
       - name: Create Tag
         uses: negz/create-tag@v1
         with:
@@ -46,9 +46,9 @@ jobs:
           body: |
             Changelog:
             ${{ steps.commit.outputs.changelog }}
-
+            ---
             Assets Checksum(SHA256):
-            ${{ steps.sha256.outputs.darwin_amd64 }}
-            ${{ steps.sha256.outputs.darwin_arm64 }}
-            ${{ steps.sha256.outputs.linux_amd64 }}
+            - `${{ steps.sha256.outputs.darwin_amd64 }}`
+            - `${{ steps.sha256.outputs.darwin_arm64 }}`
+            - `${{ steps.sha256.outputs.linux_amd64 }}`
           token: ${{ secrets.GITHUB_TOKEN }}
