@@ -2,7 +2,14 @@
 
 Internal framework CLI for CRUD operations on environments.
 
-## Setup
+## Installation
+
+```shell
+export HOMEBREW_GITHUB_API_TOKEN=<your github access token>
+brew install dream11/tools/odin
+```
+
+## Development Setup
 
 1. [Download](https://golang.org/dl/go1.17.1.darwin-amd64.pkg) and run the Go installer.
 
@@ -16,7 +23,7 @@ Internal framework CLI for CRUD operations on environments.
 
 6. Verify the cli: `go run main.go --version`
 
-## Build & Install
+### Build & Install
 
 1. Run `make install`
 
