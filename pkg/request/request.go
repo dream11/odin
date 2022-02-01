@@ -91,10 +91,10 @@ func (r *Response) Process(exitOnError bool) {
 		if matchStatusCode(r.StatusCode, 200) {
 			logger.Debug(string(r.Body))
 		} else if matchStatusCode(r.StatusCode, 300) {
-			logger.Warn(r.Status)
+			logger.Debug(r.Status)
 			logger.Debug(string(r.Body))
 		} else if matchStatusCode(r.StatusCode, 400) || matchStatusCode(r.StatusCode, 500) {
-			logger.Error(r.Status)
+			logger.Debug(r.Status)
 			logger.Error(string(r.Body))
 			handleExit(1, exitOnError)
 		}
