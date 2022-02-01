@@ -34,9 +34,9 @@ jobs:
       - name: Generate Asset SHA256
         id: sha256
         run: |
-          echo "::set-output name=darwin_amd64::$(shasum -a 256 bin/odin_darwin_amd64.tar.gz | cut -d' ' -f1))"
-          echo "::set-output name=darwin_arm64::$(shasum -a 256 bin/odin_darwin_arm64.tar.gz | cut -d' ' -f1))"
-          echo "::set-output name=linux_amd64::$(shasum -a 256 bin/odin_linux_amd64.tar.gz | cut -d' ' -f1))"
+          echo "::set-output name=darwin_amd64::$(shasum -a 256 bin/odin_darwin_amd64.tar.gz | cut -d' ' -f1)"
+          echo "::set-output name=darwin_arm64::$(shasum -a 256 bin/odin_darwin_arm64.tar.gz | cut -d' ' -f1)"
+          echo "::set-output name=linux_amd64::$(shasum -a 256 bin/odin_linux_amd64.tar.gz | cut -d' ' -f1)"
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
