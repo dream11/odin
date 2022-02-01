@@ -1,0 +1,64 @@
+name: odin-release
+on:
+  pull_request:
+    types: [closed]
+jobs:
+  release:
+    name: odin-release
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - id: changed_files
+        uses: jitterbit/get-changed-files@v1
+      - name: Check commit details
+        id: commit
+        run: |
+          echo "::set-output name=version::$(go run cmd/getVersion.go)"
+          echo "::set-output name=changelog::$(git log --pretty='- %s')"
+      - name: Create Tag
+        uses: negz/create-tag@v1
+        with:
+          version: ${{ steps.commit.outputs.version }}
+          message: ${{ steps.commit.outputs.version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '1.17.1'
+      - name: Create Release Asset
+        run: |
+          make compressed-builds
+      - name: Generate Asset SHA256
+        id: sha256
+        run: |
+          echo "::set-output name=darwin_amd64::$(shasum -a 256 bin/odin_darwin_amd64.tar.gz | cut -d' ' -f1)"
+          echo "::set-output name=darwin_arm64::$(shasum -a 256 bin/odin_darwin_arm64.tar.gz | cut -d' ' -f1)"
+          echo "::set-output name=linux_amd64::$(shasum -a 256 bin/odin_linux_amd64.tar.gz | cut -d' ' -f1)"
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          name: Release ${{ steps.commit.outputs.version }}
+          tag: ${{ steps.commit.outputs.version }}
+          artifacts: "bin/*.tar.gz"
+          body: |
+            ### Changelog:
+            ${{ steps.commit.outputs.changelog }}
+            ---
+            ### Assets
+
+            #### Darwin AMD64
+            - Asset Url: https://github.com/dream11/odin/releases/download/${{ steps.commit.outputs.version }}/odin_darwin_amd64.tar.gz
+            - SHA Checksum: `${{ steps.sha256.outputs.darwin_amd64 }}`
+
+            #### Darwin ARM64
+            - Asset Url: https://github.com/dream11/odin/releases/download/${{ steps.commit.outputs.version }}/odin_darwin_arm64.tar.gz
+            - SHA Checksum: `${{ steps.sha256.outputs.darwin_arm64 }}`
+
+            #### Linux AMD64
+            - Asset Url: https://github.com/dream11/odin/releases/download/${{ steps.commit.outputs.version }}/odin_linux_amd64.tar.gz
+            - SHA Checksum: `${{ steps.sha256.outputs.linux_amd64 }}`
+
+          token: ${{ secrets.GITHUB_TOKEN }}
