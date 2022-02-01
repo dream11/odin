@@ -17,6 +17,6 @@ build:
 	env GOOS=linux GOARCH=amd64 go build -o bin/odin_linux_amd64/odin
 
 compressed-builds: build
-	tar -czvf bin/odin_darwin_amd64.tar.gz bin/odin_darwin_amd64/odin
-	tar -czvf bin/odin_darwin_arm64.tar.gz bin/odin_darwin_arm64/odin
-	tar -czvf bin/odin_linux_amd64.tar.gz bin/odin_linux_amd64/odin
+	cd bin/odin_darwin_amd64 && tar -czvf ../odin_darwin_amd64.tar.gz odin
+	cd bin/odin_darwin_arm64 && tar -czvf ../odin_darwin_arm64.tar.gz odin
+	cd bin/odin_linux_amd64 && tar -czvf ../odin_linux_amd64.tar.gz odin
