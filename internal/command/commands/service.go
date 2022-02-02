@@ -180,6 +180,8 @@ func (s *Service) Run(args []string) int {
 
 			serviceClient.DeployService(*serviceName, *serviceVersion, *envName, *force, *rebuild)
 
+			s.Logger.Success(fmt.Sprintf("Deployment of service %s@%s is started on env %s", *serviceName, *serviceVersion, *envName))
+
 			return 0
 		}
 
