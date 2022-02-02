@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	odin "github.com/dream11/odin/app"
@@ -56,5 +57,6 @@ func emptyParameters(params map[string]string) string {
 			emptyParameters = append(emptyParameters, key)
 		}
 	}
+	sort.Strings(emptyParameters)
 	return strings.Join(emptyParameters, ", ")
 }
