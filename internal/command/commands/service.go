@@ -79,7 +79,7 @@ func (s *Service) Run(args []string) int {
 		}
 		serviceDataMap := parsedConfig.(map[string]interface{})
 		serviceClient.CreateService(parsedConfig)
-		s.Logger.Success(fmt.Sprintf("Service Creation started for %s@%s ", serviceDataMap["name"], serviceDataMap["version"]))
+		s.Logger.Success(fmt.Sprintf("Service creation started for %s@%s ", serviceDataMap["name"], serviceDataMap["version"]))
 
 		s.Logger.Output("Command to check status of images")
 		s.Logger.ItalicEmphasize("odin status service --name <serviceName> --version <serviceVersion>")
