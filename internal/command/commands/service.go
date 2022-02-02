@@ -77,8 +77,9 @@ func (s *Service) Run(args []string) int {
 			s.Logger.Error("Unrecognized file format")
 			return 1
 		}
-
+		serviceDataMap := parsedConfig.(map[string]interface{})
 		serviceClient.CreateService(parsedConfig)
+		s.Logger.Success(fmt.Sprintf("Service creation started for %s@%s ", serviceDataMap["name"], serviceDataMap["version"]))
 
 		s.Logger.Output("Command to check status of images")
 		s.Logger.ItalicEmphasize("odin status service --name <serviceName> --version <serviceVersion>")
