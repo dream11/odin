@@ -245,9 +245,9 @@ func (e *Env) Run(args []string) int {
 	if e.Delete {
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
-			e.Logger.Warn("Deleting environment:" + *name)
+			e.Logger.Info("Deleting environment: " + *name)
 			envClient.DeleteEnv(*name)
-
+			e.Logger.Success(fmt.Sprintf("Deletion started: %s", *name))
 			return 0
 		}
 
@@ -265,13 +265,14 @@ func (e *Env) Run(args []string) int {
 				return 1
 			}
 
-			tableHeaders := []string{"ID", "Action", "Resource Details", "Modified by", "Last Modified"}
+			tableHeaders := []string{"ID", "State", "Action", "Resource Details", "Modified by", "Last Modified"}
 			var tableData [][]interface{}
 
 			for _, env := range envResp {
 				relativeCreationTimestamp := datetime.DateTimeFromNow(env.CreatedAt)
 				tableData = append(tableData, []interface{}{
 					env.ID,
+					env.State,
 					env.Action,
 					env.ResourceDetails,
 					env.CreatedBy,
