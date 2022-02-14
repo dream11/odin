@@ -245,9 +245,9 @@ func (e *Env) Run(args []string) int {
 	if e.Delete {
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
-			e.Logger.Info("Deleting environment:" + *name)
+			e.Logger.Info("Deleting environment: " + *name)
 			envClient.DeleteEnv(*name)
-			e.Logger.Success(fmt.Sprintf("Deleting environment %s", *name))
+			e.Logger.Success(fmt.Sprintf("Deletion started: %s", *name))
 			return 0
 		}
 
