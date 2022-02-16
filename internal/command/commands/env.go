@@ -29,7 +29,7 @@ func (e *Env) Run(args []string) int {
 	name := flagSet.String("name", "", "name of environment")
 	team := flagSet.String("team", "", "display environments created by a team")
 	purpose := flagSet.String("purpose", "", "reason to create environment")
-	env := flagSet.String("env-type", "kube", "environment to attach with environment")
+	env := flagSet.String("env-type", "dev", "environment to attach with environment")
 	service := flagSet.String("service", "", "service name to filter out describe environment")
 	component := flagSet.String("component", "", "component name to filter out describe environment")
 	providerAccount := flagSet.String("account", "", "account name to provision the environment in")
