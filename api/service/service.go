@@ -33,8 +33,8 @@ type DetailResponse struct {
 // Status interface
 type Status struct {
 	Name   string `yaml:"name,omitempty" json:"name,omitempty"`
-	Ec2    string `yaml:"ec2,omitempty" json:"ec2,omitempty"`
-	Docker string `yaml:"docker,omitempty" json:"docker,omitempty"`
+	VM    string `yaml:"vm,omitempty" json:"vm,omitempty"`
+	Container string `yaml:"container,omitempty" json:"container,omitempty"`
 }
 
 // StatusResponse interface
