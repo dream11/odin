@@ -98,7 +98,7 @@ func (s *Service) Run(args []string) int {
 
 			var details []byte
 			if len(*component) == 0 {
-				s.Logger.Info(serviceResp.Name + "@" + serviceResp.Version + " details!" + "\n")
+				s.Logger.Info(serviceResp.Name + "@" + serviceResp.Version + " details!")
 				details, err = yaml.Marshal(serviceResp)
 			} else {
 				s.Logger.Info(fmt.Sprintf("%s component details for %s@%s", *component, serviceResp.Name, serviceResp.Version))
@@ -110,7 +110,7 @@ func (s *Service) Run(args []string) int {
 				return 1
 			}
 
-			s.Logger.Output(string(details))
+			s.Logger.Output(fmt.Sprintf("\n%s", details))
 			if len(*component) == 0 {
 				s.Logger.Output("Command to get component details")
 				s.Logger.ItalicEmphasize(fmt.Sprintf("odin describe service --name %s --version <serviceVersion> --component <componentName>", *serviceName))
