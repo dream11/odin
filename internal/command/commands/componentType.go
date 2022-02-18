@@ -68,7 +68,7 @@ func (c *ComponentType) Run(args []string) int {
 	if c.Describe {
 		emptyParameters := emptyParameters(map[string]string{"--name": *componentTypeName})
 		if len(emptyParameters) == 0 {
-			c.Logger.Info("Describing component type: " + *componentTypeName + "@" + *componentTypeVersion)
+			c.Logger.Info("Describing component type: " + *componentTypeName + "@" + *componentTypeVersion+ "\n")
 			componentTypeResp, err := componentTypeClient.DescribeComponentType(*componentTypeName, *componentTypeVersion)
 			if err != nil {
 				c.Logger.Error(err.Error())

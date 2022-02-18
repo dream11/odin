@@ -180,7 +180,7 @@ func (e *Env) Run(args []string) int {
 	if e.Describe {
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
-			e.Logger.Info("Describing " + *name)
+			e.Logger.Info("Describing " + *name + "\n")
 			envResp, err := envClient.DescribeEnv(*name, *service, *component)
 			if err != nil {
 				e.Logger.Error(err.Error())
