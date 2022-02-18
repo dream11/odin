@@ -180,7 +180,7 @@ func (e *Env) Run(args []string) int {
 	if e.Describe {
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
-			e.Logger.Info("Describing " + *name + "\n")
+			e.Logger.Info("Describing " + *name)
 			envResp, err := envClient.DescribeEnv(*name, *service, *component)
 			if err != nil {
 				e.Logger.Error(err.Error())
@@ -193,7 +193,7 @@ func (e *Env) Run(args []string) int {
 				return 1
 			}
 
-			e.Logger.Output(string(details))
+			e.Logger.Output(fmt.Sprintf("\n%s", details))
 			if *service == "" && *component == "" {
 				e.Logger.Output("\nCommand to descibe env")
 				e.Logger.ItalicEmphasize(fmt.Sprintf("odin describe env --name %s --service <serviceName> --component <componentName>", *name))
