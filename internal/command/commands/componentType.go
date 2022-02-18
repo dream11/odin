@@ -81,7 +81,7 @@ func (c *ComponentType) Run(args []string) int {
 				return 1
 			}
 
-			c.Logger.Output(string(details))
+			c.Logger.Output(fmt.Sprintf("\n%s", details))
 
 			return 0
 		}

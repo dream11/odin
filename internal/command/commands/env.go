@@ -193,7 +193,7 @@ func (e *Env) Run(args []string) int {
 				return 1
 			}
 
-			e.Logger.Output(string(details))
+			e.Logger.Output(fmt.Sprintf("\n%s", details))
 			if *service == "" && *component == "" {
 				e.Logger.Output("\nCommand to descibe env")
 				e.Logger.ItalicEmphasize(fmt.Sprintf("odin describe env --name %s --service <serviceName> --component <componentName>", *name))
