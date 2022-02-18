@@ -98,7 +98,7 @@ func (s *Service) Run(args []string) int {
 
 			var details []byte
 			if len(*component) == 0 {
-				s.Logger.Info(serviceResp.Name + "@" + serviceResp.Version + " details!"+ "\n")
+				s.Logger.Info(serviceResp.Name + "@" + serviceResp.Version + " details!" + "\n")
 				details, err = yaml.Marshal(serviceResp)
 			} else {
 				s.Logger.Info(fmt.Sprintf("%s component details for %s@%s", *component, serviceResp.Name, serviceResp.Version))
