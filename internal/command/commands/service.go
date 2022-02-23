@@ -32,6 +32,7 @@ func (s *Service) Run(args []string) int {
 	isMature := flagSet.Bool("mature", false, "mark service version as matured")
 	rebuild := flagSet.Bool("rebuild", false, "rebuild executor for creating images or deploying services")
 	component := flagSet.String("component", "", "name of service component")
+	platform := flagSet.String("platform", "", "platform to deploy the service in")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -179,7 +180,7 @@ func (s *Service) Run(args []string) int {
 		if len(emptyParameters) == 0 {
 			s.Logger.Info("Deploying service: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
 
-			serviceClient.DeployService(*serviceName, *serviceVersion, *envName, *force, *rebuild)
+			serviceClient.DeployService(*serviceName, *serviceVersion, *envName, *platform, *force, *rebuild)
 
 			s.Logger.Success(fmt.Sprintf("Deployment of service %s@%s is started on env %s", *serviceName, *serviceVersion, *envName))
 
