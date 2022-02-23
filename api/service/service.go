@@ -8,6 +8,7 @@ import (
 type Service struct {
 	Name        string                `yaml:"name,omitempty" json:"name,omitempty"`
 	Version     string                `yaml:"version,omitempty" json:"version,omitempty"`
+	Platform    string                `yaml:"platform,omitempty" json:"platform,omitempty"`
 	Team        []string              `yaml:"team,omitempty" json:"team,omitempty"`
 	Description string                `yaml:"description,omitempty" json:"description,omitempty"`
 	Mature      *bool                 `yaml:"isMature,omitempty" json:"isMature,omitempty"`
