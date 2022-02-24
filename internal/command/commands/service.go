@@ -82,7 +82,7 @@ func (s *Service) Run(args []string) int {
 		s.Logger.Success(fmt.Sprintf("Service creation started for %s@%s ", serviceDataMap["name"], serviceDataMap["version"]))
 
 		s.Logger.Output("Command to check status of images")
-		s.Logger.ItalicEmphasize("odin status service --name <serviceName> --version <serviceVersion>")
+		s.Logger.ItalicEmphasize(fmt.Sprintf("odin status service --name %s --version %s", serviceDataMap["name"], serviceDataMap["version"]))
 		return 0
 	}
 
@@ -193,7 +193,7 @@ func (s *Service) Run(args []string) int {
 	if s.Undeploy {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--env": *envName})
 		if len(emptyParameters) == 0 {
-			s.Logger.Info("Undeploying service: " + *serviceName + " from environment" + *envName)
+			s.Logger.Info("Undeploying service: " + *serviceName + " from environment " + *envName)
 			serviceClient.UndeployService(*serviceName, *envName)
 
 			s.Logger.Success("Job Triggered to undeploy your service " + *serviceName + " from the env " + *envName)
