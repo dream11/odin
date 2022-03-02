@@ -2,8 +2,12 @@ package backend
 
 import (
 	"github.com/dream11/odin/internal/config"
+	"github.com/dream11/odin/internal/ui"
 	"github.com/dream11/odin/pkg/request"
+	"github.com/dream11/odin/pkg/uid"
 )
+
+var logger ui.Logger
 
 // initiation of an HTTP client for backend interactions
 type clientProperties struct {
@@ -29,11 +33,16 @@ func (c *clientProperties) action(entity, requestType string, body interface{}) 
 // initiate a functional backend base-client
 func newClient() clientProperties {
 	var appConfig = config.Get()
+	var uuid = uid.Uid()
+
+	// For user's reference to trace the execution
+	logger.Info("Request-Id: " + uuid)
 
 	return clientProperties{
 		address: appConfig.BackendAddr + "/",
 		Headers: map[string]string{
 			"Content-Type": "application/json",
+			"Request-Id":   uuid,
 		},
 		QueryParams: map[string]string{},
 	}
