@@ -9,7 +9,7 @@ type Component struct {
 	Deployment                interface{} `yaml:"deployment_config,omitempty" json:"deployment_config,omitempty"`
 	Scaling                   interface{} `yaml:"scaling_config,omitempty" json:"scaling_config,omitempty"`
 	Discovery                 interface{} `yaml:"discovery_config,omitempty" json:"discovery_config,omitempty"`
-	DeploymentPlatformMapping interface{} `yaml:"deployment_platform_mapping,omitempty" json:"deployment_platform_mapping,omitempty"`
+	DeploymentPlatformMapping interface{} `yaml:"behaviour,omitempty" json:"behaviour,omitempty"`
 }
 
 // Type interface
@@ -25,7 +25,7 @@ type Type struct {
 	Deployment                interface{} `yaml:"deployment_config,omitempty" json:"deployment_config,omitempty"`
 	Scaling                   interface{} `yaml:"scaling_config,omitempty" json:"scaling_config,omitempty"`
 	Discovery                 interface{} `yaml:"discovery_config,omitempty" json:"discovery_config,omitempty"`
-	DeploymentPlatformMapping interface{} `yaml:"deployment_platform_mapping,omitempty" json:"deployment_platform_mapping,omitempty"`
+	DeploymentPlatformMapping interface{} `yaml:"behaviour,omitempty" json:"behaviour,omitempty"`
 }
 
 // ListTypeResponse interface

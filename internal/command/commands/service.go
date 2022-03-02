@@ -32,6 +32,7 @@ func (s *Service) Run(args []string) int {
 	isMature := flagSet.Bool("mature", false, "mark service version as matured")
 	rebuild := flagSet.Bool("rebuild", false, "rebuild executor for creating images or deploying services")
 	component := flagSet.String("component", "", "name of service component")
+	platform := flagSet.String("platform", "", "platform to deploy the service in")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -82,7 +83,7 @@ func (s *Service) Run(args []string) int {
 		s.Logger.Success(fmt.Sprintf("Service creation started for %s@%s ", serviceDataMap["name"], serviceDataMap["version"]))
 
 		s.Logger.Output("Command to check status of images")
-		s.Logger.ItalicEmphasize("odin status service --name <serviceName> --version <serviceVersion>")
+		s.Logger.ItalicEmphasize(fmt.Sprintf("odin status service --name %s --version %s", serviceDataMap["name"], serviceDataMap["version"]))
 		return 0
 	}
 
@@ -179,7 +180,7 @@ func (s *Service) Run(args []string) int {
 		if len(emptyParameters) == 0 {
 			s.Logger.Info("Deploying service: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
 
-			serviceClient.DeployService(*serviceName, *serviceVersion, *envName, *force, *rebuild)
+			serviceClient.DeployService(*serviceName, *serviceVersion, *envName, *platform, *force, *rebuild)
 
 			s.Logger.Success(fmt.Sprintf("Deployment of service %s@%s is started on env %s", *serviceName, *serviceVersion, *envName))
 
@@ -193,7 +194,7 @@ func (s *Service) Run(args []string) int {
 	if s.Undeploy {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--env": *envName})
 		if len(emptyParameters) == 0 {
-			s.Logger.Info("Undeploying service: " + *serviceName + " from environment" + *envName)
+			s.Logger.Info("Undeploying service: " + *serviceName + " from environment " + *envName)
 			serviceClient.UndeployService(*serviceName, *envName)
 
 			s.Logger.Success("Job Triggered to undeploy your service " + *serviceName + " from the env " + *envName)
