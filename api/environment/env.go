@@ -68,6 +68,7 @@ type EnvServiceStatus struct {
 
 type EnvStatus struct {
 	ServiceStatus []EnvStatusPerService `yaml:"services,omitempty" json:"services,omitempty"`
+	Status        string                `yaml:"status,omitempty" json:"status,omitempty"`
 }
 
 type EnvStatusPerService struct {
