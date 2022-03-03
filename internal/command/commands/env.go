@@ -84,6 +84,7 @@ func (e *Env) Run(args []string) int {
 
 				relativeDeployedSinceTime := datetime.DateTimeFromNow(envServiceStatus.LastDeployedAt)
 				e.Logger.Output("Service version: " + string(envServiceStatus.Version))
+				e.Logger.Output("Service Status: " + string(envServiceStatus.Status))
 				e.Logger.Output("Last deployed: " + relativeDeployedSinceTime)
 				e.Logger.Output("Component details: ")
 

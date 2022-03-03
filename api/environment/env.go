@@ -64,6 +64,7 @@ type EnvServiceStatus struct {
 	LastDeployedAt string   `yaml:"lastDeployedAt,omitempty" json:"lastDeployedAt,omitempty"`
 	Version        string   `yaml:"version,omitempty" json:"version,omitempty"`
 	Components     []Status `yaml:"components,omitempty" json:"components,omitempty"`
+	Status         string   `yaml:"status,omitempty" json:"status,omitempty"`
 }
 
 type EnvStatus struct {
