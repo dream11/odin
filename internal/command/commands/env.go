@@ -111,7 +111,7 @@ func (e *Env) Run(args []string) int {
 					e.Logger.Error(err.Error())
 					return 1
 				}
-
+				e.Logger.Output(fmt.Sprintf("Environment Status: %s\n", envStatus.Status))
 				tableHeaders := []string{"Name", "Version", "Status", "Last deployed"}
 				var tableData [][]interface{}
 
