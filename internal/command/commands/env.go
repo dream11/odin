@@ -72,10 +72,9 @@ func (e *Env) Run(args []string) int {
 	if e.Status {
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
-			e.Logger.Info("Fetching status for environment: " + *name + ", service: " + *service)
 
 			if *service != "" {
-
+				e.Logger.Info(fmt.Sprintf("Fetching status for service: %s in environment: %s", *service, *name))
 				envServiceStatus, err := envClient.EnvServiceStatus(*name, *service)
 				if err != nil {
 					e.Logger.Error(err.Error())
@@ -84,6 +83,7 @@ func (e *Env) Run(args []string) int {
 
 				relativeDeployedSinceTime := datetime.DateTimeFromNow(envServiceStatus.LastDeployedAt)
 				e.Logger.Output("Service version: " + string(envServiceStatus.Version))
+				e.Logger.Output("Service Status: " + string(envServiceStatus.Status))
 				e.Logger.Output("Last deployed: " + relativeDeployedSinceTime)
 				e.Logger.Output("Component details: ")
 
@@ -105,7 +105,7 @@ func (e *Env) Run(args []string) int {
 				}
 
 			} else {
-
+				e.Logger.Info(fmt.Sprintf("Fetching status for environment: %s", *name))
 				envStatus, err := envClient.EnvStatus(*name)
 				if err != nil {
 					e.Logger.Error(err.Error())
@@ -114,7 +114,7 @@ func (e *Env) Run(args []string) int {
 				e.Logger.Output(fmt.Sprintf("Environment Status: %s\n", envStatus.Status))
 				tableHeaders := []string{"Name", "Version", "Status", "Last deployed"}
 				var tableData [][]interface{}
-
+				e.Logger.Output("Services:")
 				for _, serviceStatus := range envStatus.ServiceStatus {
 					relativeDeployedSinceTime := datetime.DateTimeFromNow(serviceStatus.LastDeployedAt)
 					tableData = append(tableData, []interface{}{
