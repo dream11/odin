@@ -274,10 +274,10 @@ func (s *Service) Help() string {
 
 	if s.List {
 		return commandHelper("list", "service", []string{
-			"--team=name of team",
+			"--name=name of service",
 			"--version=version of services to be listed",
+			"--team=name of team",
 			"--mature (mature marked service versions)",
-			"--detailed (get a detailed view)",
 		})
 	}
 
