@@ -183,7 +183,6 @@ func (s *Service) Run(args []string) int {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion, "--env": *envName})
 		if len(emptyParameters) == 0 {
 			s.Logger.Info("Deploying service: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
-
 			serviceClient.DeployService(*serviceName, *serviceVersion, *envName, *platform, *force, *rebuild)
 
 			s.Logger.Success(fmt.Sprintf("Deployment of service %s@%s is started on env %s", *serviceName, *serviceVersion, *envName))
