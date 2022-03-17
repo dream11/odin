@@ -130,8 +130,12 @@ func (s *Service) Run(args []string) int {
 			s.Logger.Error(err.Error())
 			return 1
 		}
-
-		tableHeaders := []string{"Name", "Version", "Description", "Team", "Mature"}
+		var tableHeaders []string
+		if len(*serviceName) == 0 {
+			tableHeaders = []string{"Name", "Latest Version", "Description", "Team", "Mature"}
+		} else {
+			tableHeaders = []string{"Name", "Version", "Description", "Team", "Mature"}
+		}
 		var tableData [][]interface{}
 
 		for _, service := range serviceList {
