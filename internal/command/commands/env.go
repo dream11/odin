@@ -29,7 +29,7 @@ func (e *Env) Run(args []string) int {
 	name := flagSet.String("name", "", "name of environment")
 	team := flagSet.String("team", "", "display environments created by a team")
 	purpose := flagSet.String("purpose", "", "reason to create environment")
-	env := flagSet.String("env-type", "kube", "environment to attach with environment")
+	env := flagSet.String("env-type", "dev", "environment to attach with environment")
 	service := flagSet.String("service", "", "service name to filter out describe environment")
 	component := flagSet.String("component", "", "component name to filter out describe environment")
 	providerAccount := flagSet.String("account", "", "account name to provision the environment in")
@@ -72,10 +72,9 @@ func (e *Env) Run(args []string) int {
 	if e.Status {
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
-			e.Logger.Info("Fetching status for environment: " + *name + ", service: " + *service)
 
 			if *service != "" {
-
+				e.Logger.Info(fmt.Sprintf("Fetching status for service: %s in environment: %s", *service, *name))
 				envServiceStatus, err := envClient.EnvServiceStatus(*name, *service)
 				if err != nil {
 					e.Logger.Error(err.Error())
@@ -84,6 +83,7 @@ func (e *Env) Run(args []string) int {
 
 				relativeDeployedSinceTime := datetime.DateTimeFromNow(envServiceStatus.LastDeployedAt)
 				e.Logger.Output("Service version: " + string(envServiceStatus.Version))
+				e.Logger.Output("Service Status: " + string(envServiceStatus.Status))
 				e.Logger.Output("Last deployed: " + relativeDeployedSinceTime)
 				e.Logger.Output("Component details: ")
 
@@ -105,16 +105,16 @@ func (e *Env) Run(args []string) int {
 				}
 
 			} else {
-
+				e.Logger.Info(fmt.Sprintf("Fetching status for environment: %s", *name))
 				envStatus, err := envClient.EnvStatus(*name)
 				if err != nil {
 					e.Logger.Error(err.Error())
 					return 1
 				}
-
+				e.Logger.Output(fmt.Sprintf("Environment Status: %s\n", envStatus.Status))
 				tableHeaders := []string{"Name", "Version", "Status", "Last deployed"}
 				var tableData [][]interface{}
-
+				e.Logger.Output("Services:")
 				for _, serviceStatus := range envStatus.ServiceStatus {
 					relativeDeployedSinceTime := datetime.DateTimeFromNow(serviceStatus.LastDeployedAt)
 					tableData = append(tableData, []interface{}{
@@ -193,7 +193,7 @@ func (e *Env) Run(args []string) int {
 				return 1
 			}
 
-			e.Logger.Output(string(details))
+			e.Logger.Output(fmt.Sprintf("\n%s", details))
 			if *service == "" && *component == "" {
 				e.Logger.Output("\nCommand to descibe env")
 				e.Logger.ItalicEmphasize(fmt.Sprintf("odin describe env --name %s --service <serviceName> --component <componentName>", *name))
@@ -245,9 +245,9 @@ func (e *Env) Run(args []string) int {
 	if e.Delete {
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
-			e.Logger.Warn("Deleting environment:" + *name)
+			e.Logger.Info("Deleting environment: " + *name)
 			envClient.DeleteEnv(*name)
-
+			e.Logger.Success(fmt.Sprintf("Deletion started: %s", *name))
 			return 0
 		}
 
@@ -265,13 +265,14 @@ func (e *Env) Run(args []string) int {
 				return 1
 			}
 
-			tableHeaders := []string{"ID", "Action", "Resource Details", "Modified by", "Last Modified"}
+			tableHeaders := []string{"ID", "State", "Action", "Resource Details", "Modified by", "Last Modified"}
 			var tableData [][]interface{}
 
 			for _, env := range envResp {
 				relativeCreationTimestamp := datetime.DateTimeFromNow(env.CreatedAt)
 				tableData = append(tableData, []interface{}{
 					env.ID,
+					env.State,
 					env.Action,
 					env.ResourceDetails,
 					env.CreatedBy,

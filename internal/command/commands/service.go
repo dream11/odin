@@ -32,6 +32,7 @@ func (s *Service) Run(args []string) int {
 	isMature := flagSet.Bool("mature", false, "mark service version as matured")
 	rebuild := flagSet.Bool("rebuild", false, "rebuild executor for creating images or deploying services")
 	component := flagSet.String("component", "", "name of service component")
+	platform := flagSet.String("platform", "", "platform to deploy the service in")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -77,11 +78,12 @@ func (s *Service) Run(args []string) int {
 			s.Logger.Error("Unrecognized file format")
 			return 1
 		}
-
+		serviceDataMap := parsedConfig.(map[string]interface{})
 		serviceClient.CreateService(parsedConfig)
+		s.Logger.Success(fmt.Sprintf("Service creation started for %s@%s ", serviceDataMap["name"], serviceDataMap["version"]))
 
 		s.Logger.Output("Command to check status of images")
-		s.Logger.ItalicEmphasize("odin status service --name <serviceName> --version <serviceVersion>")
+		s.Logger.ItalicEmphasize(fmt.Sprintf("odin status service --name %s --version %s", serviceDataMap["name"], serviceDataMap["version"]))
 		return 0
 	}
 
@@ -109,7 +111,7 @@ func (s *Service) Run(args []string) int {
 				return 1
 			}
 
-			s.Logger.Output(string(details))
+			s.Logger.Output(fmt.Sprintf("\n%s", details))
 			if len(*component) == 0 {
 				s.Logger.Output("Command to get component details")
 				s.Logger.ItalicEmphasize(fmt.Sprintf("odin describe service --name %s --version <serviceVersion> --component <componentName>", *serviceName))
@@ -128,8 +130,12 @@ func (s *Service) Run(args []string) int {
 			s.Logger.Error(err.Error())
 			return 1
 		}
-
-		tableHeaders := []string{"Name", "Version", "Description", "Team", "Mature"}
+		var tableHeaders []string
+		if len(*serviceName) == 0 {
+			tableHeaders = []string{"Name", "Latest Version", "Description", "Team", "Mature"}
+		} else {
+			tableHeaders = []string{"Name", "Version", "Description", "Team", "Mature"}
+		}
 		var tableData [][]interface{}
 
 		for _, service := range serviceList {
@@ -177,8 +183,9 @@ func (s *Service) Run(args []string) int {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion, "--env": *envName})
 		if len(emptyParameters) == 0 {
 			s.Logger.Info("Deploying service: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
+			serviceClient.DeployService(*serviceName, *serviceVersion, *envName, *platform, *force, *rebuild)
 
-			serviceClient.DeployService(*serviceName, *serviceVersion, *envName, *force, *rebuild)
+			s.Logger.Success(fmt.Sprintf("Deployment of service %s@%s is started on env %s", *serviceName, *serviceVersion, *envName))
 
 			return 0
 		}
@@ -190,7 +197,7 @@ func (s *Service) Run(args []string) int {
 	if s.Undeploy {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--env": *envName})
 		if len(emptyParameters) == 0 {
-			s.Logger.Info("Undeploying service: " + *serviceName + " from environment" + *envName)
+			s.Logger.Info("Undeploying service: " + *serviceName + " from environment " + *envName)
 			serviceClient.UndeployService(*serviceName, *envName)
 
 			s.Logger.Success("Job Triggered to undeploy your service " + *serviceName + " from the env " + *envName)
@@ -229,8 +236,8 @@ func (s *Service) Run(args []string) int {
 			for _, componentStatus := range serviceStatus {
 				tableData = append(tableData, []interface{}{
 					componentStatus.Name,
-					componentStatus.Ec2,
-					componentStatus.Docker,
+					componentStatus.VM,
+					componentStatus.Container,
 				})
 			}
 
@@ -270,10 +277,10 @@ func (s *Service) Help() string {
 
 	if s.List {
 		return commandHelper("list", "service", []string{
-			"--team=name of team",
+			"--name=name of service",
 			"--version=version of services to be listed",
+			"--team=name of team",
 			"--mature (mature marked service versions)",
-			"--detailed (get a detailed view)",
 		})
 	}
 

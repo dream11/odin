@@ -8,6 +8,7 @@ import (
 type Service struct {
 	Name        string                `yaml:"name,omitempty" json:"name,omitempty"`
 	Version     string                `yaml:"version,omitempty" json:"version,omitempty"`
+	Platform    string                `yaml:"platform,omitempty" json:"platform,omitempty"`
 	Team        []string              `yaml:"team,omitempty" json:"team,omitempty"`
 	Description string                `yaml:"description,omitempty" json:"description,omitempty"`
 	Mature      *bool                 `yaml:"isMature,omitempty" json:"isMature,omitempty"`
@@ -32,9 +33,9 @@ type DetailResponse struct {
 
 // Status interface
 type Status struct {
-	Name   string `yaml:"name,omitempty" json:"name,omitempty"`
-	Ec2    string `yaml:"ec2,omitempty" json:"ec2,omitempty"`
-	Docker string `yaml:"docker,omitempty" json:"docker,omitempty"`
+	Name      string `yaml:"name,omitempty" json:"name,omitempty"`
+	VM        string `yaml:"vm,omitempty" json:"vm,omitempty"`
+	Container string `yaml:"container,omitempty" json:"container,omitempty"`
 }
 
 // StatusResponse interface
