@@ -130,8 +130,12 @@ func (s *Service) Run(args []string) int {
 			s.Logger.Error(err.Error())
 			return 1
 		}
-
-		tableHeaders := []string{"Name", "Version", "Description", "Team", "Mature"}
+		var tableHeaders []string
+		if len(*serviceName) == 0 {
+			tableHeaders = []string{"Name", "Latest Version", "Description", "Team", "Mature"}
+		} else {
+			tableHeaders = []string{"Name", "Version", "Description", "Team", "Mature"}
+		}
 		var tableData [][]interface{}
 
 		for _, service := range serviceList {
@@ -179,7 +183,6 @@ func (s *Service) Run(args []string) int {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion, "--env": *envName})
 		if len(emptyParameters) == 0 {
 			s.Logger.Info("Deploying service: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
-
 			serviceClient.DeployService(*serviceName, *serviceVersion, *envName, *platform, *force, *rebuild)
 
 			s.Logger.Success(fmt.Sprintf("Deployment of service %s@%s is started on env %s", *serviceName, *serviceVersion, *envName))
@@ -274,10 +277,10 @@ func (s *Service) Help() string {
 
 	if s.List {
 		return commandHelper("list", "service", []string{
-			"--team=name of team",
+			"--name=name of service",
 			"--version=version of services to be listed",
+			"--team=name of team",
 			"--mature (mature marked service versions)",
-			"--detailed (get a detailed view)",
 		})
 	}
 
