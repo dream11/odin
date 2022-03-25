@@ -23,3 +23,18 @@ func (s *ServiceGroup) CreateServiceGroup(serviceGroup interface{}) (string, err
 
 	return serviceResponse.Response.Message, err
 }
+
+// ListServices : list services per team and describe versions
+func (s *ServiceGroup) ListServiceGroups(serviceGroupName, serviceName string) ([]servicegroup.List, error) {
+	client := newApiClient()
+	client.QueryParams["name"] = serviceGroupName
+	client.QueryParams["service"] = serviceName
+
+	response := client.action(serviceGroupEntity, "GET", nil)
+	response.Process(true)
+
+	var serviceResponse servicegroup.ListResponse
+	err := json.Unmarshal(response.Body, &serviceResponse)
+
+	return serviceResponse.Response, err
+}

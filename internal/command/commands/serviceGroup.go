@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/file"
+	"github.com/dream11/odin/pkg/table"
 	"gopkg.in/yaml.v3"
 	"strings"
 )
@@ -22,6 +23,8 @@ func (s *ServiceGroup) Run(args []string) int {
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
 	// create flags
 	filePath := flagSet.String("file", "service.yaml", "file to read service config")
+	serviceGroupName := flagSet.String("name", "", "name of service-group to be used")
+	serviceName := flagSet.String("service", "", "name of service in service-group")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -63,6 +66,33 @@ func (s *ServiceGroup) Run(args []string) int {
 			return 1
 		}
 		s.Logger.Success(fmt.Sprintf("%s", serviceGroupResp))
+		return 0
+	}
+
+	if s.List {
+		s.Logger.Info("Listing all service-groups")
+		serviceList, err := serviceGroupClient.ListServiceGroups(*serviceGroupName, *serviceName)
+		if err != nil {
+			s.Logger.Error(err.Error())
+			return 1
+		}
+
+		tableHeaders := []string{"Name"}
+		var tableData [][]interface{}
+
+		for _, service := range serviceList {
+			tableData = append(tableData, []interface{}{
+				service.Name,
+			})
+		}
+
+		err = table.Write(tableHeaders, tableData)
+		if err != nil {
+			s.Logger.Error(err.Error())
+			return 1
+		}
+		s.Logger.Output("\nCommand to describe service-group")
+		s.Logger.ItalicEmphasize("odin describe service-group --name <serviceName>")
 		return 0
 	}
 
