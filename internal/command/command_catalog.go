@@ -113,6 +113,9 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"list service-group": func() (cli.Command, error) {
 			return &commands.ServiceGroup{List: true}, nil
 		},
+		"describe service-group": func() (cli.Command, error) {
+			return &commands.ServiceGroup{Describe: true}, nil
+		},
 
 		/*
 			Sample commands -

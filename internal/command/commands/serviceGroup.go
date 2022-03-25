@@ -96,6 +96,35 @@ func (s *ServiceGroup) Run(args []string) int {
 		return 0
 	}
 
+	if s.Describe {
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceGroupName})
+		if len(emptyParameters) == 0 {
+			s.Logger.Info("Describing service-group: " + *serviceGroupName)
+			serviceGroupResp, err := serviceGroupClient.DescribeService(*serviceGroupName)
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return 1
+			}
+
+			var details []byte
+			s.Logger.Info(serviceGroupResp.Name + " details!")
+			details, err = yaml.Marshal(serviceGroupResp)
+
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return 1
+			}
+
+			s.Logger.Output(fmt.Sprintf("\n%s", details))
+			s.Logger.Output("Command to get service details")
+			s.Logger.ItalicEmphasize("odin describe service --name <serviceName> --version <serviceVersion>")
+			return 0
+		}
+
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		return 1
+	}
+
 	s.Logger.Error("Not a valid command")
 	return 127
 }

@@ -16,3 +16,17 @@ type List struct {
 type ListResponse struct {
 	Response []List `yaml:"resp,omitempty" json:"resp,omitempty"`
 }
+
+type ServiceGroupService struct {
+	Name    string `yaml:"name,omitempty" json:"name,omitempty"`
+	Version string `yaml:"version,omitempty" json:"version,omitempty"`
+}
+
+type Describe struct {
+	Name     string                `yaml:"name,omitempty" json:"name,omitempty"`
+	Services []ServiceGroupService `yaml:"services,omitempty" json:"services,omitempty"`
+}
+
+type DescribeResponse struct {
+	Response Describe `yaml:"resp,omitempty" json:"resp,omitempty"`
+}

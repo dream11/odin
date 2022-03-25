@@ -3,6 +3,7 @@ package backend
 import (
 	"encoding/json"
 	"github.com/dream11/odin/api/servicegroup"
+	"path"
 )
 
 // Service entity
@@ -34,6 +35,18 @@ func (s *ServiceGroup) ListServiceGroups(serviceGroupName, serviceName string) (
 	response.Process(true)
 
 	var serviceResponse servicegroup.ListResponse
+	err := json.Unmarshal(response.Body, &serviceResponse)
+
+	return serviceResponse.Response, err
+}
+
+func (s *ServiceGroup) DescribeService(serviceGroupName string) (servicegroup.Describe, error) {
+	client := newApiClient()
+
+	response := client.action(path.Join(serviceGroupEntity, serviceGroupName), "GET", nil)
+	response.Process(true)
+
+	var serviceResponse servicegroup.DescribeResponse
 	err := json.Unmarshal(response.Body, &serviceResponse)
 
 	return serviceResponse.Response, err
