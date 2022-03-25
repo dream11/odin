@@ -144,6 +144,12 @@ func (s *ServiceGroup) Help() string {
 		})
 	}
 
+	if s.Describe {
+		return commandHelper("describe", "service", []string{
+			"--name=name of the service-group to describe",
+		})
+	}
+
 	return defaultHelper()
 }
 
@@ -156,6 +162,10 @@ func (s *ServiceGroup) Synopsis() string {
 	if s.List {
 		return "list all service-groups"
 	}
-	
+
+	if s.Describe {
+		return "describe a service-group"
+	}
+
 	return defaultHelper()
 }
