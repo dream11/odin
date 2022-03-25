@@ -137,6 +137,13 @@ func (s *ServiceGroup) Help() string {
 		})
 	}
 
+	if s.List {
+		return commandHelper("list", "service-group", []string{
+			"--name=name of the service-group",
+			"--service=name of service in the service-group",
+		})
+	}
+
 	return defaultHelper()
 }
 
@@ -146,5 +153,9 @@ func (s *ServiceGroup) Synopsis() string {
 		return "create a service-group"
 	}
 
+	if s.List {
+		return "list all service-groups"
+	}
+	
 	return defaultHelper()
 }
