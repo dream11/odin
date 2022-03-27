@@ -100,7 +100,7 @@ func (s *ServiceGroup) Run(args []string) int {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceGroupName})
 		if len(emptyParameters) == 0 {
 			s.Logger.Info("Describing service-group: " + *serviceGroupName)
-			serviceGroupResp, err := serviceGroupClient.DescribeService(*serviceGroupName)
+			serviceGroupResp, err := serviceGroupClient.DescribeServiceGroup(*serviceGroupName)
 			if err != nil {
 				s.Logger.Error(err.Error())
 				return 1
@@ -118,6 +118,19 @@ func (s *ServiceGroup) Run(args []string) int {
 			s.Logger.Output(fmt.Sprintf("\n%s", details))
 			s.Logger.Output("Command to get service details")
 			s.Logger.ItalicEmphasize("odin describe service --name <serviceName> --version <serviceVersion>")
+			return 0
+		}
+
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		return 1
+	}
+
+	if s.Delete {
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceGroupName})
+		if len(emptyParameters) == 0 {
+			s.Logger.Info("Deleting service-group: " + *serviceGroupName)
+			serviceGroupClient.DeleteServiceGroup(*serviceGroupName)
+
 			return 0
 		}
 
@@ -145,8 +158,14 @@ func (s *ServiceGroup) Help() string {
 	}
 
 	if s.Describe {
-		return commandHelper("describe", "service", []string{
+		return commandHelper("describe", "service-group", []string{
 			"--name=name of the service-group to describe",
+		})
+	}
+
+	if s.Delete {
+		return commandHelper("delete", "service-group", []string{
+			"--name=name of service-group to delete",
 		})
 	}
 
@@ -165,6 +184,10 @@ func (s *ServiceGroup) Synopsis() string {
 
 	if s.Describe {
 		return "describe a service-group"
+	}
+
+	if s.Delete {
+		return "delete a service-group"
 	}
 
 	return defaultHelper()

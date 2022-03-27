@@ -40,7 +40,7 @@ func (s *ServiceGroup) ListServiceGroups(serviceGroupName, serviceName string) (
 	return serviceResponse.Response, err
 }
 
-func (s *ServiceGroup) DescribeService(serviceGroupName string) (servicegroup.Describe, error) {
+func (s *ServiceGroup) DescribeServiceGroup(serviceGroupName string) (servicegroup.Describe, error) {
 	client := newApiClient()
 
 	response := client.action(path.Join(serviceGroupEntity, serviceGroupName), "GET", nil)
@@ -50,4 +50,12 @@ func (s *ServiceGroup) DescribeService(serviceGroupName string) (servicegroup.De
 	err := json.Unmarshal(response.Body, &serviceResponse)
 
 	return serviceResponse.Response, err
+}
+
+// DeleteService : delete a service version
+func (s *ServiceGroup) DeleteServiceGroup(serviceGroup string) {
+	client := newApiClient()
+
+	response := client.action(path.Join(serviceGroupEntity, serviceGroup)+"/", "DELETE", nil)
+	response.Process(true)
 }

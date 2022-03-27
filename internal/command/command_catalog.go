@@ -116,6 +116,9 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"describe service-group": func() (cli.Command, error) {
 			return &commands.ServiceGroup{Describe: true}, nil
 		},
+		"delete service-group": func() (cli.Command, error) {
+			return &commands.ServiceGroup{Delete: true}, nil
+		},
 
 		/*
 			Sample commands -
