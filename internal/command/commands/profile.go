@@ -12,7 +12,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// initiate backend client for service
+// initiate backend client for profile
 var profileClient backend.Profile
 
 // Profile : command declaration
@@ -23,9 +23,9 @@ func (s *Profile) Run(args []string) int {
 	// Define flag set
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
 	// create flags
-	filePath := flagSet.String("file", "service.yaml", "file to read service config")
-	serviceGroupName := flagSet.String("name", "", "name of service-group to be used")
-	serviceName := flagSet.String("service", "", "name of service in service-group")
+	filePath := flagSet.String("file", "profile.yaml", "file to read profile config")
+	profileName := flagSet.String("name", "", "name of profile to be used")
+	serviceName := flagSet.String("service", "", "name of service in profile")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -71,8 +71,8 @@ func (s *Profile) Run(args []string) int {
 	}
 
 	if s.List {
-		s.Logger.Info("Listing all service-groups")
-		serviceList, err := serviceGroupClient.ListServiceGroups(*serviceGroupName, *serviceName)
+		s.Logger.Info("Listing all profiles")
+		profileList, err := profileClient.ListProfiles(*profileName, *serviceName)
 		if err != nil {
 			s.Logger.Error(err.Error())
 			return 1
@@ -81,9 +81,9 @@ func (s *Profile) Run(args []string) int {
 		tableHeaders := []string{"Name"}
 		var tableData [][]interface{}
 
-		for _, service := range serviceList {
+		for _, profile := range profileList {
 			tableData = append(tableData, []interface{}{
-				service.Name,
+				profile.Name,
 			})
 		}
 
@@ -92,8 +92,8 @@ func (s *Profile) Run(args []string) int {
 			s.Logger.Error(err.Error())
 			return 1
 		}
-		s.Logger.Output("\nCommand to describe service-group")
-		s.Logger.ItalicEmphasize("odin describe service-group --name <serviceName>")
+		s.Logger.Output("\nCommand to describe profile")
+		s.Logger.ItalicEmphasize("odin describe profile --name <profileName>")
 		return 0
 	}
 
@@ -110,9 +110,9 @@ func (s *Profile) Help() string {
 	}
 
 	if s.List {
-		return commandHelper("list", "service-group", []string{
-			"--name=name of the service-group",
-			"--service=name of service in the service-group",
+		return commandHelper("list", "profile", []string{
+			"--name=name of the profile",
+			"--service=name of service in the profile",
 		})
 	}
 
@@ -126,8 +126,8 @@ func (s *Profile) Synopsis() string {
 	}
 
 	if s.List {
-		return "list all service-groups"
+		return "list all profiles"
 	}
-	
+
 	return defaultHelper()
 }
