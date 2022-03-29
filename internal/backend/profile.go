@@ -1,50 +1,54 @@
 package backend
 
 import (
+	"encoding/json"
 	"path"
+
+	"github.com/dream11/odin/api/profile"
 )
 
 // Profile entity
 type Profile struct{}
 
 // root entity
-var profileEntity = "profiles"
+var profileEntity = "profile"
 
-// CreateProfile : register a profile version with backend
-func (p *Profile) CreateProfile(profile interface{}) {
+// CreateProfile : register a profile with backend
+func (s *Profile) CreateProfile(profileDefinition interface{}) (string, error) {
 	client := newApiClient()
 
-	response := client.action(profileEntity, "POST", profile)
-	response.Process(true) // process response and exit if error
-}
-
-// DescribeProfile : describe a profile version or all versions of a profile
-func (p *Profile) DescribeProfile(profile, version string) {
-	client := newApiClient()
-	client.QueryParams["version"] = version
-
-	response := client.action(path.Join(profileEntity, profile), "GET", nil)
+	response := client.action(profileEntity+"/", "POST", profileDefinition)
 	response.Process(true) // process response and exit if error
 
-	// TODO: parse response.Body into required structure and return
+	var serviceResponse profile.CreateResponse
+	err := json.Unmarshal(response.Body, &serviceResponse)
+
+	return serviceResponse.Response.Message, err
 }
 
-// ListProfiles : list profiles per team and describe versions
-func (p *Profile) ListProfiles(team, version string) {
+// ListProfiles : list profiles
+func (s *Profile) ListProfiles(profileName, serviceName string) ([]profile.List, error) {
 	client := newApiClient()
-	client.QueryParams["team"] = team
-	client.QueryParams["version"] = version
+	client.QueryParams["name"] = profileName
+	client.QueryParams["service"] = serviceName
 
 	response := client.action(profileEntity, "GET", nil)
-	response.Process(true) // process response and exit if error
+	response.Process(true)
 
-	// TODO: parse response.Body into required structure and return
+	var serviceResponse profile.ListResponse
+	err := json.Unmarshal(response.Body, &serviceResponse)
+
+	return serviceResponse.Response, err
 }
 
-// DeleteProfile : delete a profile version
-func (p *Profile) DeleteProfile(profile, version string) {
+func (s *Profile) DescribeProfile(profileName string) (profile.Describe, error) {
 	client := newApiClient()
 
-	response := client.action(path.Join(profileEntity, profile, "version", version), "DELETE", nil)
-	response.Process(true) // process response and exit if error
+	response := client.action(path.Join(profileEntity, profileName), "GET", nil)
+	response.Process(true)
+
+	var serviceResponse profile.DescribeResponse
+	err := json.Unmarshal(response.Body, &serviceResponse)
+
+	return serviceResponse.Response, err
 }
