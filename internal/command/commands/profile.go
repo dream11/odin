@@ -127,10 +127,10 @@ func (s *Profile) Run(args []string) int {
 	}
 
 	if s.Delete {
-		emptyParameters := emptyParameters(map[string]string{"--name": *serviceGroupName})
+		emptyParameters := emptyParameters(map[string]string{"--name": *profileName})
 		if len(emptyParameters) == 0 {
-			s.Logger.Info("Deleting service-group: " + *serviceGroupName)
-			serviceGroupClient.DeleteServiceGroup(*serviceGroupName)
+			s.Logger.Info("Deleting profile: " + *profileName)
+			profileClient.DeleteProfile(*profileName)
 
 			return 0
 		}
@@ -165,8 +165,8 @@ func (s *Profile) Help() string {
 	}
 
 	if s.Delete {
-		return commandHelper("delete", "service-group", []string{
-			"--name=name of service-group to delete",
+		return commandHelper("delete", "profile", []string{
+			"--name=name of profile to delete",
 		})
 	}
 
@@ -188,7 +188,7 @@ func (s *Profile) Synopsis() string {
 	}
 
 	if s.Delete {
-		return "delete a service-group"
+		return "delete a profile"
 	}
 
 	return defaultHelper()
