@@ -4,21 +4,22 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"strings"
+
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/file"
 	"github.com/dream11/odin/pkg/table"
 	"gopkg.in/yaml.v3"
-	"strings"
 )
 
 // initiate backend client for service
-var serviceGroupClient backend.ServiceGroup
+var profileClient backend.Profile
 
-// ServiceGroup : command declaration
-type ServiceGroup command
+// Profile : command declaration
+type Profile command
 
 // Run : implements the actual functionality of the command
-func (s *ServiceGroup) Run(args []string) int {
+func (s *Profile) Run(args []string) int {
 	// Define flag set
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
 	// create flags
@@ -59,13 +60,13 @@ func (s *ServiceGroup) Run(args []string) int {
 		}
 		serviceDataMap := parsedConfig.(map[string]interface{})
 
-		s.Logger.Info(fmt.Sprintf("Service-group creation started for %s  ", serviceDataMap["services"]))
-		serviceGroupResp, err := serviceGroupClient.CreateServiceGroup(parsedConfig)
+		s.Logger.Info(fmt.Sprintf("Profile creation started for %s  ", serviceDataMap["services"]))
+		profileResp, err := profileClient.CreateProfile(parsedConfig)
 		if err != nil {
 			s.Logger.Error(err.Error())
 			return 1
 		}
-		s.Logger.Success(fmt.Sprintf("%s", serviceGroupResp))
+		s.Logger.Success(profileResp)
 		return 0
 	}
 
@@ -101,10 +102,10 @@ func (s *ServiceGroup) Run(args []string) int {
 }
 
 // Help : returns an explanatory string
-func (s *ServiceGroup) Help() string {
+func (s *Profile) Help() string {
 	if s.Create {
-		return commandHelper("create", "service-group", []string{
-			"--file=yaml file to read service-group definition",
+		return commandHelper("create", "profile", []string{
+			"--file=yaml file to read profile definition",
 		})
 	}
 
@@ -119,9 +120,9 @@ func (s *ServiceGroup) Help() string {
 }
 
 // Synopsis : returns a brief helper text for the command's verbs
-func (s *ServiceGroup) Synopsis() string {
+func (s *Profile) Synopsis() string {
 	if s.Create {
-		return "create a service-group"
+		return "create a profile"
 	}
 
 	if s.List {

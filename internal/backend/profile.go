@@ -1,50 +1,26 @@
 package backend
 
 import (
-	"path"
+	"encoding/json"
+
+	"github.com/dream11/odin/api/profile"
 )
 
-// Profile entity
+// Service entity
 type Profile struct{}
 
 // root entity
-var profileEntity = "profiles"
+var profileEntity = "profile"
 
-// CreateProfile : register a profile version with backend
-func (p *Profile) CreateProfile(profile interface{}) {
+// CreateProfile : register a profile with backend
+func (s *Profile) CreateProfile(profileDefinition interface{}) (string, error) {
 	client := newApiClient()
 
-	response := client.action(profileEntity, "POST", profile)
-	response.Process(true) // process response and exit if error
-}
-
-// DescribeProfile : describe a profile version or all versions of a profile
-func (p *Profile) DescribeProfile(profile, version string) {
-	client := newApiClient()
-	client.QueryParams["version"] = version
-
-	response := client.action(path.Join(profileEntity, profile), "GET", nil)
+	response := client.action(profileEntity+"/", "POST", profileDefinition)
 	response.Process(true) // process response and exit if error
 
-	// TODO: parse response.Body into required structure and return
-}
+	var serviceResponse profile.CreateResponse
+	err := json.Unmarshal(response.Body, &serviceResponse)
 
-// ListProfiles : list profiles per team and describe versions
-func (p *Profile) ListProfiles(team, version string) {
-	client := newApiClient()
-	client.QueryParams["team"] = team
-	client.QueryParams["version"] = version
-
-	response := client.action(profileEntity, "GET", nil)
-	response.Process(true) // process response and exit if error
-
-	// TODO: parse response.Body into required structure and return
-}
-
-// DeleteProfile : delete a profile version
-func (p *Profile) DeleteProfile(profile, version string) {
-	client := newApiClient()
-
-	response := client.action(path.Join(profileEntity, profile, "version", version), "DELETE", nil)
-	response.Process(true) // process response and exit if error
+	return serviceResponse.Response.Message, err
 }

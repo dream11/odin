@@ -1,4 +1,4 @@
-package servicegroup
+package profile
 
 type Create struct {
 	Message string `yaml:"message,omitempty" json:"message,omitempty"`
