@@ -4,27 +4,28 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"strings"
+
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/file"
 	"github.com/dream11/odin/pkg/table"
 	"gopkg.in/yaml.v3"
-	"strings"
 )
 
-// initiate backend client for service
-var serviceGroupClient backend.ServiceGroup
+// initiate backend client for profile
+var profileClient backend.Profile
 
-// ServiceGroup : command declaration
-type ServiceGroup command
+// Profile : command declaration
+type Profile command
 
 // Run : implements the actual functionality of the command
-func (s *ServiceGroup) Run(args []string) int {
+func (s *Profile) Run(args []string) int {
 	// Define flag set
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
 	// create flags
-	filePath := flagSet.String("file", "service.yaml", "file to read service config")
-	serviceGroupName := flagSet.String("name", "", "name of service-group to be used")
-	serviceName := flagSet.String("service", "", "name of service in service-group")
+	filePath := flagSet.String("file", "profile.yaml", "file to read profile config")
+	profileName := flagSet.String("name", "", "name of profile to be used")
+	serviceName := flagSet.String("service", "", "name of service in profile")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -59,19 +60,19 @@ func (s *ServiceGroup) Run(args []string) int {
 		}
 		serviceDataMap := parsedConfig.(map[string]interface{})
 
-		s.Logger.Info(fmt.Sprintf("Service-group creation started for %s  ", serviceDataMap["services"]))
-		serviceGroupResp, err := serviceGroupClient.CreateServiceGroup(parsedConfig)
+		s.Logger.Info(fmt.Sprintf("Profile creation started for %s  ", serviceDataMap["services"]))
+		profileResp, err := profileClient.CreateProfile(parsedConfig)
 		if err != nil {
 			s.Logger.Error(err.Error())
 			return 1
 		}
-		s.Logger.Success(fmt.Sprintf("%s", serviceGroupResp))
+		s.Logger.Success(profileResp)
 		return 0
 	}
 
 	if s.List {
-		s.Logger.Info("Listing all service-groups")
-		serviceList, err := serviceGroupClient.ListServiceGroups(*serviceGroupName, *serviceName)
+		s.Logger.Info("Listing all profiles")
+		profileList, err := profileClient.ListProfiles(*profileName, *serviceName)
 		if err != nil {
 			s.Logger.Error(err.Error())
 			return 1
@@ -80,9 +81,9 @@ func (s *ServiceGroup) Run(args []string) int {
 		tableHeaders := []string{"Name"}
 		var tableData [][]interface{}
 
-		for _, service := range serviceList {
+		for _, profile := range profileList {
 			tableData = append(tableData, []interface{}{
-				service.Name,
+				profile.Name,
 			})
 		}
 
@@ -91,24 +92,24 @@ func (s *ServiceGroup) Run(args []string) int {
 			s.Logger.Error(err.Error())
 			return 1
 		}
-		s.Logger.Output("\nCommand to describe service-group")
-		s.Logger.ItalicEmphasize("odin describe service-group --name <serviceName>")
+		s.Logger.Output("\nCommand to describe profile")
+		s.Logger.ItalicEmphasize("odin describe profile --name <profileName>")
 		return 0
 	}
 
 	if s.Describe {
-		emptyParameters := emptyParameters(map[string]string{"--name": *serviceGroupName})
+		emptyParameters := emptyParameters(map[string]string{"--name": *profileName})
 		if len(emptyParameters) == 0 {
-			s.Logger.Info("Describing service-group: " + *serviceGroupName)
-			serviceGroupResp, err := serviceGroupClient.DescribeService(*serviceGroupName)
+			s.Logger.Info("Describing profile: " + *profileName)
+			profileResp, err := profileClient.DescribeProfile(*profileName)
 			if err != nil {
 				s.Logger.Error(err.Error())
 				return 1
 			}
 
 			var details []byte
-			s.Logger.Info(serviceGroupResp.Name + " details!")
-			details, err = yaml.Marshal(serviceGroupResp)
+			s.Logger.Info(profileResp.Name + " details!")
+			details, err = yaml.Marshal(profileResp)
 
 			if err != nil {
 				s.Logger.Error(err.Error())
@@ -130,23 +131,23 @@ func (s *ServiceGroup) Run(args []string) int {
 }
 
 // Help : returns an explanatory string
-func (s *ServiceGroup) Help() string {
+func (s *Profile) Help() string {
 	if s.Create {
-		return commandHelper("create", "service-group", []string{
-			"--file=yaml file to read service-group definition",
+		return commandHelper("create", "profile", []string{
+			"--file=yaml file to read profile definition",
 		})
 	}
 
 	if s.List {
-		return commandHelper("list", "service-group", []string{
-			"--name=name of the service-group",
-			"--service=name of service in the service-group",
+		return commandHelper("list", "profile", []string{
+			"--name=name of the profile",
+			"--service=name of service in the profile",
 		})
 	}
 
 	if s.Describe {
 		return commandHelper("describe", "service", []string{
-			"--name=name of the service-group to describe",
+			"--name=name of the profile to describe",
 		})
 	}
 
@@ -154,17 +155,17 @@ func (s *ServiceGroup) Help() string {
 }
 
 // Synopsis : returns a brief helper text for the command's verbs
-func (s *ServiceGroup) Synopsis() string {
+func (s *Profile) Synopsis() string {
 	if s.Create {
-		return "create a service-group"
+		return "create a profile"
 	}
 
 	if s.List {
-		return "list all service-groups"
+		return "list all profiles"
 	}
 
 	if s.Describe {
-		return "describe a service-group"
+		return "describe a profile"
 	}
 
 	return defaultHelper()
