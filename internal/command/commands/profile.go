@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"strings"
+
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/file"
 	"gopkg.in/yaml.v3"
-	"strings"
 )
 
 // initiate backend client for service
@@ -56,7 +57,7 @@ func (s *Profile) Run(args []string) int {
 		}
 		serviceDataMap := parsedConfig.(map[string]interface{})
 
-		s.Logger.Info(fmt.Sprintf("profile creation started for %s  ", serviceDataMap["services"]))
+		s.Logger.Info(fmt.Sprintf("Profile creation started for %s  ", serviceDataMap["services"]))
 		profileResp, err := profileClient.CreateProfile(parsedConfig)
 		if err != nil {
 			s.Logger.Error(err.Error())
