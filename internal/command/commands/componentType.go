@@ -69,20 +69,38 @@ func (c *ComponentType) Run(args []string) int {
 		emptyParameters := emptyParameters(map[string]string{"--name": *componentTypeName})
 		if len(emptyParameters) == 0 {
 			c.Logger.Info("Describing component type: " + *componentTypeName + "@" + *componentTypeVersion)
-			componentTypeResp, err := componentTypeClient.DescribeComponentType(*componentTypeName, *componentTypeVersion)
+			componentDetailsResponse, err := componentTypeClient.DescribeComponentType(*componentTypeName, *componentTypeVersion)
 			if err != nil {
 				c.Logger.Error(err.Error())
 				return 1
 			}
 
-			details, err := yaml.Marshal(componentTypeResp)
+			details, err := yaml.Marshal(componentDetailsResponse.Details)
 			if err != nil {
 				c.Logger.Error(err.Error())
 				return 1
+			}
+
+			var tableHeaders []string
+			var tableData [][]interface{}
+			if len(componentDetailsResponse.ExposedConfigs) > 0 {
+				tableHeaders = []string{"Config", "Mandatory", "Data Type"}
+				for _, exposed_config := range componentDetailsResponse.ExposedConfigs {
+					tableData = append(tableData, []interface{}{
+						exposed_config.Config,
+						exposed_config.Mandatory,
+						exposed_config.DataType,
+					})
+				}
 			}
 
 			c.Logger.Output(fmt.Sprintf("\n%s", details))
-
+			c.Logger.ItalicEmphasize("List of exposed configs :\n")
+			err = table.Write(tableHeaders, tableData)
+			if err != nil {
+				c.Logger.Error(err.Error())
+				return 1
+			}
 			return 0
 		}
 
