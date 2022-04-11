@@ -30,3 +30,24 @@ type Describe struct {
 type DescribeResponse struct {
 	Response Describe `yaml:"resp,omitempty" json:"resp,omitempty"`
 }
+
+type ListEnvService struct {
+	Name       string `yaml:"name,omitempty" json:"name,omitempty"`
+	Version    string `yaml:"version,omitempty" json:"version,omitempty"`
+	EnvVersion string `yaml:"envVersion,omitempty" json:"envVersion,omitempty"`
+}
+
+type ListEnvServiceResponse struct {
+	Response []ListEnvService `yaml:"resp,omitempty" json:"resp,omitempty"`
+}
+
+type ProfileServiceDeploy struct {
+	Name        string `yaml:"name,omitempty" json:"name,omitempty"`
+	Version     string `yaml:"version,omitempty" json:"version,omitempty"`
+	ExecutorUrl string `yaml:"envVersion,omitempty" json:"executorUrl,omitempty"`
+	Error       string `yaml:"envVersion,omitempty" json:"error,omitempty"`
+}
+
+type ProfileServiceDeployResponse struct {
+	Response []ProfileServiceDeploy `yaml:"resp,omitempty" json:"resp,omitempty"`
+}

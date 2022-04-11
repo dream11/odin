@@ -2,6 +2,7 @@ package backend
 
 import (
 	"encoding/json"
+	"fmt"
 	"path"
 
 	"github.com/dream11/odin/api/profile"
@@ -58,4 +59,32 @@ func (s *Profile) DeleteProfile(profile string) {
 
 	response := client.action(path.Join(profileEntity, profile)+"/", "DELETE", nil)
 	response.Process(true)
+}
+
+func (s *Profile) DeployProfile(profileName, env, platform string, forceDeployServices []profile.ListEnvService, force bool) ([]profile.ProfileServiceDeploy, error) {
+	client := newApiClient()
+	client.QueryParams["env_name"] = env
+	client.QueryParams["platform"] = platform
+	client.QueryParams["force"] = fmt.Sprintf("%v", force)
+
+	response := client.action(path.Join(profileEntity, "deploy", profileName, "env", env)+"/", "POST", forceDeployServices)
+	response.Process(true)
+
+	var serviceResponse profile.ProfileServiceDeployResponse
+	err := json.Unmarshal(response.Body, &serviceResponse)
+
+	return serviceResponse.Response, err
+}
+
+func (s Profile) ListEnvServices(profileName, env string, isConflicted bool) ([]profile.ListEnvService, error) {
+	client := newApiClient()
+	client.QueryParams["isConflicted"] = fmt.Sprintf("%v", isConflicted)
+
+	response := client.action(path.Join(profileEntity, profileName, "env", env, "service")+"/", "GET", nil)
+	response.Process(true)
+
+	var serviceResponse profile.ListEnvServiceResponse
+	err := json.Unmarshal(response.Body, &serviceResponse)
+
+	return serviceResponse.Response, err
 }
