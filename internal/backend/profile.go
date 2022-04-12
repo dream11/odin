@@ -88,3 +88,17 @@ func (s Profile) ListEnvServices(profileName, env string, isConflicted bool) ([]
 
 	return serviceResponse.Response, err
 }
+
+func (s *Profile) UndeployProfile(profileName, env string, forceDeployServices []profile.ListEnvService, force bool) ([]profile.ProfileServiceDeploy, error) {
+	client := newApiClient()
+	client.QueryParams["env_name"] = env
+	client.QueryParams["force"] = fmt.Sprintf("%v", force)
+
+	response := client.action(path.Join(profileEntity, "undeploy", profileName, "env", env)+"/", "DELETE", forceDeployServices)
+	response.Process(true)
+
+	var serviceResponse profile.ProfileServiceDeployResponse
+	err := json.Unmarshal(response.Body, &serviceResponse)
+
+	return serviceResponse.Response, err
+}

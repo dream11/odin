@@ -211,6 +211,71 @@ func (s *Profile) Run(args []string) int {
 		return 1
 	}
 
+	if s.Undeploy {
+		emptyParameters := emptyParameters(map[string]string{"--name": *profileName, "--env": *envName})
+		if len(emptyParameters) == 0 {
+			s.Logger.Info("Undeploying profile: " + *profileName + " from environment " + *envName)
+			var forceUndeployServices []profile.ListEnvService
+			if !*force {
+				s.Logger.Info(fmt.Sprintf("Profile: %s services present in the Env: %s are", *profileName, *envName))
+				profileList, err := profileClient.ListEnvServices(*profileName, *envName, true)
+
+				if err != nil {
+					s.Logger.Error(err.Error())
+					return 1
+				}
+
+				if len(profileList) > 0 {
+					s.Logger.Output("Following services have conflicting versions in the Env: " + *envName)
+					s.Logger.Output("Press [Y] to undeploy the service with the conflicting version or press [n] to skip service.\n")
+					allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
+					for _, profile := range profileList {
+						message := fmt.Sprintf("undeploy Service: %s with version: %s[Y/n]: ", profile.Name, profile.EnvVersion)
+						//s.Logger.Output(message)
+						val := readInput(allowedInputs, message)
+						s.Logger.Output(val)
+						if val == "Y" {
+							forceUndeployServices = append(forceUndeployServices, profile)
+						}
+					}
+				}
+
+				fmt.Println(forceUndeployServices)
+			}
+
+			/*deploy profile*/
+			s.Logger.Info("Undeploying profile: " + *profileName + " in Env:" + *envName)
+			profileList, err := profileClient.UndeployProfile(*profileName, *envName, forceUndeployServices, *force)
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return 1
+			}
+
+			tableHeaders := []string{"Name", "Version", "ExecutorUrl", "Error"}
+			var tableData [][]interface{}
+
+			for _, profile := range profileList {
+				tableData = append(tableData, []interface{}{
+					profile.Name,
+					profile.Version,
+					profile.ExecutorUrl,
+					profile.Error,
+				})
+			}
+
+			s.Logger.Success(fmt.Sprintf("Undeployment of profile %s is started on env %s\n", *profileName, *envName))
+			err = table.Write(tableHeaders, tableData)
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return 1
+			}
+
+			return 0
+		}
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		return 1
+	}
+
 	s.Logger.Error("Not a valid command")
 	return 127
 }
@@ -251,6 +316,14 @@ func (s *Profile) Help() string {
 		})
 	}
 
+	if s.Undeploy {
+		return commandHelper("deploy", "profile", []string{
+			"--name=name of profile to deploy",
+			"--env=name of environment to deploy profile in",
+			"--force=forcefully deploy your profile service into the env",
+		})
+	}
+
 	return defaultHelper()
 }
 
@@ -274,6 +347,10 @@ func (s *Profile) Synopsis() string {
 
 	if s.Deploy {
 		return "deploy a profile"
+	}
+
+	if s.Deploy {
+		return "undeploy a profile"
 	}
 
 	return defaultHelper()
