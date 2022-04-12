@@ -125,6 +125,9 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"undeploy profile": func() (cli.Command, error) {
 			return &commands.Profile{Undeploy: true}, nil
 		},
+		"update profile": func() (cli.Command, error) {
+			return &commands.Profile{Update: true}, nil
+		},
 
 		/*
 			Sample commands -
