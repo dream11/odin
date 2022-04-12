@@ -107,26 +107,26 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 			return &commands.Service{Status: true}, nil
 		},
 		// Verbs for `profile` resource
-		"create profile": func() (cli.Command, error) {
-			return &commands.Profile{Create: true}, nil
+		"create service-set": func() (cli.Command, error) {
+			return &commands.ServiceSet{Create: true}, nil
 		},
-		"list profile": func() (cli.Command, error) {
-			return &commands.Profile{List: true}, nil
+		"list service-set": func() (cli.Command, error) {
+			return &commands.ServiceSet{List: true}, nil
 		},
-		"describe profile": func() (cli.Command, error) {
-			return &commands.Profile{Describe: true}, nil
+		"describe service-set": func() (cli.Command, error) {
+			return &commands.ServiceSet{Describe: true}, nil
 		},
-		"delete profile": func() (cli.Command, error) {
-			return &commands.Profile{Delete: true}, nil
+		"delete service-set": func() (cli.Command, error) {
+			return &commands.ServiceSet{Delete: true}, nil
 		},
-		"deploy profile": func() (cli.Command, error) {
-			return &commands.Profile{Deploy: true}, nil
+		"deploy service-set": func() (cli.Command, error) {
+			return &commands.ServiceSet{Deploy: true}, nil
 		},
-		"undeploy profile": func() (cli.Command, error) {
-			return &commands.Profile{Undeploy: true}, nil
+		"undeploy service-set": func() (cli.Command, error) {
+			return &commands.ServiceSet{Undeploy: true}, nil
 		},
-		"update profile": func() (cli.Command, error) {
-			return &commands.Profile{Update: true}, nil
+		"update service-set": func() (cli.Command, error) {
+			return &commands.ServiceSet{Update: true}, nil
 		},
 
 		/*

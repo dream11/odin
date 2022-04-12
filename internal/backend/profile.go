@@ -5,107 +5,105 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/dream11/odin/api/profile"
+	"github.com/dream11/odin/api/serviceset"
 )
 
-// Profile entity
-type Profile struct{}
+// ServiceSet entity
+type ServiceSet struct{}
 
 // root entity
-var profileEntity = "profile"
+var serviceSetEntity = "serviceset"
 
-// CreateProfile : register a profile with backend
-func (s *Profile) CreateProfile(profileDefinition interface{}) (string, error) {
+func (s *ServiceSet) CreateServiceSet(serviceSetDefinition interface{}) (string, error) {
 	client := newApiClient()
 
-	response := client.action(profileEntity+"/", "POST", profileDefinition)
+	response := client.action(serviceSetEntity+"/", "POST", serviceSetDefinition)
 	response.Process(true) // process response and exit if error
 
-	var serviceResponse profile.CreateResponse
+	var serviceResponse serviceset.CreateResponse
 	err := json.Unmarshal(response.Body, &serviceResponse)
 
 	return serviceResponse.Response.Message, err
 }
 
-// ListProfiles : list profiles
-func (s *Profile) ListProfiles(profileName, serviceName string) ([]profile.List, error) {
+func (s *ServiceSet) ListServiceSet(serviceSetName, serviceName string) ([]serviceset.List, error) {
 	client := newApiClient()
-	client.QueryParams["name"] = profileName
+	client.QueryParams["name"] = serviceSetName
 	client.QueryParams["service"] = serviceName
 
-	response := client.action(profileEntity, "GET", nil)
+	response := client.action(serviceSetEntity, "GET", nil)
 	response.Process(true)
 
-	var serviceResponse profile.ListResponse
+	var serviceResponse serviceset.ListResponse
 	err := json.Unmarshal(response.Body, &serviceResponse)
 
 	return serviceResponse.Response, err
 }
 
-func (s *Profile) DescribeProfile(profileName string) (profile.Describe, error) {
+func (s *ServiceSet) DescribeServiceSet(serviceSetName string) (serviceset.Describe, error) {
 	client := newApiClient()
 
-	response := client.action(path.Join(profileEntity, profileName), "GET", nil)
+	response := client.action(path.Join(serviceSetEntity, serviceSetName), "GET", nil)
 	response.Process(true)
 
-	var serviceResponse profile.DescribeResponse
+	var serviceResponse serviceset.DescribeResponse
 	err := json.Unmarshal(response.Body, &serviceResponse)
 
 	return serviceResponse.Response, err
 }
 
-func (s *Profile) DeleteProfile(profile string) {
+func (s *ServiceSet) DeleteServiceSet(serviceSetName string) {
 	client := newApiClient()
 
-	response := client.action(path.Join(profileEntity, profile)+"/", "DELETE", nil)
+	response := client.action(path.Join(serviceSetEntity, serviceSetName)+"/", "DELETE", nil)
 	response.Process(true)
 }
 
-func (s *Profile) DeployProfile(profileName, env, platform string, forceDeployServices []profile.ListEnvService, force bool) ([]profile.ProfileServiceDeploy, error) {
+func (s *ServiceSet) DeployServiceSet(serviceSetName, env, platform string, forceDeployServices []serviceset.ListEnvService, force bool) ([]serviceset.ServiceSetServiceDeploy, error) {
 	client := newApiClient()
 	client.QueryParams["env_name"] = env
 	client.QueryParams["platform"] = platform
 	client.QueryParams["force"] = fmt.Sprintf("%v", force)
 
-	response := client.action(path.Join(profileEntity, "deploy", profileName, "env", env)+"/", "POST", forceDeployServices)
+	response := client.action(path.Join(serviceSetEntity, "deploy", serviceSetName, "env", env)+"/", "POST", forceDeployServices)
 	response.Process(true)
 
-	var serviceResponse profile.ProfileServiceDeployResponse
+	var serviceResponse serviceset.ServiceSetServiceDeployResponse
 	err := json.Unmarshal(response.Body, &serviceResponse)
 
 	return serviceResponse.Response, err
 }
 
-func (s Profile) ListEnvServices(profileName, env string, isConflicted bool) ([]profile.ListEnvService, error) {
+func (s ServiceSet) ListEnvServices(serviceSetName, env string, isConflicted bool) ([]serviceset.ListEnvService, error) {
 	client := newApiClient()
 	client.QueryParams["isConflicted"] = fmt.Sprintf("%v", isConflicted)
 
-	response := client.action(path.Join(profileEntity, profileName, "env", env, "service")+"/", "GET", nil)
+	response := client.action(path.Join(serviceSetEntity, serviceSetName, "env", env, "service")+"/", "GET", nil)
 	response.Process(true)
 
-	var serviceResponse profile.ListEnvServiceResponse
+	var serviceResponse serviceset.ListEnvServiceResponse
 	err := json.Unmarshal(response.Body, &serviceResponse)
 
 	return serviceResponse.Response, err
 }
 
-func (s *Profile) UndeployProfile(profileName, env string, forceDeployServices []profile.ListEnvService, force bool) ([]profile.ProfileServiceDeploy, error) {
+func (s *ServiceSet) UndeployServiceSet(serviceSetName, env string, forceDeployServices []serviceset.ListEnvService, force bool) ([]serviceset.ServiceSetServiceDeploy, error) {
 	client := newApiClient()
 	client.QueryParams["env_name"] = env
 	client.QueryParams["force"] = fmt.Sprintf("%v", force)
 
-	response := client.action(path.Join(profileEntity, "undeploy", profileName, "env", env)+"/", "DELETE", forceDeployServices)
+	response := client.action(path.Join(serviceSetEntity, "undeploy", serviceSetName, "env", env)+"/", "DELETE", forceDeployServices)
 	response.Process(true)
 
-	var serviceResponse profile.ProfileServiceDeployResponse
+	var serviceResponse serviceset.ServiceSetServiceDeployResponse
 	err := json.Unmarshal(response.Body, &serviceResponse)
 
 	return serviceResponse.Response, err
 }
 
-func (p *Profile) UpdateProfile(profileName string, profile interface{}) {
+func (s *ServiceSet) UpdateServiceSet(serviceSetName string, serviceSet interface{}) {
 	client := newApiClient()
 
-	response := client.action(path.Join(profileEntity, profileName)+"/", "PUT", profile)
+	response := client.action(path.Join(serviceSetEntity, serviceSetName)+"/", "PUT", serviceSet)
 	response.Process(true) // process response and exit if error
 }
