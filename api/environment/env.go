@@ -13,6 +13,7 @@ type Env struct {
 	State        string            `yaml:"state,omitempty" json:"state,omitempty"`
 	DeletionTime string            `yaml:"autoDeletionTime,omitempty" json:"autoDeletionTime,omitempty"`
 	Account      string            `yaml:"cloudProviderAccount,omitempty" json:"cloudProviderAccount,omitempty"`
+	Cluster      string            `yaml:"cluster,omitempty" json:"cluster,omitempty"`
 	CreatedBy    string            `yaml:"createdBy,omitempty" json:"createdBy,omitempty"`
 	UpdatedBy    string            `yaml:"updatedBy,omitempty" json:"updatedBy,omitempty"`
 	CreatedAt    string            `yaml:"createdAt,omitempty" json:"createdAt,omitempty"`
