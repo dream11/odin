@@ -33,6 +33,7 @@ func (e *Env) Run(args []string) int {
 	service := flagSet.String("service", "", "service name to filter out describe environment")
 	component := flagSet.String("component", "", "component name to filter out describe environment")
 	providerAccount := flagSet.String("account", "", "account name to provision the environment in")
+	cluster := flagSet.String("cluster", "", "cluster name to to provision the environment in")
 	filePath := flagSet.String("file", "environment.yaml", "file to read environment config")
 	id := flagSet.Int("id", 0, "unique id of a changelog of an env")
 
@@ -51,6 +52,7 @@ func (e *Env) Run(args []string) int {
 				Purpose: *purpose,
 				EnvType: *env,
 				Account: *providerAccount,
+				Cluster: *cluster,
 			}
 
 			response, err := envClient.CreateEnv(envConfig)
@@ -212,7 +214,7 @@ func (e *Env) Run(args []string) int {
 			return 1
 		}
 
-		tableHeaders := []string{"Name", "Team", "Env Type", "State", "Account", "Deletion Time", "Purpose", "CreatedAt", "CreatedBy", "UpdatedAt", "UpdatedBy"}
+		tableHeaders := []string{"Name", "Team", "Env Type", "State", "Account", "Cluster", "Deletion Time", "Purpose", "CreatedAt", "CreatedBy", "UpdatedAt", "UpdatedBy"}
 		var tableData [][]interface{}
 
 		for _, env := range envList {
@@ -225,6 +227,7 @@ func (e *Env) Run(args []string) int {
 				env.EnvType,
 				env.State,
 				env.Account,
+				env.Cluster,
 				relativeDeletionTimestamp,
 				env.Purpose,
 				relativeCreatedAtTimestamp,
@@ -340,6 +343,7 @@ func (e *Env) Help() string {
 			"--purpose=reason to create environment",
 			"--env-type=type of environment",
 			"--account=account name to provision the environment in (optional)",
+			"--cluster=cluster name to provision the environment in (optional)",
 		})
 	}
 
@@ -356,6 +360,7 @@ func (e *Env) Help() string {
 			"--team=name of team",
 			"--env-type=env type of the environment",
 			"--account=cloud provider account name",
+			"--cluster=cluster name to provision the environment in",
 		})
 	}
 
