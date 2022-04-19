@@ -23,6 +23,7 @@ Verb convention:
 	- logs
 	- deploy
 	- destroy
+	- generate
 
 Resources are the entities on with the verbs will run,
 like: environment, profile, etc...
@@ -106,6 +107,12 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"status service": func() (cli.Command, error) {
 			return &commands.Service{Status: true}, nil
 		},
+
+		// Verb for application-template
+		"generate application-template": func() (cli.Command, error) {
+			return &commands.ApplicationTemplate{Generate: true}, nil
+		},
+
 		/*
 			Sample commands -
 
