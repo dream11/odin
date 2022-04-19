@@ -182,7 +182,7 @@ func (s *Service) Run(args []string) int {
 	if s.Deploy {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion, "--env": *envName})
 		if len(emptyParameters) == 0 {
-			s.Logger.Info("Deploying service: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
+			s.Logger.Info("Initiating service deployment: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
 			serviceClient.DeployService(*serviceName, *serviceVersion, *envName, *platform, *force, *rebuild)
 
 			s.Logger.Success(fmt.Sprintf("Deployment of service %s@%s is started on env %s", *serviceName, *serviceVersion, *envName))
@@ -197,7 +197,7 @@ func (s *Service) Run(args []string) int {
 	if s.Undeploy {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--env": *envName})
 		if len(emptyParameters) == 0 {
-			s.Logger.Info("Undeploying service: " + *serviceName + " from environment " + *envName)
+			s.Logger.Info("Initiating service undeployment: " + *serviceName + " from environment " + *envName)
 			serviceClient.UndeployService(*serviceName, *envName)
 
 			s.Logger.Success("Job Triggered to undeploy your service " + *serviceName + " from the env " + *envName)
@@ -211,7 +211,7 @@ func (s *Service) Run(args []string) int {
 	if s.Delete {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
 		if len(emptyParameters) == 0 {
-			s.Logger.Info("Deleting service: " + *serviceName + "@" + *serviceVersion)
+			s.Logger.Info("Initiating service deletion: " + *serviceName + "@" + *serviceVersion)
 			serviceClient.DeleteService(*serviceName, *serviceVersion)
 
 			return 0
