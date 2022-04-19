@@ -27,6 +27,7 @@ type command struct {
 	Destroy         bool // Destroy the deployed resource
 	GetHistory      bool // Get changelog of resource
 	DescribeHistory bool // Describe a changelog of resource
+	Generate        bool // Generate resources
 
 	Logger ui.Logger // Use this to log messages
 	Input  ui.Input  // Use this to take inputs
