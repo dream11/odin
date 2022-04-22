@@ -264,6 +264,9 @@ func (s *Service) Help() string {
 	if s.Create {
 		return commandHelper("create", "service", []string{
 			"--file=yaml file to read service definition",
+			"--rebuild=rebuild existing service",
+			"--name=name of the service (required if using --rebuild)",
+			"--version=version of the service (required if using --rebuild)",
 		})
 	}
 
