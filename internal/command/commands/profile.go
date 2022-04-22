@@ -152,7 +152,7 @@ func (s *Profile) Run(args []string) int {
 			if !*force {
 				//get list of env services
 				s.Logger.Info(fmt.Sprintf("Env Services of profile %s and env %s", *profileName, *envName))
-				profileList, err := profileClient.ListEnvServices(*profileName, *envName, true)
+				profileList, err := profileClient.ListEnvServices(*profileName, *envName, "conflictedVersion")
 
 				if err != nil {
 					s.Logger.Error(err.Error())
