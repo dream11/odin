@@ -6,30 +6,30 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dream11/odin/api/profile"
+	"github.com/dream11/odin/api/serviceset"
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/file"
 	"github.com/dream11/odin/pkg/table"
 	"gopkg.in/yaml.v3"
 )
 
-// initiate backend client for profile
-var profileClient backend.Profile
+// initiate backend client for service-set
+var serviceSetClient backend.ServiceSet
 
-// Profile : command declaration
-type Profile command
+// ServiceSet : command declaration
+type ServiceSet command
 
 // Run : implements the actual functionality of the command
-func (s *Profile) Run(args []string) int {
+func (s *ServiceSet) Run(args []string) int {
 	// Define flag set
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
 	// create flags
-	filePath := flagSet.String("file", "profile.yaml", "file to read profile config")
-	profileName := flagSet.String("name", "", "name of profile to be used")
-	serviceName := flagSet.String("service", "", "name of service in profile")
-	envName := flagSet.String("env", "", "name of environment to deploy the profile in")
-	platform := flagSet.String("platform", "", "platform of environment to deploy the profile in")
-	force := flagSet.Bool("force", false, "forcefully deploy the new version of the service")
+	filePath := flagSet.String("file", "service-set.yaml", "file to read service-set config")
+	serviceSetName := flagSet.String("name", "", "name of service-set to be used")
+	serviceName := flagSet.String("service", "", "name of service in service-set")
+	envName := flagSet.String("env", "", "name of environment to deploy the service-set in")
+	platform := flagSet.String("platform", "", "platform of environment to deploy the service-set in")
+	force := flagSet.Bool("force", false, "forcefully deploy service-set into the Env")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -64,14 +64,14 @@ func (s *Profile) Run(args []string) int {
 		}
 		serviceDataMap := parsedConfig.(map[string]interface{})
 
-		profileClient.CreateProfile(parsedConfig)
-		s.Logger.Info(fmt.Sprintf("Profile: %s created Successfully.", serviceDataMap["name"].(string)))
+		serviceSetClient.CreateServiceSet(parsedConfig)
+		s.Logger.Info(fmt.Sprintf("ServiceSet: %s created Successfully.", serviceDataMap["name"].(string)))
 		return 0
 	}
 
 	if s.List {
-		s.Logger.Info("Listing all profiles")
-		profileList, err := profileClient.ListProfiles(*profileName, *serviceName)
+		s.Logger.Info("Listing all service-sets")
+		serviceSetList, err := serviceSetClient.ListServiceSet(*serviceSetName, *serviceName)
 		if err != nil {
 			s.Logger.Error(err.Error())
 			return 1
@@ -80,9 +80,9 @@ func (s *Profile) Run(args []string) int {
 		tableHeaders := []string{"Name"}
 		var tableData [][]interface{}
 
-		for _, profile := range profileList {
+		for _, serviceSet := range serviceSetList {
 			tableData = append(tableData, []interface{}{
-				profile.Name,
+				serviceSet.Name,
 			})
 		}
 
@@ -91,24 +91,24 @@ func (s *Profile) Run(args []string) int {
 			s.Logger.Error(err.Error())
 			return 1
 		}
-		s.Logger.Output("\nCommand to describe profile")
-		s.Logger.ItalicEmphasize("odin describe profile --name <profileName>")
+		s.Logger.Output("\nCommand to describe serviceset")
+		s.Logger.ItalicEmphasize("odin describe serviceset --name <serviceSetName>")
 		return 0
 	}
 
 	if s.Describe {
-		emptyParameters := emptyParameters(map[string]string{"--name": *profileName})
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceSetName})
 		if len(emptyParameters) == 0 {
-			s.Logger.Info("Describing profile: " + *profileName)
-			profileResp, err := profileClient.DescribeProfile(*profileName)
+			s.Logger.Info("Describing service-set: " + *serviceSetName)
+			serviceSetResp, err := serviceSetClient.DescribeServiceSet(*serviceSetName)
 			if err != nil {
 				s.Logger.Error(err.Error())
 				return 1
 			}
 
 			var details []byte
-			s.Logger.Info(profileResp.Name + " details!")
-			details, err = yaml.Marshal(profileResp)
+			s.Logger.Info(serviceSetResp.Name + " details!")
+			details, err = yaml.Marshal(serviceSetResp)
 
 			if err != nil {
 				s.Logger.Error(err.Error())
@@ -126,10 +126,10 @@ func (s *Profile) Run(args []string) int {
 	}
 
 	if s.Delete {
-		emptyParameters := emptyParameters(map[string]string{"--name": *profileName})
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceSetName})
 		if len(emptyParameters) == 0 {
-			s.Logger.Info("Deleting profile: " + *profileName)
-			profileClient.DeleteProfile(*profileName)
+			s.Logger.Info("Deleting service-set: " + *serviceSetName)
+			serviceSetClient.DeleteServiceSet(*serviceSetName)
 
 			return 0
 		}
@@ -139,25 +139,26 @@ func (s *Profile) Run(args []string) int {
 	}
 
 	if s.Deploy {
-		emptyParameters := emptyParameters(map[string]string{"--name": *profileName, "--env": *envName})
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceSetName, "--env": *envName})
 		if len(emptyParameters) == 0 {
-			var forceDeployServices []profile.ListEnvService
+			var forceDeployServices []serviceset.ListEnvService
 			if !*force {
 				//get list of env services
-				s.Logger.Info(fmt.Sprintf("Env Services of profile %s and env %s", *profileName, *envName))
-				profileList, err := profileClient.ListEnvServices(*profileName, *envName, "conflictedVersion")
+				s.Logger.Info(fmt.Sprintf("Env Services of service-set %s and env %s", *serviceSetName, *envName))
+				serviceSetList, err := serviceSetClient.ListEnvServices(*serviceSetName, *envName, "conflictedVersion")
 
 				if err != nil {
 					s.Logger.Error(err.Error())
 					return 1
 				}
 
-				if len(profileList) > 0 {
+				if len(serviceSetList) > 0 {
 					s.Logger.Output("Following services have conflicting versions in the Env: " + *envName)
 					s.Logger.Output("Press [Y] to update the service version or press [n] to skip service.\n")
 					allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
-					for _, profile := range profileList {
-						message := fmt.Sprintf("Update version of Service %s : %s -> %s[Y/n]: ", profile.Name, profile.EnvVersion, profile.Version)
+					for _, serviceSet := range serviceSetList {
+						message := fmt.Sprintf("Update version of Service %s : %s -> %s[Y/n]: ", serviceSet.Name, serviceSet.EnvVersion, serviceSet.Version)
+						//s.Logger.Output(message)
 
 						val, err := s.Input.AskWithConstraints(message, allowedInputs)
 
@@ -168,7 +169,7 @@ func (s *Profile) Run(args []string) int {
 
 						s.Logger.Output(val)
 						if val == "Y" {
-							forceDeployServices = append(forceDeployServices, profile)
+							forceDeployServices = append(forceDeployServices, serviceSet)
 						}
 					}
 				}
@@ -176,9 +177,9 @@ func (s *Profile) Run(args []string) int {
 				fmt.Println(forceDeployServices)
 			}
 
-			/*deploy profile*/
-			s.Logger.Info("Deploying profile: " + *profileName + " in " + *envName)
-			profileList, err := profileClient.DeployProfile(*profileName, *envName, *platform, forceDeployServices, *force)
+			/*deploy service-set*/
+			s.Logger.Info("Deploying service-set: " + *serviceSetName + " in " + *envName)
+			serviceSetList, err := serviceSetClient.DeployServiceSet(*serviceSetName, *envName, *platform, forceDeployServices, *force)
 			if err != nil {
 				s.Logger.Error(err.Error())
 				return 1
@@ -187,16 +188,16 @@ func (s *Profile) Run(args []string) int {
 			tableHeaders := []string{"Name", "Version", "ExecutorUrl", "Error"}
 			var tableData [][]interface{}
 
-			for _, profile := range profileList {
+			for _, serviceSet := range serviceSetList {
 				tableData = append(tableData, []interface{}{
-					profile.Name,
-					profile.Version,
-					profile.ExecutorUrl,
-					profile.Error,
+					serviceSet.Name,
+					serviceSet.Version,
+					serviceSet.ExecutorUrl,
+					serviceSet.Error,
 				})
 			}
 
-			s.Logger.Success(fmt.Sprintf("Deployment of profile %s is started on env %s\n", *profileName, *envName))
+			s.Logger.Success(fmt.Sprintf("Deployment of service-set %s is started on env %s\n", *serviceSetName, *envName))
 			err = table.Write(tableHeaders, tableData)
 			if err != nil {
 				s.Logger.Error(err.Error())
@@ -211,25 +212,23 @@ func (s *Profile) Run(args []string) int {
 	}
 
 	if s.Undeploy {
-		emptyParameters := emptyParameters(map[string]string{"--name": *profileName, "--env": *envName})
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceSetName, "--env": *envName})
 		if len(emptyParameters) == 0 {
-			s.Logger.Info("Undeploying profile: " + *profileName + " from environment " + *envName)
-			var forceUndeployServices []profile.ListEnvService
+			var forceUndeployServices []serviceset.ListEnvService
 			if !*force {
-				s.Logger.Info(fmt.Sprintf("Profile: %s services present in the Env: %s are", *profileName, *envName))
-				profileList, err := profileClient.ListEnvServices(*profileName, *envName, "conflictedVersion")
+				serviceSetList, err := serviceSetClient.ListEnvServices(*serviceSetName, *envName, "conflictedVersion")
 
 				if err != nil {
 					s.Logger.Error(err.Error())
 					return 1
 				}
 
-				if len(profileList) > 0 {
+				if len(serviceSetList) > 0 {
 					s.Logger.Output("Following services have conflicting versions in the Env: " + *envName)
 					s.Logger.Output("Press [Y] to undeploy the service with the conflicting version or press [n] to skip service.\n")
 					allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
-					for _, profile := range profileList {
-						message := fmt.Sprintf("undeploy Service: %s with version: %s[Y/n]: ", profile.Name, profile.EnvVersion)
+					for _, serviceSet := range serviceSetList {
+						message := fmt.Sprintf("undeploy Service: %s with version: %s[Y/n]: ", serviceSet.Name, serviceSet.EnvVersion)
 						val, err := s.Input.AskWithConstraints(message, allowedInputs)
 
 						if err != nil {
@@ -238,7 +237,7 @@ func (s *Profile) Run(args []string) int {
 						}
 
 						if val == "Y" {
-							forceUndeployServices = append(forceUndeployServices, profile)
+							forceUndeployServices = append(forceUndeployServices, serviceSet)
 						}
 					}
 				}
@@ -246,9 +245,9 @@ func (s *Profile) Run(args []string) int {
 				fmt.Println(forceUndeployServices)
 			}
 
-			/*deploy profile*/
-			s.Logger.Info("Undeploying profile: " + *profileName + " in Env:" + *envName)
-			profileList, err := profileClient.UndeployProfile(*profileName, *envName, forceUndeployServices, *force)
+			/*deploy service-set*/
+			s.Logger.Info("Undeploying service-set: " + *serviceSetName + " in Env:" + *envName)
+			serviceSetList, err := serviceSetClient.UndeployServiceSet(*serviceSetName, *envName, forceUndeployServices, *force)
 			if err != nil {
 				s.Logger.Error(err.Error())
 				return 1
@@ -257,16 +256,16 @@ func (s *Profile) Run(args []string) int {
 			tableHeaders := []string{"Name", "Version", "ExecutorUrl", "Error"}
 			var tableData [][]interface{}
 
-			for _, profile := range profileList {
+			for _, serviceSet := range serviceSetList {
 				tableData = append(tableData, []interface{}{
-					profile.Name,
-					profile.Version,
-					profile.ExecutorUrl,
-					profile.Error,
+					serviceSet.Name,
+					serviceSet.Version,
+					serviceSet.ExecutorUrl,
+					serviceSet.Error,
 				})
 			}
 
-			s.Logger.Success(fmt.Sprintf("Undeployment of profile %s is started on env %s\n", *profileName, *envName))
+			s.Logger.Success(fmt.Sprintf("Undeployment of service-set %s is started on env %s\n", *serviceSetName, *envName))
 			err = table.Write(tableHeaders, tableData)
 			if err != nil {
 				s.Logger.Error(err.Error())
@@ -306,8 +305,8 @@ func (s *Profile) Run(args []string) int {
 		}
 		serviceDataMap := parsedConfig.(map[string]interface{})
 
-		profileClient.UpdateProfile(serviceDataMap["name"].(string), parsedConfig)
-		s.Logger.Info(fmt.Sprintf("Profile: %s updated Successfully.", serviceDataMap["name"].(string)))
+		serviceSetClient.UpdateServiceSet(serviceDataMap["name"].(string), parsedConfig)
+		s.Logger.Info(fmt.Sprintf("ServiceSet: %s updated Successfully.", serviceDataMap["name"].(string)))
 
 		return 0
 	}
@@ -317,52 +316,52 @@ func (s *Profile) Run(args []string) int {
 }
 
 // Help : returns an explanatory string
-func (s *Profile) Help() string {
+func (s *ServiceSet) Help() string {
 	if s.Create {
-		return commandHelper("create", "profile", []string{
-			"--file=yaml file to read profile definition",
+		return commandHelper("create", "service-set", []string{
+			"--file=yaml file to read service-set definition",
 		})
 	}
 
 	if s.List {
-		return commandHelper("list", "profile", []string{
-			"--name=name of the profile",
-			"--service=name of service in the profile",
+		return commandHelper("list", "service-set", []string{
+			"--name=name of the service-set",
+			"--service=name of service in the service-set",
 		})
 	}
 
 	if s.Describe {
 		return commandHelper("describe", "service", []string{
-			"--name=name of the profile to describe",
+			"--name=name of the service-set to describe",
 		})
 	}
 
 	if s.Delete {
-		return commandHelper("delete", "profile", []string{
-			"--name=name of profile to delete",
+		return commandHelper("delete", "service-set", []string{
+			"--name=name of service-set to delete",
 		})
 	}
 
 	if s.Deploy {
-		return commandHelper("deploy", "profile", []string{
-			"--name=name of profile to deploy",
-			"--env=name of environment to deploy profile in",
-			"--platform=platform of environment to deploy profile in",
-			"--force=forcefully deploy your profile service into the env",
+		return commandHelper("deploy", "service-set", []string{
+			"--name=name of service-set to deploy",
+			"--env=name of environment to deploy service-set in",
+			"--platform=platform of environment to deploy service-set in",
+			"--force=forcefully deploy service-set into the Env",
 		})
 	}
 
 	if s.Undeploy {
-		return commandHelper("deploy", "profile", []string{
-			"--name=name of profile to deploy",
-			"--env=name of environment to deploy profile in",
-			"--force=forcefully deploy your profile service into the env",
+		return commandHelper("deploy", "service-set", []string{
+			"--name=name of service-set to deploy",
+			"--env=name of environment to deploy service-set in",
+			"--force=forcefully undeploy service-set from the Env",
 		})
 	}
 
 	if s.Update {
-		return commandHelper("update", "profile", []string{
-			"--file=yaml file to read profile definition",
+		return commandHelper("update", "service-set", []string{
+			"--file=yaml file to read service-set definition",
 		})
 	}
 
@@ -370,33 +369,33 @@ func (s *Profile) Help() string {
 }
 
 // Synopsis : returns a brief helper text for the command's verbs
-func (s *Profile) Synopsis() string {
+func (s *ServiceSet) Synopsis() string {
 	if s.Create {
-		return "create a profile"
+		return "create a service-set"
 	}
 
 	if s.List {
-		return "list all profiles"
+		return "list all service-sets"
 	}
 
 	if s.Describe {
-		return "describe a profile"
+		return "describe a service-set"
 	}
 
 	if s.Delete {
-		return "delete a profile"
+		return "delete a service-set"
 	}
 
 	if s.Deploy {
-		return "deploy a profile"
+		return "deploy a service-set"
 	}
 
 	if s.Deploy {
-		return "undeploy a profile"
+		return "undeploy a service-set"
 	}
 
 	if s.Update {
-		return "update a profile"
+		return "update a service-set"
 	}
 
 	return defaultHelper()
