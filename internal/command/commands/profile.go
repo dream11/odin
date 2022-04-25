@@ -222,7 +222,7 @@ func (s *Profile) Run(args []string) int {
 			var forceUndeployServices []profile.ListEnvService
 			if !*force {
 				s.Logger.Info(fmt.Sprintf("Profile: %s services present in the Env: %s are", *profileName, *envName))
-				profileList, err := profileClient.ListEnvServices(*profileName, *envName, true)
+				profileList, err := profileClient.ListEnvServices(*profileName, *envName, "conflictedVersion")
 
 				if err != nil {
 					s.Logger.Error(err.Error())
@@ -235,8 +235,13 @@ func (s *Profile) Run(args []string) int {
 					allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
 					for _, profile := range profileList {
 						message := fmt.Sprintf("undeploy Service: %s with version: %s[Y/n]: ", profile.Name, profile.EnvVersion)
-						val := readInput(allowedInputs, message)
-						s.Logger.Output(val)
+						val, err := s.Input.AskWithConstraints(message, allowedInputs)
+
+						if err != nil {
+							s.Logger.Error(err.Error())
+							return 1
+						}
+
 						if val == "Y" {
 							forceUndeployServices = append(forceUndeployServices, profile)
 						}
