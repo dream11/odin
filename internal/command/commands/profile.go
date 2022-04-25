@@ -165,7 +165,6 @@ func (s *Profile) Run(args []string) int {
 					allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
 					for _, profile := range profileList {
 						message := fmt.Sprintf("Update version of Service %s : %s -> %s[Y/n]: ", profile.Name, profile.EnvVersion, profile.Version)
-						//s.Logger.Output(message)
 						val := readInput(allowedInputs, message)
 						s.Logger.Output(val)
 						if val == "Y" {
@@ -231,7 +230,6 @@ func (s *Profile) Run(args []string) int {
 					allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
 					for _, profile := range profileList {
 						message := fmt.Sprintf("undeploy Service: %s with version: %s[Y/n]: ", profile.Name, profile.EnvVersion)
-						//s.Logger.Output(message)
 						val := readInput(allowedInputs, message)
 						s.Logger.Output(val)
 						if val == "Y" {
