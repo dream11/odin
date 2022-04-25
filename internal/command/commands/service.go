@@ -299,6 +299,7 @@ func (s *Service) Help() string {
 			"--force=forcefully deploy your service",
 			"--rebuild=rebuild your executor job again for service deployment",
 			"--env=name of environment to deploy service in",
+			"--platform=platform to deploy the service in",
 		})
 	}
 	if s.Undeploy {

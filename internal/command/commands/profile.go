@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/dream11/odin/api/profile"
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/file"
 	"github.com/dream11/odin/pkg/table"
@@ -26,6 +27,9 @@ func (s *Profile) Run(args []string) int {
 	filePath := flagSet.String("file", "profile.yaml", "file to read profile config")
 	profileName := flagSet.String("name", "", "name of profile to be used")
 	serviceName := flagSet.String("service", "", "name of service in profile")
+	envName := flagSet.String("env", "", "name of environment to deploy the profile in")
+	//platform := flagSet.String("platform", "", "platform of environment to deploy the profile in")
+	force := flagSet.Bool("force", false, "forcefully deploy the new version of the service")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -139,6 +143,78 @@ func (s *Profile) Run(args []string) int {
 		return 1
 	}
 
+	if s.Deploy {
+		emptyParameters := emptyParameters(map[string]string{"--name": *profileName, "--env": *envName})
+		if len(emptyParameters) == 0 {
+			var forceDeployServices []profile.ListEnvService
+			if !*force {
+				//get list of env services
+				s.Logger.Info(fmt.Sprintf("Env Services of profile %s and env %s", *profileName, *envName))
+				profileList, err := profileClient.ListEnvServices(*profileName, *envName, "conflictedVersion")
+
+				if err != nil {
+					s.Logger.Error(err.Error())
+					return 1
+				}
+
+				if len(profileList) > 0 {
+					s.Logger.Output("Following services have conflicting versions in the Env: " + *envName)
+					s.Logger.Output("Press [Y] to update the service version or press [n] to skip service.\n")
+					allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
+					for _, profile := range profileList {
+						message := fmt.Sprintf("Update version of Service %s : %s -> %s[Y/n]: ", profile.Name, profile.EnvVersion, profile.Version)
+
+						val, err := s.Input.AskWithConstraints(message, allowedInputs)
+
+						if err != nil {
+							s.Logger.Error(err.Error())
+							return 1
+						}
+
+						s.Logger.Output(val)
+						if val == "Y" {
+							forceDeployServices = append(forceDeployServices, profile)
+						}
+					}
+				}
+
+				fmt.Println(forceDeployServices)
+			}
+
+			///*deploy profile*/
+			//s.Logger.Info("Deploying profile: " + *profileName + " in " + *envName)
+			//profileList, err := profileClient.DeployProfile(*profileName, *envName, *platform, forceDeployServices, *force)
+			//if err != nil {
+			//	s.Logger.Error(err.Error())
+			//	return 1
+			//}
+			//
+			//tableHeaders := []string{"Name", "Version", "ExecutorUrl", "Error"}
+			//var tableData [][]interface{}
+			//
+			//for _, profile := range profileList {
+			//	tableData = append(tableData, []interface{}{
+			//		profile.Name,
+			//		profile.Version,
+			//		profile.ExecutorUrl,
+			//		profile.Error,
+			//	})
+			//}
+			//
+			//s.Logger.Success(fmt.Sprintf("Deployment of profile %s is started on env %s\n", *profileName, *envName))
+			//err = table.Write(tableHeaders, tableData)
+			//if err != nil {
+			//	s.Logger.Error(err.Error())
+			//	return 1
+			//}
+
+			return 0
+		}
+
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		return 1
+	}
+
 	s.Logger.Error("Not a valid command")
 	return 127
 }
@@ -170,6 +246,15 @@ func (s *Profile) Help() string {
 		})
 	}
 
+	if s.Deploy {
+		return commandHelper("deploy", "profile", []string{
+			"--name=name of profile to deploy",
+			"--env=name of environment to deploy profile in",
+			"--platform=platform of environment to deploy profile in",
+			"--force=forcefully deploy your profile service into the env",
+		})
+	}
+
 	return defaultHelper()
 }
 
@@ -189,6 +274,10 @@ func (s *Profile) Synopsis() string {
 
 	if s.Delete {
 		return "delete a profile"
+	}
+
+	if s.Deploy {
+		return "deploy a profile"
 	}
 
 	return defaultHelper()
