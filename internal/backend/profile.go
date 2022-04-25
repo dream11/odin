@@ -24,3 +24,18 @@ func (s *Profile) CreateProfile(profileDefinition interface{}) (string, error) {
 
 	return serviceResponse.Response.Message, err
 }
+
+// ListProfiles : list profiles
+func (s *Profile) ListProfiles(profileName, serviceName string) ([]profile.List, error) {
+	client := newApiClient()
+	client.QueryParams["name"] = profileName
+	client.QueryParams["service"] = serviceName
+
+	response := client.action(profileEntity, "GET", nil)
+	response.Process(true)
+
+	var serviceResponse profile.ListResponse
+	err := json.Unmarshal(response.Body, &serviceResponse)
+
+	return serviceResponse.Response, err
+}

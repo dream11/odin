@@ -8,10 +8,11 @@ import (
 
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/file"
+	"github.com/dream11/odin/pkg/table"
 	"gopkg.in/yaml.v3"
 )
 
-// initiate backend client for service
+// initiate backend client for profile
 var profileClient backend.Profile
 
 // Profile : command declaration
@@ -22,7 +23,9 @@ func (s *Profile) Run(args []string) int {
 	// Define flag set
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
 	// create flags
-	filePath := flagSet.String("file", "service.yaml", "file to read service config")
+	filePath := flagSet.String("file", "profile.yaml", "file to read profile config")
+	profileName := flagSet.String("name", "", "name of profile to be used")
+	serviceName := flagSet.String("service", "", "name of service in profile")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -67,6 +70,33 @@ func (s *Profile) Run(args []string) int {
 		return 0
 	}
 
+	if s.List {
+		s.Logger.Info("Listing all profiles")
+		profileList, err := profileClient.ListProfiles(*profileName, *serviceName)
+		if err != nil {
+			s.Logger.Error(err.Error())
+			return 1
+		}
+
+		tableHeaders := []string{"Name"}
+		var tableData [][]interface{}
+
+		for _, profile := range profileList {
+			tableData = append(tableData, []interface{}{
+				profile.Name,
+			})
+		}
+
+		err = table.Write(tableHeaders, tableData)
+		if err != nil {
+			s.Logger.Error(err.Error())
+			return 1
+		}
+		s.Logger.Output("\nCommand to describe profile")
+		s.Logger.ItalicEmphasize("odin describe profile --name <profileName>")
+		return 0
+	}
+
 	s.Logger.Error("Not a valid command")
 	return 127
 }
@@ -79,6 +109,13 @@ func (s *Profile) Help() string {
 		})
 	}
 
+	if s.List {
+		return commandHelper("list", "profile", []string{
+			"--name=name of the profile",
+			"--service=name of service in the profile",
+		})
+	}
+
 	return defaultHelper()
 }
 
@@ -86,6 +123,10 @@ func (s *Profile) Help() string {
 func (s *Profile) Synopsis() string {
 	if s.Create {
 		return "create a profile"
+	}
+
+	if s.List {
+		return "list all profiles"
 	}
 
 	return defaultHelper()
