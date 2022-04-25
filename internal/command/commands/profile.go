@@ -1,11 +1,9 @@
 package commands
 
 import (
-	"bufio"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/dream11/odin/api/profile"
@@ -30,7 +28,7 @@ func (s *Profile) Run(args []string) int {
 	profileName := flagSet.String("name", "", "name of profile to be used")
 	serviceName := flagSet.String("service", "", "name of service in profile")
 	envName := flagSet.String("env", "", "name of environment to deploy the profile in")
-	platform := flagSet.String("platform", "", "platform of environment to deploy the profile in")
+	//platform := flagSet.String("platform", "", "platform of environment to deploy the profile in")
 	force := flagSet.Bool("force", false, "forcefully deploy the new version of the service")
 
 	err := flagSet.Parse(args)
@@ -165,8 +163,14 @@ func (s *Profile) Run(args []string) int {
 					allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
 					for _, profile := range profileList {
 						message := fmt.Sprintf("Update version of Service %s : %s -> %s[Y/n]: ", profile.Name, profile.EnvVersion, profile.Version)
-						//s.Logger.Output(message)
-						val := readInput(allowedInputs, message)
+
+						val, err := s.Input.AskWithConstraints(message, allowedInputs)
+
+						if err != nil {
+							s.Logger.Error(err.Error())
+							return 1
+						}
+
 						s.Logger.Output(val)
 						if val == "Y" {
 							forceDeployServices = append(forceDeployServices, profile)
@@ -177,32 +181,32 @@ func (s *Profile) Run(args []string) int {
 				fmt.Println(forceDeployServices)
 			}
 
-			/*deploy profile*/
-			s.Logger.Info("Deploying profile: " + *profileName + " in " + *envName)
-			profileList, err := profileClient.DeployProfile(*profileName, *envName, *platform, forceDeployServices, *force)
-			if err != nil {
-				s.Logger.Error(err.Error())
-				return 1
-			}
-
-			tableHeaders := []string{"Name", "Version", "ExecutorUrl", "Error"}
-			var tableData [][]interface{}
-
-			for _, profile := range profileList {
-				tableData = append(tableData, []interface{}{
-					profile.Name,
-					profile.Version,
-					profile.ExecutorUrl,
-					profile.Error,
-				})
-			}
-
-			s.Logger.Success(fmt.Sprintf("Deployment of profile %s is started on env %s\n", *profileName, *envName))
-			err = table.Write(tableHeaders, tableData)
-			if err != nil {
-				s.Logger.Error(err.Error())
-				return 1
-			}
+			///*deploy profile*/
+			//s.Logger.Info("Deploying profile: " + *profileName + " in " + *envName)
+			//profileList, err := profileClient.DeployProfile(*profileName, *envName, *platform, forceDeployServices, *force)
+			//if err != nil {
+			//	s.Logger.Error(err.Error())
+			//	return 1
+			//}
+			//
+			//tableHeaders := []string{"Name", "Version", "ExecutorUrl", "Error"}
+			//var tableData [][]interface{}
+			//
+			//for _, profile := range profileList {
+			//	tableData = append(tableData, []interface{}{
+			//		profile.Name,
+			//		profile.Version,
+			//		profile.ExecutorUrl,
+			//		profile.Error,
+			//	})
+			//}
+			//
+			//s.Logger.Success(fmt.Sprintf("Deployment of profile %s is started on env %s\n", *profileName, *envName))
+			//err = table.Write(tableHeaders, tableData)
+			//if err != nil {
+			//	s.Logger.Error(err.Error())
+			//	return 1
+			//}
 
 			return 0
 		}
@@ -277,23 +281,4 @@ func (s *Profile) Synopsis() string {
 	}
 
 	return defaultHelper()
-}
-
-func readInput(allowedValues map[string]struct{}, message string) string {
-	scanner := bufio.NewScanner(os.Stdin)
-	fmt.Printf("%s", message)
-
-	for scanner.Scan() {
-		text := scanner.Text()
-
-		_, ok := allowedValues[text]
-
-		if ok {
-			return text
-		}
-		fmt.Print("Valid inputs are: ")
-		fmt.Println(allowedValues)
-		fmt.Printf("%s", message)
-	}
-	return ""
 }
