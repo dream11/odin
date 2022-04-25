@@ -26,14 +26,14 @@ func (c *ComponentType) ListComponentTypes(componentTypeName, version string) ([
 }
 
 // DescribeComponentTypes : describe a component type
-func (c *ComponentType) DescribeComponentType(componentTypeName, version string) (component.Type, error) {
+func (c *ComponentType) DescribeComponentType(componentTypeName, version string) (component.ComponentDetails, error) {
 	client := newApiClient()
 	client.QueryParams["version"] = version
 	response := client.action(path.Join("componenttypes", componentTypeName), "GET", nil)
 	response.Process(true) // process response and exit if error
 
-	var componentTypeResponse component.DetailComponentTypeResponse
-	err := json.Unmarshal(response.Body, &componentTypeResponse)
+	var componentDetailsResponse component.ComponentDetailsResponse
+	err := json.Unmarshal(response.Body, &componentDetailsResponse)
 
-	return componentTypeResponse.Response, err
+	return componentDetailsResponse.Response, err
 }

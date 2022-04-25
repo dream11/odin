@@ -1,11 +1,9 @@
 package commands
 
 import (
-	"bufio"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/dream11/odin/api/serviceset"
@@ -147,7 +145,7 @@ func (s *ServiceSet) Run(args []string) int {
 			if !*force {
 				//get list of env services
 				s.Logger.Info(fmt.Sprintf("Env Services of service-set %s and env %s", *serviceSetName, *envName))
-				serviceSetList, err := serviceSetClient.ListEnvServices(*serviceSetName, *envName, true)
+				serviceSetList, err := serviceSetClient.ListEnvServices(*serviceSetName, *envName, "conflictedVersion")
 
 				if err != nil {
 					s.Logger.Error(err.Error())
@@ -161,7 +159,14 @@ func (s *ServiceSet) Run(args []string) int {
 					for _, serviceSet := range serviceSetList {
 						message := fmt.Sprintf("Update version of Service %s : %s -> %s[Y/n]: ", serviceSet.Name, serviceSet.EnvVersion, serviceSet.Version)
 						//s.Logger.Output(message)
-						val := readInput(allowedInputs, message)
+
+						val, err := s.Input.AskWithConstraints(message, allowedInputs)
+
+						if err != nil {
+							s.Logger.Error(err.Error())
+							return 1
+						}
+
 						s.Logger.Output(val)
 						if val == "Y" {
 							forceDeployServices = append(forceDeployServices, serviceSet)
@@ -211,7 +216,7 @@ func (s *ServiceSet) Run(args []string) int {
 		if len(emptyParameters) == 0 {
 			var forceUndeployServices []serviceset.ListEnvService
 			if !*force {
-				serviceSetList, err := serviceSetClient.ListEnvServices(*serviceSetName, *envName, true)
+				serviceSetList, err := serviceSetClient.ListEnvServices(*serviceSetName, *envName, "conflictedVersion")
 
 				if err != nil {
 					s.Logger.Error(err.Error())
@@ -224,9 +229,13 @@ func (s *ServiceSet) Run(args []string) int {
 					allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
 					for _, serviceSet := range serviceSetList {
 						message := fmt.Sprintf("undeploy Service: %s with version: %s[Y/n]: ", serviceSet.Name, serviceSet.EnvVersion)
-						//s.Logger.Output(message)
-						val := readInput(allowedInputs, message)
-						s.Logger.Output(val)
+						val, err := s.Input.AskWithConstraints(message, allowedInputs)
+
+						if err != nil {
+							s.Logger.Error(err.Error())
+							return 1
+						}
+
 						if val == "Y" {
 							forceUndeployServices = append(forceUndeployServices, serviceSet)
 						}
@@ -390,23 +399,4 @@ func (s *ServiceSet) Synopsis() string {
 	}
 
 	return defaultHelper()
-}
-
-func readInput(allowedValues map[string]struct{}, message string) string {
-	scanner := bufio.NewScanner(os.Stdin)
-	fmt.Printf("%s", message)
-
-	for scanner.Scan() {
-		text := scanner.Text()
-
-		_, ok := allowedValues[text]
-
-		if ok {
-			return text
-		}
-		fmt.Print("Valid inputs are: ")
-		fmt.Println(allowedValues)
-		fmt.Printf("%s", message)
-	}
-	return ""
 }

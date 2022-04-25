@@ -25,7 +25,7 @@ Verb convention:
 	- destroy
 
 Resources are the entities on with the verbs will run,
-like: environment, profile, etc...
+like: environment, service-set, etc...
 
 Options are merely the flags that are required with the
 command.
@@ -35,7 +35,7 @@ command.
 TODO:
 - status & logs verbs for env resource
 - status & logs verbs for service resource
-- add verbs for profile resource
+- add verbs for service-set resource
 */
 
 // CommandsCatalog : initiate commands catalog
@@ -106,7 +106,7 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"status service": func() (cli.Command, error) {
 			return &commands.Service{Status: true}, nil
 		},
-		// Verbs for `profile` resource
+		// Verbs for `service-set` resource
 		"create service-set": func() (cli.Command, error) {
 			return &commands.ServiceSet{Create: true}, nil
 		},

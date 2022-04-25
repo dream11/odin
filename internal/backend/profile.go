@@ -74,9 +74,9 @@ func (s *ServiceSet) DeployServiceSet(serviceSetName, env, platform string, forc
 	return serviceResponse.Response, err
 }
 
-func (s ServiceSet) ListEnvServices(serviceSetName, env string, isConflicted bool) ([]serviceset.ListEnvService, error) {
+func (s ServiceSet) ListEnvServices(serviceSetName, env, filterBy string) ([]serviceset.ListEnvService, error) {
 	client := newApiClient()
-	client.QueryParams["isConflicted"] = fmt.Sprintf("%v", isConflicted)
+	client.QueryParams["filterBy"] = filterBy
 
 	response := client.action(path.Join(serviceSetEntity, serviceSetName, "env", env, "service")+"/", "GET", nil)
 	response.Process(true)

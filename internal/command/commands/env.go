@@ -45,7 +45,7 @@ func (e *Env) Run(args []string) int {
 	if e.Create {
 		emptyParameters := emptyParameters(map[string]string{"--env-type": *env})
 		if len(emptyParameters) == 0 {
-			e.Logger.Info("Creating environment for team: " + *team)
+			e.Logger.Info("Initiating environment creation for team: " + *team)
 			envConfig := environment.Env{
 				Team:    *team,
 				Purpose: *purpose,
@@ -245,7 +245,7 @@ func (e *Env) Run(args []string) int {
 	if e.Delete {
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
-			e.Logger.Info("Deleting environment: " + *name)
+			e.Logger.Info("Initiating environment deletion: " + *name)
 			envClient.DeleteEnv(*name)
 			e.Logger.Success(fmt.Sprintf("Deletion started: %s", *name))
 			return 0
