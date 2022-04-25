@@ -29,7 +29,7 @@ func (s *ServiceSet) Run(args []string) int {
 	serviceName := flagSet.String("service", "", "name of service in service-set")
 	envName := flagSet.String("env", "", "name of environment to deploy the service-set in")
 	platform := flagSet.String("platform", "", "platform of environment to deploy the service-set in")
-	force := flagSet.Bool("force", false, "forcefully deploy the new version of the service")
+	force := flagSet.Bool("force", false, "forcefully deploy service-set into the Env")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -347,7 +347,7 @@ func (s *ServiceSet) Help() string {
 			"--name=name of service-set to deploy",
 			"--env=name of environment to deploy service-set in",
 			"--platform=platform of environment to deploy service-set in",
-			"--force=forcefully deploy your service-set service into the env",
+			"--force=forcefully deploy service-set into the Env",
 		})
 	}
 
@@ -355,7 +355,7 @@ func (s *ServiceSet) Help() string {
 		return commandHelper("deploy", "service-set", []string{
 			"--name=name of service-set to deploy",
 			"--env=name of environment to deploy service-set in",
-			"--force=forcefully deploy your service-set service into the env",
+			"--force=forcefully undeploy service-set from the Env",
 		})
 	}
 

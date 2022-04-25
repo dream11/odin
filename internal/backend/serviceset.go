@@ -59,7 +59,7 @@ func (s *ServiceSet) DeleteServiceSet(serviceSetName string) {
 	response.Process(true)
 }
 
-func (s *ServiceSet) DeployServiceSet(serviceSetName, env, platform string, forceDeployServices []serviceset.ListEnvService, force bool) ([]serviceset.ServiceSetServiceDeploy, error) {
+func (s *ServiceSet) DeployServiceSet(serviceSetName, env, platform string, forceDeployServices []serviceset.ListEnvService, force bool) ([]serviceset.ServiceSetDeploy, error) {
 	client := newApiClient()
 	client.QueryParams["env_name"] = env
 	client.QueryParams["platform"] = platform
@@ -68,7 +68,7 @@ func (s *ServiceSet) DeployServiceSet(serviceSetName, env, platform string, forc
 	response := client.action(path.Join(serviceSetEntity, "deploy", serviceSetName, "env", env)+"/", "POST", forceDeployServices)
 	response.Process(true)
 
-	var serviceResponse serviceset.ServiceSetServiceDeployResponse
+	var serviceResponse serviceset.ServiceSetDeployResponse
 	err := json.Unmarshal(response.Body, &serviceResponse)
 
 	return serviceResponse.Response, err
@@ -87,7 +87,7 @@ func (s ServiceSet) ListEnvServices(serviceSetName, env, filterBy string) ([]ser
 	return serviceResponse.Response, err
 }
 
-func (s *ServiceSet) UndeployServiceSet(serviceSetName, env string, forceDeployServices []serviceset.ListEnvService, force bool) ([]serviceset.ServiceSetServiceDeploy, error) {
+func (s *ServiceSet) UndeployServiceSet(serviceSetName, env string, forceDeployServices []serviceset.ListEnvService, force bool) ([]serviceset.ServiceSetDeploy, error) {
 	client := newApiClient()
 	client.QueryParams["env_name"] = env
 	client.QueryParams["force"] = fmt.Sprintf("%v", force)
@@ -95,7 +95,7 @@ func (s *ServiceSet) UndeployServiceSet(serviceSetName, env string, forceDeployS
 	response := client.action(path.Join(serviceSetEntity, "undeploy", serviceSetName, "env", env)+"/", "DELETE", forceDeployServices)
 	response.Process(true)
 
-	var serviceResponse serviceset.ServiceSetServiceDeployResponse
+	var serviceResponse serviceset.ServiceSetDeployResponse
 	err := json.Unmarshal(response.Body, &serviceResponse)
 
 	return serviceResponse.Response, err
