@@ -102,3 +102,10 @@ func (s *Profile) UndeployProfile(profileName, env string, forceDeployServices [
 
 	return serviceResponse.Response, err
 }
+
+func (p *Profile) UpdateProfile(profileName string, profile interface{}) {
+	client := newApiClient()
+
+	response := client.action(path.Join(profileEntity, profileName)+"/", "PUT", profile)
+	response.Process(true) // process response and exit if error
+}
