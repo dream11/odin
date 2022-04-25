@@ -116,6 +116,9 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"describe profile": func() (cli.Command, error) {
 			return &commands.Profile{Describe: true}, nil
 		},
+		"delete profile": func() (cli.Command, error) {
+			return &commands.Profile{Delete: true}, nil
+		},
 
 		/*
 			Sample commands -

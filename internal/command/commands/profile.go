@@ -126,6 +126,19 @@ func (s *Profile) Run(args []string) int {
 		return 1
 	}
 
+	if s.Delete {
+		emptyParameters := emptyParameters(map[string]string{"--name": *profileName})
+		if len(emptyParameters) == 0 {
+			s.Logger.Info("Deleting profile: " + *profileName)
+			profileClient.DeleteProfile(*profileName)
+
+			return 0
+		}
+
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		return 1
+	}
+
 	s.Logger.Error("Not a valid command")
 	return 127
 }
@@ -151,6 +164,12 @@ func (s *Profile) Help() string {
 		})
 	}
 
+	if s.Delete {
+		return commandHelper("delete", "profile", []string{
+			"--name=name of profile to delete",
+		})
+	}
+
 	return defaultHelper()
 }
 
@@ -166,6 +185,10 @@ func (s *Profile) Synopsis() string {
 
 	if s.Describe {
 		return "describe a profile"
+	}
+
+	if s.Delete {
+		return "delete a profile"
 	}
 
 	return defaultHelper()

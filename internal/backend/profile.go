@@ -52,3 +52,10 @@ func (s *Profile) DescribeProfile(profileName string) (profile.Describe, error) 
 
 	return serviceResponse.Response, err
 }
+
+func (s *Profile) DeleteProfile(profile string) {
+	client := newApiClient()
+
+	response := client.action(path.Join(profileEntity, profile)+"/", "DELETE", nil)
+	response.Process(true)
+}
