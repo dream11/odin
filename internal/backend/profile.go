@@ -2,11 +2,12 @@ package backend
 
 import (
 	"encoding/json"
+	"path"
 
 	"github.com/dream11/odin/api/profile"
 )
 
-// Service entity
+// Profile entity
 type Profile struct{}
 
 // root entity
@@ -35,6 +36,18 @@ func (s *Profile) ListProfiles(profileName, serviceName string) ([]profile.List,
 	response.Process(true)
 
 	var serviceResponse profile.ListResponse
+	err := json.Unmarshal(response.Body, &serviceResponse)
+
+	return serviceResponse.Response, err
+}
+
+func (s *Profile) DescribeProfile(profileName string) (profile.Describe, error) {
+	client := newApiClient()
+
+	response := client.action(path.Join(profileEntity, profileName), "GET", nil)
+	response.Process(true)
+
+	var serviceResponse profile.DescribeResponse
 	err := json.Unmarshal(response.Body, &serviceResponse)
 
 	return serviceResponse.Response, err

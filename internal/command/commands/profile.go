@@ -97,6 +97,35 @@ func (s *Profile) Run(args []string) int {
 		return 0
 	}
 
+	if s.Describe {
+		emptyParameters := emptyParameters(map[string]string{"--name": *profileName})
+		if len(emptyParameters) == 0 {
+			s.Logger.Info("Describing profile: " + *profileName)
+			profileResp, err := profileClient.DescribeProfile(*profileName)
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return 1
+			}
+
+			var details []byte
+			s.Logger.Info(profileResp.Name + " details!")
+			details, err = yaml.Marshal(profileResp)
+
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return 1
+			}
+
+			s.Logger.Output(fmt.Sprintf("\n%s", details))
+			s.Logger.Output("Command to get service details")
+			s.Logger.ItalicEmphasize("odin describe service --name <serviceName> --version <serviceVersion>")
+			return 0
+		}
+
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		return 1
+	}
+
 	s.Logger.Error("Not a valid command")
 	return 127
 }
@@ -116,6 +145,12 @@ func (s *Profile) Help() string {
 		})
 	}
 
+	if s.Describe {
+		return commandHelper("describe", "service", []string{
+			"--name=name of the profile to describe",
+		})
+	}
+
 	return defaultHelper()
 }
 
@@ -127,6 +162,10 @@ func (s *Profile) Synopsis() string {
 
 	if s.List {
 		return "list all profiles"
+	}
+
+	if s.Describe {
+		return "describe a profile"
 	}
 
 	return defaultHelper()

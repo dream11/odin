@@ -113,6 +113,9 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"list profile": func() (cli.Command, error) {
 			return &commands.Profile{List: true}, nil
 		},
+		"describe profile": func() (cli.Command, error) {
+			return &commands.Profile{Describe: true}, nil
+		},
 
 		/*
 			Sample commands -
