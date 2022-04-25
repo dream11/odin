@@ -28,14 +28,27 @@ type Type struct {
 	DeploymentPlatformMapping interface{} `yaml:"behaviour,omitempty" json:"behaviour,omitempty"`
 }
 
+// Exposed Config interface
+type ExposedConfig struct {
+	Config    string `yaml:"config,omitempty" json:"config,omitempty"`
+	Mandatory bool   `yaml:"mandatory,omitempty" json:"mandatory,omitempty"`
+	DataType  string `yaml:"data_type,omitempty" json:"data_type,omitempty"`
+}
+
 // ListTypeResponse interface
 type ListTypeResponse struct {
 	Response []Type `yaml:"resp,omitempty" json:"resp,omitempty"`
 }
 
-// ListTypeResponse interface
-type DetailComponentTypeResponse struct {
-	Response Type `yaml:"resp,omitempty" json:"resp,omitempty"`
+// DetailComponentTypeResponse interface
+type ComponentDetailsResponse struct {
+	Response ComponentDetails `yaml:"resp,omitempty" json:"resp,omitempty"`
+}
+
+// ComponentDetails interface
+type ComponentDetails struct {
+	Details        Type            `yaml:"details,omitempty" json:"details,omitempty"`
+	ExposedConfigs []ExposedConfig `yaml:"exposed_config,omitempty" json:"exposed_config,omitempty"`
 }
 
 // ListTypeResponse interface
