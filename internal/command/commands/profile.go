@@ -1,11 +1,9 @@
 package commands
 
 import (
-	"bufio"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/dream11/odin/api/profile"
@@ -152,7 +150,7 @@ func (s *Profile) Run(args []string) int {
 			if !*force {
 				//get list of env services
 				s.Logger.Info(fmt.Sprintf("Env Services of profile %s and env %s", *profileName, *envName))
-				profileList, err := profileClient.ListEnvServices(*profileName, *envName, true)
+				profileList, err := profileClient.ListEnvServices(*profileName, *envName, "conflictedVersion")
 
 				if err != nil {
 					s.Logger.Error(err.Error())
@@ -165,7 +163,14 @@ func (s *Profile) Run(args []string) int {
 					allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
 					for _, profile := range profileList {
 						message := fmt.Sprintf("Update version of Service %s : %s -> %s[Y/n]: ", profile.Name, profile.EnvVersion, profile.Version)
-						val := readInput(allowedInputs, message)
+
+						val, err := s.Input.AskWithConstraints(message, allowedInputs)
+
+						if err != nil {
+							s.Logger.Error(err.Error())
+							return 1
+						}
+
 						s.Logger.Output(val)
 						if val == "Y" {
 							forceDeployServices = append(forceDeployServices, profile)
@@ -352,23 +357,4 @@ func (s *Profile) Synopsis() string {
 	}
 
 	return defaultHelper()
-}
-
-func readInput(allowedValues map[string]struct{}, message string) string {
-	scanner := bufio.NewScanner(os.Stdin)
-	fmt.Printf("%s", message)
-
-	for scanner.Scan() {
-		text := scanner.Text()
-
-		_, ok := allowedValues[text]
-
-		if ok {
-			return text
-		}
-		fmt.Print("Valid inputs are: ")
-		fmt.Println(allowedValues)
-		fmt.Printf("%s", message)
-	}
-	return ""
 }

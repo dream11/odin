@@ -76,9 +76,9 @@ func (s *Profile) DeployProfile(profileName, env, platform string, forceDeploySe
 	return serviceResponse.Response, err
 }
 
-func (s Profile) ListEnvServices(profileName, env string, isConflicted bool) ([]profile.ListEnvService, error) {
+func (s Profile) ListEnvServices(profileName, env, filterBy string) ([]profile.ListEnvService, error) {
 	client := newApiClient()
-	client.QueryParams["isConflicted"] = fmt.Sprintf("%v", isConflicted)
+	client.QueryParams["filterBy"] = filterBy
 
 	response := client.action(path.Join(profileEntity, profileName, "env", env, "service")+"/", "GET", nil)
 	response.Process(true)
