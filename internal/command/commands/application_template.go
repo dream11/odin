@@ -74,6 +74,10 @@ func (a *ApplicationTemplate) Run(args []string) int {
 			if err != nil {
 				a.Logger.Error("Unable to create file `pre-deploy.sh`." + err.Error())
 			}
+			err = file.Write(path+"/service-readiness.sh", "", 0755)
+			if err != nil {
+				a.Logger.Error("Unable to create file `service-readiness.sh`." + err.Error())
+			}
 			err = file.Write(path+"/application-spec.yml", string(applicationSpecContent), 0755)
 			if err != nil {
 				a.Logger.Error("Unable to write file `application-spec.yml`." + err.Error())
