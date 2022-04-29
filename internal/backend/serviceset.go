@@ -65,7 +65,9 @@ func (s *ServiceSet) DeployServiceSet(serviceSetName, env, platform string, forc
 	client.QueryParams["platform"] = platform
 	client.QueryParams["force"] = fmt.Sprintf("%v", force)
 
-	response := client.action(path.Join(serviceSetEntity, "deploy", serviceSetName, "env", env)+"/", "POST", forceDeployServices)
+	data := struct{ forceDeployServices interface{} }{forceDeployServices: forceDeployServices}
+
+	response := client.action(path.Join(serviceSetEntity, "deploy", serviceSetName, "env", env)+"/", "POST", data)
 	response.Process(true)
 
 	var serviceResponse serviceset.ServiceSetDeployResponse
