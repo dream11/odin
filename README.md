@@ -1,11 +1,10 @@
 # <img src="./docs/odin-logo.jpg" alt="Odin" title="Odin: Internal framework CLI for CRUD operations on environments." width="30%" height="30%">
 
-Internal framework CLI for CRUD operations on environments.
+Interface for service definitions & deployments into self-managed environments.
 
 ## Installation
 
 ```shell
-export HOMEBREW_GITHUB_API_TOKEN=<your github access token>
 brew install dream11/tools/odin
 ```
 
