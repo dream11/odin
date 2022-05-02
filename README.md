@@ -8,6 +8,8 @@ Interface for service definitions & deployments into self-managed environments.
 brew install dream11/tools/odin
 ```
 
+> Supporting Darwin(AMD64 & ARM64) and Linux AMD64
+
 ## Development Setup
 
 1. [Download](https://golang.org/dl/go1.17.1.darwin-amd64.pkg) and run the Go installer.
