@@ -3,6 +3,7 @@ package backend
 import (
 	"github.com/dream11/odin/internal/config"
 	"github.com/dream11/odin/pkg/request"
+	"github.com/dream11/odin/pkg/sse"
 )
 
 // initiation of an HTTP client for backend interactions
@@ -48,4 +49,43 @@ func newApiClient() clientProperties {
 	apiClient.Headers["Authorization"] = "Bearer " + appConfig.AccessToken
 
 	return apiClient
+}
+
+// initiation of an SSE client for backend stream interactions
+type streamingClientProperties clientProperties
+
+// perform streaming on initiated client
+func (sc *streamingClientProperties) stream(entity, requestType string, body interface{}) sse.StreamResponse {
+	req := sse.StreamRequest{
+		Method: requestType,
+		URL:    sc.address + entity,
+		Header: sc.Headers,
+		Query:  sc.QueryParams,
+		Body:   body,
+	}
+
+	response := req.Stream()
+	return response
+}
+
+func newStreamingClient() streamingClientProperties {
+	var appConfig = config.Get()
+
+	return streamingClientProperties{
+		address: appConfig.BackendAddr + "/",
+		Headers: map[string]string{
+			"Content-Type": "application/json",
+		},
+		QueryParams: map[string]string{},
+	}
+}
+
+func newStreamingApiClient() streamingClientProperties {
+	var appConfig = config.Get()
+
+	streamClient := newStreamingClient()
+	streamClient.address += "api/integration/cli/stream/v2/"
+	streamClient.Headers["Authorization"] = "Bearer " + appConfig.AccessToken
+
+	return streamClient
 }
