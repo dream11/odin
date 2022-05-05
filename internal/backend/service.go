@@ -22,7 +22,7 @@ func (s *Service) CreateService(service interface{}) {
 	response.Process(true) // process response and exit if error
 }
 
-// Rebuild Service : rebuild a service
+// RebuildService : rebuild a service
 func (s *Service) RebuildService(service, version string) {
 	client := newApiClient()
 
@@ -64,14 +64,22 @@ func (s *Service) ListServices(team, version, serviceName string, maturity bool)
 	return serviceResponse.Response, err
 }
 
-// UndeployService: To remove a service from a given env
-func (s *Service) UndeployService(serviceName, env_name string) {
+// UndeployService : To remove a service from a given env
+func (s *Service) UndeployService(serviceName, envName string) {
 	client := newApiClient()
-	client.QueryParams["env_name"] = env_name
+	client.QueryParams["env_name"] = envName
 
 	response := client.action(path.Join(serviceEntity, "undeploy", serviceName)+"/", "DELETE", nil)
 	response.Process(true)
+}
 
+// UnDeployServiceStream : un-deploy a service in an Env and stream creation events
+func (s *Service) UnDeployServiceStream(serviceName, envName string) {
+	client := newStreamingApiClient()
+	client.QueryParams["env_name"] = envName
+
+	response := client.stream(path.Join(serviceEntity, "undeploy", serviceName)+"/", "DELETE", nil)
+	response.Process(true)
 }
 
 // DeleteService : delete a service version
@@ -99,6 +107,18 @@ func (s *Service) DeployService(service, version, env, platform string, force, r
 	client.QueryParams["platform"] = platform
 
 	response := client.action(path.Join(serviceEntity, "deploy", service, "versions", version)+"/", "POST", nil)
+	response.Process(true)
+}
+
+// DeployServiceStream : deploy a service in an Env and stream creation events
+func (s *Service) DeployServiceStream(service, version, env, platform string, force, rebuild bool) {
+	client := newStreamingApiClient()
+	client.QueryParams["env_name"] = env
+	client.QueryParams["force"] = fmt.Sprintf("%v", force)
+	client.QueryParams["rebuild"] = fmt.Sprintf("%v", rebuild)
+	client.QueryParams["platform"] = platform
+
+	response := client.stream(path.Join(serviceEntity, "deploy", service, "versions", version)+"/", "POST", nil)
 	response.Process(true)
 }
 

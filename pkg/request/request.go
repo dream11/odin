@@ -86,29 +86,29 @@ func (r *Response) Process(exitOnError bool) {
 	// Parse error and display error message
 	if r.Error != nil {
 		logger.Error(r.Error.Error())
-		handleExit(1, exitOnError)
+		HandleExit(1, exitOnError)
 	} else {
-		if matchStatusCode(r.StatusCode, 200) {
-			logger.Debug(string(r.Body))
-		} else if matchStatusCode(r.StatusCode, 300) {
+		if MatchStatusCode(r.StatusCode, 200) {
+			logger.Debug(r.Status)
+		} else if MatchStatusCode(r.StatusCode, 300) {
 			logger.Debug(r.Status)
 			logger.Debug(string(r.Body))
-		} else if matchStatusCode(r.StatusCode, 400) || matchStatusCode(r.StatusCode, 500) {
+		} else if MatchStatusCode(r.StatusCode, 400) || MatchStatusCode(r.StatusCode, 500) {
 			logger.Debug(r.Status)
 			logger.Error(string(r.Body))
-			handleExit(1, exitOnError)
+			HandleExit(1, exitOnError)
 		}
 	}
 }
 
-// handle exit calls, allow exit if allowed via boolean
-func handleExit(code int, exit bool) {
+// HandleExit : handle exit calls, allow exit if allowed via boolean
+func HandleExit(code int, exit bool) {
 	if exit {
 		os.Exit(code)
 	}
 }
 
-// match the status code range
-func matchStatusCode(statusCode, matchCode int) bool {
+// MatchStatusCode : match the status code range
+func MatchStatusCode(statusCode, matchCode int) bool {
 	return (statusCode - matchCode) < 100
 }

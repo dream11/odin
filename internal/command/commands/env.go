@@ -35,6 +35,7 @@ func (e *Env) Run(args []string) int {
 	providerAccount := flagSet.String("account", "", "account name to provision the environment in")
 	filePath := flagSet.String("file", "environment.yaml", "file to read environment config")
 	id := flagSet.Int("id", 0, "unique id of a changelog of an env")
+	tail := flagSet.Bool("tail", false, "enable synchronous logging of creation events")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -53,13 +54,17 @@ func (e *Env) Run(args []string) int {
 				Account: *providerAccount,
 			}
 
-			response, err := envClient.CreateEnv(envConfig)
-			if err != nil {
-				e.Logger.Error(err.Error())
-				return 1
-			}
+			if *tail {
+				envClient.CreateEnvStream(envConfig)
+			} else {
+				response, err := envClient.CreateEnv(envConfig)
+				if err != nil {
+					e.Logger.Error(err.Error())
+					return 1
+				}
 
-			e.Logger.Success("Env: " + response.Name + " created!")
+				e.Logger.Success("Env: " + response.Name + " created!")
+			}
 
 			return 0
 		}
@@ -245,9 +250,15 @@ func (e *Env) Run(args []string) int {
 	if e.Delete {
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
-			e.Logger.Info("Initiating environment deletion: " + *name)
-			envClient.DeleteEnv(*name)
-			e.Logger.Success(fmt.Sprintf("Deletion started: %s", *name))
+
+			if *tail {
+				envClient.DeleteEnvStream(*name)
+			} else {
+				e.Logger.Info("Initiating environment deletion: " + *name)
+				envClient.DeleteEnv(*name)
+				e.Logger.Success(fmt.Sprintf("Deletion started: %s", *name))
+			}
+
 			return 0
 		}
 
@@ -340,6 +351,7 @@ func (e *Env) Help() string {
 			"--purpose=reason to create environment",
 			"--env-type=type of environment",
 			"--account=account name to provision the environment in (optional)",
+			"--tail enable synchronous logging of creation events",
 		})
 	}
 
@@ -370,6 +382,7 @@ func (e *Env) Help() string {
 	if e.Delete {
 		return commandHelper("delete", "environment", []string{
 			"--name=name of environment to delete",
+			"--tail enable synchronous logging of deletion events",
 		})
 	}
 
