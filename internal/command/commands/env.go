@@ -250,7 +250,6 @@ func (e *Env) Run(args []string) int {
 	if e.Delete {
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
-
 			if *tail {
 				envClient.DeleteEnvStream(*name)
 			} else {
