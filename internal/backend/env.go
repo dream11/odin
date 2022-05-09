@@ -26,6 +26,13 @@ func (e *Env) CreateEnv(envDetails interface{}) (envResp.Env, error) {
 	return envResponse.Response, err
 }
 
+// CreateEnvStream : create an empty Env and stream creation events
+func (e *Env) CreateEnvStream(envDetails interface{}) {
+	client := newStreamingApiClient()
+	response := client.stream(envEntity+"/", "POST", envDetails)
+	response.Process(true)
+}
+
 // DescribeEnv : describe an Env
 func (e *Env) DescribeEnv(env, service, component string) (envResp.Env, error) {
 	client := newApiClient()
@@ -62,6 +69,13 @@ func (e *Env) DeleteEnv(env string) {
 
 	response := client.action(path.Join(envEntity, env)+"/", "DELETE", nil)
 	response.Process(true) // process response and exit if error
+}
+
+// DeleteEnvStream : delete a created environment and stream deletion events
+func (e *Env) DeleteEnvStream(env string) {
+	client := newStreamingApiClient()
+	response := client.stream(path.Join(envEntity, env)+"/", "DELETE", nil)
+	response.Process(true)
 }
 
 // UpdateEnv : update a created environment
