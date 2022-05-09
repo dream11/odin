@@ -33,7 +33,6 @@ func (s *Service) Run(args []string) int {
 	rebuild := flagSet.Bool("rebuild", false, "rebuild executor for creating images or deploying services")
 	component := flagSet.String("component", "", "name of service component")
 	platform := flagSet.String("platform", "", "platform to deploy the service in")
-	tail := flagSet.Bool("tail", false, "enable synchronous logging of creation events")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -184,13 +183,7 @@ func (s *Service) Run(args []string) int {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion, "--env": *envName})
 		if len(emptyParameters) == 0 {
 			s.Logger.Info("Initiating service deployment: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
-
-			if *tail {
-				serviceClient.DeployServiceStream(*serviceName, *serviceVersion, *envName, *platform, *force, *rebuild)
-			} else {
-				serviceClient.DeployService(*serviceName, *serviceVersion, *envName, *platform, *force, *rebuild)
-				s.Logger.Success(fmt.Sprintf("Deployment of service %s@%s is started on env %s", *serviceName, *serviceVersion, *envName))
-			}
+			serviceClient.DeployServiceStream(*serviceName, *serviceVersion, *envName, *platform, *force, *rebuild)
 
 			return 0
 		}
@@ -203,12 +196,7 @@ func (s *Service) Run(args []string) int {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--env": *envName})
 		if len(emptyParameters) == 0 {
 			s.Logger.Info("Initiating service un-deploy: " + *serviceName + " from environment " + *envName)
-			if *tail {
-				serviceClient.UnDeployServiceStream(*serviceName, *envName)
-			} else {
-				serviceClient.UndeployService(*serviceName, *envName)
-				s.Logger.Success("Job Triggered to undeploy your service " + *serviceName + " from the env " + *envName)
-			}
+			serviceClient.UnDeployServiceStream(*serviceName, *envName)
 
 			return 0
 		}
@@ -310,15 +298,14 @@ func (s *Service) Help() string {
 			"--force=forcefully deploy your service",
 			"--rebuild=rebuild your executor job again for service deployment",
 			"--env=name of environment to deploy service in",
-			"--tail=enable synchronous logging of deploy events",
 			"--platform= platform to deploy the service in",
 		})
 	}
+
 	if s.Undeploy {
 		return commandHelper("deploy", "service", []string{
 			"--name=name of service to undeploy",
 			"--env=name of environment to undeploy service in",
-			"--tail enable synchronous logging of un-deploy events",
 		})
 	}
 
