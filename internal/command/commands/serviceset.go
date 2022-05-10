@@ -144,7 +144,7 @@ func (s *ServiceSet) Run(args []string) int {
 			var forceDeployServices []serviceset.ListEnvService
 			if !*force {
 				//get list of env services
-				s.Logger.Info(fmt.Sprintf("Env Services of service-set %s and env %s", *serviceSetName, *envName))
+				s.Logger.Debug(fmt.Sprintf("Env Services of service-set %s and env %s", *serviceSetName, *envName))
 				serviceSetList, err := serviceSetClient.ListEnvServices(*serviceSetName, *envName, "conflictedVersion")
 
 				if err != nil {
@@ -173,12 +173,10 @@ func (s *ServiceSet) Run(args []string) int {
 						}
 					}
 				}
-
-				fmt.Println(forceDeployServices)
 			}
 
 			/*deploy service-set*/
-			s.Logger.Info("Deploying service-set: " + *serviceSetName + " in " + *envName)
+			s.Logger.Debug("Deploying service-set: " + *serviceSetName + " in " + *envName)
 			serviceSetList, err := serviceSetClient.DeployServiceSet(*serviceSetName, *envName, *platform, forceDeployServices, *force)
 			if err != nil {
 				s.Logger.Error(err.Error())
