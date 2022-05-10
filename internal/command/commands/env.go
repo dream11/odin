@@ -33,7 +33,7 @@ func (e *Env) Run(args []string) int {
 	service := flagSet.String("service", "", "service name to filter out describe environment")
 	component := flagSet.String("component", "", "component name to filter out describe environment")
 	providerAccount := flagSet.String("account", "", "account name to provision the environment in")
-	filePath := flagSet.String("file", "environment.yaml", "file to read environment config")
+	filePath := flagSet.String("file", "environment.json", "file to read environment config")
 	id := flagSet.Int("id", 0, "unique id of a changelog of an env")
 
 	err := flagSet.Parse(args)
@@ -145,13 +145,7 @@ func (e *Env) Run(args []string) int {
 
 			var parsedConfig interface{}
 
-			if strings.Contains(*filePath, ".yaml") || strings.Contains(*filePath, ".yml") {
-				err = yaml.Unmarshal(configData, &parsedConfig)
-				if err != nil {
-					e.Logger.Error("Unable to parse YAML. " + err.Error())
-					return 1
-				}
-			} else if strings.Contains(*filePath, ".json") {
+			if strings.Contains(*filePath, ".json") {
 				err = json.Unmarshal(configData, &parsedConfig)
 				if err != nil {
 					e.Logger.Error("Unable to parse JSON. " + err.Error())
