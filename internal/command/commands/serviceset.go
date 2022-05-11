@@ -167,7 +167,6 @@ func (s *ServiceSet) Run(args []string) int {
 							return 1
 						}
 
-						s.Logger.Output(val)
 						if val == "Y" {
 							forceDeployServices = append(forceDeployServices, serviceSet)
 						}
@@ -183,15 +182,20 @@ func (s *ServiceSet) Run(args []string) int {
 				return 1
 			}
 
-			tableHeaders := []string{"Name", "Version", "ExecutorUrl", "Error"}
+			tableHeaders := []string{"Name", "Version", "Status"}
 			var tableData [][]interface{}
 
 			for _, serviceSet := range serviceSetList {
+				status := "STARTED"
+
+				if len(serviceSet.Error) > 0 {
+					status = "FAILURE: " + serviceSet.Error
+				}
+
 				tableData = append(tableData, []interface{}{
 					serviceSet.Name,
 					serviceSet.Version,
-					serviceSet.ExecutorUrl,
-					serviceSet.Error,
+					status,
 				})
 			}
 
@@ -253,11 +257,16 @@ func (s *ServiceSet) Run(args []string) int {
 			var tableData [][]interface{}
 
 			for _, serviceSet := range serviceSetList {
+				status := "STARTED"
+
+				if len(serviceSet.Error) > 0 {
+					status = "FAILURE: " + serviceSet.Error
+				}
+
 				tableData = append(tableData, []interface{}{
 					serviceSet.Name,
 					serviceSet.Version,
-					serviceSet.ExecutorUrl,
-					serviceSet.Error,
+					status,
 				})
 			}
 
