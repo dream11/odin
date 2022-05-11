@@ -65,7 +65,9 @@ func (s *ServiceSet) DeployServiceSet(serviceSetName, env, platform string, forc
 	client.QueryParams["platform"] = platform
 	client.QueryParams["force"] = fmt.Sprintf("%v", force)
 
-	data := struct{ forceDeployServices interface{} }{forceDeployServices: forceDeployServices}
+	data := map[string]interface{}{
+		"forceDeployServices": forceDeployServices,
+	}
 
 	response := client.action(path.Join(serviceSetEntity, "deploy", serviceSetName, "env", env)+"/", "POST", data)
 	response.Process(true)
@@ -89,12 +91,16 @@ func (s ServiceSet) ListEnvServices(serviceSetName, env, filterBy string) ([]ser
 	return serviceResponse.Response, err
 }
 
-func (s *ServiceSet) UndeployServiceSet(serviceSetName, env string, forceDeployServices []serviceset.ListEnvService, force bool) ([]serviceset.ServiceSetDeploy, error) {
+func (s *ServiceSet) UndeployServiceSet(serviceSetName, env string, forceUndeployServices []serviceset.ListEnvService, force bool) ([]serviceset.ServiceSetDeploy, error) {
 	client := newApiClient()
 	client.QueryParams["env_name"] = env
 	client.QueryParams["force"] = fmt.Sprintf("%v", force)
 
-	response := client.action(path.Join(serviceSetEntity, "undeploy", serviceSetName, "env", env)+"/", "DELETE", forceDeployServices)
+	data := map[string]interface{}{
+		"forceUndeployServices": forceUndeployServices,
+	}
+
+	response := client.action(path.Join(serviceSetEntity, "undeploy", serviceSetName, "env", env)+"/", "DELETE", data)
 	response.Process(true)
 
 	var serviceResponse serviceset.ServiceSetDeployResponse
