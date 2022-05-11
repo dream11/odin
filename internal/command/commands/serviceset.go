@@ -239,8 +239,6 @@ func (s *ServiceSet) Run(args []string) int {
 						}
 					}
 				}
-
-				fmt.Println(forceUndeployServices)
 			}
 
 			/*deploy service-set*/
