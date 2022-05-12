@@ -18,7 +18,7 @@ func (s *ServiceSet) CreateServiceSet(serviceSetDefinition interface{}) (string,
 	client := newApiClient()
 
 	response := client.action(serviceSetEntity+"/", "POST", serviceSetDefinition)
-	response.Process(true) // process response and exit if error
+	response.ProcessHandleError(true)
 
 	var serviceResponse serviceset.CreateResponse
 	err := json.Unmarshal(response.Body, &serviceResponse)
