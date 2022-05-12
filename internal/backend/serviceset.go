@@ -14,16 +14,11 @@ type ServiceSet struct{}
 // root entity
 var serviceSetEntity = "serviceset"
 
-func (s *ServiceSet) CreateServiceSet(serviceSetDefinition interface{}) (string, error) {
+func (s *ServiceSet) CreateServiceSet(serviceSetDefinition interface{}) {
 	client := newApiClient()
 
 	response := client.action(serviceSetEntity+"/", "POST", serviceSetDefinition)
 	response.ProcessHandleError(true)
-
-	var serviceResponse serviceset.CreateResponse
-	err := json.Unmarshal(response.Body, &serviceResponse)
-
-	return serviceResponse.Response.Message, err
 }
 
 func (s *ServiceSet) ListServiceSet(serviceSetName, serviceName string) ([]serviceset.List, error) {
