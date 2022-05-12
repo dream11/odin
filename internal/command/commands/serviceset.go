@@ -65,7 +65,7 @@ func (s *ServiceSet) Run(args []string) int {
 		serviceDataMap := parsedConfig.(map[string]interface{})
 
 		serviceSetClient.CreateServiceSet(parsedConfig)
-		s.Logger.Info(fmt.Sprintf("ServiceSet: %s created Successfully.", serviceDataMap["name"].(string)))
+		s.Logger.Success(fmt.Sprintf("ServiceSet: %s created Successfully.", serviceDataMap["name"].(string)))
 		return 0
 	}
 
