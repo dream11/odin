@@ -90,6 +90,7 @@ func (r *Response) Process(exitOnError bool) {
 	} else {
 		if MatchStatusCode(r.StatusCode, 200) {
 			logger.Debug(r.Status)
+			logger.Debug(string(r.Body))
 		} else if MatchStatusCode(r.StatusCode, 300) {
 			logger.Debug(r.Status)
 			logger.Debug(string(r.Body))
