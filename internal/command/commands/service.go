@@ -171,6 +171,7 @@ func (s *Service) Run(args []string) int {
 			if *isMature {
 				s.Logger.Info("Marking " + *serviceName + "@" + *serviceVersion + " as mature")
 				serviceClient.MarkMature(*serviceName, *serviceVersion)
+				s.Logger.Success("Successfully marked " + *serviceName + "@" + *serviceVersion + " as mature")
 			}
 			return 0
 		}
@@ -209,6 +210,7 @@ func (s *Service) Run(args []string) int {
 		if len(emptyParameters) == 0 {
 			s.Logger.Info("Initiating service deletion: " + *serviceName + "@" + *serviceVersion)
 			serviceClient.DeleteService(*serviceName, *serviceVersion)
+			s.Logger.Success("Successfully deleted: " + *serviceName + "@" + *serviceVersion)
 
 			return 0
 		}
