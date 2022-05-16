@@ -111,12 +111,13 @@ func (s *Service) DeployService(service, version, env, platform string, force, r
 }
 
 // DeployServiceStream : deploy a service in an Env and stream creation events
-func (s *Service) DeployServiceStream(service, version, env, platform string, force, rebuild bool) {
+func (s *Service) DeployServiceStream(service, version, env, platform, configStoreNamespace string, force, rebuild bool) {
 	client := newStreamingApiClient()
 	client.QueryParams["env_name"] = env
 	client.QueryParams["force"] = fmt.Sprintf("%v", force)
 	client.QueryParams["rebuild"] = fmt.Sprintf("%v", rebuild)
 	client.QueryParams["platform"] = platform
+	client.QueryParams["config_store_namespace"] = configStoreNamespace
 
 	response := client.stream(path.Join(serviceEntity, "deploy", service, "versions", version)+"/", "POST", nil)
 	response.Process(true)
