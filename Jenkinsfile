@@ -2,7 +2,7 @@
 @Library('d11-jenkins-lib@master') _
 pipeline {
     agent {
-        label "devx-auto"
+        label "odin-ci-test"
     }
 
     options {
