@@ -25,7 +25,7 @@ Verb convention:
 	- destroy
 
 Resources are the entities on with the verbs will run,
-like: environment, profile, etc...
+like: environment, service-set, etc...
 
 Options are merely the flags that are required with the
 command.
@@ -35,7 +35,7 @@ command.
 TODO:
 - status & logs verbs for env resource
 - status & logs verbs for service resource
-- add verbs for profile resource
+- add verbs for service-set resource
 */
 
 // CommandsCatalog : initiate commands catalog
@@ -106,6 +106,29 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"status service": func() (cli.Command, error) {
 			return &commands.Service{Status: true}, nil
 		},
+		// Verbs for `service-set` resource
+		"create service-set": func() (cli.Command, error) {
+			return &commands.ServiceSet{Create: true}, nil
+		},
+		"list service-set": func() (cli.Command, error) {
+			return &commands.ServiceSet{List: true}, nil
+		},
+		"describe service-set": func() (cli.Command, error) {
+			return &commands.ServiceSet{Describe: true}, nil
+		},
+		"delete service-set": func() (cli.Command, error) {
+			return &commands.ServiceSet{Delete: true}, nil
+		},
+		"deploy service-set": func() (cli.Command, error) {
+			return &commands.ServiceSet{Deploy: true}, nil
+		},
+		"undeploy service-set": func() (cli.Command, error) {
+			return &commands.ServiceSet{Undeploy: true}, nil
+		},
+		"update service-set": func() (cli.Command, error) {
+			return &commands.ServiceSet{Update: true}, nil
+		},
+
 		/*
 			Sample commands -
 
