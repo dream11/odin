@@ -2,9 +2,9 @@ package service
 
 import (
 	"github.com/dream11/odin/api/component"
+	"github.com/dream11/odin/api/label"
 )
 
-// Service interface
 type Service struct {
 	Name        string                `yaml:"name,omitempty" json:"name,omitempty"`
 	Version     string                `yaml:"version,omitempty" json:"version,omitempty"`
@@ -17,7 +17,8 @@ type Service struct {
 	CreatedAt   string                `yaml:"createdAt,omitempty" json:"createdAt,omitempty"`
 	UpdatedAt   string                `yaml:"updatedAt,omitempty" json:"updatedAt,omitempty"`
 	Active      *bool                 `yaml:"isActive,omitempty" json:"isActive,omitempty"`
-	Tags        interface{}           `yaml:"tags,omitempty" json:"tags,omitempty"`
+	Tags        interface{}           `yaml:"tags,omitempty" json:"tags,omitempty"`     
+	Labels      []label.Label              `yaml:"labels,omitempty" json:"labels,omitempty"`
 	Components  []component.Component `yaml:"components,omitempty" json:"components,omitempty"`
 }
 
