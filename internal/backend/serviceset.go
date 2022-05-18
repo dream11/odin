@@ -54,11 +54,12 @@ func (s *ServiceSet) DeleteServiceSet(serviceSetName string) {
 	response.Process(true)
 }
 
-func (s *ServiceSet) DeployServiceSet(serviceSetName, env, platform string, forceDeployServices []serviceset.ListEnvService, force bool) ([]serviceset.ServiceSetDeploy, error) {
+func (s *ServiceSet) DeployServiceSet(serviceSetName, env, platform, configStoreNamespace string, forceDeployServices []serviceset.ListEnvService, force bool) ([]serviceset.ServiceSetDeploy, error) {
 	client := newApiClient()
 	client.QueryParams["env_name"] = env
 	client.QueryParams["platform"] = platform
 	client.QueryParams["force"] = fmt.Sprintf("%v", force)
+	client.QueryParams["config_store_namespace"] = configStoreNamespace
 
 	data := map[string]interface{}{
 		"forceDeployServices": forceDeployServices,
@@ -75,7 +76,7 @@ func (s *ServiceSet) DeployServiceSet(serviceSetName, env, platform string, forc
 
 func (s ServiceSet) ListEnvServices(serviceSetName, env, filterBy string) ([]serviceset.ListEnvService, error) {
 	client := newApiClient()
-	client.QueryParams["filterBy"] = filterBy
+	client.QueryParams["filter_by"] = filterBy
 
 	response := client.action(path.Join(serviceSetEntity, serviceSetName, "env", env, "service")+"/", "GET", nil)
 	response.Process(true)
