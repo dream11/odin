@@ -76,7 +76,7 @@ func (s *ServiceSet) DeployServiceSet(serviceSetName, env, platform, configStore
 
 func (s ServiceSet) ListEnvServices(serviceSetName, env, filterBy string) ([]serviceset.ListEnvService, error) {
 	client := newApiClient()
-	client.QueryParams["filterBy"] = filterBy
+	client.QueryParams["filter_by"] = filterBy
 
 	response := client.action(path.Join(serviceSetEntity, serviceSetName, "env", env, "service")+"/", "GET", nil)
 	response.Process(true)
