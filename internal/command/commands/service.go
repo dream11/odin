@@ -164,7 +164,7 @@ func (s *Service) Run(args []string) int {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion, "--label": *label})
 		if len(emptyParameters) == 0 {
 			serviceClient.LabelService(*serviceName, *serviceVersion, *label)
-			s.Logger.Success("Successfully labelled " + *serviceName + "@" + *serviceVersion + " with "+ *label)
+			s.Logger.Success("Successfully labelled " + *serviceName + "@" + *serviceVersion + " with " + *label)
 			return 0
 		}
 		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
@@ -175,13 +175,12 @@ func (s *Service) Run(args []string) int {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion, "--label": *label})
 		if len(emptyParameters) == 0 {
 			serviceClient.UnlabelService(*serviceName, *serviceVersion, *label)
-			s.Logger.Success("Successfully unlabelled " + *serviceName + "@" + *serviceVersion + " from "+ *label)
+			s.Logger.Success("Successfully unlabelled " + *serviceName + "@" + *serviceVersion + " from " + *label)
 			return 0
 		}
 		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
 		return 1
 	}
-
 
 	if s.Deploy {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion, "--env": *envName})

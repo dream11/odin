@@ -6,10 +6,10 @@ import (
 	"github.com/dream11/odin/api/label"
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/table"
-
 )
 
 var labelClient backend.Label
+
 type Label command
 
 // Run : implements the actual functionality of the command
@@ -19,7 +19,7 @@ func (l *Label) Run(args []string) int {
 	// create flags
 	name := flagSet.String("name", "", "name of label")
 	versionCardinalityGreaterThanOne := flagSet.Bool("cardinality", false, "whether multiple versions of a service can have this label")
-	
+
 	err := flagSet.Parse(args)
 	if err != nil {
 		l.Logger.Error("Unable to parse flags! " + err.Error())
@@ -30,7 +30,7 @@ func (l *Label) Run(args []string) int {
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 			labelData := label.Label{
-				Name:    *name,
+				Name:                             *name,
 				VersionCardinalityGreaterThanOne: *versionCardinalityGreaterThanOne,
 			}
 
@@ -43,34 +43,31 @@ func (l *Label) Run(args []string) int {
 		return 1
 	}
 
-	
-	
-
 	if l.List {
 		l.Logger.Info("Listing all label(s)")
 		labelList, err := labelClient.ListLables()
-		
+
 		if err != nil {
 			l.Logger.Error(err.Error())
 			return 1
 		}
 
 		tableHeaders := []string{"Name", "cardinality"}
-			var tableData [][]interface{}
+		var tableData [][]interface{}
 
-			for _, label := range labelList {
-				tableData = append(tableData, []interface{}{
-					label.Name,
-					label.VersionCardinalityGreaterThanOne,
-				})
-			}
-			err = table.Write(tableHeaders, tableData)
-		
+		for _, label := range labelList {
+			tableData = append(tableData, []interface{}{
+				label.Name,
+				label.VersionCardinalityGreaterThanOne,
+			})
+		}
+		err = table.Write(tableHeaders, tableData)
+
 		if err != nil {
 			l.Logger.Error(err.Error())
 			return 1
 		}
-		
+
 		return 0
 	}
 
@@ -98,8 +95,7 @@ func (l *Label) Help() string {
 	}
 
 	if l.List {
-		return commandHelper("list", "label", []string{
-		})
+		return commandHelper("list", "label", []string{})
 	}
 
 	if l.Delete {
@@ -107,7 +103,6 @@ func (l *Label) Help() string {
 			"--name=name of label to delete",
 		})
 	}
-
 
 	return defaultHelper()
 }
@@ -120,7 +115,7 @@ func (l *Label) Synopsis() string {
 
 	if l.List {
 		return "list all labels"
-	}	
+	}
 
 	if l.Delete {
 		return "delete a label"

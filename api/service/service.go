@@ -17,8 +17,8 @@ type Service struct {
 	CreatedAt   string                `yaml:"createdAt,omitempty" json:"createdAt,omitempty"`
 	UpdatedAt   string                `yaml:"updatedAt,omitempty" json:"updatedAt,omitempty"`
 	Active      *bool                 `yaml:"isActive,omitempty" json:"isActive,omitempty"`
-	Tags        interface{}           `yaml:"tags,omitempty" json:"tags,omitempty"`     
-	Labels      []label.Label              `yaml:"labels,omitempty" json:"labels,omitempty"`
+	Tags        interface{}           `yaml:"tags,omitempty" json:"tags,omitempty"`
+	Labels      []label.Label         `yaml:"labels,omitempty" json:"labels,omitempty"`
 	Components  []component.Component `yaml:"components,omitempty" json:"components,omitempty"`
 }
 

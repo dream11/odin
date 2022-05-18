@@ -96,9 +96,9 @@ func (s *Service) LabelService(service, version, label string) {
 	client := newApiClient()
 
 	data := map[string]interface{}{
-		"resource-name": service,
+		"resource-name":    service,
 		"resource-version": version,
-		"label": label,
+		"label":            label,
 	}
 	response := client.action(path.Join(serviceEntity, service, "version", version, "label")+"/", "PUT", data)
 	response.Process(true)
@@ -109,9 +109,9 @@ func (s *Service) UnlabelService(service, version, label string) {
 	client := newApiClient()
 
 	data := map[string]interface{}{
-		"resource-name": service,
+		"resource-name":    service,
 		"resource-version": version,
-		"label": label,
+		"label":            label,
 	}
 	response := client.action(path.Join(serviceEntity, service, "version", version, "unlabel")+"/", "PUT", data)
 	response.Process(true)
