@@ -32,7 +32,6 @@ func (s *Service) Run(args []string) int {
 	isMature := flagSet.Bool("mature", false, "mark service version as matured")
 	rebuild := flagSet.Bool("rebuild", false, "rebuild executor for creating images or deploying services")
 	component := flagSet.String("component", "", "name of service component")
-	platform := flagSet.String("platform", "", "platform to deploy the service in")
 	configStoreNamespace := flagSet.String("d11-config-store-namespace", "", "config store branch/tag to use")
 	label := flagSet.String("label", "", "name of the label")
 
@@ -186,7 +185,8 @@ func (s *Service) Run(args []string) int {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion, "--env": *envName})
 		if len(emptyParameters) == 0 {
 			s.Logger.Info("Initiating service deployment: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
-			serviceClient.DeployServiceStream(*serviceName, *serviceVersion, *envName, *platform, *configStoreNamespace, *force, *rebuild)
+			serviceClient.DeployServiceStream(*serviceName, *serviceVersion, *envName, *configStoreNamespace, *force, *rebuild)
+
 			return 0
 		}
 
@@ -301,7 +301,6 @@ func (s *Service) Help() string {
 			"--force=forcefully deploy your service",
 			"--rebuild=rebuild your executor job again for service deployment",
 			"--env=name of environment to deploy service in",
-			"--platform=platform to deploy the service in",
 			"--d11-config-store-namespace=config store branch/tag to use",
 		})
 	}
