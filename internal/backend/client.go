@@ -37,7 +37,7 @@ func (c *clientProperties) action(entity, requestType string, body interface{}) 
 	return req.Make()
 }
 
-func (c clientProperties) actionWithRetry(entity, requestType string, body interface{}) request.Response {
+func (c *clientProperties) actionWithRetry(entity, requestType string, body interface{}) request.Response {
 	if RetryCount <= 0 {
 		return c.action(entity, requestType, body)
 	}
@@ -97,6 +97,28 @@ func (sc *streamingClientProperties) stream(entity, requestType string, body int
 	}
 
 	response := req.Stream()
+	return response
+}
+
+func (sc *streamingClientProperties) streamWithRetry(entity, requestType string, body interface{}) sse.StreamResponse {
+	if RetryCount <= 0 {
+		return sc.stream(entity, requestType, body)
+	}
+
+	var response sse.StreamResponse
+
+	backOffDuration := 0
+	for i := 0; i <= RetryCount; i++ {
+		if backOffDuration > 0 {
+			logger.Debug(fmt.Sprintf("Waiting for %d Second[s]", backOffDuration))
+			time.Sleep(time.Duration(backOffDuration) * time.Second)
+		}
+		backOffDuration += BackoffSeconds
+		response = sc.stream(entity, requestType, body)
+		if response.Error == nil && response.StatusCode < 500 {
+			return response
+		}
+	}
 	return response
 }
 

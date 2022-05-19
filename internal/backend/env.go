@@ -29,7 +29,7 @@ func (e *Env) CreateEnv(envDetails interface{}) (envResp.Env, error) {
 // CreateEnvStream : create an empty Env and stream creation events
 func (e *Env) CreateEnvStream(envDetails interface{}) {
 	client := newStreamingApiClient()
-	response := client.stream(envEntity+"/", "POST", envDetails)
+	response := client.streamWithRetry(envEntity+"/", "POST", envDetails)
 	response.Process(true)
 }
 
