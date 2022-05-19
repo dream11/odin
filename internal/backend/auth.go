@@ -19,7 +19,7 @@ func (a *Auth) GetToken(accessKey, secretAccessKey string) (auth.Auth, error) {
 		"client_secret": secretAccessKey,
 	}
 
-	response := client.action("secure/auth/", "POST", reqBody)
+	response := client.actionWithRetry("secure/auth/", "POST", reqBody)
 	response.Process(true) // process response and exit if error
 
 	var authResponse auth.Auth
@@ -36,7 +36,7 @@ func (a *Auth) RefreshToken(refreshToken string) (auth.Auth, error) {
 		"refresh_token": refreshToken,
 	}
 
-	response := client.action("secure/refreshtoken/", "POST", reqBody)
+	response := client.actionWithRetry("secure/refreshtoken/", "POST", reqBody)
 	response.Process(true) // process response and exit if error
 
 	var authResponse []auth.Auth

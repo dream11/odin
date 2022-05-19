@@ -18,7 +18,7 @@ var serviceEntity = "services"
 func (s *Service) CreateService(service interface{}) {
 	client := newApiClient()
 
-	response := client.action(serviceEntity+"/", "POST", service)
+	response := client.actionWithRetry(serviceEntity+"/", "POST", service)
 	response.Process(true) // process response and exit if error
 }
 
@@ -26,7 +26,7 @@ func (s *Service) CreateService(service interface{}) {
 func (s *Service) RebuildService(service, version string) {
 	client := newApiClient()
 
-	response := client.action(path.Join(serviceEntity, service, "versions", version, "rebuild")+"/", "PUT", nil)
+	response := client.actionWithRetry(path.Join(serviceEntity, service, "versions", version, "rebuild")+"/", "PUT", nil)
 	response.Process(true)
 }
 
@@ -35,7 +35,7 @@ func (s *Service) DescribeService(name, version, component string) (service.Serv
 	client := newApiClient()
 	client.QueryParams["version"] = version
 	client.QueryParams["component"] = component
-	response := client.action(path.Join(serviceEntity, name), "GET", nil)
+	response := client.actionWithRetry(path.Join(serviceEntity, name), "GET", nil)
 	response.Process(true)
 
 	var serviceResponse service.DetailResponse
@@ -55,7 +55,7 @@ func (s *Service) ListServices(team, version, serviceName string, maturity bool)
 		client.QueryParams["isMature"] = fmt.Sprintf("%v", maturity)
 	}
 
-	response := client.action(serviceEntity, "GET", nil)
+	response := client.actionWithRetry(serviceEntity, "GET", nil)
 	response.Process(true)
 
 	var serviceResponse service.ListResponse
@@ -69,7 +69,7 @@ func (s *Service) UndeployService(serviceName, envName string) {
 	client := newApiClient()
 	client.QueryParams["env_name"] = envName
 
-	response := client.action(path.Join(serviceEntity, "undeploy", serviceName)+"/", "DELETE", nil)
+	response := client.actionWithRetry(path.Join(serviceEntity, "undeploy", serviceName)+"/", "DELETE", nil)
 	response.Process(true)
 }
 
@@ -78,7 +78,7 @@ func (s *Service) UnDeployServiceStream(serviceName, envName string) {
 	client := newStreamingApiClient()
 	client.QueryParams["env_name"] = envName
 
-	response := client.stream(path.Join(serviceEntity, "undeploy", serviceName)+"/", "DELETE", nil)
+	response := client.streamWithRetry(path.Join(serviceEntity, "undeploy", serviceName)+"/", "DELETE", nil)
 	response.Process(true)
 }
 
@@ -86,7 +86,7 @@ func (s *Service) UnDeployServiceStream(serviceName, envName string) {
 func (s *Service) DeleteService(service, version string) {
 	client := newApiClient()
 
-	response := client.action(path.Join(serviceEntity, service, "versions", version)+"/", "DELETE", nil)
+	response := client.actionWithRetry(path.Join(serviceEntity, service, "versions", version)+"/", "DELETE", nil)
 	response.Process(true)
 }
 
@@ -94,7 +94,7 @@ func (s *Service) DeleteService(service, version string) {
 func (s *Service) MarkMature(service, version string) {
 	client := newApiClient()
 
-	response := client.action(path.Join(serviceEntity, service, "versions", version, "mature")+"/", "PUT", nil)
+	response := client.actionWithRetry(path.Join(serviceEntity, service, "versions", version, "mature")+"/", "PUT", nil)
 	response.Process(true)
 }
 
@@ -106,7 +106,7 @@ func (s *Service) DeployService(service, version, env, platform string, force, r
 	client.QueryParams["rebuild"] = fmt.Sprintf("%v", rebuild)
 	client.QueryParams["platform"] = platform
 
-	response := client.action(path.Join(serviceEntity, "deploy", service, "versions", version)+"/", "POST", nil)
+	response := client.actionWithRetry(path.Join(serviceEntity, "deploy", service, "versions", version)+"/", "POST", nil)
 	response.Process(true)
 }
 
@@ -119,7 +119,7 @@ func (s *Service) DeployServiceStream(service, version, env, platform, configSto
 	client.QueryParams["platform"] = platform
 	client.QueryParams["config_store_namespace"] = configStoreNamespace
 
-	response := client.stream(path.Join(serviceEntity, "deploy", service, "versions", version)+"/", "POST", nil)
+	response := client.streamWithRetry(path.Join(serviceEntity, "deploy", service, "versions", version)+"/", "POST", nil)
 	response.Process(true)
 }
 
@@ -127,7 +127,7 @@ func (s *Service) DeployServiceStream(service, version, env, platform, configSto
 func (s *Service) StatusService(serviceName, version string) ([]service.Status, error) {
 	client := newApiClient()
 
-	response := client.action(path.Join(serviceEntity, serviceName, "versions", version, "status")+"/", "GET", nil)
+	response := client.actionWithRetry(path.Join(serviceEntity, serviceName, "versions", version, "status")+"/", "GET", nil)
 	response.Process(true)
 
 	var serviceResponse service.StatusResponse
