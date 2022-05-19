@@ -12,8 +12,8 @@ import (
 var logger ui.Logger
 
 const (
-	RetryCount     = 2
-	BackoffSeconds = 1
+	RetryCount     = 3
+	BackoffSeconds = 2
 )
 
 // initiation of an HTTP client for backend interactions
@@ -45,7 +45,7 @@ func (c *clientProperties) actionWithRetry(entity, requestType string, body inte
 	var response request.Response
 
 	backOffDuration := 0
-	for i := 0; i < RetryCount; i++ {
+	for i := 0; i <= RetryCount; i++ {
 		if backOffDuration > 0 {
 			logger.Debug(fmt.Sprintf("Waiting for %d Second[s]", backOffDuration))
 			time.Sleep(time.Duration(backOffDuration) * time.Second)
