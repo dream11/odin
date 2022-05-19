@@ -17,8 +17,6 @@ on:
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ development ]
-  schedule:
-    - cron: '0 0 * * *'
 
 jobs:
   analyze:
@@ -33,6 +31,7 @@ jobs:
       fail-fast: false
       matrix:
         language: [ 'go' ]
+        queries: security-extended
         # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
         # Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
 
