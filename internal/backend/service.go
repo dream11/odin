@@ -100,7 +100,7 @@ func (s *Service) LabelService(service, version, label string) {
 		"resource-version": version,
 		"label":            label,
 	}
-	response := client.action(path.Join(serviceEntity, service, "version", version, "label")+"/", "PUT", data)
+	response := client.actionWithRetry(path.Join(serviceEntity, service, "version", version, "label")+"/", "PUT", data)
 	response.Process(true)
 }
 
@@ -113,7 +113,7 @@ func (s *Service) UnlabelService(service, version, label string) {
 		"resource-version": version,
 		"label":            label,
 	}
-	response := client.action(path.Join(serviceEntity, service, "version", version, "unlabel")+"/", "PUT", data)
+	response := client.actionWithRetry(path.Join(serviceEntity, service, "version", version, "unlabel")+"/", "PUT", data)
 	response.Process(true)
 }
 
