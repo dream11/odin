@@ -95,6 +95,18 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"label service": func() (cli.Command, error) {
 			return &commands.Service{Label: true}, nil
 		},
+		"unlabel service": func() (cli.Command, error) {
+			return &commands.Service{Unlabel: true}, nil
+		},
+		"create label": func() (cli.Command, error) {
+			return &commands.Label{Create: true}, nil
+		},
+		"list label": func() (cli.Command, error) {
+			return &commands.Label{List: true}, nil
+		},
+		"delete label": func() (cli.Command, error) {
+			return &commands.Label{Delete: true}, nil
+		},
 		"deploy service": func() (cli.Command, error) {
 			return &commands.Service{Deploy: true}, nil
 		},

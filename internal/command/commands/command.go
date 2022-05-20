@@ -28,6 +28,7 @@ type command struct {
 	GetHistory      bool // Get changelog of resource
 	DescribeHistory bool // Describe a changelog of resource
 	Generate        bool // Generate resources
+	Unlabel         bool // Unlabel a resource
 
 	Logger ui.Logger // Use this to log messages
 	Input  ui.Input  // Use this to take inputs

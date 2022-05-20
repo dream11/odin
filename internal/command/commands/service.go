@@ -34,6 +34,7 @@ func (s *Service) Run(args []string) int {
 	component := flagSet.String("component", "", "name of service component")
 	platform := flagSet.String("platform", "", "platform to deploy the service in")
 	configStoreNamespace := flagSet.String("d11-config-store-namespace", "", "config store branch/tag to use")
+	label := flagSet.String("label", "", "name of the label")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -126,7 +127,7 @@ func (s *Service) Run(args []string) int {
 
 	if s.List {
 		s.Logger.Info("Listing all services")
-		serviceList, err := serviceClient.ListServices(*teamName, *serviceVersion, *serviceName, *isMature)
+		serviceList, err := serviceClient.ListServices(*teamName, *serviceVersion, *serviceName, *isMature, *label)
 		if err != nil {
 			s.Logger.Error(err.Error())
 			return 1
@@ -160,23 +161,23 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Label {
-		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion, "--label": *label})
 		if len(emptyParameters) == 0 {
-
-			// Add more labels to this condition
-			if !*isMature {
-				s.Logger.Error("No label specified")
-				return 1
-			}
-
-			if *isMature {
-				s.Logger.Info("Marking " + *serviceName + "@" + *serviceVersion + " as mature")
-				serviceClient.MarkMature(*serviceName, *serviceVersion)
-				s.Logger.Success("Successfully marked " + *serviceName + "@" + *serviceVersion + " as mature")
-			}
+			serviceClient.LabelService(*serviceName, *serviceVersion, *label)
+			s.Logger.Success("Successfully labelled " + *serviceName + "@" + *serviceVersion + " with " + *label)
 			return 0
 		}
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		return 1
+	}
 
+	if s.Unlabel {
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion, "--label": *label})
+		if len(emptyParameters) == 0 {
+			serviceClient.UnlabelService(*serviceName, *serviceVersion, *label)
+			s.Logger.Success("Successfully unlabelled " + *serviceName + "@" + *serviceVersion + " from " + *label)
+			return 0
+		}
 		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
 		return 1
 	}
@@ -186,7 +187,6 @@ func (s *Service) Run(args []string) int {
 		if len(emptyParameters) == 0 {
 			s.Logger.Info("Initiating service deployment: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
 			serviceClient.DeployServiceStream(*serviceName, *serviceVersion, *envName, *platform, *configStoreNamespace, *force, *rebuild)
-
 			return 0
 		}
 

@@ -45,11 +45,12 @@ func (s *Service) DescribeService(name, version, component string) (service.Serv
 }
 
 // ListServices : list services per team and describe versions
-func (s *Service) ListServices(team, version, serviceName string, maturity bool) ([]service.Service, error) {
+func (s *Service) ListServices(team, version, serviceName string, maturity bool, label string) ([]service.Service, error) {
 	client := newApiClient()
 	client.QueryParams["team"] = team
 	client.QueryParams["version"] = version
 	client.QueryParams["name"] = serviceName
+	client.QueryParams["label"] = label
 	// if maturity then only pass isMature in query params
 	if maturity {
 		client.QueryParams["isMature"] = fmt.Sprintf("%v", maturity)
@@ -90,11 +91,29 @@ func (s *Service) DeleteService(service, version string) {
 	response.Process(true)
 }
 
-// MarkMature : mark a service as mature
-func (s *Service) MarkMature(service, version string) {
+// LabelService : label a service
+func (s *Service) LabelService(service, version, label string) {
 	client := newApiClient()
 
-	response := client.actionWithRetry(path.Join(serviceEntity, service, "versions", version, "mature")+"/", "PUT", nil)
+	data := map[string]interface{}{
+		"resource-name":    service,
+		"resource-version": version,
+		"label":            label,
+	}
+	response := client.action(path.Join(serviceEntity, service, "version", version, "label")+"/", "PUT", data)
+	response.Process(true)
+}
+
+// UnlabelService : unlabel a service
+func (s *Service) UnlabelService(service, version, label string) {
+	client := newApiClient()
+
+	data := map[string]interface{}{
+		"resource-name":    service,
+		"resource-version": version,
+		"label":            label,
+	}
+	response := client.action(path.Join(serviceEntity, service, "version", version, "unlabel")+"/", "PUT", data)
 	response.Process(true)
 }
 
