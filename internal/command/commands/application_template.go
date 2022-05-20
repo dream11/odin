@@ -12,14 +12,8 @@ import (
 // ApplicationTemplate : Sample command declaration
 type ApplicationTemplate command
 
-type Deployment struct {
-	Language string `yaml:"language"`
-	Version  string `yaml:"version"`
-}
-
 type ApplicationSpec struct {
-	Version    string     `yaml:"version"`
-	Deployment Deployment `yaml:"deployment"`
+	Version string `yaml:"version"`
 }
 
 // Run implements the actual functionality of the command
@@ -44,17 +38,7 @@ func (a *ApplicationTemplate) Run(args []string) int {
 				a.Logger.Error("Unable to create directoy: " + path + "\n" + err.Error())
 			}
 
-			language, err := a.Input.Ask("Enter language to be used: ")
-			if err != nil {
-				a.Logger.Error("Error while processing input\n" + err.Error())
-			}
-
-			version, err := a.Input.Ask("Enter version of language to be used: ")
-			if err != nil {
-				a.Logger.Error("Error while processing input\n" + err.Error())
-			}
-
-			applicationSpec := ApplicationSpec{Version: "1.0.0-SNAPSHOT", Deployment: Deployment{Language: language, Version: version}}
+			applicationSpec := ApplicationSpec{Version: "1.0.0-SNAPSHOT"}
 
 			applicationSpecContent, err := yaml.Marshal(&applicationSpec)
 			if err != nil {
