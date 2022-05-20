@@ -28,7 +28,6 @@ func (s *ServiceSet) Run(args []string) int {
 	serviceSetName := flagSet.String("name", "", "name of service-set to be used")
 	serviceName := flagSet.String("service", "", "name of service in service-set")
 	envName := flagSet.String("env", "", "name of environment to deploy the service-set in")
-	platform := flagSet.String("platform", "", "platform of environment to deploy the service-set in")
 	force := flagSet.Bool("force", false, "forcefully deploy service-set into the Env")
 	configStoreNamespace := flagSet.String("d11-config-store-namespace", "", "config store branch/tag to use")
 
@@ -177,7 +176,7 @@ func (s *ServiceSet) Run(args []string) int {
 
 			/*deploy service-set*/
 			s.Logger.Debug("Deploying service-set: " + *serviceSetName + " in " + *envName)
-			serviceSetList, err := serviceSetClient.DeployServiceSet(*serviceSetName, *envName, *platform, *configStoreNamespace, forceDeployServices, *force)
+			serviceSetList, err := serviceSetClient.DeployServiceSet(*serviceSetName, *envName, *configStoreNamespace, forceDeployServices, *force)
 			if err != nil {
 				s.Logger.Error(err.Error())
 				return 1
@@ -352,7 +351,6 @@ func (s *ServiceSet) Help() string {
 		return commandHelper("deploy", "service-set", []string{
 			"--name=name of service-set to deploy",
 			"--env=name of environment to deploy service-set in",
-			"--platform=platform of environment to deploy service-set in",
 			"--force=forcefully deploy service-set into the Env",
 			"--d11-config-store-namespace=config store branch/tag to use",
 		})

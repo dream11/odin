@@ -117,25 +117,12 @@ func (s *Service) UnlabelService(service, version, label string) {
 	response.Process(true)
 }
 
-// DeployService : deploy a service
-func (s *Service) DeployService(service, version, env, platform string, force, rebuild bool) {
-	client := newApiClient()
-	client.QueryParams["env_name"] = env
-	client.QueryParams["force"] = fmt.Sprintf("%v", force)
-	client.QueryParams["rebuild"] = fmt.Sprintf("%v", rebuild)
-	client.QueryParams["platform"] = platform
-
-	response := client.actionWithRetry(path.Join(serviceEntity, "deploy", service, "versions", version)+"/", "POST", nil)
-	response.Process(true)
-}
-
 // DeployServiceStream : deploy a service in an Env and stream creation events
-func (s *Service) DeployServiceStream(service, version, env, platform, configStoreNamespace string, force, rebuild bool) {
+func (s *Service) DeployServiceStream(service, version, env, configStoreNamespace string, force, rebuild bool) {
 	client := newStreamingApiClient()
 	client.QueryParams["env_name"] = env
 	client.QueryParams["force"] = fmt.Sprintf("%v", force)
 	client.QueryParams["rebuild"] = fmt.Sprintf("%v", rebuild)
-	client.QueryParams["platform"] = platform
 	client.QueryParams["config_store_namespace"] = configStoreNamespace
 
 	response := client.streamWithRetry(path.Join(serviceEntity, "deploy", service, "versions", version)+"/", "POST", nil)
