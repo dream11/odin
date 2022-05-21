@@ -23,7 +23,7 @@ func (s *Service) Run(args []string) int {
 	// Define flag set
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
 	// create flags
-	filePath := flagSet.String("file", "service.yaml", "file to read service config")
+	filePath := flagSet.String("file", "service.json", "file to read service config")
 	serviceName := flagSet.String("name", "", "name of service to be used")
 	serviceVersion := flagSet.String("version", "", "version of service to be used")
 	force := flagSet.Bool("force", false, "forcefully deploy the new version of the service")
