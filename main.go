@@ -28,7 +28,7 @@ func getLatestVersion() string {
 	var jsonResponse []map[string]interface{}
 	err := json.Unmarshal(res.Body, &jsonResponse)
 	if err != nil {
-		logger.Debug("Unable to unmarshal latest version response : " + res.Error.Error())
+		logger.Debug("Unable to unmarshal latest version response : " + err.Error())
 		return ""
 	}
 
