@@ -46,8 +46,8 @@ func main() {
 
 	latestVersion := getLatestVersion()
 	if latestVersion != "" && !isLatestVersion(odin.App.Version, latestVersion) {
-		logger.Warn(fmt.Sprintf("You are using odin version %s; however, version %s is available", odin.App.Version, latestVersion))
-		logger.Warn("Upgrade to the latest version via command 'brew install dream11/tools/odin'")
+		logger.Info(fmt.Sprintf("You are using odin version %s; however, version %s is available", odin.App.Version, latestVersion))
+		logger.Info("Upgrade to the latest version via command 'brew install dream11/tools/odin'")
 	}
 
 	if err != nil {
