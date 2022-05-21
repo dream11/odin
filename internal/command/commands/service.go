@@ -29,7 +29,6 @@ func (s *Service) Run(args []string) int {
 	force := flagSet.Bool("force", false, "forcefully deploy the new version of the service")
 	envName := flagSet.String("env", "", "name of environment to deploy the service in")
 	teamName := flagSet.String("team", "", "name of user's team")
-	isMature := flagSet.Bool("mature", false, "mark service version as matured")
 	rebuild := flagSet.Bool("rebuild", false, "rebuild executor for creating images or deploying services")
 	component := flagSet.String("component", "", "name of service component")
 	configStoreNamespace := flagSet.String("d11-config-store-namespace", "", "config store branch/tag to use")
@@ -79,12 +78,8 @@ func (s *Service) Run(args []string) int {
 			s.Logger.Error("Unrecognized file format")
 			return 1
 		}
-		serviceDataMap := parsedConfig.(map[string]interface{})
-		serviceClient.CreateService(parsedConfig)
-		s.Logger.Success(fmt.Sprintf("Service creation started for %s@%s ", serviceDataMap["name"], serviceDataMap["version"]))
-
-		s.Logger.Output("Command to check status of images")
-		s.Logger.ItalicEmphasize(fmt.Sprintf("odin status service --name %s --version %s", serviceDataMap["name"], serviceDataMap["version"]))
+		
+		serviceClient.CreateServiceStream(parsedConfig)
 		return 0
 	}
 
@@ -126,16 +121,16 @@ func (s *Service) Run(args []string) int {
 
 	if s.List {
 		s.Logger.Info("Listing all services")
-		serviceList, err := serviceClient.ListServices(*teamName, *serviceVersion, *serviceName, *isMature, *label)
+		serviceList, err := serviceClient.ListServices(*teamName, *serviceVersion, *serviceName, *label)
 		if err != nil {
 			s.Logger.Error(err.Error())
 			return 1
 		}
 		var tableHeaders []string
 		if len(*serviceName) == 0 {
-			tableHeaders = []string{"Name", "Latest Version", "Description", "Team", "Mature"}
+			tableHeaders = []string{"Name", "Latest Version", "Description", "Team"}
 		} else {
-			tableHeaders = []string{"Name", "Version", "Description", "Team", "Mature"}
+			tableHeaders = []string{"Name", "Version", "Description", "Team"}
 		}
 		var tableData [][]interface{}
 
@@ -145,7 +140,6 @@ func (s *Service) Run(args []string) int {
 				service.Version,
 				service.Description,
 				strings.Join(service.Team, ","),
-				*service.Mature,
 			})
 		}
 
@@ -282,7 +276,7 @@ func (s *Service) Help() string {
 			"--name=name of service",
 			"--version=version of services to be listed",
 			"--team=name of team",
-			"--mature (mature marked service versions)",
+			"--label=name of label",
 		})
 	}
 
@@ -290,7 +284,7 @@ func (s *Service) Help() string {
 		return commandHelper("label", "service", []string{
 			"--name=name of service to label",
 			"--version=version of service to label",
-			"--mature (mark service version as mature)",
+			"--label=name of the label",
 		})
 	}
 
