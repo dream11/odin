@@ -15,7 +15,7 @@ func (c *ComponentType) ListComponentTypes(componentTypeName, version string) ([
 	client := newApiClient()
 	client.QueryParams["version"] = version
 	client.QueryParams["name"] = componentTypeName
-	response := client.action("componenttypes", "GET", nil)
+	response := client.actionWithRetry("componenttypes", "GET", nil)
 
 	response.Process(true) // process response and exit if error
 
@@ -29,7 +29,7 @@ func (c *ComponentType) ListComponentTypes(componentTypeName, version string) ([
 func (c *ComponentType) DescribeComponentType(componentTypeName, version string) (component.ComponentDetails, error) {
 	client := newApiClient()
 	client.QueryParams["version"] = version
-	response := client.action(path.Join("componenttypes", componentTypeName), "GET", nil)
+	response := client.actionWithRetry(path.Join("componenttypes", componentTypeName), "GET", nil)
 	response.Process(true) // process response and exit if error
 
 	var componentDetailsResponse component.ComponentDetailsResponse

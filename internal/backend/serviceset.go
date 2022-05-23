@@ -17,7 +17,7 @@ var serviceSetEntity = "serviceset"
 func (s *ServiceSet) CreateServiceSet(serviceSetDefinition interface{}) {
 	client := newApiClient()
 
-	response := client.action(serviceSetEntity+"/", "POST", serviceSetDefinition)
+	response := client.actionWithRetry(serviceSetEntity+"/", "POST", serviceSetDefinition)
 	response.ProcessHandleError(true)
 }
 
@@ -26,7 +26,7 @@ func (s *ServiceSet) ListServiceSet(serviceSetName, serviceName string) ([]servi
 	client.QueryParams["name"] = serviceSetName
 	client.QueryParams["service"] = serviceName
 
-	response := client.action(serviceSetEntity, "GET", nil)
+	response := client.actionWithRetry(serviceSetEntity, "GET", nil)
 	response.Process(true)
 
 	var serviceResponse serviceset.ListResponse
@@ -38,7 +38,7 @@ func (s *ServiceSet) ListServiceSet(serviceSetName, serviceName string) ([]servi
 func (s *ServiceSet) DescribeServiceSet(serviceSetName string) (serviceset.Describe, error) {
 	client := newApiClient()
 
-	response := client.action(path.Join(serviceSetEntity, serviceSetName), "GET", nil)
+	response := client.actionWithRetry(path.Join(serviceSetEntity, serviceSetName), "GET", nil)
 	response.Process(true)
 
 	var serviceResponse serviceset.DescribeResponse
@@ -50,7 +50,7 @@ func (s *ServiceSet) DescribeServiceSet(serviceSetName string) (serviceset.Descr
 func (s *ServiceSet) DeleteServiceSet(serviceSetName string) {
 	client := newApiClient()
 
-	response := client.action(path.Join(serviceSetEntity, serviceSetName)+"/", "DELETE", nil)
+	response := client.actionWithRetry(path.Join(serviceSetEntity, serviceSetName)+"/", "DELETE", nil)
 	response.Process(true)
 }
 
@@ -64,7 +64,7 @@ func (s *ServiceSet) DeployServiceSet(serviceSetName, env, configStoreNamespace 
 		"forceDeployServices": forceDeployServices,
 	}
 
-	response := client.action(path.Join(serviceSetEntity, "deploy", serviceSetName, "env", env)+"/", "POST", data)
+	response := client.actionWithRetry(path.Join(serviceSetEntity, "deploy", serviceSetName, "env", env)+"/", "POST", data)
 	response.Process(true)
 
 	var serviceResponse serviceset.ServiceSetDeployResponse
@@ -77,7 +77,7 @@ func (s ServiceSet) ListEnvServices(serviceSetName, env, filterBy string) ([]ser
 	client := newApiClient()
 	client.QueryParams["filter_by"] = filterBy
 
-	response := client.action(path.Join(serviceSetEntity, serviceSetName, "env", env, "service")+"/", "GET", nil)
+	response := client.actionWithRetry(path.Join(serviceSetEntity, serviceSetName, "env", env, "service")+"/", "GET", nil)
 	response.Process(true)
 
 	var serviceResponse serviceset.ListEnvServiceResponse
@@ -95,7 +95,7 @@ func (s *ServiceSet) UndeployServiceSet(serviceSetName, env string, forceUndeplo
 		"forceUndeployServices": forceUndeployServices,
 	}
 
-	response := client.action(path.Join(serviceSetEntity, "undeploy", serviceSetName, "env", env)+"/", "DELETE", data)
+	response := client.actionWithRetry(path.Join(serviceSetEntity, "undeploy", serviceSetName, "env", env)+"/", "DELETE", data)
 	response.Process(true)
 
 	var serviceResponse serviceset.ServiceSetDeployResponse
@@ -107,6 +107,6 @@ func (s *ServiceSet) UndeployServiceSet(serviceSetName, env string, forceUndeplo
 func (s *ServiceSet) UpdateServiceSet(serviceSetName string, serviceSet interface{}) {
 	client := newApiClient()
 
-	response := client.action(path.Join(serviceSetEntity, serviceSetName)+"/", "PUT", serviceSet)
+	response := client.actionWithRetry(path.Join(serviceSetEntity, serviceSetName)+"/", "PUT", serviceSet)
 	response.Process(true) // process response and exit if error
 }

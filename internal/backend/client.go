@@ -1,9 +1,20 @@
 package backend
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/dream11/odin/internal/config"
+	"github.com/dream11/odin/internal/ui"
 	"github.com/dream11/odin/pkg/request"
 	"github.com/dream11/odin/pkg/sse"
+)
+
+var logger ui.Logger
+
+const (
+	RetryCount     = 3
+	BackoffSeconds = 2
 )
 
 // initiation of an HTTP client for backend interactions
@@ -25,6 +36,28 @@ func (c *clientProperties) action(entity, requestType string, body interface{}) 
 	}
 
 	return req.Make()
+}
+
+func (c *clientProperties) actionWithRetry(entity, requestType string, body interface{}) request.Response {
+	if RetryCount <= 0 {
+		return c.action(entity, requestType, body)
+	}
+
+	var response request.Response
+
+	backOffDuration := 0
+	for i := 0; i <= RetryCount; i++ {
+		if backOffDuration > 0 {
+			logger.Debug(fmt.Sprintf("Waiting for %d Second[s]", backOffDuration))
+			time.Sleep(time.Duration(backOffDuration) * time.Second)
+		}
+		backOffDuration += BackoffSeconds
+		response = c.action(entity, requestType, body)
+		if response.Error == nil && response.StatusCode < 500 {
+			return response
+		}
+	}
+	return response
 }
 
 // initiate a functional backend base-client
@@ -65,6 +98,28 @@ func (sc *streamingClientProperties) stream(entity, requestType string, body int
 	}
 
 	response := req.Stream()
+	return response
+}
+
+func (sc *streamingClientProperties) streamWithRetry(entity, requestType string, body interface{}) sse.StreamResponse {
+	if RetryCount <= 0 {
+		return sc.stream(entity, requestType, body)
+	}
+
+	var response sse.StreamResponse
+
+	backOffDuration := 0
+	for i := 0; i <= RetryCount; i++ {
+		if backOffDuration > 0 {
+			logger.Debug(fmt.Sprintf("Waiting for %d Second[s]", backOffDuration))
+			time.Sleep(time.Duration(backOffDuration) * time.Second)
+		}
+		backOffDuration += BackoffSeconds
+		response = sc.stream(entity, requestType, body)
+		if response.Error == nil && response.StatusCode < 500 {
+			return response
+		}
+	}
 	return response
 }
 

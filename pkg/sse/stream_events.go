@@ -24,13 +24,13 @@ func (sr *StreamRequest) Stream() StreamResponse {
 	payload := new(bytes.Buffer)
 	err := json.NewEncoder(payload).Encode(sr.Body)
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Debug(err.Error())
 		return StreamResponse{Error: err}
 	}
 
 	req, err := http.NewRequest(sr.Method, sr.URL, payload)
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Debug(err.Error())
 		return StreamResponse{Error: err}
 	}
 
@@ -55,7 +55,7 @@ func (sr *StreamRequest) Stream() StreamResponse {
 
 	resp, err := sseClient.Connection.Do(req)
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Debug(err.Error())
 		return StreamResponse{Error: err}
 	}
 

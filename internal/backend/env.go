@@ -17,7 +17,7 @@ var envEntity = "envs"
 func (e *Env) CreateEnv(envDetails interface{}) (envResp.Env, error) {
 	client := newApiClient()
 
-	response := client.action(envEntity+"/", "POST", envDetails)
+	response := client.actionWithRetry(envEntity+"/", "POST", envDetails)
 	response.Process(true) // process response and exit if error
 
 	var envResponse envResp.CreationResponse
@@ -29,7 +29,7 @@ func (e *Env) CreateEnv(envDetails interface{}) (envResp.Env, error) {
 // CreateEnvStream : create an empty Env and stream creation events
 func (e *Env) CreateEnvStream(envDetails interface{}) {
 	client := newStreamingApiClient()
-	response := client.stream(envEntity+"/", "POST", envDetails)
+	response := client.streamWithRetry(envEntity+"/", "POST", envDetails)
 	response.Process(true)
 }
 
@@ -38,7 +38,7 @@ func (e *Env) DescribeEnv(env, service, component string) (envResp.Env, error) {
 	client := newApiClient()
 	client.QueryParams["service"] = service
 	client.QueryParams["component"] = component
-	response := client.action(path.Join(envEntity, env)+"/", "GET", nil)
+	response := client.actionWithRetry(path.Join(envEntity, env)+"/", "GET", nil)
 	response.Process(true) // process response and exit if error
 
 	var envResponse envResp.DetailResponse
@@ -54,7 +54,7 @@ func (e *Env) ListEnv(name, team, env, providerAccount string) ([]envResp.Env, e
 	client.QueryParams["team"] = team
 	client.QueryParams["envType"] = env
 	client.QueryParams["cloudProviderAccount"] = providerAccount
-	response := client.action(envEntity+"/", "GET", nil)
+	response := client.actionWithRetry(envEntity+"/", "GET", nil)
 	response.Process(true) // process response and exit if error
 
 	var envResponse envResp.ListResponse
@@ -67,14 +67,14 @@ func (e *Env) ListEnv(name, team, env, providerAccount string) ([]envResp.Env, e
 func (e *Env) DeleteEnv(env string) {
 	client := newApiClient()
 
-	response := client.action(path.Join(envEntity, env)+"/", "DELETE", nil)
+	response := client.actionWithRetry(path.Join(envEntity, env)+"/", "DELETE", nil)
 	response.Process(true) // process response and exit if error
 }
 
 // DeleteEnvStream : delete a created environment and stream deletion events
 func (e *Env) DeleteEnvStream(env string) {
 	client := newStreamingApiClient()
-	response := client.stream(path.Join(envEntity, env)+"/", "DELETE", nil)
+	response := client.streamWithRetry(path.Join(envEntity, env)+"/", "DELETE", nil)
 	response.Process(true)
 }
 
@@ -82,7 +82,7 @@ func (e *Env) DeleteEnvStream(env string) {
 func (e *Env) UpdateEnv(env string, config interface{}) {
 	client := newApiClient()
 
-	response := client.action(path.Join(envEntity, env)+"/", "PUT", config)
+	response := client.actionWithRetry(path.Join(envEntity, env)+"/", "PUT", config)
 	response.Process(true) // process response and exit if error
 }
 
@@ -90,7 +90,7 @@ func (e *Env) UpdateEnv(env string, config interface{}) {
 func (e *Env) GetHistoryEnv(env string) ([]envResp.History, error) {
 	client := newApiClient()
 
-	response := client.action(path.Join("envhistory", env)+"/", "GET", nil)
+	response := client.actionWithRetry(path.Join("envhistory", env)+"/", "GET", nil)
 	response.Process(true) // process response and exit if error
 
 	var envResponse envResp.HistoryListResponse
@@ -104,7 +104,7 @@ func (e *Env) DescribeHistoryEnv(env string, id string) ([]envResp.History, erro
 	client := newApiClient()
 	client.QueryParams["id"] = id
 
-	response := client.action(path.Join("envhistory", env)+"/", "GET", nil)
+	response := client.actionWithRetry(path.Join("envhistory", env)+"/", "GET", nil)
 	response.Process(false) // process response and exit if error
 
 	var envResponse envResp.HistoryListResponse
@@ -117,7 +117,7 @@ func (e *Env) DescribeHistoryEnv(env string, id string) ([]envResp.History, erro
 func (e *Env) EnvStatus(env string) (envResp.EnvStatus, error) {
 	client := newApiClient()
 
-	response := client.action(path.Join(envEntity, env)+"/status", "GET", nil)
+	response := client.actionWithRetry(path.Join(envEntity, env)+"/status", "GET", nil)
 	response.Process(true) // process response and exit if error
 
 	var envResponse envResp.EnvStatusResponse
@@ -129,7 +129,7 @@ func (e *Env) EnvStatus(env string) (envResp.EnvStatus, error) {
 func (e *Env) EnvServiceStatus(env, serviceName string) (envResp.EnvServiceStatus, error) {
 	client := newApiClient()
 
-	response := client.action(path.Join(envEntity, env)+"/services/"+serviceName+"/status", "GET", nil)
+	response := client.actionWithRetry(path.Join(envEntity, env)+"/services/"+serviceName+"/status", "GET", nil)
 	response.Process(true) // process response and exit if error
 
 	var envResponse envResp.EnvServiceStatusResponse
