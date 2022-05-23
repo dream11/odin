@@ -58,7 +58,6 @@ func (s *Service) ListServices(team, version, serviceName string, label string) 
 	client.QueryParams["name"] = serviceName
 	client.QueryParams["label"] = label
 
-
 	response := client.actionWithRetry(serviceEntity, "GET", nil)
 	response.Process(true)
 
