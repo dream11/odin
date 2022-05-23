@@ -78,7 +78,7 @@ func (s *Service) Run(args []string) int {
 			s.Logger.Error("Unrecognized file format")
 			return 1
 		}
-		
+
 		serviceClient.CreateServiceStream(parsedConfig)
 		return 0
 	}

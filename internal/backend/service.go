@@ -22,13 +22,11 @@ func (s *Service) CreateService(service interface{}) {
 	response.Process(true) // process response and exit if error
 }
 
-
 func (s *Service) CreateServiceStream(service interface{}) {
 	client := newStreamingApiClient()
 	response := client.stream(serviceEntity+"/", "POST", service)
 	response.Process(true) // process response and exit if error
- }
- 
+}
 
 // RebuildService : rebuild a service
 func (s *Service) RebuildService(service, version string) {
@@ -59,6 +57,7 @@ func (s *Service) ListServices(team, version, serviceName string, label string) 
 	client.QueryParams["version"] = version
 	client.QueryParams["name"] = serviceName
 	client.QueryParams["label"] = label
+
 
 	response := client.actionWithRetry(serviceEntity, "GET", nil)
 	response.Process(true)
