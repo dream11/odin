@@ -45,9 +45,8 @@ func (e *Env) Run(args []string) int {
 	if e.Create {
 		emptyParameters := emptyParameters(map[string]string{"--env-type": *env})
 		if len(emptyParameters) == 0 {
-			e.Logger.Info("Initiating environment creation for team: " + *team)
+			e.Logger.Info("Initiating environment creation")
 			envConfig := environment.Env{
-				Team:    *team,
 				Purpose: *purpose,
 				EnvType: *env,
 				Account: *providerAccount,
@@ -328,7 +327,6 @@ func (e *Env) Run(args []string) int {
 func (e *Env) Help() string {
 	if e.Create {
 		return commandHelper("create", "environment", []string{
-			"--team=team name to associate the environment with",
 			"--purpose=reason to create environment",
 			"--env-type=type of environment",
 			"--account=account name to provision the environment in (optional)",
