@@ -2,6 +2,7 @@ package commands
 
 import (
 	"flag"
+	"os"
 	"path"
 
 	"github.com/dream11/odin/api/configuration"
@@ -16,6 +17,8 @@ var authClient backend.Auth
 
 // Configure : command declaration
 type Configure command
+
+const DEFAULT_BACKEND_ADDR = "https://odin-backend.d11dev.com"
 
 // Run : implements the actual functionality of the command
 func (c *Configure) Run(args []string) int {
@@ -71,24 +74,27 @@ func (c *Configure) Run(args []string) int {
 			config.RefreshToken = authResponse.RefreshToken
 		}
 	} else {
-		// get access key from user
-		config.BackendAddr, err = c.Input.Ask("Enter Backend Address:")
-		if err != nil {
-			c.Logger.Error(err.Error())
+		// get backend address from env variable
+
+		if os.Getenv("ODIN_BACKEND_ADDRESS") != "" {
+			config.BackendAddr = os.Getenv("ODIN_BACKEND_ADDRESS")
+		} else {
+			config.BackendAddr = DEFAULT_BACKEND_ADDR
+		}
+
+		// get access key from env variable
+		if os.Getenv("ODIN_ACCESS_KEY") != "" {
+			config.Keys.AccessKey = os.Getenv("ODIN_ACCESS_KEY")
+		} else {
+			c.Logger.Error("Environment variable ODIN_ACCESS_KEY is not set. Please set your access key in ODIN_ACCESS_KEY environment variable")
 			return 1
 		}
 
-		// get access key from user
-		config.Keys.AccessKey, err = c.Input.Ask("Enter Access Key:")
-		if err != nil {
-			c.Logger.Error(err.Error())
-			return 1
-		}
-
-		// get secret access key from user
-		config.Keys.SecretAccessKey, err = c.Input.AskSecret("Enter Secret Access Key:")
-		if err != nil {
-			c.Logger.Error(err.Error())
+		// get secret access key from env variable
+		if os.Getenv("ODIN_SECRET_ACCESS_KEY") != "" {
+			config.Keys.SecretAccessKey = os.Getenv("ODIN_SECRET_ACCESS_KEY")
+		} else {
+			c.Logger.Error("Environment variable ODIN_SECRET_ACCESS_KEY is not set. Please set your secret access key in ODIN_SECRET_ACCESS_KEY environment variable")
 			return 1
 		}
 
