@@ -36,6 +36,7 @@ func (l *Label) Run(args []string) int {
 			}
 
 			labelClient.CreateLabel(labelData)
+			l.Logger.Success("Successfully created label: " + *name)
 			return 0
 		}
 
@@ -76,6 +77,7 @@ func (l *Label) Run(args []string) int {
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 			labelClient.DeleteLabel(*name)
+			l.Logger.Success("Successfully deleted label: " + *name)
 			return 0
 		}
 
