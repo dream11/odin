@@ -35,6 +35,11 @@ type command struct {
 	Input  ui.Input  // Use this to take inputs
 }
 
+type Options struct {
+	Flag        string
+	Description string
+}
+
 // help text generator
 func commandHelper(verb, resource string, options []string) string {
 	var opts string
@@ -44,6 +49,18 @@ func commandHelper(verb, resource string, options []string) string {
 
 	for _, opt := range options {
 		opts = opts + fmt.Sprintf("\t%s\n", opt)
+	}
+	return fmt.Sprintf("Usage: %s %s %s %s", odin.App.Name, verb, resource, opts)
+}
+
+func commandHelper2(verb, resource string, options []Options) string {
+	var opts string
+	if len(options) > 0 {
+		opts = "[Options]\n\nOptions:\n"
+	}
+
+	for _, opt := range options {
+		opts = opts + fmt.Sprintf("\t%s:\t%s\n", opt.Flag, opt.Description)
 	}
 	return fmt.Sprintf("Usage: %s %s %s %s", odin.App.Name, verb, resource, opts)
 }

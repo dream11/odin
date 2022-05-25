@@ -355,10 +355,10 @@ func (s *Service) Run(args []string) int {
 // Help : returns an explanatory string
 func (s *Service) Help() string {
 	if s.Create {
-		return commandHelper("create", "service", []string{
-			"--file=yaml file to read service definition",
-			"--name=name of the service",
-			"--version=version of the service",
+		return commandHelper2("create", "service", []Options{
+			{Flag: "--file", Description: "yaml file to read service definition"},
+			{Flag: "--name", Description: "name of the service (required if using --rebuild)"},
+			{Flag: "--version", Description: "version of the service (required if using --rebuild)"},
 		})
 	}
 
