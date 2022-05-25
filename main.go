@@ -21,7 +21,7 @@ func getLatestVersion() string {
 		URL:    GITHUB_TAGS_URL,
 	}
 	res := req.Make()
-	if res.Error != nil {
+	if res.Error != nil || res.StatusCode != 200 {
 		logger.Debug("Error making http req to fetch latest version: " + res.Error.Error())
 		return ""
 	}
