@@ -10,7 +10,6 @@ type Service struct {
 	Version     string                `yaml:"version,omitempty" json:"version,omitempty"`
 	Team        string                `yaml:"team,omitempty" json:"team,omitempty"`
 	Description string                `yaml:"description,omitempty" json:"description,omitempty"`
-	Mature      *bool                 `yaml:"isMature,omitempty" json:"isMature,omitempty"`
 	CreatedBy   string                `yaml:"createdBy,omitempty" json:"createdBy,omitempty"`
 	UpdatedBy   string                `yaml:"updatedBy,omitempty" json:"updatedBy,omitempty"`
 	CreatedAt   string                `yaml:"createdAt,omitempty" json:"createdAt,omitempty"`
