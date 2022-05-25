@@ -21,8 +21,12 @@ func getLatestVersion() string {
 		URL:    GITHUB_TAGS_URL,
 	}
 	res := req.Make()
-	if res.Error != nil || res.StatusCode != 200 {
-		logger.Debug("Error making http req to fetch latest version: " + res.Error.Error())
+	if res.Error != nil {
+		logger.Debug("Error making http request to fetch latest version: " + res.Error.Error())
+		return ""
+	}
+	if res.StatusCode != 200 {
+		logger.Debug("Invalid status code while checking latest version of Odin: " + fmt.Sprint(res.StatusCode))
 		return ""
 	}
 	var jsonResponse []map[string]interface{}
