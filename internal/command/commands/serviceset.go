@@ -24,7 +24,7 @@ func (s *ServiceSet) Run(args []string) int {
 	// Define flag set
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
 	// create flags
-	filePath := flagSet.String("file", "service-set.yaml", "file to read service-set config")
+	filePath := flagSet.String("file", "service-set.json", "file to read service-set config")
 	serviceSetName := flagSet.String("name", "", "name of service-set to be used")
 	serviceName := flagSet.String("service", "", "name of service in service-set")
 	envName := flagSet.String("env", "", "name of environment to deploy the service-set in")
