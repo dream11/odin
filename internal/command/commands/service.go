@@ -222,7 +222,9 @@ func (s *Service) Run(args []string) int {
 				}
 			}
 
-			s.deployService(*serviceName, *serviceVersion, *envName, *configStoreNamespace, forceService, rebuildService)
+			s.Logger.Debug(fmt.Sprintf("%s: %s : %s: %s: %t: %t", *serviceName, *serviceVersion, *envName, *configStoreNamespace, forceService, rebuildService))
+			s.Logger.Info("Initiating service deployment: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
+			serviceClient.DeployServiceStream(*serviceName, *serviceVersion, *envName, *configStoreNamespace, forceService, rebuildService)
 
 			return 0
 		}
@@ -295,12 +297,6 @@ func (s *Service) Run(args []string) int {
 	return 127
 }
 
-func (s *Service) deployService(serviceName, serviceVersion, envName, configStoreNamespace string, force, rebuild bool) {
-	s.Logger.Debug(fmt.Sprintf("%s: %s : %s: %s: %t: %t", serviceName, serviceVersion, envName, configStoreNamespace, force, rebuild))
-	s.Logger.Info("Initiating service deployment: " + serviceName + "@" + serviceVersion + " in " + envName)
-	serviceClient.DeployServiceStream(serviceName, serviceVersion, envName, configStoreNamespace, force, rebuild)
-}
-
 // Help : returns an explanatory string
 func (s *Service) Help() string {
 	if s.Create {
@@ -341,8 +337,6 @@ func (s *Service) Help() string {
 		return commandHelper("deploy", "service", []string{
 			"--name=name of service to deploy",
 			"--version=version of service to deploy",
-			"--force=forcefully deploy your service",
-			"--rebuild=rebuild your executor job again for service deployment",
 			"--env=name of environment to deploy service in",
 			"--d11-config-store-namespace=config store branch/tag to use",
 		})
