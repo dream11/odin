@@ -323,50 +323,50 @@ func (s *ServiceSet) Run(args []string) int {
 // Help : returns an explanatory string
 func (s *ServiceSet) Help() string {
 	if s.Create {
-		return commandHelper("create", "service-set", []string{
-			"--file=yaml file to read service-set definition",
+		return commandHelper("create", "service-set", "", []Options{
+			{Flag: "--file", Description: "yaml file to read service-set definition"},
 		})
 	}
 
 	if s.List {
-		return commandHelper("list", "service-set", []string{
-			"--name=name of the service-set",
-			"--service=name of service in the service-set",
+		return commandHelper("list", "service-set", "", []Options{
+			{Flag: "--name", Description: "name of the service-set"},
+			{Flag: "--service", Description: "name of service in the service-set"},
 		})
 	}
 
 	if s.Describe {
-		return commandHelper("describe", "service", []string{
-			"--name=name of the service-set to describe",
+		return commandHelper("describe", "service", "", []Options{
+			{Flag: "--name", Description: "name of the service-set to describe"},
 		})
 	}
 
 	if s.Delete {
-		return commandHelper("delete", "service-set", []string{
-			"--name=name of service-set to delete",
+		return commandHelper("delete", "service-set", "", []Options{
+			{Flag: "--name", Description: "name of service-set to delete"},
 		})
 	}
 
 	if s.Deploy {
-		return commandHelper("deploy", "service-set", []string{
-			"--name=name of service-set to deploy",
-			"--env=name of environment to deploy service-set in",
-			"--force=forcefully deploy service-set into the Env",
-			"--d11-config-store-namespace=config store branch/tag to use",
+		return commandHelper("deploy", "service-set", "", []Options{
+			{Flag: "--name", Description: "name of service-set to deploy"},
+			{Flag: "--env", Description: "name of environment to deploy service-set in"},
+			{Flag: "--force", Description: "forcefully deploy service-set into the Env"},
+			{Flag: "--d11", Description: "config-store-namespace=config store branch/tag to use"},
 		})
 	}
 
 	if s.Undeploy {
-		return commandHelper("deploy", "service-set", []string{
-			"--name=name of service-set to deploy",
-			"--env=name of environment to deploy service-set in",
-			"--force=forcefully undeploy service-set from the Env",
+		return commandHelper("deploy", "service-set", "", []Options{
+			{Flag: "--name", Description: "name of service-set to deploy"},
+			{Flag: "--env", Description: "name of environment to deploy service-set in"},
+			{Flag: "--force", Description: "forcefully undeploy service-set from the Env"},
 		})
 	}
 
 	if s.Update {
-		return commandHelper("update", "service-set", []string{
-			"--file=yaml file to read service-set definition",
+		return commandHelper("update", "service-set", "", []Options{
+			{Flag: "--file", Description: "yaml file to read service-set definition"},
 		})
 	}
 

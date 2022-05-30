@@ -8,7 +8,6 @@ import (
 type Env struct {
 	Name         string            `yaml:"name,omitempty" json:"name,omitempty"`
 	Team         string            `yaml:"team,omitempty" json:"team,omitempty"`
-	Purpose      string            `yaml:"purpose,omitempty" json:"purpose,omitempty"`
 	EnvType      string            `yaml:"envType,omitempty" json:"envType,omitempty"`
 	State        string            `yaml:"state,omitempty" json:"state,omitempty"`
 	DeletionTime string            `yaml:"autoDeletionTime,omitempty" json:"autoDeletionTime,omitempty"`

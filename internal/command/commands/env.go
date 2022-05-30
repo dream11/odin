@@ -28,7 +28,6 @@ func (e *Env) Run(args []string) int {
 	// create flags
 	name := flagSet.String("name", "", "name of environment")
 	team := flagSet.String("team", "", "display environments created by a team")
-	purpose := flagSet.String("purpose", "", "reason to create environment")
 	env := flagSet.String("env-type", "dev", "environment to attach with environment")
 	service := flagSet.String("service", "", "service name to filter out describe environment")
 	component := flagSet.String("component", "", "component name to filter out describe environment")
@@ -47,7 +46,6 @@ func (e *Env) Run(args []string) int {
 		if len(emptyParameters) == 0 {
 			e.Logger.Info("Initiating environment creation")
 			envConfig := environment.Env{
-				Purpose: *purpose,
 				EnvType: *env,
 				Account: *providerAccount,
 			}
@@ -219,7 +217,6 @@ func (e *Env) Run(args []string) int {
 				env.State,
 				env.Account,
 				relativeDeletionTimestamp,
-				env.Purpose,
 				relativeCreatedAtTimestamp,
 				env.CreatedBy,
 				relativeUpdatedAtTimestamp,
@@ -326,60 +323,59 @@ func (e *Env) Run(args []string) int {
 // Help : returns an explanatory string
 func (e *Env) Help() string {
 	if e.Create {
-		return commandHelper("create", "environment", []string{
-			"--purpose=reason to create environment",
-			"--env-type=type of environment",
-			"--account=account name to provision the environment in (optional)",
+		return commandHelper("create", "environment", "", []Options{
+			{Flag: "--env-type", Description: "type of environment"},
+			{Flag: "--account", Description: "account name to provision the environment in (optional)"},
 		})
 	}
 
 	if e.Update {
-		return commandHelper("update", "environment", []string{
-			"--name=name of environment to update",
-			"--file=file path to pick update config",
+		return commandHelper("update", "environment", "", []Options{
+			{Flag: "--name", Description: "name of environment to update"},
+			{Flag: "--file", Description: "file path to pick update config"},
 		})
 	}
 
 	if e.List {
-		return commandHelper("list", "environment", []string{
-			"--name=name of env",
-			"--team=name of team",
-			"--env-type=env type of the environment",
-			"--account=cloud provider account name",
+		return commandHelper("list", "environment", "", []Options{
+			{Flag: "--name", Description: "name of env"},
+			{Flag: "--team", Description: "name of team"},
+			{Flag: "--env", Description: "type=env type of the environment"},
+			{Flag: "--account", Description: "cloud provider account name"},
 		})
 	}
 
 	if e.Describe {
-		return commandHelper("describe", "environment", []string{
-			"--name=name of environment to describe",
-			"--service service config that is deployed on env",
-			"--component component config that is deployed on env",
+		return commandHelper("describe", "environment", "", []Options{
+			{Flag: "--name", Description: "name of environment to describe"},
+			{Flag: "--service", Description: "service config that is deployed on env"},
+			{Flag: "--component", Description: "component config that is deployed on env"},
 		})
 	}
 
 	if e.Delete {
-		return commandHelper("delete", "environment", []string{
-			"--name=name of environment to delete",
+		return commandHelper("delete", "environment", "", []Options{
+			{Flag: "--name", Description: "name of environment to delete"},
 		})
 	}
 
 	if e.GetHistory {
-		return commandHelper("get-history", "environment", []string{
-			"--name=name of environment fetch changelog for",
+		return commandHelper("get-history", "environment", "", []Options{
+			{Flag: "--name", Description: "name of environment fetch changelog for"},
 		})
 	}
 
 	if e.DescribeHistory {
-		return commandHelper("describe-history", "environment", []string{
-			"--name=name of environment to fetch changelog for",
-			"--id=unique id of a changelog for the specified env to get details for (positive integer)",
+		return commandHelper("describe-history", "environment", "", []Options{
+			{Flag: "--name", Description: "name of environment to fetch changelog for"},
+			{Flag: "--id", Description: "unique id of a changelog for the specified env to get details for (positive integer)"},
 		})
 	}
 
 	if e.Status {
-		return commandHelper("status", "environment", []string{
-			"--name=name of environment",
-			"--service=name of service",
+		return commandHelper("status", "environment", "", []Options{
+			{Flag: "--name", Description: "name of environment"},
+			{Flag: "--service", Description: "name of service"},
 		})
 	}
 

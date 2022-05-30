@@ -27,8 +27,10 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
 
+require github.com/olekukonko/tablewriter v0.0.5
+
 require (
-	github.com/donovanhide/eventsource v0.0.0-20210830082556-c59027999da0 // indirect
+	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/stretchr/testify v1.7.0 // indirect
 	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110 // indirect
 	gopkg.in/cenkalti/backoff.v1 v1.1.0 // indirect

@@ -97,62 +97,62 @@ func (t *Test) Run(args []string) int {
 // that can explain the command's verbs
 func (t *Test) Help() string {
 	if t.Create {
-		return commandHelper("create", "test", []string{
-			"--test-flag=required value",
+		return commandHelper("create", "test", "", []Options{
+			{Flag: "--test-flag", Description: "required value"},
 		})
 	}
 
 	if t.Delete {
-		return commandHelper("delete", "test", []string{
-			"--test-flag=required value",
+		return commandHelper("delete", "test", "", []Options{
+			{Flag: "--test-flag", Description: "required value"},
 		})
 	}
 
 	if t.List {
-		return commandHelper("list", "test", []string{
-			"--test-flag=required value",
+		return commandHelper("list", "test", "", []Options{
+			{Flag: "--test-flag", Description: "required value"},
 		})
 	}
 
 	if t.Describe {
-		return commandHelper("describe", "test", []string{
-			"--test-flag=required value",
+		return commandHelper("describe", "test", "", []Options{
+			{Flag: "--test-flag", Description: "required value"},
 		})
 	}
 
 	if t.Label {
-		return commandHelper("lable", "test", []string{
-			"--test-flag=required value",
+		return commandHelper("lable", "test", "", []Options{
+			{Flag: "--test-flag", Description: "required value"},
 		})
 	}
 
 	if t.Update {
-		return commandHelper("update", "test", []string{
-			"--test-flag=required value",
+		return commandHelper("update", "test", "", []Options{
+			{Flag: "--test-flag", Description: "required value"},
 		})
 	}
 
 	if t.Status {
-		return commandHelper("status", "test", []string{
-			"--test-flag=required value",
+		return commandHelper("status", "test", "", []Options{
+			{Flag: "--test-flag", Description: "required value"},
 		})
 	}
 
 	if t.Logs {
-		return commandHelper("logs", "test", []string{
-			"--test-flag=required value",
+		return commandHelper("logs", "test", "", []Options{
+			{Flag: "--test-flag", Description: "required value"},
 		})
 	}
 
 	if t.Deploy {
-		return commandHelper("deploy", "test", []string{
-			"--test-flag=required value",
+		return commandHelper("deploy", "test", "", []Options{
+			{Flag: "--test-flag", Description: "required value"},
 		})
 	}
 
 	if t.Destroy {
-		return commandHelper("destroy", "test", []string{
-			"--test-flag=required value",
+		return commandHelper("destroy", "test", "", []Options{
+			{Flag: "--test-flag", Description: "required value"},
 		})
 	}
 

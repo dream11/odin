@@ -115,16 +115,17 @@ func (c *ComponentType) Run(args []string) int {
 // Help : returns an explanatory string
 func (c *ComponentType) Help() string {
 	if c.List {
-		return commandHelper("list", "component-type", []string{
-			"--name=name of component type",
-			"--version=of component type"})
+		return commandHelper("list", "component-type", "", []Options{
+			{Flag: "--name", Description: "name of component type"},
+			{Flag: "--version", Description: "of component type"},
+		})
 	}
 	if c.Describe {
-		return commandHelper("list", "component-type", []string{
-			"--name=name of component type (required)",
-			"--version=of component type (deafult latest)"})
+		return commandHelper("list", "component-type", "", []Options{
+			{Flag: "--name", Description: "name of component type (required)"},
+			{Flag: "--version", Description: "of component type (deafult latest)"},
+		})
 	}
-
 	return defaultHelper()
 }
 

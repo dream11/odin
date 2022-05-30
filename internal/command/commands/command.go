@@ -1,12 +1,14 @@
 package commands
 
 import (
+	"bytes"
 	"fmt"
 	"sort"
 	"strings"
 
 	odin "github.com/dream11/odin/app"
 	"github.com/dream11/odin/internal/ui"
+	"github.com/olekukonko/tablewriter"
 )
 
 /*
@@ -41,28 +43,43 @@ type Options struct {
 }
 
 // help text generator
-func commandHelper(verb, resource string, options []string) string {
-	var opts string
+// func commandHelper(verb, resource string, options []string) string {
+// 	var opts string
+// 	if len(options) > 0 {
+// 		opts = "[Options]\n\nOptions:\n"
+// 	}
+
+// 	for _, opt := range options {
+// 		opts = opts + fmt.Sprintf("\t%s\n", opt)
+// 	}
+// 	return fmt.Sprintf("Usage: %s %s %s %s", odin.App.Name, verb, resource, opts)
+// }
+
+func commandHelper(verb, resource string, description string, options []Options) string {
+	buf := new(bytes.Buffer)
+
+	// Write description to buffer
+	if description != "" {
+		buf.WriteString("\n\nDescription:\n")
+		buf.WriteString(description + "\n")
+	}
+
+	// Write options to buffer
 	if len(options) > 0 {
-		opts = "[Options]\n\nOptions:\n"
+		buf.WriteString("[Options]\n\nOptions:\n")
+		table := tablewriter.NewWriter(buf)
+		table.SetRowLine(false)
+		table.SetColumnSeparator("")
+		table.SetAlignment(tablewriter.ALIGN_LEFT)
+		table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
+		table.SetAutoWrapText(false)
+		for _, opt := range options {
+			table.Append([]string{opt.Flag, opt.Description})
+		}
+		table.Render()
 	}
 
-	for _, opt := range options {
-		opts = opts + fmt.Sprintf("\t%s\n", opt)
-	}
-	return fmt.Sprintf("Usage: %s %s %s %s", odin.App.Name, verb, resource, opts)
-}
-
-func commandHelper2(verb, resource string, options []Options) string {
-	var opts string
-	if len(options) > 0 {
-		opts = "[Options]\n\nOptions:\n"
-	}
-
-	for _, opt := range options {
-		opts = opts + fmt.Sprintf("\t%s:\t%s\n", opt.Flag, opt.Description)
-	}
-	return fmt.Sprintf("Usage: %s %s %s %s", odin.App.Name, verb, resource, opts)
+	return fmt.Sprintf("Usage: %s %s %s %s", odin.App.Name, verb, resource, buf)
 }
 
 func defaultHelper() string {
