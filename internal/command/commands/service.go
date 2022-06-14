@@ -29,7 +29,6 @@ func (s *Service) Run(args []string) int {
 	serviceVersion := flagSet.String("version", "", "version of service to be used")
 	envName := flagSet.String("env", "", "name of environment to deploy the service in")
 	teamName := flagSet.String("team", "", "name of user's team")
-	rebuild := flagSet.Bool("rebuild", false, "rebuild executor for creating images or deploying services")
 	component := flagSet.String("component", "", "name of service component")
 	configStoreNamespace := flagSet.String("d11-config-store-namespace", "", "config store branch/tag to use")
 	label := flagSet.String("label", "", "name of the label")
@@ -42,16 +41,12 @@ func (s *Service) Run(args []string) int {
 
 	if s.Create {
 
-		if *rebuild {
-			emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
-			if len(emptyParameters) == 0 {
-				serviceClient.RebuildService(*serviceName, *serviceVersion)
-				s.Logger.Output("Command to check status of images")
-				s.Logger.ItalicEmphasize(fmt.Sprintf("odin status service --name %s --version %s", *serviceName, *serviceVersion))
-				return 0
-			}
-			s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
-			return 1
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
+		if len(emptyParameters) == 0 {
+			serviceClient.RebuildService(*serviceName, *serviceVersion)
+			s.Logger.Output("Command to check status of images")
+			s.Logger.ItalicEmphasize(fmt.Sprintf("odin status service --name %s --version %s", *serviceName, *serviceVersion))
+			return 0
 		}
 
 		configData, err := file.Read(*filePath)
@@ -302,9 +297,8 @@ func (s *Service) Help() string {
 	if s.Create {
 		return commandHelper("create", "service", []string{
 			"--file=yaml file to read service definition",
-			"--rebuild=rebuild existing service",
-			"--name=name of the service (required if using --rebuild)",
-			"--version=version of the service (required if using --rebuild)",
+			"--name=name of the service",
+			"--version=version of the service",
 		})
 	}
 
