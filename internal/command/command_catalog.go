@@ -86,6 +86,9 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"create service": func() (cli.Command, error) {
 			return &commands.Service{Create: true}, nil
 		},
+		"createdeploy service": func() (cli.Command, error) {
+			return &commands.Service{CreateDeploy: true}, nil
+		},
 		"describe service": func() (cli.Command, error) {
 			return &commands.Service{Describe: true}, nil
 		},
