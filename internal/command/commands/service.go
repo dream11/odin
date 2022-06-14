@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/dream11/odin/api/service"
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/file"
 	"github.com/dream11/odin/pkg/table"
@@ -26,7 +27,6 @@ func (s *Service) Run(args []string) int {
 	filePath := flagSet.String("file", "service.json", "file to read service config")
 	serviceName := flagSet.String("name", "", "name of service to be used")
 	serviceVersion := flagSet.String("version", "", "version of service to be used")
-	force := flagSet.Bool("force", false, "forcefully deploy the new version of the service")
 	envName := flagSet.String("env", "", "name of environment to deploy the service in")
 	teamName := flagSet.String("team", "", "name of user's team")
 	rebuild := flagSet.Bool("rebuild", false, "rebuild executor for creating images or deploying services")
@@ -178,8 +178,53 @@ func (s *Service) Run(args []string) int {
 	if s.Deploy {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion, "--env": *envName})
 		if len(emptyParameters) == 0 {
+			envServices, err := envClient.DescribeEnv(*envName, "", "")
+
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return 1
+			}
+
+			envService := service.Service{}
+
+			rebuildService := false
+			forceService := false
+
+			for _, curService := range envServices.Services {
+				if curService.Name == *serviceName && curService.Version == *serviceVersion {
+					rebuildService = true
+					envService = curService
+					break
+				}
+				if curService.Name == *serviceName && curService.Version != *serviceVersion {
+					forceService = true
+					envService = curService
+					break
+				}
+			}
+
+			if forceService {
+				s.Logger.Info(fmt.Sprintf("service: %s already exists in the env with different version: %s", *serviceName, envService.Version))
+				s.Logger.Output("Press [Y] to force deploy service or press [n] to skip service deploy.\n")
+				message := fmt.Sprintf("Update version of Service %s : %s -> %s[Y/n]: ", *serviceName, envService.Version, *serviceVersion)
+
+				allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
+				val, err := s.Input.AskWithConstraints(message, allowedInputs)
+
+				if err != nil {
+					s.Logger.Error(err.Error())
+					return 1
+				}
+
+				if val != "Y" {
+					s.Logger.Info("Skipping force service deploy")
+					return 0
+				}
+			}
+
+			s.Logger.Debug(fmt.Sprintf("%s: %s : %s: %s: %t: %t", *serviceName, *serviceVersion, *envName, *configStoreNamespace, forceService, rebuildService))
 			s.Logger.Info("Initiating service deployment: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
-			serviceClient.DeployServiceStream(*serviceName, *serviceVersion, *envName, *configStoreNamespace, *force, *rebuild)
+			serviceClient.DeployServiceStream(*serviceName, *serviceVersion, *envName, *configStoreNamespace, forceService, rebuildService)
 
 			return 0
 		}
@@ -292,8 +337,6 @@ func (s *Service) Help() string {
 		return commandHelper("deploy", "service", []string{
 			"--name=name of service to deploy",
 			"--version=version of service to deploy",
-			"--force=forcefully deploy your service",
-			"--rebuild=rebuild your executor job again for service deployment",
 			"--env=name of environment to deploy service in",
 			"--d11-config-store-namespace=config store branch/tag to use",
 		})
