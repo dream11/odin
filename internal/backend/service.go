@@ -131,6 +131,16 @@ func (s *Service) DeployServiceStream(service, version, env, configStoreNamespac
 	response.Process(true)
 }
 
+func (s *Service) BuildAndDeployServiceStream(serviceDefinition interface{}, env, configStoreNamespace, serviceName, serviceVersion string) {
+	client := newStreamingApiClient()
+	client.QueryParams["env_name"] = env
+	client.QueryParams["service_name"] = serviceName
+	client.QueryParams["service_version"] = serviceVersion
+	client.QueryParams["config_store_namespace"] = configStoreNamespace
+	response := client.stream(path.Join(serviceEntity, "builddeploy")+"/", "POST", serviceDefinition)
+	response.Process(true)
+}
+
 // StatusService : get status of a service
 func (s *Service) StatusService(serviceName, version string) ([]service.Status, error) {
 	client := newApiClient()
