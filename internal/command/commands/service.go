@@ -207,6 +207,13 @@ func (s *Service) Run(args []string) int {
 					s.Logger.Error("Unrecognized file format")
 					return 1
 				}
+				emptyFileParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
+				split := strings.Split(emptyFileParameters, ",")
+				if len(split) < 2 {
+					s.Logger.Error("--name and --version should not be provided when --file is provided.")
+					return 1
+				}
+
 				serviceClient.BuildAndDeployServiceStream(parsedDefinition, *envName, *configStoreNamespace, *serviceName, *serviceVersion)
 				
 
