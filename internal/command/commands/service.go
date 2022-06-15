@@ -24,7 +24,7 @@ func (s *Service) Run(args []string) int {
 	// Define flag set
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
 	// create flags
-	filePath := flagSet.String("file", "service.json", "file to read service config")
+	filePath := flagSet.String("file", "", "file to read service config")
 	serviceName := flagSet.String("name", "", "name of service to be used")
 	serviceVersion := flagSet.String("version", "", "version of service to be used")
 	envName := flagSet.String("env", "", "name of environment to deploy the service in")
@@ -54,6 +54,9 @@ func (s *Service) Run(args []string) int {
 			return 1
 		}
 
+		if len(*filePath) == 0 {
+			*filePath = "service.json"
+		}
 		configData, err := file.Read(*filePath)
 		if err != nil {
 			s.Logger.Error("Unable to read from " + *filePath + "\n" + err.Error())
@@ -172,6 +175,63 @@ func (s *Service) Run(args []string) int {
 			return 0
 		}
 		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		return 1
+	}
+
+	if s.CreateDeploy {
+		emptyCreateParameters := emptyParameters(map[string]string{"--env": *envName})
+		if len(emptyCreateParameters) == 0 {
+
+			if len(*filePath) != 0 {
+				serviceDefinition, err := file.Read(*filePath)
+				if err != nil {
+					s.Logger.Error("Unable to read from " + *filePath + "\n" + err.Error())
+					return 1
+				}
+
+				var parsedDefinition interface{}
+
+				if strings.Contains(*filePath, ".yaml") || strings.Contains(*filePath, ".yml") {
+					err = yaml.Unmarshal(serviceDefinition, &parsedDefinition)
+					if err != nil {
+						s.Logger.Error("Unable to parse YAML. " + err.Error())
+						return 1
+					}
+				} else if strings.Contains(*filePath, ".json") {
+					err = json.Unmarshal(serviceDefinition, &parsedDefinition)
+					if err != nil {
+						s.Logger.Error("Unable to parse JSON. " + err.Error())
+						return 1
+					}
+				} else {
+					s.Logger.Error("Unrecognized file format")
+					return 1
+				}
+				emptyFileParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
+				split := strings.Split(emptyFileParameters, ",")
+				if len(split) < 2 {
+					s.Logger.Error("--name and --version should not be provided when --file is provided.")
+					return 1
+				}
+
+				serviceClient.BuildAndDeployServiceStream(parsedDefinition, *envName, *configStoreNamespace, *serviceName, *serviceVersion)
+
+			} else {
+
+				emptyCreateParameters = emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
+				if len(emptyCreateParameters) == 0 {
+					serviceClient.BuildAndDeployServiceStream(nil, *envName, *configStoreNamespace, *serviceName, *serviceVersion)
+
+				} else {
+
+					s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyCreateParameters))
+					return 1
+				}
+			}
+
+			return 0
+		}
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyCreateParameters))
 		return 1
 	}
 
@@ -363,6 +423,15 @@ func (s *Service) Help() string {
 		})
 	}
 
+	if s.CreateDeploy {
+		return commandHelper("create and deploy", "service", []string{
+			"--file=service definition file",
+			"--env=name of environment to deploy service in",
+			"--name=name of an already created service",
+			"--version=version of the already created service",
+		})
+	}
+
 	return defaultHelper()
 }
 
@@ -398,6 +467,10 @@ func (s *Service) Synopsis() string {
 
 	if s.Status {
 		return "get status of a service version"
+	}
+
+	if s.CreateDeploy {
+		return "create and deploy a service in an env"
 	}
 
 	return defaultHelper()
