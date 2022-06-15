@@ -215,23 +215,20 @@ func (s *Service) Run(args []string) int {
 				}
 
 				serviceClient.BuildAndDeployServiceStream(parsedDefinition, *envName, *configStoreNamespace, *serviceName, *serviceVersion)
-				
 
-			}else{
+			} else {
 
-				emptyCreateParameters = emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion,})
+				emptyCreateParameters = emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
 				if len(emptyCreateParameters) == 0 {
 					serviceClient.BuildAndDeployServiceStream(nil, *envName, *configStoreNamespace, *serviceName, *serviceVersion)
-				
-				}else{
+
+				} else {
 
 					s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyCreateParameters))
 					return 1
 				}
 			}
 
-			
-			
 			return 0
 		}
 		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyCreateParameters))
