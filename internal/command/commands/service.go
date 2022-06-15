@@ -94,10 +94,10 @@ func (s *Service) Run(args []string) int {
 			var details []byte
 			if len(*component) == 0 {
 				s.Logger.Info(serviceResp.Name + "@" + serviceResp.Version + " details!")
-				details, err = yaml.Marshal(serviceResp)
+				details, err = json.MarshalIndent(serviceResp, "", "  ")
 			} else {
 				s.Logger.Info(fmt.Sprintf("%s component details for %s@%s", *component, serviceResp.Name, serviceResp.Version))
-				details, err = yaml.Marshal(serviceResp.Components[0])
+				details, err = json.MarshalIndent(serviceResp.Components[0], "", "  ")
 			}
 
 			if err != nil {
@@ -141,11 +141,8 @@ func (s *Service) Run(args []string) int {
 			})
 		}
 
-		err = table.Write(tableHeaders, tableData)
-		if err != nil {
-			s.Logger.Error(err.Error())
-			return 1
-		}
+		table.Write(tableHeaders, tableData)
+
 		s.Logger.Output("\nCommand to describe service")
 		s.Logger.ItalicEmphasize("odin describe service --name <serviceName> --version <serviceVersion>")
 		return 0
@@ -300,20 +297,6 @@ func (s *Service) Run(args []string) int {
 		return 1
 	}
 
-	if s.Delete {
-		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
-		if len(emptyParameters) == 0 {
-			s.Logger.Info("Initiating service deletion: " + *serviceName + "@" + *serviceVersion)
-			serviceClient.DeleteService(*serviceName, *serviceVersion)
-			s.Logger.Success("Successfully deleted: " + *serviceName + "@" + *serviceVersion)
-
-			return 0
-		}
-
-		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
-		return 1
-	}
-
 	if s.Status {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
 		if len(emptyParameters) == 0 {
@@ -334,11 +317,8 @@ func (s *Service) Run(args []string) int {
 				})
 			}
 
-			err = table.Write(tableHeaders, tableData)
-			if err != nil {
-				s.Logger.Error(err.Error())
-				return 1
-			}
+			table.Write(tableHeaders, tableData)
+
 			s.Logger.Output("\nCommand to deploy service")
 			s.Logger.ItalicEmphasize(fmt.Sprintf("odin deploy service --name %s --version %s --env <envName>", *serviceName, *serviceVersion))
 			return 0
@@ -411,11 +391,11 @@ func (s *Service) Help() string {
 	}
 
 	if s.CreateDeploy {
-		return commandHelper("create and deploy", "service", []string{
-			"--file=service definition file",
-			"--env=name of environment to deploy service in",
-			"--name=name of an already created service",
-			"--version=version of the already created service",
+		return commandHelper("create and deploy", "service", "", []Options{
+			{Flag: "--file", Description: "service definition file"},
+			{Flag: "--env", Description: "name of environment to deploy service in"},
+			{Flag: "--name", Description: "name of an already created service"},
+			{Flag: "--version", Description: "version of the already created service"},
 		})
 	}
 

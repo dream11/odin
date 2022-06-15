@@ -58,6 +58,20 @@ func (c *Configure) Run(args []string) int {
 		return 1
 	}
 
+	// generate yaml
+	configYaml, err := yaml.Marshal(config)
+	if err != nil {
+		c.Logger.Error(err.Error())
+		return 1
+	}
+
+	// store pre configs
+	err = file.Write(configPath, string(configYaml), 0755)
+	if err != nil {
+		c.Logger.Error("Unable to write configuration." + err.Error())
+		return 1
+	}
+
 	authResponse, err := authClient.GetToken(config.Keys.AccessKey, config.Keys.SecretAccessKey)
 	if err != nil {
 		c.Logger.Error("Unable to refresh the tokens. " + err.Error())
@@ -68,7 +82,7 @@ func (c *Configure) Run(args []string) int {
 	config.RefreshToken = authResponse.RefreshToken
 
 	// generate yaml
-	configYaml, err := yaml.Marshal(config)
+	configYaml, err = yaml.Marshal(config)
 	if err != nil {
 		c.Logger.Error(err.Error())
 		return 1

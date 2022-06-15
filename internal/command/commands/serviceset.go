@@ -86,11 +86,8 @@ func (s *ServiceSet) Run(args []string) int {
 			})
 		}
 
-		err = table.Write(tableHeaders, tableData)
-		if err != nil {
-			s.Logger.Error(err.Error())
-			return 1
-		}
+		table.Write(tableHeaders, tableData)
+
 		s.Logger.Output("\nCommand to describe serviceset")
 		s.Logger.ItalicEmphasize("odin describe serviceset --name <serviceSetName>")
 		return 0
@@ -200,11 +197,7 @@ func (s *ServiceSet) Run(args []string) int {
 			}
 
 			s.Logger.Success(fmt.Sprintf("Deployment of service-set %s is started on env %s\n", *serviceSetName, *envName))
-			err = table.Write(tableHeaders, tableData)
-			if err != nil {
-				s.Logger.Error(err.Error())
-				return 1
-			}
+			table.Write(tableHeaders, tableData)
 
 			return 0
 		}
@@ -271,49 +264,12 @@ func (s *ServiceSet) Run(args []string) int {
 			}
 
 			s.Logger.Success(fmt.Sprintf("Undeployment of service-set %s is started on env %s\n", *serviceSetName, *envName))
-			err = table.Write(tableHeaders, tableData)
-			if err != nil {
-				s.Logger.Error(err.Error())
-				return 1
-			}
+			table.Write(tableHeaders, tableData)
 
 			return 0
 		}
 		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
 		return 1
-	}
-
-	if s.Update {
-		configData, err := file.Read(*filePath)
-		if err != nil {
-			s.Logger.Error("Unable to read from " + *filePath + "\n" + err.Error())
-			return 1
-		}
-
-		var parsedConfig interface{}
-
-		if strings.Contains(*filePath, ".yaml") || strings.Contains(*filePath, ".yml") {
-			err = yaml.Unmarshal(configData, &parsedConfig)
-			if err != nil {
-				s.Logger.Error("Unable to parse YAML. " + err.Error())
-				return 1
-			}
-		} else if strings.Contains(*filePath, ".json") {
-			err = json.Unmarshal(configData, &parsedConfig)
-			if err != nil {
-				s.Logger.Error("Unable to parse JSON. " + err.Error())
-				return 1
-			}
-		} else {
-			s.Logger.Error("Unrecognized file format")
-			return 1
-		}
-		serviceDataMap := parsedConfig.(map[string]interface{})
-
-		serviceSetClient.UpdateServiceSet(serviceDataMap["name"].(string), parsedConfig)
-		s.Logger.Info(fmt.Sprintf("ServiceSet: %s updated Successfully.", serviceDataMap["name"].(string)))
-
-		return 0
 	}
 
 	s.Logger.Error("Not a valid command")
@@ -364,12 +320,6 @@ func (s *ServiceSet) Help() string {
 		})
 	}
 
-	if s.Update {
-		return commandHelper("update", "service-set", "", []Options{
-			{Flag: "--file", Description: "yaml file to read service-set definition"},
-		})
-	}
-
 	return defaultHelper()
 }
 
@@ -395,12 +345,8 @@ func (s *ServiceSet) Synopsis() string {
 		return "deploy a service-set"
 	}
 
-	if s.Deploy {
+	if s.Undeploy {
 		return "undeploy a service-set"
-	}
-
-	if s.Update {
-		return "update a service-set"
 	}
 
 	return defaultHelper()

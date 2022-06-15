@@ -18,7 +18,6 @@ The verbs can be associated with any resource
 type command struct {
 	Create          bool // Create a resource record
 	Delete          bool // Delete a resource record
-	Update          bool // Update a resource record
 	Describe        bool // Describe a resource
 	Label           bool // Label a resource
 	List            bool // List the resources
@@ -27,7 +26,6 @@ type command struct {
 	Deploy          bool // Deploy resource
 	Undeploy        bool // Undeploy resource
 	Destroy         bool // Destroy the deployed resource
-	GetHistory      bool // Get changelog of resource
 	DescribeHistory bool // Describe a changelog of resource
 	Generate        bool // Generate resources
 	Unlabel         bool // Unlabel a resource
@@ -42,31 +40,22 @@ type Options struct {
 	Description string
 }
 
-// help text generator
-// func commandHelper(verb, resource string, options []string) string {
-// 	var opts string
-// 	if len(options) > 0 {
-// 		opts = "[Options]\n\nOptions:\n"
-// 	}
-
-// 	for _, opt := range options {
-// 		opts = opts + fmt.Sprintf("\t%s\n", opt)
-// 	}
-// 	return fmt.Sprintf("Usage: %s %s %s %s", odin.App.Name, verb, resource, opts)
-// }
-
 func commandHelper(verb, resource string, description string, options []Options) string {
+
 	buf := new(bytes.Buffer)
 
 	// Write description to buffer
 	if description != "" {
-		buf.WriteString("\n\nDescription:\n")
+		buf.WriteString(ui.BoldCyanHeading("\n\nDescription:\n"))
 		buf.WriteString(description + "\n")
 	}
 
 	// Write options to buffer
 	if len(options) > 0 {
-		buf.WriteString("[Options]\n\nOptions:\n")
+		buf.WriteString("[Options]\n")
+		buf.WriteString(ui.BoldCyanHeading("\nOptions:\n"))
+
+		//configure options as table output
 		table := tablewriter.NewWriter(buf)
 		table.SetRowLine(false)
 		table.SetColumnSeparator("")
@@ -79,11 +68,11 @@ func commandHelper(verb, resource string, description string, options []Options)
 		table.Render()
 	}
 
-	return fmt.Sprintf("Usage: %s %s %s %s", odin.App.Name, verb, resource, buf)
+	return fmt.Sprintf("%s %s %s %s %s", ui.BoldCyanHeading("Usage: "), odin.App.Name, verb, resource, buf)
 }
 
 func defaultHelper() string {
-	return fmt.Sprintf("Usage: %s --help", odin.App.Name)
+	return fmt.Sprintf("%s %s --help", ui.BoldCyanHeading("Usage:"), odin.App.Name)
 }
 
 // get empty parameter list

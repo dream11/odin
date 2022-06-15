@@ -59,12 +59,6 @@ func (t *Test) Run(args []string) int {
 		return 0
 	}
 
-	if t.Update {
-		// Perform stuff to describe a test resource
-		t.Logger.Info(fmt.Sprintf("Test Run(update)! flag value = %s", *testFlag))
-		return 0
-	}
-
 	if t.Status {
 		// Perform stuff to describe a test resource
 		t.Logger.Info(fmt.Sprintf("Test Run(status)! flag value = %s", *testFlag))
@@ -126,18 +120,6 @@ func (t *Test) Help() string {
 		})
 	}
 
-	if t.Update {
-		return commandHelper("update", "test", "", []Options{
-			{Flag: "--test-flag", Description: "required value"},
-		})
-	}
-
-	if t.Status {
-		return commandHelper("status", "test", "", []Options{
-			{Flag: "--test-flag", Description: "required value"},
-		})
-	}
-
 	if t.Logs {
 		return commandHelper("logs", "test", "", []Options{
 			{Flag: "--test-flag", Description: "required value"},
@@ -179,10 +161,6 @@ func (t *Test) Synopsis() string {
 
 	if t.Label {
 		return "label a test resource"
-	}
-
-	if t.Update {
-		return "update a test resource"
 	}
 
 	if t.Status {

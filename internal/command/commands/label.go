@@ -63,12 +63,7 @@ func (l *Label) Run(args []string) int {
 				label.VersionCardinalityGreaterThanOne,
 			})
 		}
-		err = table.Write(tableHeaders, tableData)
-
-		if err != nil {
-			l.Logger.Error(err.Error())
-			return 1
-		}
+		table.Write(tableHeaders, tableData)
 
 		return 0
 	}
