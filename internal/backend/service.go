@@ -36,6 +36,14 @@ func (s *Service) RebuildService(service, version string) {
 	response.Process(true)
 }
 
+// RebuildServiceStream : rebuild a service using streams
+func (s *Service) RebuildServiceStream(service, version string) {
+	client := newStreamingApiClient()
+
+	response := client.stream(path.Join(serviceEntity, service, "versions", version, "rebuild")+"/", "PUT", nil)
+	response.Process(true)
+}
+
 // DescribeService : describe a service version or all versions of a service
 func (s *Service) DescribeService(name, version, component string) (service.Service, error) {
 	client := newApiClient()

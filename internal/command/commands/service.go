@@ -43,7 +43,7 @@ func (s *Service) Run(args []string) int {
 
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
 		if len(emptyParameters) == 0 {
-			serviceClient.RebuildService(*serviceName, *serviceVersion)
+			serviceClient.RebuildServiceStream(*serviceName, *serviceVersion)
 			s.Logger.Output("Command to check status of images")
 			s.Logger.ItalicEmphasize(fmt.Sprintf("odin status service --name %s --version %s", *serviceName, *serviceVersion))
 			return 0
