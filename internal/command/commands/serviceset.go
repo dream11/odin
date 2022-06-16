@@ -86,11 +86,8 @@ func (s *ServiceSet) Run(args []string) int {
 			})
 		}
 
-		err = table.Write(tableHeaders, tableData)
-		if err != nil {
-			s.Logger.Error(err.Error())
-			return 1
-		}
+		table.Write(tableHeaders, tableData)
+
 		s.Logger.Output("\nCommand to describe serviceset")
 		s.Logger.ItalicEmphasize("odin describe serviceset --name <serviceSetName>")
 		return 0
@@ -200,11 +197,7 @@ func (s *ServiceSet) Run(args []string) int {
 			}
 
 			s.Logger.Success(fmt.Sprintf("Deployment of service-set %s is started on env %s\n", *serviceSetName, *envName))
-			err = table.Write(tableHeaders, tableData)
-			if err != nil {
-				s.Logger.Error(err.Error())
-				return 1
-			}
+			table.Write(tableHeaders, tableData)
 
 			return 0
 		}
@@ -271,49 +264,12 @@ func (s *ServiceSet) Run(args []string) int {
 			}
 
 			s.Logger.Success(fmt.Sprintf("Undeployment of service-set %s is started on env %s\n", *serviceSetName, *envName))
-			err = table.Write(tableHeaders, tableData)
-			if err != nil {
-				s.Logger.Error(err.Error())
-				return 1
-			}
+			table.Write(tableHeaders, tableData)
 
 			return 0
 		}
 		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
 		return 1
-	}
-
-	if s.Update {
-		configData, err := file.Read(*filePath)
-		if err != nil {
-			s.Logger.Error("Unable to read from " + *filePath + "\n" + err.Error())
-			return 1
-		}
-
-		var parsedConfig interface{}
-
-		if strings.Contains(*filePath, ".yaml") || strings.Contains(*filePath, ".yml") {
-			err = yaml.Unmarshal(configData, &parsedConfig)
-			if err != nil {
-				s.Logger.Error("Unable to parse YAML. " + err.Error())
-				return 1
-			}
-		} else if strings.Contains(*filePath, ".json") {
-			err = json.Unmarshal(configData, &parsedConfig)
-			if err != nil {
-				s.Logger.Error("Unable to parse JSON. " + err.Error())
-				return 1
-			}
-		} else {
-			s.Logger.Error("Unrecognized file format")
-			return 1
-		}
-		serviceDataMap := parsedConfig.(map[string]interface{})
-
-		serviceSetClient.UpdateServiceSet(serviceDataMap["name"].(string), parsedConfig)
-		s.Logger.Info(fmt.Sprintf("ServiceSet: %s updated Successfully.", serviceDataMap["name"].(string)))
-
-		return 0
 	}
 
 	s.Logger.Error("Not a valid command")
@@ -323,50 +279,44 @@ func (s *ServiceSet) Run(args []string) int {
 // Help : returns an explanatory string
 func (s *ServiceSet) Help() string {
 	if s.Create {
-		return commandHelper("create", "service-set", []string{
-			"--file=yaml file to read service-set definition",
+		return commandHelper("create", "service-set", "", []Options{
+			{Flag: "--file", Description: "yaml file to read service-set definition"},
 		})
 	}
 
 	if s.List {
-		return commandHelper("list", "service-set", []string{
-			"--name=name of the service-set",
-			"--service=name of service in the service-set",
+		return commandHelper("list", "service-set", "", []Options{
+			{Flag: "--name", Description: "name of the service-set"},
+			{Flag: "--service", Description: "name of service in the service-set"},
 		})
 	}
 
 	if s.Describe {
-		return commandHelper("describe", "service", []string{
-			"--name=name of the service-set to describe",
+		return commandHelper("describe", "service", "", []Options{
+			{Flag: "--name", Description: "name of the service-set to describe"},
 		})
 	}
 
 	if s.Delete {
-		return commandHelper("delete", "service-set", []string{
-			"--name=name of service-set to delete",
+		return commandHelper("delete", "service-set", "", []Options{
+			{Flag: "--name", Description: "name of service-set to delete"},
 		})
 	}
 
 	if s.Deploy {
-		return commandHelper("deploy", "service-set", []string{
-			"--name=name of service-set to deploy",
-			"--env=name of environment to deploy service-set in",
-			"--force=forcefully deploy service-set into the Env",
-			"--d11-config-store-namespace=config store branch/tag to use",
+		return commandHelper("deploy", "service-set", "", []Options{
+			{Flag: "--name", Description: "name of service-set to deploy"},
+			{Flag: "--env", Description: "name of environment to deploy service-set in"},
+			{Flag: "--force", Description: "forcefully deploy service-set into the Env"},
+			{Flag: "--d11", Description: "config-store-namespace=config store branch/tag to use"},
 		})
 	}
 
 	if s.Undeploy {
-		return commandHelper("deploy", "service-set", []string{
-			"--name=name of service-set to deploy",
-			"--env=name of environment to deploy service-set in",
-			"--force=forcefully undeploy service-set from the Env",
-		})
-	}
-
-	if s.Update {
-		return commandHelper("update", "service-set", []string{
-			"--file=yaml file to read service-set definition",
+		return commandHelper("deploy", "service-set", "", []Options{
+			{Flag: "--name", Description: "name of service-set to deploy"},
+			{Flag: "--env", Description: "name of environment to deploy service-set in"},
+			{Flag: "--force", Description: "forcefully undeploy service-set from the Env"},
 		})
 	}
 
@@ -395,12 +345,8 @@ func (s *ServiceSet) Synopsis() string {
 		return "deploy a service-set"
 	}
 
-	if s.Deploy {
+	if s.Undeploy {
 		return "undeploy a service-set"
-	}
-
-	if s.Update {
-		return "update a service-set"
 	}
 
 	return defaultHelper()

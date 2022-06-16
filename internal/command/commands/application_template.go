@@ -74,8 +74,8 @@ func (a *ApplicationTemplate) Run(args []string) int {
 
 func (a *ApplicationTemplate) Help() string {
 	if a.Generate {
-		return commandHelper("generate", "application-template", []string{
-			"--service=name of the service",
+		return commandHelper("generate", "application-template", "", []Options{
+			{Flag: "--service", Description: "name of the service"},
 		})
 	}
 

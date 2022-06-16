@@ -64,11 +64,15 @@ func (e *Env) ListEnv(name, team, env, providerAccount string) ([]envResp.Env, e
 }
 
 // DeleteEnv : delete an created environment
-func (e *Env) DeleteEnv(env string) {
+func (e *Env) DeleteEnv(env string) (envResp.EnvDeleteResponse, error) {
 	client := newApiClient()
 
 	response := client.actionWithRetry(path.Join(envEntity, env)+"/", "DELETE", nil)
 	response.Process(true) // process response and exit if error
+
+	var envResponse envResp.EnvDeleteResponse
+	err := json.Unmarshal(response.Body, &envResponse)
+	return envResponse, err
 }
 
 // DeleteEnvStream : delete a created environment and stream deletion events
