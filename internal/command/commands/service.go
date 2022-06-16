@@ -41,17 +41,29 @@ func (s *Service) Run(args []string) int {
 
 	if s.Create {
 
-		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
-		if len(emptyParameters) == 0 {
+		isFilePresent := len(*filePath) > 0
+		isServiceNamePresent := len(*serviceName) > 0
+		isServiceVersionPresent := len(*serviceVersion) > 0
+
+		if isFilePresent && (isServiceNamePresent || isServiceVersionPresent) {
+			s.Logger.Error("--name and --version should not be provided when --file is provided.")
+			return 1
+		} else if (!isFilePresent && isServiceNamePresent && !isServiceVersionPresent) ||
+			(!isFilePresent && !isServiceNamePresent && isServiceVersionPresent) {
+			s.Logger.Error("Please provide both --name and --version.")
+			return 1
+		} else if !isFilePresent && !isServiceNamePresent && !isServiceVersionPresent {
+			*filePath = "service.json"
+		}
+
+		emptyCreateParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
+		if len(emptyCreateParameters) == 0 {
 			serviceClient.RebuildServiceStream(*serviceName, *serviceVersion)
 			s.Logger.Output("Command to check status of images")
 			s.Logger.ItalicEmphasize(fmt.Sprintf("odin status service --name %s --version %s", *serviceName, *serviceVersion))
 			return 0
 		}
 
-		if len(*filePath) == 0 {
-			*filePath = "service.json"
-		}
 		configData, err := file.Read(*filePath)
 		if err != nil {
 			s.Logger.Error("Unable to read from " + *filePath + "\n" + err.Error())
