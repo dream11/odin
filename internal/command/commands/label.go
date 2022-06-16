@@ -63,12 +63,7 @@ func (l *Label) Run(args []string) int {
 				label.VersionCardinalityGreaterThanOne,
 			})
 		}
-		err = table.Write(tableHeaders, tableData)
-
-		if err != nil {
-			l.Logger.Error(err.Error())
-			return 1
-		}
+		table.Write(tableHeaders, tableData)
 
 		return 0
 	}
@@ -91,19 +86,19 @@ func (l *Label) Run(args []string) int {
 // Help : returns an explanatory string
 func (l *Label) Help() string {
 	if l.Create {
-		return commandHelper("create", "label", []string{
-			"--name=name of the label",
-			"--cardinality=whether the label can be linked to multiple versions of a service (optional)",
+		return commandHelper("create", "label", "", []Options{
+			{Flag: "--name", Description: "name of the label"},
+			{Flag: "--cardinality", Description: "whether the label can be linked to multiple versions of a service (optional)"},
 		})
 	}
 
 	if l.List {
-		return commandHelper("list", "label", []string{})
+		return commandHelper("list", "label", "", []Options{})
 	}
 
 	if l.Delete {
-		return commandHelper("delete", "label", []string{
-			"--name=name of label to delete",
+		return commandHelper("delete", "label", "", []Options{
+			{Flag: "--name", Description: "name of label to delete"},
 		})
 	}
 

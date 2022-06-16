@@ -9,14 +9,13 @@ import (
 type Logger struct{}
 
 var successColor = "\033[1;32m%s\033[0m"
-var infoColor = "\033[0;34m%s\033[0m"
 var warningColor = "\033[1;33m%s\033[0m"
 var errorColor = "\033[1;31m%s\033[0m"
 var italicEmphasize = "\033[3m\033[1m%s\033[0m"
 
 // Info : informative messages
 func (l *Logger) Info(message string) {
-	userInterface.Info(fmt.Sprintf(infoColor, message))
+	userInterface.Info(message)
 }
 
 // Success : success messages

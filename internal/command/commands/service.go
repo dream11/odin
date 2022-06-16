@@ -106,10 +106,10 @@ func (s *Service) Run(args []string) int {
 			var details []byte
 			if len(*component) == 0 {
 				s.Logger.Info(serviceResp.Name + "@" + serviceResp.Version + " details!")
-				details, err = yaml.Marshal(serviceResp)
+				details, err = json.MarshalIndent(serviceResp, "", "  ")
 			} else {
 				s.Logger.Info(fmt.Sprintf("%s component details for %s@%s", *component, serviceResp.Name, serviceResp.Version))
-				details, err = yaml.Marshal(serviceResp.Components[0])
+				details, err = json.MarshalIndent(serviceResp.Components[0], "", "  ")
 			}
 
 			if err != nil {
@@ -153,11 +153,8 @@ func (s *Service) Run(args []string) int {
 			})
 		}
 
-		err = table.Write(tableHeaders, tableData)
-		if err != nil {
-			s.Logger.Error(err.Error())
-			return 1
-		}
+		table.Write(tableHeaders, tableData)
+
 		s.Logger.Output("\nCommand to describe service")
 		s.Logger.ItalicEmphasize("odin describe service --name <serviceName> --version <serviceVersion>")
 		return 0
@@ -312,20 +309,6 @@ func (s *Service) Run(args []string) int {
 		return 1
 	}
 
-	if s.Delete {
-		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
-		if len(emptyParameters) == 0 {
-			s.Logger.Info("Initiating service deletion: " + *serviceName + "@" + *serviceVersion)
-			serviceClient.DeleteService(*serviceName, *serviceVersion)
-			s.Logger.Success("Successfully deleted: " + *serviceName + "@" + *serviceVersion)
-
-			return 0
-		}
-
-		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
-		return 1
-	}
-
 	if s.Status {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
 		if len(emptyParameters) == 0 {
@@ -346,11 +329,8 @@ func (s *Service) Run(args []string) int {
 				})
 			}
 
-			err = table.Write(tableHeaders, tableData)
-			if err != nil {
-				s.Logger.Error(err.Error())
-				return 1
-			}
+			table.Write(tableHeaders, tableData)
+
 			s.Logger.Output("\nCommand to deploy service")
 			s.Logger.ItalicEmphasize(fmt.Sprintf("odin deploy service --name %s --version %s --env <envName>", *serviceName, *serviceVersion))
 			return 0
@@ -367,74 +347,67 @@ func (s *Service) Run(args []string) int {
 // Help : returns an explanatory string
 func (s *Service) Help() string {
 	if s.Create {
-		return commandHelper("create", "service", []string{
-			"--file=yaml file to read service definition",
-			"--name=name of the service",
-			"--version=version of the service",
+		return commandHelper("create", "service", "", []Options{
+			{Flag: "--file", Description: "json file to read service definition"},
+			{Flag: "--name", Description: "name of the service (required if using --rebuild)"},
+			{Flag: "--version", Description: "version of the service (required if using --rebuild)"},
 		})
 	}
 
 	if s.Describe {
-		return commandHelper("describe", "service", []string{
-			"--name=name of service to describe",
-			"--version=version of service to describe",
-			"--component=name of component to describe",
+		return commandHelper("describe", "service", "", []Options{
+			{Flag: "--name", Description: "name of service to describe"},
+			{Flag: "--version", Description: "version of service to describe"},
+			{Flag: "--component", Description: "name of component to describe"},
 		})
 	}
 
 	if s.List {
-		return commandHelper("list", "service", []string{
-			"--name=name of service",
-			"--version=version of services to be listed",
-			"--team=name of team",
-			"--label=name of label",
+		return commandHelper("list", "service", "", []Options{
+			{Flag: "--name", Description: "name of service"},
+			{Flag: "--version", Description: "version of services to be listed"},
+			{Flag: "--team", Description: "name of team"},
+			{Flag: "--label", Description: "name of label"},
 		})
 	}
 
 	if s.Label {
-		return commandHelper("label", "service", []string{
-			"--name=name of service to label",
-			"--version=version of service to label",
-			"--label=name of the label",
+		return commandHelper("label", "service", "", []Options{
+			{Flag: "--name", Description: "name of service to label"},
+			{Flag: "--version", Description: "version of service to label"},
+			{Flag: "--label", Description: "name of the label"},
 		})
 	}
 
 	if s.Deploy {
-		return commandHelper("deploy", "service", []string{
-			"--name=name of service to deploy",
-			"--version=version of service to deploy",
-			"--env=name of environment to deploy service in",
-			"--d11-config-store-namespace=config store branch/tag to use",
+		return commandHelper("deploy", "service", "", []Options{
+			{Flag: "--name", Description: "name of service to deploy"},
+			{Flag: "--version", Description: "version of service to deploy"},
+			{Flag: "--env", Description: "name of environment to deploy service in"},
+			{Flag: "--d11-config-store-namespace", Description: "config store branch/tag to use"},
 		})
 	}
 
 	if s.Undeploy {
-		return commandHelper("deploy", "service", []string{
-			"--name=name of service to undeploy",
-			"--env=name of environment to undeploy service in",
-		})
-	}
-
-	if s.Delete {
-		return commandHelper("delete", "service", []string{
-			"--name=name of service to delete",
-			"--version=version of service to delete",
+		return commandHelper("deploy", "service", "", []Options{
+			{Flag: "--name", Description: "name of service to undeploy"},
+			{Flag: "--env", Description: "name of environment to undeploy service in"},
 		})
 	}
 
 	if s.Status {
-		return commandHelper("status", "service", []string{
-			"--name=name of service",
-			"--version=version of service",
+		return commandHelper("status", "service", "", []Options{
+			{Flag: "--name", Description: "name of service"},
+			{Flag: "--version", Description: "version of service"},
 		})
 	}
 
 	if s.CreateDeploy {
-		return commandHelper("create and deploy", "service", []string{
-			"--file=service definition file",
-			"--env=name of environment to deploy service in",
-			"--name=name of an already created service",
-			"--version=version of the already created service",
+		return commandHelper("create and deploy", "service", "", []Options{
+			{Flag: "--file", Description: "service definition file"},
+			{Flag: "--env", Description: "name of environment to deploy service in"},
+			{Flag: "--name", Description: "name of an already created service"},
+			{Flag: "--version", Description: "version of the already created service"},
 		})
 	}
 
@@ -465,10 +438,6 @@ func (s *Service) Synopsis() string {
 
 	if s.Undeploy {
 		return "undeploy a service"
-	}
-
-	if s.Delete {
-		return "delete a service version"
 	}
 
 	if s.Status {
