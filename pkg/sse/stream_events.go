@@ -78,6 +78,7 @@ func (sr *StreamRequest) Stream() StreamResponse {
 			parts := strings.Split(line, ui.SPINNER)
 			s.Prefix = parts[0]
 			s.Suffix = parts[1]
+			s.HideCursor = false
 			err := s.Color(SPINNER_COLOR, SPINNER_STYLE)
 			if err != nil {
 				logger.Error(err.Error())
