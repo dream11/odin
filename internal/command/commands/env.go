@@ -191,29 +191,59 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.DescribeHistory {
-		s := ""
-		if *id > 0 {
-			s = strconv.Itoa(*id)
-		}
 
-		emptyParameters := emptyParameters(map[string]string{"--name": *name, "--id": s})
+		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
-			e.Logger.Info("Detailed description of a changelog for env: " + *name + " with ID: " + s)
-			envResp, err := envClient.DescribeHistoryEnv(*name, s)
-			if err != nil {
-				e.Logger.Error(err.Error())
-				return 1
+			if *id == 0 {
+				e.Logger.Info("Fetching changelog for env: " + *name)
+				envResp, err := envClient.GetHistoryEnv(*name)
+				if err != nil {
+					e.Logger.Error(err.Error())
+					return 1
+				}
+
+				tableHeaders := []string{"ID", "State", "Action", "Resource Details", "Modified by", "Last Modified"}
+				var tableData [][]interface{}
+
+				for _, env := range envResp {
+					relativeCreationTimestamp := datetime.DateTimeFromNow(env.CreatedAt)
+					tableData = append(tableData, []interface{}{
+						env.ID,
+						env.State,
+						env.Action,
+						env.ResourceDetails,
+						env.CreatedBy,
+						relativeCreationTimestamp,
+					})
+				}
+				table.Write(tableHeaders, tableData)
+
+				e.Logger.Output("\nCommand to describe a changelog in detail")
+				e.Logger.ItalicEmphasize("odin history env --name <envName> --id <changelogId>")
+				return 0
+
+			} else {
+				s := ""
+				if *id > 0 {
+					s = strconv.Itoa(*id)
+				}
+				e.Logger.Info("Detailed description of a changelog for env: " + *name + " with ID: " + s)
+				envResp, err := envClient.DescribeHistoryEnv(*name, s)
+				if err != nil {
+					e.Logger.Error(err.Error())
+					return 1
+				}
+
+				details, err := yaml.Marshal(envResp[0])
+				if err != nil {
+					e.Logger.Error(err.Error())
+					return 1
+				}
+
+				e.Logger.Output(string(details))
+
+				return 0
 			}
-
-			details, err := yaml.Marshal(envResp[0])
-			if err != nil {
-				e.Logger.Error(err.Error())
-				return 1
-			}
-
-			e.Logger.Output(string(details))
-
-			return 0
 		}
 		e.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
 		return 1
