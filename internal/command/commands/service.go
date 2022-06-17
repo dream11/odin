@@ -119,7 +119,7 @@ func (s *Service) Run(args []string) int {
 
 			s.Logger.Output(fmt.Sprintf("\n%s", details))
 			if len(*component) == 0 {
-				s.Logger.Output("Command to get component details")
+				s.Logger.Output("\nCommand to get component details")
 				s.Logger.ItalicEmphasize(fmt.Sprintf("odin describe service --name %s --version <serviceVersion> --component <componentName>", *serviceName))
 			}
 			return 0
