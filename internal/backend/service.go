@@ -128,14 +128,40 @@ func (s *Service) UnlabelService(service, version, label string) {
 }
 
 // DeployServiceStream : deploy a service in an Env and stream creation events
-func (s *Service) DeployServiceStream(service, version, env, configStoreNamespace string, force, rebuild bool) {
+func (s *Service) DeployReleasedServiceStream(service, version, env, configStoreNamespace string, force, rebuild bool, provisionConfig interface{}) {
 	client := newStreamingApiClient()
 	client.QueryParams["env_name"] = env
 	client.QueryParams["force"] = fmt.Sprintf("%v", force)
 	client.QueryParams["rebuild"] = fmt.Sprintf("%v", rebuild)
 	client.QueryParams["config_store_namespace"] = configStoreNamespace
 
-	response := client.streamWithRetry(path.Join(serviceEntity, "deploy", service, "versions", version)+"/", "POST", nil)
+	data := map[string]interface{}{}
+
+	if provisionConfig != nil {
+		data["provisionConfig"] = provisionConfig
+	}
+
+	response := client.streamWithRetry(path.Join(serviceEntity, "deploy", service, "versions", version)+"/", "POST", data)
+	response.Process(true)
+}
+
+// DeployServiceStream : deploy a service in an Env and stream creation events
+func (s *Service) DeployUnreleasedServiceStream(serviceDefinition, provisionConfig interface{}, env, configStoreNamespace string, force, rebuild bool) {
+	client := newStreamingApiClient()
+	client.QueryParams["env_name"] = env
+	client.QueryParams["force"] = fmt.Sprintf("%v", force)
+	client.QueryParams["rebuild"] = fmt.Sprintf("%v", rebuild)
+	client.QueryParams["config_store_namespace"] = configStoreNamespace
+
+	data := map[string]interface{}{
+		"serviceDefinition": serviceDefinition,
+	}
+
+	if provisionConfig != nil {
+		data["provisionConfig"] = provisionConfig
+	}
+
+	response := client.streamWithRetry(path.Join(serviceEntity, "deploy")+"/", "POST", data)
 	response.Process(true)
 }
 

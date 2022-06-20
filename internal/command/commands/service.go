@@ -2,6 +2,7 @@ package commands
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"strings"
@@ -32,6 +33,7 @@ func (s *Service) Run(args []string) int {
 	component := flagSet.String("component", "", "name of service component")
 	configStoreNamespace := flagSet.String("d11-config-store-namespace", "", "config store branch/tag to use")
 	label := flagSet.String("label", "", "name of the label")
+	provisioningConfigFile := flagSet.String("provisioning", "", "file to read provisioning config")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -240,60 +242,26 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Deploy {
-		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion, "--env": *envName})
-		if len(emptyParameters) == 0 {
-			envServices, err := envClient.DescribeEnv(*envName, "", "")
+		emptyUnreleasedParameters := emptyParameters(map[string]string{"--env": *envName, "--file": *filePath})
+		if len(emptyUnreleasedParameters) == 0 {
+			var serviceDefinition map[string]interface{}
 
+			err, parsedConfig := parseFile(*filePath)
+			serviceDefinition = parsedConfig.(map[string]interface{})
 			if err != nil {
-				s.Logger.Error(err.Error())
+				s.Logger.Error("Error while parsing service file, err: \n" + err.Error())
 				return 1
 			}
 
-			envService := service.Service{}
-
-			rebuildService := false
-			forceService := false
-
-			for _, curService := range envServices.Services {
-				if curService.Name == *serviceName && curService.Version == *serviceVersion {
-					rebuildService = true
-					envService = curService
-					break
-				}
-				if curService.Name == *serviceName && curService.Version != *serviceVersion {
-					forceService = true
-					envService = curService
-					break
-				}
-			}
-
-			if forceService {
-				s.Logger.Info(fmt.Sprintf("service: %s already exists in the env with different version: %s", *serviceName, envService.Version))
-				s.Logger.Output("Press [Y] to force deploy service or press [n] to skip service deploy.\n")
-				message := fmt.Sprintf("Update version of Service %s : %s -> %s[Y/n]: ", *serviceName, envService.Version, *serviceVersion)
-
-				allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
-				val, err := s.Input.AskWithConstraints(message, allowedInputs)
-
-				if err != nil {
-					s.Logger.Error(err.Error())
-					return 1
-				}
-
-				if val != "Y" {
-					s.Logger.Info("Skipping force service deploy")
-					return 0
-				}
-			}
-
-			s.Logger.Debug(fmt.Sprintf("%s: %s : %s: %s: %t: %t", *serviceName, *serviceVersion, *envName, *configStoreNamespace, forceService, rebuildService))
-			s.Logger.Info("Initiating service deployment: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
-			serviceClient.DeployServiceStream(*serviceName, *serviceVersion, *envName, *configStoreNamespace, forceService, rebuildService)
-
-			return 0
+			return s.deployUnreleasedService(envName, serviceDefinition, provisioningConfigFile, configStoreNamespace)
 		}
 
-		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		emptyReleasedParameters := emptyParameters(map[string]string{"--env": *envName, "--name": *serviceName, "--version": *serviceVersion})
+		if len(emptyReleasedParameters) == 0 {
+			return s.deployReleasedService(envName, serviceName, serviceVersion, provisioningConfigFile, configStoreNamespace)
+		}
+
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyUnreleasedParameters))
 		return 1
 	}
 
@@ -344,6 +312,123 @@ func (s *Service) Run(args []string) int {
 	return 127
 }
 
+func (s *Service) deployUnreleasedService(envName *string, serviceDefinition map[string]interface{}, provisioningConfigFile *string, configStoreNamespace *string) int {
+	serviceName := serviceDefinition["name"].(string)
+	serviceVersion := serviceDefinition["version"].(string)
+
+	rebuildService, forceService, parsedProvisioningConfig, i, done := s.funcName(envName, serviceName, serviceVersion, provisioningConfigFile)
+	if done {
+		return i
+	}
+
+	s.Logger.Debug(fmt.Sprintf("%s: %s : %s: %s: %t: %t", serviceName, serviceVersion, *envName, *configStoreNamespace, forceService, rebuildService))
+	s.Logger.Info("Initiating service deployment: " + serviceName + "@" + serviceVersion + " in " + *envName)
+	serviceClient.DeployUnreleasedServiceStream(serviceDefinition, parsedProvisioningConfig, *envName, *configStoreNamespace, forceService, rebuildService)
+
+	return 0
+}
+
+func (s *Service) deployReleasedService(envName *string, serviceName *string, serviceVersion *string,
+	provisioningConfigFile *string, configStoreNamespace *string) int {
+
+	rebuildService, forceService, parsedProvisioningConfig, i, done := s.funcName(envName, *serviceName, *serviceVersion, provisioningConfigFile)
+	if done {
+		return i
+	}
+
+	s.Logger.Debug(fmt.Sprintf("%s: %s : %s: %s: %t: %t", *serviceName, *serviceVersion, *envName, *configStoreNamespace, forceService, rebuildService))
+	s.Logger.Info("Initiating service deployment: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
+	serviceClient.DeployReleasedServiceStream(*serviceName, *serviceVersion, *envName, *configStoreNamespace, forceService, rebuildService, parsedProvisioningConfig)
+
+	return 0
+}
+
+func (s *Service) funcName(envName *string, serviceName string, serviceVersion string, provisioningConfigFile *string) (bool, bool, interface{}, int, bool) {
+	envServices, err := envClient.DescribeEnv(*envName, "", "")
+
+	if err != nil {
+		s.Logger.Error(err.Error())
+		return false, false, nil, 1, true
+	}
+
+	envService := service.Service{}
+
+	rebuildService := false
+	forceService := false
+
+	for _, curService := range envServices.Services {
+		if curService.Name == serviceName && curService.Version == serviceVersion {
+			rebuildService = true
+			envService = curService
+			break
+		}
+		if curService.Name == serviceName && curService.Version != serviceVersion {
+			forceService = true
+			envService = curService
+			break
+		}
+	}
+
+	if forceService {
+		s.Logger.Info(fmt.Sprintf("service: %s already exists in the env with different version: %s", serviceName, envService.Version))
+		s.Logger.Output("Press [Y] to force deploy service or press [n] to skip service deploy.\n")
+		message := fmt.Sprintf("Update version of Service %s : %s -> %s[Y/n]: ", serviceName, envService.Version, serviceVersion)
+
+		allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
+		val, err := s.Input.AskWithConstraints(message, allowedInputs)
+
+		if err != nil {
+			s.Logger.Error(err.Error())
+			return false, false, nil, 1, true
+		}
+
+		if val != "Y" {
+			s.Logger.Info("Skipping force service deploy")
+			return false, false, nil, 0, true
+		}
+	}
+
+	var parsedProvisioningConfig interface{}
+
+	if len(*provisioningConfigFile) > 0 {
+		err, parsedConfig := parseFile(*provisioningConfigFile)
+		parsedProvisioningConfig = parsedConfig
+
+		if err != nil {
+			s.Logger.Error("Error while parsing provisioning file, err: \n" + err.Error())
+			return false, false, nil, 1, true
+		}
+	}
+	return rebuildService, forceService, parsedProvisioningConfig, 0, false
+}
+
+func parseFile(filePath string) (error, interface{}) {
+	if len(filePath) != 0 {
+		var parsedDefinition interface{}
+
+		fileDefinition, err := file.Read(filePath)
+		if err != nil {
+			return errors.New("Unable to read from " + filePath + "\n" + err.Error()), parsedDefinition
+		}
+
+		if strings.Contains(filePath, ".yaml") || strings.Contains(filePath, ".yml") {
+			err = yaml.Unmarshal(fileDefinition, &parsedDefinition)
+			if err != nil {
+				return errors.New("Unable to parse YAML. " + err.Error()), parsedDefinition
+			}
+		} else if strings.Contains(filePath, ".json") {
+			err = json.Unmarshal(fileDefinition, &parsedDefinition)
+			if err != nil {
+				return errors.New("Unable to parse JSON. " + err.Error()), parsedDefinition
+			}
+		} else {
+			return errors.New("unrecognized file format"), parsedDefinition
+		}
+		return nil, parsedDefinition
+	}
+	return nil, errors.New("filepath cannot be empty")
+}
+
 // Help : returns an explanatory string
 func (s *Service) Help() string {
 	if s.Create {
@@ -385,6 +470,7 @@ func (s *Service) Help() string {
 			{Flag: "--version", Description: "version of service to deploy"},
 			{Flag: "--env", Description: "name of environment to deploy service in"},
 			{Flag: "--d11-config-store-namespace", Description: "config store branch/tag to use"},
+			{Flag: "--provisioning", Description: "file to read provisioning config."},
 		})
 	}
 
