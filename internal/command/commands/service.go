@@ -316,7 +316,13 @@ func (s *Service) deployUnreleasedService(envName *string, serviceDefinition map
 	serviceName := serviceDefinition["name"].(string)
 	serviceVersion := serviceDefinition["version"].(string)
 
-	rebuildService, forceService, parsedProvisioningConfig, i, done := s.funcName(envName, serviceName, serviceVersion, provisioningConfigFile)
+	emptyParameters := emptyParameters(map[string]string{"name": serviceName, "version": serviceVersion})
+	if len(emptyParameters) != 0 {
+		s.Logger.Error(fmt.Sprintf("%s mandatory in the service definition file.", emptyParameters))
+		return 1
+	}
+
+	rebuildService, forceService, parsedProvisioningConfig, i, done := s.validateDeployService(envName, serviceName, serviceVersion, provisioningConfigFile)
 	if done {
 		return i
 	}
@@ -331,7 +337,7 @@ func (s *Service) deployUnreleasedService(envName *string, serviceDefinition map
 func (s *Service) deployReleasedService(envName *string, serviceName *string, serviceVersion *string,
 	provisioningConfigFile *string, configStoreNamespace *string) int {
 
-	rebuildService, forceService, parsedProvisioningConfig, i, done := s.funcName(envName, *serviceName, *serviceVersion, provisioningConfigFile)
+	rebuildService, forceService, parsedProvisioningConfig, i, done := s.validateDeployService(envName, *serviceName, *serviceVersion, provisioningConfigFile)
 	if done {
 		return i
 	}
@@ -343,7 +349,11 @@ func (s *Service) deployReleasedService(envName *string, serviceName *string, se
 	return 0
 }
 
-func (s *Service) funcName(envName *string, serviceName string, serviceVersion string, provisioningConfigFile *string) (bool, bool, interface{}, int, bool) {
+/*
+validateDeployService
+	returns rebuildService: bool, forceService: bool, parsedProvisioningConfig: interface{}, exitCode int, toExit bool
+*/
+func (s *Service) validateDeployService(envName *string, serviceName string, serviceVersion string, provisioningConfigFile *string) (bool, bool, interface{}, int, bool) {
 	envServices, err := envClient.DescribeEnv(*envName, "", "")
 
 	if err != nil {
