@@ -41,3 +41,9 @@ type Status struct {
 type StatusResponse struct {
 	Response []Status `yaml:"resp,omitempty" json:"resp,omitempty"`
 }
+
+// Service Release Body interface
+type MergedService struct {
+	Service            interface{}
+	ProvisioningConfig map[string]interface{}
+}
