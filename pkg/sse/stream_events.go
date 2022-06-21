@@ -26,7 +26,7 @@ var logger ui.Logger
 var SPINNER_COLOR = "fgHiBlue"
 var SPINNER_STYLE = "bold"
 var SPINNER_TYPE = 14
-var SPINNER_DELAY_MS = 100 * time.Millisecond
+var SPINNER_DELAY = 100 * time.Millisecond
 
 func (sr *StreamRequest) Stream() StreamResponse {
 	payload := new(bytes.Buffer)
@@ -68,7 +68,7 @@ func (sr *StreamRequest) Stream() StreamResponse {
 	}
 
 	data := bufio.NewScanner(resp.Body)
-	s := spinner.New(spinner.CharSets[SPINNER_TYPE], SPINNER_DELAY_MS)
+	s := spinner.New(spinner.CharSets[SPINNER_TYPE], SPINNER_DELAY)
 	for data.Scan() {
 		line := string(data.Bytes())
 		if line == "" {
@@ -78,6 +78,7 @@ func (sr *StreamRequest) Stream() StreamResponse {
 			parts := strings.Split(line, ui.SPINNER)
 			s.Prefix = parts[0]
 			s.Suffix = parts[1]
+			s.HideCursor = false
 			err := s.Color(SPINNER_COLOR, SPINNER_STYLE)
 			if err != nil {
 				logger.Error(err.Error())

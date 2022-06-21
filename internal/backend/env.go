@@ -109,7 +109,7 @@ func (e *Env) DescribeHistoryEnv(env string, id string) ([]envResp.History, erro
 	client.QueryParams["id"] = id
 
 	response := client.actionWithRetry(path.Join("envhistory", env)+"/", "GET", nil)
-	response.Process(false) // process response and exit if error
+	response.Process(true) // process response and exit if error
 
 	var envResponse envResp.HistoryListResponse
 	err := json.Unmarshal(response.Body, &envResponse)
