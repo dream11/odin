@@ -69,6 +69,7 @@ func (sr *StreamRequest) Stream() StreamResponse {
 
 	data := bufio.NewScanner(resp.Body)
 	s := spinner.New(spinner.CharSets[SPINNER_TYPE], SPINNER_DELAY)
+	spinners := make(map[string]*spinner.Spinner)
 	for data.Scan() {
 		line := string(data.Bytes())
 		if line == "" {
@@ -76,8 +77,14 @@ func (sr *StreamRequest) Stream() StreamResponse {
 		}
 		if strings.Contains(line, ui.SPINNER) {
 			parts := strings.Split(line, ui.SPINNER)
+			spinnerId := parts[1];
+			s, exist := spinners[spinnerId]
+			if !exist {
+				s = spinner.New(spinner.CharSets[SPINNER_TYPE], SPINNER_DELAY)
+				spinners[spinnerId] = spinner.New(spinner.CharSets[SPINNER_TYPE], SPINNER_DELAY)
+			}
 			s.Prefix = parts[0]
-			s.Suffix = parts[1]
+			s.Suffix = parts[2]
 			s.HideCursor = false
 			err := s.Color(SPINNER_COLOR, SPINNER_STYLE)
 			if err != nil {
