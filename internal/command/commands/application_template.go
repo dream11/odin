@@ -20,7 +20,7 @@ type ApplicationSpec struct {
 func (a *ApplicationTemplate) Run(args []string) int {
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
 
-	serviceName := flagSet.String("service", "", "Name of the service")
+	serviceName := flagSet.String("name", "", "Name of the service")
 	err := flagSet.Parse(args)
 	if err != nil {
 		a.Logger.Error("Unable to parse flags! " + err.Error())
@@ -28,7 +28,7 @@ func (a *ApplicationTemplate) Run(args []string) int {
 	}
 
 	if a.Generate {
-		emptyParameters := emptyParameters(map[string]string{"--service": *serviceName})
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName})
 
 		if len(emptyParameters) == 0 {
 			a.Logger.Info("Generating application template")
@@ -75,7 +75,7 @@ func (a *ApplicationTemplate) Run(args []string) int {
 func (a *ApplicationTemplate) Help() string {
 	if a.Generate {
 		return commandHelper("generate", "application-template", "", []Options{
-			{Flag: "--service", Description: "name of the service"},
+			{Flag: "--name", Description: "name of the service"},
 		})
 	}
 
