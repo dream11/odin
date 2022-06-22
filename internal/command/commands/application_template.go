@@ -62,6 +62,7 @@ func (a *ApplicationTemplate) Run(args []string) int {
 			if err != nil {
 				a.Logger.Error("Unable to write file `application-spec.yml`." + err.Error())
 			}
+			a.Logger.Info("Template generated successfully.")
 			return 0
 		}
 		a.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
