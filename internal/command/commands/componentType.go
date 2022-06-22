@@ -92,7 +92,7 @@ func (c *ComponentType) Run(args []string) int {
 			}
 
 			c.Logger.Output(fmt.Sprintf("\n%s", details))
-			c.Logger.ItalicEmphasize("List of exposed configs :\n")
+			c.Logger.ItalicEmphasize("\nList of exposed configs :\n")
 			table.Write(tableHeaders, tableData)
 
 			return 0
