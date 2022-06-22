@@ -78,23 +78,23 @@ func (c *ComponentType) Run(args []string) int {
 				return 1
 			}
 
-			var tableHeaders []string
-			var tableData [][]interface{}
-			if len(componentDetailsResponse.ExposedConfigs) > 0 {
-				tableHeaders = []string{"Config", "Mandatory", "Data Type"}
-				for _, exposed_config := range componentDetailsResponse.ExposedConfigs {
-					tableData = append(tableData, []interface{}{
-						exposed_config.Config,
-						exposed_config.Mandatory,
-						exposed_config.DataType,
-					})
-				}
-			}
-
 			c.Logger.Output(fmt.Sprintf("\n%s", details))
-			c.Logger.ItalicEmphasize("\nList of exposed configs :\n")
-			table.Write(tableHeaders, tableData)
-
+			/*
+				var tableHeaders []string
+				var tableData [][]interface{}
+				if len(componentDetailsResponse.ExposedConfigs) > 0 {
+					tableHeaders = []string{"Config", "Mandatory", "Data Type"}
+					for _, exposed_config := range componentDetailsResponse.ExposedConfigs {
+						tableData = append(tableData, []interface{}{
+							exposed_config.Config,
+							exposed_config.Mandatory,
+							exposed_config.DataType,
+						})
+					}
+				}
+				c.Logger.ItalicEmphasize("\nList of exposed configs :\n")
+				table.Write(tableHeaders, tableData)
+			*/
 			return 0
 		}
 
