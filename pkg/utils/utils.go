@@ -30,3 +30,12 @@ func ParserYmlOrJson(filePath string, in []byte) (interface{}, error) {
 	}
 	return nil, errors.New("unable to parse file. unknown file format found in file: " + filePath)
 }
+
+func Contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+	return false
+}
