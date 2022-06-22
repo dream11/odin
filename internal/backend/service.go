@@ -22,9 +22,9 @@ func (s *Service) CreateService(service interface{}) {
 	response.Process(true) // process response and exit if error
 }
 
-func (s *Service) CreateServiceStream(service interface{}) {
+func (s *Service) CreateServiceStream(serviceDefinition interface{}, provisioningConfigMap map[string]interface{}) {
 	client := newStreamingApiClient()
-	response := client.stream(serviceEntity+"/", "POST", service)
+	response := client.stream(serviceEntity+"/", "POST", service.MergedService{Service: serviceDefinition, ProvisioningConfig: provisioningConfigMap})
 	response.Process(true) // process response and exit if error
 }
 

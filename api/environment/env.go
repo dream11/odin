@@ -63,6 +63,10 @@ type EnvServiceStatusResponse struct {
 	ServiceResponse EnvServiceStatus `yaml:"resp,omitempty" json:"resp,omitempty"`
 }
 
+type EnvTypesResponse struct {
+	EnvTypes []string `yaml:"resp,omitempty" json:"resp,omitempty"`
+}
+
 type EnvDelete struct {
 	Name        string `yaml:"name,omitempty" json:"name,omitempty"`
 	ExecutorUrl string `yaml:"executorUrl,omitempty" json:"executorUrl,omitempty"`
