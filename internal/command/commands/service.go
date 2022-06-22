@@ -225,7 +225,6 @@ func (s *Service) Run(args []string) int {
 		return 1
 	}
 
-	
 	if s.Deploy {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion, "--env": *envName})
 		if len(emptyParameters) == 0 {
