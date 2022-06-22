@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"regexp"
-	"strings"
 
 	"github.com/dream11/odin/api/service"
 	"github.com/dream11/odin/internal/backend"
@@ -14,7 +13,6 @@ import (
 	"github.com/dream11/odin/pkg/file"
 	"github.com/dream11/odin/pkg/table"
 	"github.com/dream11/odin/pkg/utils"
-	"gopkg.in/yaml.v3"
 )
 
 // initiate backend client for service
@@ -28,7 +26,6 @@ func (s *Service) Run(args []string) int {
 	// Define flag set
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
 	// create flags
-	filePath := flagSet.String("file", "", "file to read service config")
 	serviceName := flagSet.String("name", "", "name of service to be used")
 	serviceVersion := flagSet.String("version", "", "version of service to be used")
 	envName := flagSet.String("env", "", "name of environment to deploy the service in")
@@ -228,63 +225,7 @@ func (s *Service) Run(args []string) int {
 		return 1
 	}
 
-	if s.CreateDeploy {
-		emptyCreateParameters := emptyParameters(map[string]string{"--env": *envName})
-		if len(emptyCreateParameters) == 0 {
-
-			if len(*filePath) != 0 {
-				serviceDefinition, err := file.Read(*filePath)
-				if err != nil {
-					s.Logger.Error("Unable to read from " + *filePath + "\n" + err.Error())
-					return 1
-				}
-
-				var parsedDefinition interface{}
-
-				if strings.Contains(*filePath, ".yaml") || strings.Contains(*filePath, ".yml") {
-					err = yaml.Unmarshal(serviceDefinition, &parsedDefinition)
-					if err != nil {
-						s.Logger.Error("Unable to parse YAML. " + err.Error())
-						return 1
-					}
-				} else if strings.Contains(*filePath, ".json") {
-					err = json.Unmarshal(serviceDefinition, &parsedDefinition)
-					if err != nil {
-						s.Logger.Error("Unable to parse JSON. " + err.Error())
-						return 1
-					}
-				} else {
-					s.Logger.Error("Unrecognized file format")
-					return 1
-				}
-				emptyFileParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
-				split := strings.Split(emptyFileParameters, ",")
-				if len(split) < 2 {
-					s.Logger.Error("--name and --version should not be provided when --file is provided.")
-					return 1
-				}
-
-				serviceClient.BuildAndDeployServiceStream(parsedDefinition, *envName, *configStoreNamespace, *serviceName, *serviceVersion)
-
-			} else {
-
-				emptyCreateParameters = emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
-				if len(emptyCreateParameters) == 0 {
-					serviceClient.BuildAndDeployServiceStream(nil, *envName, *configStoreNamespace, *serviceName, *serviceVersion)
-
-				} else {
-
-					s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyCreateParameters))
-					return 1
-				}
-			}
-
-			return 0
-		}
-		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyCreateParameters))
-		return 1
-	}
-
+	
 	if s.Deploy {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion, "--env": *envName})
 		if len(emptyParameters) == 0 {
@@ -333,7 +274,6 @@ func (s *Service) Run(args []string) int {
 			}
 
 			s.Logger.Debug(fmt.Sprintf("%s: %s : %s: %s: %t: %t", *serviceName, *serviceVersion, *envName, *configStoreNamespace, forceService, rebuildService))
-			s.Logger.Info("Initiating service deployment: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
 			serviceClient.DeployServiceStream(*serviceName, *serviceVersion, *envName, *configStoreNamespace, forceService, rebuildService)
 
 			return 0
@@ -346,7 +286,6 @@ func (s *Service) Run(args []string) int {
 	if s.Undeploy {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--env": *envName})
 		if len(emptyParameters) == 0 {
-			s.Logger.Info("Initiating service un-deploy: " + *serviceName + " from environment " + *envName)
 			serviceClient.UnDeployServiceStream(*serviceName, *envName)
 
 			return 0
@@ -446,15 +385,6 @@ func (s *Service) Help() string {
 		})
 	}
 
-	if s.CreateDeploy {
-		return commandHelper("create and deploy", "service", "", []Options{
-			{Flag: "--file", Description: "service definition file"},
-			{Flag: "--env", Description: "name of environment to deploy service in"},
-			{Flag: "--name", Description: "name of an already created service"},
-			{Flag: "--version", Description: "version of the already created service"},
-		})
-	}
-
 	return defaultHelper()
 }
 
@@ -486,10 +416,6 @@ func (s *Service) Synopsis() string {
 
 	if s.Status {
 		return "get status of a service version"
-	}
-
-	if s.CreateDeploy {
-		return "create and deploy a service in an env"
 	}
 
 	return defaultHelper()
