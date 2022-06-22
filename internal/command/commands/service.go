@@ -61,6 +61,7 @@ func (s *Service) Run(args []string) int {
 			return 1
 		} else if !isDirectoryPathPresent && !isServiceNamePresent && !isServiceVersionPresent {
 			s.Logger.Error("Please provide --path or --name and --version both.")
+			return 1
 		}
 
 		emptyCreateParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
@@ -72,7 +73,7 @@ func (s *Service) Run(args []string) int {
 		}
 
 		if exists, err := dir.Exists(*directoryPath); !exists || err != nil {
-			s.Logger.Error("Provided directory path : " + *directoryPath + " , is not valid\n" + err.Error())
+			s.Logger.Error("Provided directory path : " + *directoryPath + " , is not valid")
 			return 1
 		}
 
@@ -82,6 +83,11 @@ func (s *Service) Run(args []string) int {
 			return 1
 		}
 
+		// Throw error on empty service def file
+		if len(serviceDefinition) == 0 {
+			s.Logger.Error("service definition file(definition.json) cannot be empty")
+			return 1
+		}
 		parsedServiceDefinition, err := utils.ParserYmlOrJson(serviceDefinitionPath, serviceDefinition)
 		if err != nil {
 			s.Logger.Error(err.Error())
@@ -116,6 +122,10 @@ func (s *Service) Run(args []string) int {
 			f := filepath.Join(*directoryPath, utils.GetProvisioningFileName(envType))
 
 			data, provisioningFilePath, err := file.FindAndReadAllAllowedFormat(f, []string{".json", ".yml", ".yaml"})
+			// Ignore empty provisioning files
+			if len(data) == 0 {
+				continue
+			}
 			if err != nil {
 				s.Logger.Error(err.Error())
 				return 1
@@ -497,8 +507,8 @@ func parseFile(filePath string) (error, interface{}) {
 // Help : returns an explanatory string
 func (s *Service) Help() string {
 	if s.Release {
-		return commandHelper("create", "service", "", []Options{
-			{Flag: "--path, -p", Description: "path to directory containing service definition and provisioning config"},
+		return commandHelper("release", "service", "", []Options{
+			{Flag: "--path", Description: "path to directory containing service definition and provisioning config"},
 		})
 	}
 
