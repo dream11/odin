@@ -5,12 +5,16 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/dream11/odin/api/service"
 	"github.com/dream11/odin/internal/backend"
+	"github.com/dream11/odin/pkg/dir"
 	"github.com/dream11/odin/pkg/file"
 	"github.com/dream11/odin/pkg/table"
+	"github.com/dream11/odin/pkg/utils"
 	"gopkg.in/yaml.v3"
 )
 
@@ -34,6 +38,7 @@ func (s *Service) Run(args []string) int {
 	configStoreNamespace := flagSet.String("d11-config-store-namespace", "", "config store branch/tag to use")
 	label := flagSet.String("label", "", "name of the label")
 	provisioningConfigFile := flagSet.String("provisioning", "", "file to read provisioning config")
+	directoryPath := flagSet.String("path", "", "path to directory containing service definition and provisioning config")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -41,21 +46,22 @@ func (s *Service) Run(args []string) int {
 		return 1
 	}
 
-	if s.Create {
+	if s.Release {
 
-		isFilePresent := len(*filePath) > 0
+		isDirectoryPathPresent := len(*directoryPath) > 0
 		isServiceNamePresent := len(*serviceName) > 0
 		isServiceVersionPresent := len(*serviceVersion) > 0
 
-		if isFilePresent && (isServiceNamePresent || isServiceVersionPresent) {
-			s.Logger.Error("--name and --version should not be provided when --file is provided.")
+		if isDirectoryPathPresent && (isServiceNamePresent || isServiceVersionPresent) {
+			s.Logger.Error("--name and --version should not be provided when --path is provided.")
 			return 1
-		} else if (!isFilePresent && isServiceNamePresent && !isServiceVersionPresent) ||
-			(!isFilePresent && !isServiceNamePresent && isServiceVersionPresent) {
+		} else if (!isDirectoryPathPresent && isServiceNamePresent && !isServiceVersionPresent) ||
+			(!isDirectoryPathPresent && !isServiceNamePresent && isServiceVersionPresent) {
 			s.Logger.Error("Please provide both --name and --version.")
 			return 1
-		} else if !isFilePresent && !isServiceNamePresent && !isServiceVersionPresent {
-			*filePath = "service.json"
+		} else if !isDirectoryPathPresent && !isServiceNamePresent && !isServiceVersionPresent {
+			s.Logger.Error("Please provide --path or --name and --version both.")
+			return 1
 		}
 
 		emptyCreateParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
@@ -66,32 +72,72 @@ func (s *Service) Run(args []string) int {
 			return 0
 		}
 
-		configData, err := file.Read(*filePath)
+		if exists, err := dir.Exists(*directoryPath); !exists || err != nil {
+			s.Logger.Error("Provided directory path : " + *directoryPath + " , is not valid")
+			return 1
+		}
+
+		serviceDefinition, serviceDefinitionPath, err := file.FindAndReadAllAllowedFormat(*directoryPath+"/definition", []string{".json", ".yml", ".yaml"})
 		if err != nil {
-			s.Logger.Error("Unable to read from " + *filePath + "\n" + err.Error())
+			s.Logger.Error("Unable to read from " + *directoryPath + "/definition.json\n")
 			return 1
 		}
 
-		var parsedConfig interface{}
-
-		if strings.Contains(*filePath, ".yaml") || strings.Contains(*filePath, ".yml") {
-			err = yaml.Unmarshal(configData, &parsedConfig)
-			if err != nil {
-				s.Logger.Error("Unable to parse YAML. " + err.Error())
-				return 1
-			}
-		} else if strings.Contains(*filePath, ".json") {
-			err = json.Unmarshal(configData, &parsedConfig)
-			if err != nil {
-				s.Logger.Error("Unable to parse JSON. " + err.Error())
-				return 1
-			}
-		} else {
-			s.Logger.Error("Unrecognized file format")
+		// Throw error on empty service def file
+		if len(serviceDefinition) == 0 {
+			s.Logger.Error("service definition file(definition.json) cannot be empty")
+			return 1
+		}
+		parsedServiceDefinition, err := utils.ParserYmlOrJson(serviceDefinitionPath, serviceDefinition)
+		if err != nil {
+			s.Logger.Error(err.Error())
 			return 1
 		}
 
-		serviceClient.CreateServiceStream(parsedConfig)
+		envTypes, err := envClient.EnvTypes()
+		if err != nil {
+			s.Logger.Error(err.Error())
+			return 1
+		}
+
+		allFiles, err := dir.SubDirs(*directoryPath)
+		if err != nil {
+			s.Logger.Error(err.Error())
+			return 1
+		}
+		envFileMap := make(map[string]string)
+		r, _ := regexp.Compile(`provisioning-([a-zA-Z]*)\.json`)
+		for _, file := range allFiles {
+			envType := r.FindStringSubmatch(file)
+			if len(envType) > 1 {
+				envFileMap[envType[1]] = file
+			}
+		}
+
+		provisioningConfigMap := make(map[string]interface{})
+		for _, envType := range envTypes.EnvTypes {
+			if envFileMap[envType] == "" {
+				continue
+			}
+			f := filepath.Join(*directoryPath, utils.GetProvisioningFileName(envType))
+
+			data, provisioningFilePath, err := file.FindAndReadAllAllowedFormat(f, []string{".json", ".yml", ".yaml"})
+			// Ignore empty provisioning files
+			if len(data) == 0 {
+				continue
+			}
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return 1
+			}
+			parsedProvisioningConfig, err := utils.ParserYmlOrJson(provisioningFilePath, data)
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return 1
+			}
+			provisioningConfigMap[envType] = parsedProvisioningConfig
+		}
+		serviceClient.CreateServiceStream(parsedServiceDefinition, provisioningConfigMap)
 		return 0
 	}
 
@@ -460,11 +506,9 @@ func parseFile(filePath string) (error, interface{}) {
 
 // Help : returns an explanatory string
 func (s *Service) Help() string {
-	if s.Create {
-		return commandHelper("create", "service", "", []Options{
-			{Flag: "--file", Description: "json file to read service definition"},
-			{Flag: "--name", Description: "name of the service (required if using --rebuild)"},
-			{Flag: "--version", Description: "version of the service (required if using --rebuild)"},
+	if s.Release {
+		return commandHelper("release", "service", "", []Options{
+			{Flag: "--path", Description: "path to directory containing service definition and provisioning config"},
 		})
 	}
 
@@ -531,8 +575,8 @@ func (s *Service) Help() string {
 
 // Synopsis : returns a brief helper text for the command's verbs
 func (s *Service) Synopsis() string {
-	if s.Create {
-		return "create a service"
+	if s.Release {
+		return "release a service"
 	}
 
 	if s.Describe {

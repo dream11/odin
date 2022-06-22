@@ -141,3 +141,15 @@ func (e *Env) EnvServiceStatus(env, serviceName string) (envResp.EnvServiceStatu
 
 	return envResponse.ServiceResponse, err
 }
+
+func (e *Env) EnvTypes() (envResp.EnvTypesResponse, error) {
+	client := newApiClient()
+
+	response := client.actionWithRetry("envtypes", "GET", nil)
+	response.Process(true) // process response and exit if error
+
+	var envResponse envResp.EnvTypesResponse
+	err := json.Unmarshal(response.Body, &envResponse)
+
+	return envResponse, err
+}
