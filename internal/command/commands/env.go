@@ -40,7 +40,7 @@ func (e *Env) Run(args []string) int {
 	if e.Create {
 		emptyParameters := emptyParameters(map[string]string{"--env-type": *env})
 		if len(emptyParameters) == 0 {
-			e.Logger.Info("Initiating environment creation")
+
 			envConfig := environment.Env{
 				EnvType: *env,
 				Account: *providerAccount,
@@ -136,7 +136,7 @@ func (e *Env) Run(args []string) int {
 
 			e.Logger.Output(fmt.Sprintf("\n%s", details))
 			if *service == "" && *component == "" {
-				e.Logger.Output("\nCommand to descibe env")
+				e.Logger.Output("\nCommand to describe a service component deployed in an env")
 				e.Logger.ItalicEmphasize(fmt.Sprintf("odin describe env --name %s --service <serviceName> --component <componentName>", *name))
 			}
 			return 0
@@ -153,18 +153,16 @@ func (e *Env) Run(args []string) int {
 			return 1
 		}
 
-		tableHeaders := []string{"Name", "Team", "Env Type", "State", "Account", "Deletion Time"}
+		tableHeaders := []string{"Name", "Team", "Env Type", "State", "Account"}
 		var tableData [][]interface{}
 
 		for _, env := range envList {
-			relativeDeletionTimestamp := datetime.DateTimeFromNow(env.DeletionTime)
 			tableData = append(tableData, []interface{}{
 				env.Name,
 				env.Team,
 				env.EnvType,
 				env.State,
 				env.Account,
-				relativeDeletionTimestamp,
 			})
 		}
 
@@ -182,7 +180,7 @@ func (e *Env) Run(args []string) int {
 				e.Logger.Error(err.Error())
 				return 1
 			}
-			e.Logger.Output(fmt.Sprintf("Deletion started for [%s]: %s", *name, response.EnvResponse.ExecutorUrl))
+			e.Logger.Output(fmt.Sprintf("Deletion request accepted. Env [%s] will be deleted.", response.EnvResponse.Name))
 			return 0
 		}
 
