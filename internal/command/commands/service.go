@@ -242,6 +242,25 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Deploy {
+
+		isEnvPresent := len(*envName) > 0
+		isFilePresent := len(*filePath) > 0
+		isServiceNamePresent := len(*serviceName) > 0
+		isServiceVersionPresent := len(*serviceVersion) > 0
+
+		if !isEnvPresent {
+			s.Logger.Error("--env is mandatory")
+			return 1
+		}
+
+		if isFilePresent && (isServiceNamePresent || isServiceVersionPresent) {
+			s.Logger.Error("--name and --version should not be provided when --file is provided.")
+			return 1
+		} else if !isFilePresent && (!isServiceNamePresent || !isServiceVersionPresent) {
+			s.Logger.Error("Please provide both --name and --version.")
+			return 1
+		}
+
 		emptyUnreleasedParameters := emptyParameters(map[string]string{"--env": *envName, "--file": *filePath})
 		if len(emptyUnreleasedParameters) == 0 {
 			var serviceDefinition map[string]interface{}
