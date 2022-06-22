@@ -40,7 +40,7 @@ func (e *Env) Run(args []string) int {
 	if e.Create {
 		emptyParameters := emptyParameters(map[string]string{"--env-type": *env})
 		if len(emptyParameters) == 0 {
-			e.Logger.Info("Initiating environment creation")
+			
 			envConfig := environment.Env{
 				EnvType: *env,
 				Account: *providerAccount,
