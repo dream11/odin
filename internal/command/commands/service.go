@@ -70,7 +70,7 @@ func (s *Service) Run(args []string) int {
 			return 0
 		}
 
-		if exists, err := dir.Exists(*directoryPath); !exists || err != nil {
+		if exists, err := dir.IsDir(*directoryPath); !exists || err != nil {
 			s.Logger.Error("Provided directory path : " + *directoryPath + " , is not valid")
 			return 1
 		}
