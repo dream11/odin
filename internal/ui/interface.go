@@ -17,7 +17,7 @@ var userInterface *cli.PrefixedUi = &cli.PrefixedUi{
 	AskPrefix:       "",
 	AskSecretPrefix: "(Secret) ",
 	OutputPrefix:    "",
-	InfoPrefix:      "[ INFO ] ",
+	InfoPrefix:      "",
 	ErrorPrefix:     "[ ERROR ] ",
 	WarnPrefix:      "[ WARNING ] ",
 	Ui: &ui{

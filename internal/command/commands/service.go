@@ -2,13 +2,19 @@ package commands
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
+	"path/filepath"
+	"regexp"
 	"strings"
 
+	"github.com/dream11/odin/api/service"
 	"github.com/dream11/odin/internal/backend"
+	"github.com/dream11/odin/pkg/dir"
 	"github.com/dream11/odin/pkg/file"
 	"github.com/dream11/odin/pkg/table"
+	"github.com/dream11/odin/pkg/utils"
 	"gopkg.in/yaml.v3"
 )
 
@@ -18,21 +24,23 @@ var serviceClient backend.Service
 // Service : command declaration
 type Service command
 
+const VOLATILE = "volatile"
+
 // Run : implements the actual functionality of the command
 func (s *Service) Run(args []string) int {
 	// Define flag set
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
 	// create flags
-	filePath := flagSet.String("file", "service.yaml", "file to read service config")
+	filePath := flagSet.String("file", "", "file to read service config")
 	serviceName := flagSet.String("name", "", "name of service to be used")
 	serviceVersion := flagSet.String("version", "", "version of service to be used")
-	force := flagSet.Bool("force", false, "forcefully deploy the new version of the service")
 	envName := flagSet.String("env", "", "name of environment to deploy the service in")
 	teamName := flagSet.String("team", "", "name of user's team")
-	isMature := flagSet.Bool("mature", false, "mark service version as matured")
-	rebuild := flagSet.Bool("rebuild", false, "rebuild executor for creating images or deploying services")
 	component := flagSet.String("component", "", "name of service component")
-	platform := flagSet.String("platform", "", "platform to deploy the service in")
+	configStoreNamespace := flagSet.String("d11-config-store-namespace", "", "config store branch/tag to use")
+	label := flagSet.String("label", "", "name of the label")
+	provisioningConfigFile := flagSet.String("provisioning", "", "file to read provisioning config")
+	directoryPath := flagSet.String("path", "", "path to directory containing service definition and provisioning config")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -40,50 +48,98 @@ func (s *Service) Run(args []string) int {
 		return 1
 	}
 
-	if s.Create {
+	if s.Release {
 
-		if *rebuild {
-			emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
-			if len(emptyParameters) == 0 {
-				serviceClient.RebuildService(*serviceName, *serviceVersion)
-				s.Logger.Output("Command to check status of images")
-				s.Logger.ItalicEmphasize(fmt.Sprintf("odin status service --name %s --version %s", *serviceName, *serviceVersion))
-				return 0
-			}
-			s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		isDirectoryPathPresent := len(*directoryPath) > 0
+		isServiceNamePresent := len(*serviceName) > 0
+		isServiceVersionPresent := len(*serviceVersion) > 0
+
+		if isDirectoryPathPresent && (isServiceNamePresent || isServiceVersionPresent) {
+			s.Logger.Error("--name and --version should not be provided when --path is provided.")
+			return 1
+		} else if (!isDirectoryPathPresent && isServiceNamePresent && !isServiceVersionPresent) ||
+			(!isDirectoryPathPresent && !isServiceNamePresent && isServiceVersionPresent) {
+			s.Logger.Error("Please provide both --name and --version.")
+			return 1
+		} else if !isDirectoryPathPresent && !isServiceNamePresent && !isServiceVersionPresent {
+			s.Logger.Error("Please provide --path or --name and --version both.")
 			return 1
 		}
 
-		configData, err := file.Read(*filePath)
+		emptyCreateParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
+		if len(emptyCreateParameters) == 0 {
+			serviceClient.RebuildServiceStream(*serviceName, *serviceVersion)
+			s.Logger.Output("Command to check status of images")
+			s.Logger.ItalicEmphasize(fmt.Sprintf("odin status service --name %s --version %s", *serviceName, *serviceVersion))
+			return 0
+		}
+
+		if exists, err := dir.IsDir(*directoryPath); !exists || err != nil {
+			s.Logger.Error("Provided directory path : " + *directoryPath + " , is not valid")
+			return 1
+		}
+
+		serviceDefinition, serviceDefinitionPath, err := file.FindAndReadAllAllowedFormat(*directoryPath+"/definition", []string{".json", ".yml", ".yaml"})
 		if err != nil {
-			s.Logger.Error("Unable to read from " + *filePath + "\n" + err.Error())
+			s.Logger.Error("Unable to read from " + *directoryPath + "/definition.json\n")
 			return 1
 		}
 
-		var parsedConfig interface{}
-
-		if strings.Contains(*filePath, ".yaml") || strings.Contains(*filePath, ".yml") {
-			err = yaml.Unmarshal(configData, &parsedConfig)
-			if err != nil {
-				s.Logger.Error("Unable to parse YAML. " + err.Error())
-				return 1
-			}
-		} else if strings.Contains(*filePath, ".json") {
-			err = json.Unmarshal(configData, &parsedConfig)
-			if err != nil {
-				s.Logger.Error("Unable to parse JSON. " + err.Error())
-				return 1
-			}
-		} else {
-			s.Logger.Error("Unrecognized file format")
+		// Throw error on empty service def file
+		if len(serviceDefinition) == 0 {
+			s.Logger.Error("service definition file(definition.json) cannot be empty")
 			return 1
 		}
-		serviceDataMap := parsedConfig.(map[string]interface{})
-		serviceClient.CreateService(parsedConfig)
-		s.Logger.Success(fmt.Sprintf("Service creation started for %s@%s ", serviceDataMap["name"], serviceDataMap["version"]))
+		parsedServiceDefinition, err := utils.ParserYmlOrJson(serviceDefinitionPath, serviceDefinition)
+		if err != nil {
+			s.Logger.Error(err.Error())
+			return 1
+		}
 
-		s.Logger.Output("Command to check status of images")
-		s.Logger.ItalicEmphasize(fmt.Sprintf("odin status service --name %s --version %s", serviceDataMap["name"], serviceDataMap["version"]))
+		envTypes, err := envClient.EnvTypes()
+		if err != nil {
+			s.Logger.Error(err.Error())
+			return 1
+		}
+
+		allFiles, err := dir.SubDirs(*directoryPath)
+		if err != nil {
+			s.Logger.Error(err.Error())
+			return 1
+		}
+		r, _ := regexp.Compile(`provisioning-([a-zA-Z]*)\.json`)
+		provisioningConfigMap := make(map[string]interface{})
+
+		for _, fileName := range allFiles {
+			envType := r.FindStringSubmatch(fileName)
+			if len(envType) == 0 {
+				if fileName != "definition.json" {
+					s.Logger.Warn(fmt.Sprintf("Ignoring %s. Provisioning config files should be in following format provisioning-<env_type>.json", fileName))
+				}
+			} else {
+				if !utils.Contains(append(envTypes.EnvTypes, "default"), envType[1]) {
+					s.Logger.Warn(fmt.Sprintf("Ignoring %s as env type %s does not exist", fileName, envType[1]))
+					continue
+				}
+				f := filepath.Join(*directoryPath, utils.GetProvisioningFileName(envType[1]))
+				data, provisioningFilePath, err := file.FindAndReadAllAllowedFormat(f, []string{".json", ".yml", ".yaml"})
+				// Ignore empty provisioning files
+				if len(data) == 0 {
+					continue
+				}
+				if err != nil {
+					s.Logger.Error(err.Error())
+					return 1
+				}
+				parsedProvisioningConfig, err := utils.ParserYmlOrJson(provisioningFilePath, data)
+				if err != nil {
+					s.Logger.Error(err.Error())
+					return 1
+				}
+				provisioningConfigMap[envType[1]] = parsedProvisioningConfig
+			}
+		}
+		serviceClient.CreateServiceStream(parsedServiceDefinition, provisioningConfigMap)
 		return 0
 	}
 
@@ -100,10 +156,10 @@ func (s *Service) Run(args []string) int {
 			var details []byte
 			if len(*component) == 0 {
 				s.Logger.Info(serviceResp.Name + "@" + serviceResp.Version + " details!")
-				details, err = yaml.Marshal(serviceResp)
+				details, err = json.MarshalIndent(serviceResp, "", "  ")
 			} else {
 				s.Logger.Info(fmt.Sprintf("%s component details for %s@%s", *component, serviceResp.Name, serviceResp.Version))
-				details, err = yaml.Marshal(serviceResp.Components[0])
+				details, err = json.MarshalIndent(serviceResp.Components[0], "", "  ")
 			}
 
 			if err != nil {
@@ -113,7 +169,7 @@ func (s *Service) Run(args []string) int {
 
 			s.Logger.Output(fmt.Sprintf("\n%s", details))
 			if len(*component) == 0 {
-				s.Logger.Output("Command to get component details")
+				s.Logger.Output("\nCommand to get component details")
 				s.Logger.ItalicEmphasize(fmt.Sprintf("odin describe service --name %s --version <serviceVersion> --component <componentName>", *serviceName))
 			}
 			return 0
@@ -125,16 +181,16 @@ func (s *Service) Run(args []string) int {
 
 	if s.List {
 		s.Logger.Info("Listing all services")
-		serviceList, err := serviceClient.ListServices(*teamName, *serviceVersion, *serviceName, *isMature)
+		serviceList, err := serviceClient.ListServices(*teamName, *serviceVersion, *serviceName, *label)
 		if err != nil {
 			s.Logger.Error(err.Error())
 			return 1
 		}
 		var tableHeaders []string
 		if len(*serviceName) == 0 {
-			tableHeaders = []string{"Name", "Latest Version", "Description", "Team", "Mature"}
+			tableHeaders = []string{"Name", "Latest Version", "Description", "Team"}
 		} else {
-			tableHeaders = []string{"Name", "Version", "Description", "Team", "Mature"}
+			tableHeaders = []string{"Name", "Version", "Description", "Team"}
 		}
 		var tableData [][]interface{}
 
@@ -143,76 +199,89 @@ func (s *Service) Run(args []string) int {
 				service.Name,
 				service.Version,
 				service.Description,
-				strings.Join(service.Team, ","),
-				*service.Mature,
+				service.Team,
 			})
 		}
 
-		err = table.Write(tableHeaders, tableData)
-		if err != nil {
-			s.Logger.Error(err.Error())
-			return 1
-		}
+		table.Write(tableHeaders, tableData)
+
 		s.Logger.Output("\nCommand to describe service")
 		s.Logger.ItalicEmphasize("odin describe service --name <serviceName> --version <serviceVersion>")
 		return 0
 	}
 
 	if s.Label {
-		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion, "--label": *label})
 		if len(emptyParameters) == 0 {
-
-			// Add more labels to this condition
-			if !*isMature {
-				s.Logger.Error("No label specified")
-				return 1
-			}
-
-			if *isMature {
-				s.Logger.Info("Marking " + *serviceName + "@" + *serviceVersion + " as mature")
-				serviceClient.MarkMature(*serviceName, *serviceVersion)
-			}
+			serviceClient.LabelService(*serviceName, *serviceVersion, *label)
+			s.Logger.Success("Successfully labelled " + *serviceName + "@" + *serviceVersion + " with " + *label)
 			return 0
 		}
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		return 1
+	}
 
+	if s.Unlabel {
+		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion, "--label": *label})
+		if len(emptyParameters) == 0 {
+			serviceClient.UnlabelService(*serviceName, *serviceVersion, *label)
+			s.Logger.Success("Successfully unlabelled " + *serviceName + "@" + *serviceVersion + " from " + *label)
+			return 0
+		}
 		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
 		return 1
 	}
 
 	if s.Deploy {
-		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion, "--env": *envName})
-		if len(emptyParameters) == 0 {
-			s.Logger.Info("Initiating service deployment: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
-			serviceClient.DeployServiceStream(*serviceName, *serviceVersion, *envName, *platform, *force, *rebuild)
 
-			return 0
+		isEnvPresent := len(*envName) > 0
+		isFilePresent := len(*filePath) > 0
+		isServiceNamePresent := len(*serviceName) > 0
+		isServiceVersionPresent := len(*serviceVersion) > 0
+
+		if !isEnvPresent {
+			s.Logger.Error("--env is mandatory")
+			return 1
 		}
 
-		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		if isFilePresent && (isServiceNamePresent || isServiceVersionPresent) {
+			s.Logger.Error("--name and --version should not be provided when --file is provided.")
+			return 1
+		} else if !isFilePresent && (!isServiceNamePresent || !isServiceVersionPresent) {
+			s.Logger.Error("Please provide both --name and --version.")
+			return 1
+		}
+
+		emptyUnreleasedParameters := emptyParameters(map[string]string{"--env": *envName, "--file": *filePath})
+		if len(emptyUnreleasedParameters) == 0 {
+			var serviceDefinition map[string]interface{}
+
+			err, parsedConfig := parseFile(*filePath)
+			serviceDefinition = parsedConfig.(map[string]interface{})
+			if err != nil {
+				s.Logger.Error("Error while parsing service file, err: \n" + err.Error())
+				return 1
+			}
+
+			return s.deployUnreleasedService(envName, serviceDefinition, provisioningConfigFile, configStoreNamespace)
+		}
+
+		emptyReleasedParameters := emptyParameters(map[string]string{"--env": *envName, "--name": *serviceName, "--version": *serviceVersion})
+		if len(emptyReleasedParameters) == 0 {
+			return s.deployReleasedService(envName, serviceName, serviceVersion, provisioningConfigFile, configStoreNamespace)
+		}
+
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyUnreleasedParameters))
 		return 1
 	}
 
 	if s.Undeploy {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--env": *envName})
 		if len(emptyParameters) == 0 {
-			s.Logger.Info("Initiating service un-deploy: " + *serviceName + " from environment " + *envName)
 			serviceClient.UnDeployServiceStream(*serviceName, *envName)
 
 			return 0
 		}
-		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
-		return 1
-	}
-
-	if s.Delete {
-		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--version": *serviceVersion})
-		if len(emptyParameters) == 0 {
-			s.Logger.Info("Initiating service deletion: " + *serviceName + "@" + *serviceVersion)
-			serviceClient.DeleteService(*serviceName, *serviceVersion)
-
-			return 0
-		}
-
 		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
 		return 1
 	}
@@ -237,11 +306,8 @@ func (s *Service) Run(args []string) int {
 				})
 			}
 
-			err = table.Write(tableHeaders, tableData)
-			if err != nil {
-				s.Logger.Error(err.Error())
-				return 1
-			}
+			table.Write(tableHeaders, tableData)
+
 			s.Logger.Output("\nCommand to deploy service")
 			s.Logger.ItalicEmphasize(fmt.Sprintf("odin deploy service --name %s --version %s --env <envName>", *serviceName, *serviceVersion))
 			return 0
@@ -255,71 +321,189 @@ func (s *Service) Run(args []string) int {
 	return 127
 }
 
+func (s *Service) deployUnreleasedService(envName *string, serviceDefinition map[string]interface{}, provisioningConfigFile *string, configStoreNamespace *string) int {
+
+	if serviceDefinition["name"] == nil || len(serviceDefinition["name"].(string)) == 0 {
+		s.Logger.Error("key 'name' mandatory in the service definition file.")
+		return 1
+	}
+
+	serviceName := serviceDefinition["name"].(string)
+	serviceVersion := ""
+
+	rebuildService, forceService, parsedProvisioningConfig, i, done := s.validateDeployService(envName, serviceName, serviceVersion, provisioningConfigFile)
+	if done {
+		return i
+	}
+
+	s.Logger.Debug(fmt.Sprintf("%s: %s : %s: %s: %t: %t", serviceName, serviceVersion, *envName, *configStoreNamespace, forceService, rebuildService))
+	s.Logger.Info("Initiating service deployment: " + serviceName + "@" + serviceVersion + " in " + *envName)
+	serviceClient.DeployUnreleasedServiceStream(serviceDefinition, parsedProvisioningConfig, *envName, *configStoreNamespace, forceService, rebuildService)
+
+	return 0
+}
+
+func (s *Service) deployReleasedService(envName *string, serviceName *string, serviceVersion *string,
+	provisioningConfigFile *string, configStoreNamespace *string) int {
+
+	rebuildService, forceService, parsedProvisioningConfig, i, done := s.validateDeployService(envName, *serviceName, *serviceVersion, provisioningConfigFile)
+	if done {
+		return i
+	}
+
+	s.Logger.Debug(fmt.Sprintf("%s: %s : %s: %s: %t: %t", *serviceName, *serviceVersion, *envName, *configStoreNamespace, forceService, rebuildService))
+	s.Logger.Info("Initiating service deployment: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
+	serviceClient.DeployReleasedServiceStream(*serviceName, *serviceVersion, *envName, *configStoreNamespace, forceService, rebuildService, parsedProvisioningConfig)
+
+	return 0
+}
+
+/*
+validateDeployService
+	returns rebuildService: bool, forceService: bool, parsedProvisioningConfig: interface{}, exitCode int, toExit bool
+*/
+func (s *Service) validateDeployService(envName *string, serviceName string, serviceVersion string, provisioningConfigFile *string) (bool, bool, interface{}, int, bool) {
+	envServices, err := envClient.DescribeEnv(*envName, "", "")
+
+	if err != nil {
+		s.Logger.Error(err.Error())
+		return false, false, nil, 1, true
+	}
+
+	envService := service.Service{}
+
+	rebuildService := false
+	forceService := false
+
+	for _, curService := range envServices.Services {
+		if curService.Name == serviceName && curService.Version == serviceVersion {
+			rebuildService = true
+			envService = curService
+			break
+		}
+		if curService.Name == serviceName && curService.Version != serviceVersion {
+			forceService = true
+			envService = curService
+			break
+		}
+	}
+
+	if forceService {
+		if !strings.HasPrefix(envService.Version, VOLATILE) {
+			s.Logger.Info(fmt.Sprintf("service: %s already exists in the env with different version: %s", serviceName, envService.Version))
+			s.Logger.Output("Press [Y] to force deploy service or press [n] to skip service deploy.")
+			message := "Do you want to override? [Y/n]: "
+
+			allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
+			val, err := s.Input.AskWithConstraints(message, allowedInputs)
+
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return false, false, nil, 1, true
+			}
+
+			if val != "Y" {
+				s.Logger.Info("Skipping force service deploy")
+				return false, false, nil, 0, true
+			}
+		}
+	}
+
+	var parsedProvisioningConfig interface{}
+
+	if len(*provisioningConfigFile) > 0 {
+		err, parsedConfig := parseFile(*provisioningConfigFile)
+		parsedProvisioningConfig = parsedConfig
+
+		if err != nil {
+			s.Logger.Error("Error while parsing provisioning file, err: \n" + err.Error())
+			return false, false, nil, 1, true
+		}
+	}
+	return rebuildService, forceService, parsedProvisioningConfig, 0, false
+}
+
+func parseFile(filePath string) (error, interface{}) {
+	if len(filePath) != 0 {
+		var parsedDefinition interface{}
+
+		fileDefinition, err := file.Read(filePath)
+		if err != nil {
+			return errors.New("Unable to read from " + filePath + "\n" + err.Error()), parsedDefinition
+		}
+
+		if strings.Contains(filePath, ".yaml") || strings.Contains(filePath, ".yml") {
+			err = yaml.Unmarshal(fileDefinition, &parsedDefinition)
+			if err != nil {
+				return errors.New("Unable to parse YAML. " + err.Error()), parsedDefinition
+			}
+		} else if strings.Contains(filePath, ".json") {
+			err = json.Unmarshal(fileDefinition, &parsedDefinition)
+			if err != nil {
+				return errors.New("Unable to parse JSON. " + err.Error()), parsedDefinition
+			}
+		} else {
+			return errors.New("unrecognized file format"), parsedDefinition
+		}
+		return nil, parsedDefinition
+	}
+	return nil, errors.New("filepath cannot be empty")
+}
+
 // Help : returns an explanatory string
 func (s *Service) Help() string {
-	if s.Create {
-		return commandHelper("create", "service", []string{
-			"--file=yaml file to read service definition",
-			"--rebuild=rebuild existing service",
-			"--name=name of the service (required if using --rebuild)",
-			"--version=version of the service (required if using --rebuild)",
+	if s.Release {
+		return commandHelper("release", "service", "", []Options{
+			{Flag: "--path", Description: "path to directory containing service definition and provisioning config"},
 		})
 	}
 
 	if s.Describe {
-		return commandHelper("describe", "service", []string{
-			"--name=name of service to describe",
-			"--version=version of service to describe",
-			"--component=name of component to describe",
+		return commandHelper("describe", "service", "", []Options{
+			{Flag: "--name", Description: "name of service to describe"},
+			{Flag: "--version", Description: "version of service to describe"},
+			{Flag: "--component", Description: "name of component to describe"},
 		})
 	}
 
 	if s.List {
-		return commandHelper("list", "service", []string{
-			"--name=name of service",
-			"--version=version of services to be listed",
-			"--team=name of team",
-			"--mature (mature marked service versions)",
+		return commandHelper("list", "service", "", []Options{
+			{Flag: "--name", Description: "name of service"},
+			{Flag: "--version", Description: "version of services to be listed"},
+			{Flag: "--team", Description: "name of team"},
+			{Flag: "--label", Description: "name of label"},
 		})
 	}
 
 	if s.Label {
-		return commandHelper("label", "service", []string{
-			"--name=name of service to label",
-			"--version=version of service to label",
-			"--mature (mark service version as mature)",
+		return commandHelper("label", "service", "", []Options{
+			{Flag: "--name", Description: "name of service to label"},
+			{Flag: "--version", Description: "version of service to label"},
+			{Flag: "--label", Description: "name of the label"},
 		})
 	}
 
 	if s.Deploy {
-		return commandHelper("deploy", "service", []string{
-			"--name=name of service to deploy",
-			"--version=version of service to deploy",
-			"--force=forcefully deploy your service",
-			"--rebuild=rebuild your executor job again for service deployment",
-			"--env=name of environment to deploy service in",
-			"--platform= platform to deploy the service in",
+		return commandHelper("deploy", "service", "", []Options{
+			{Flag: "--name", Description: "name of service to deploy"},
+			{Flag: "--version", Description: "version of service to deploy"},
+			{Flag: "--env", Description: "name of environment to deploy service in"},
+			{Flag: "--d11-config-store-namespace", Description: "config store branch/tag to use"},
+			{Flag: "--provisioning", Description: "file to read provisioning config."},
 		})
 	}
 
 	if s.Undeploy {
-		return commandHelper("deploy", "service", []string{
-			"--name=name of service to undeploy",
-			"--env=name of environment to undeploy service in",
-		})
-	}
-
-	if s.Delete {
-		return commandHelper("delete", "service", []string{
-			"--name=name of service to delete",
-			"--version=version of service to delete",
+		return commandHelper("deploy", "service", "", []Options{
+			{Flag: "--name", Description: "name of service to undeploy"},
+			{Flag: "--env", Description: "name of environment to undeploy service in"},
 		})
 	}
 
 	if s.Status {
-		return commandHelper("status", "service", []string{
-			"--name=name of service",
-			"--version=version of service",
+		return commandHelper("status", "service", "", []Options{
+			{Flag: "--name", Description: "name of service"},
+			{Flag: "--version", Description: "version of service"},
 		})
 	}
 
@@ -328,8 +512,8 @@ func (s *Service) Help() string {
 
 // Synopsis : returns a brief helper text for the command's verbs
 func (s *Service) Synopsis() string {
-	if s.Create {
-		return "create a service"
+	if s.Release {
+		return "release a service"
 	}
 
 	if s.Describe {
@@ -350,10 +534,6 @@ func (s *Service) Synopsis() string {
 
 	if s.Undeploy {
 		return "undeploy a service"
-	}
-
-	if s.Delete {
-		return "delete a service version"
 	}
 
 	if s.Status {

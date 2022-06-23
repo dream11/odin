@@ -1,12 +1,12 @@
 package commands
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/table"
-	"gopkg.in/yaml.v3"
 )
 
 // initiate backend client for component type
@@ -55,11 +55,8 @@ func (c *ComponentType) Run(args []string) int {
 			}
 		}
 
-		err = table.Write(tableHeaders, tableData)
-		if err != nil {
-			c.Logger.Error(err.Error())
-			return 1
-		}
+		table.Write(tableHeaders, tableData)
+
 		c.Logger.Output("\nCommand to describe component types")
 		c.Logger.ItalicEmphasize("odin describe component-type --name <componentTypeName> --version <componentTypeVersion>")
 		return 0
@@ -75,32 +72,29 @@ func (c *ComponentType) Run(args []string) int {
 				return 1
 			}
 
-			details, err := yaml.Marshal(componentDetailsResponse.Details)
+			details, err := json.MarshalIndent(componentDetailsResponse.Details, "", "  ")
 			if err != nil {
 				c.Logger.Error(err.Error())
 				return 1
-			}
-
-			var tableHeaders []string
-			var tableData [][]interface{}
-			if len(componentDetailsResponse.ExposedConfigs) > 0 {
-				tableHeaders = []string{"Config", "Mandatory", "Data Type"}
-				for _, exposed_config := range componentDetailsResponse.ExposedConfigs {
-					tableData = append(tableData, []interface{}{
-						exposed_config.Config,
-						exposed_config.Mandatory,
-						exposed_config.DataType,
-					})
-				}
 			}
 
 			c.Logger.Output(fmt.Sprintf("\n%s", details))
-			c.Logger.ItalicEmphasize("List of exposed configs :\n")
-			err = table.Write(tableHeaders, tableData)
-			if err != nil {
-				c.Logger.Error(err.Error())
-				return 1
-			}
+			/*
+				var tableHeaders []string
+				var tableData [][]interface{}
+				if len(componentDetailsResponse.ExposedConfigs) > 0 {
+					tableHeaders = []string{"Config", "Mandatory", "Data Type"}
+					for _, exposed_config := range componentDetailsResponse.ExposedConfigs {
+						tableData = append(tableData, []interface{}{
+							exposed_config.Config,
+							exposed_config.Mandatory,
+							exposed_config.DataType,
+						})
+					}
+				}
+				c.Logger.ItalicEmphasize("\nList of exposed configs :\n")
+				table.Write(tableHeaders, tableData)
+			*/
 			return 0
 		}
 
@@ -115,16 +109,17 @@ func (c *ComponentType) Run(args []string) int {
 // Help : returns an explanatory string
 func (c *ComponentType) Help() string {
 	if c.List {
-		return commandHelper("list", "component-type", []string{
-			"--name=name of component type",
-			"--version=of component type"})
+		return commandHelper("list", "component-type", "", []Options{
+			{Flag: "--name", Description: "name of component type"},
+			{Flag: "--version", Description: "of component type"},
+		})
 	}
 	if c.Describe {
-		return commandHelper("list", "component-type", []string{
-			"--name=name of component type (required)",
-			"--version=of component type (deafult latest)"})
+		return commandHelper("list", "component-type", "", []Options{
+			{Flag: "--name", Description: "name of component type (required)"},
+			{Flag: "--version", Description: "of component type (deafult latest)"},
+		})
 	}
-
 	return defaultHelper()
 }
 

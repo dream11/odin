@@ -3,36 +3,38 @@ package table
 import (
 	"fmt"
 	"os"
-	"text/tabwriter"
+
+	"github.com/olekukonko/tablewriter"
 )
 
 // Write : write provided input as tabular format
-func Write(headers []string, data [][]interface{}) error {
-	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
+func Write(headers []string, data [][]interface{}) {
 
-	var tabbedHeader string
-	for _, val := range headers {
-		tabbedHeader += fmt.Sprintf("*%s*\t|\t", val)
+	table := tablewriter.NewWriter(os.Stdout)
+
+	// table properties
+	table.SetRowLine(false)
+	table.SetColumnSeparator("|")
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
+	table.SetAutoWrapText(false)
+	var allHeaderColors []tablewriter.Colors
+	for i := 0; i < len(headers); i++ {
+		allHeaderColors = append(allHeaderColors, tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiBlueColor})
 	}
 
-	_, err := fmt.Fprintln(w, tabbedHeader)
-	if err != nil {
-		return err
-	}
-
-	for _, dataSet := range data {
-		var tabbedData string
-		for _, val := range dataSet {
-			tabbedData += fmt.Sprintf("%v\t|\t", val)
+	//table data
+	table.SetHeader(headers)
+	table.SetHeaderColor(allHeaderColors...)
+	for _, row := range data {
+		s := make([]string, len(row))
+		for i, v := range row {
+			s[i] = fmt.Sprint(v)
 		}
-
-		_, err := fmt.Fprintln(w, tabbedData)
-		if err != nil {
-			return err
-		}
+		table.Append(s)
 	}
-
-	return w.Flush()
+	table.Render()
 }
 
 /*

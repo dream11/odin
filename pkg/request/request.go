@@ -3,6 +3,7 @@ package request
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -90,12 +91,34 @@ func (r *Response) Process(exitOnError bool) {
 	} else {
 		if MatchStatusCode(r.StatusCode, 200) {
 			logger.Debug(r.Status)
+			logger.Debug(string(r.Body))
 		} else if MatchStatusCode(r.StatusCode, 300) {
 			logger.Debug(r.Status)
 			logger.Debug(string(r.Body))
 		} else if MatchStatusCode(r.StatusCode, 400) || MatchStatusCode(r.StatusCode, 500) {
 			logger.Debug(r.Status)
 			logger.Error(string(r.Body))
+			HandleExit(1, exitOnError)
+		}
+	}
+}
+
+// Process : process request response to generate valid output
+// Exit on error, only if specified
+func (r *Response) ProcessHandleError(exitOnError bool) {
+	// Parse error and display error message
+	if r.Error != nil {
+		logger.Error(r.Error.Error())
+		HandleExit(1, exitOnError)
+	} else {
+		if MatchStatusCode(r.StatusCode, 200) {
+			logger.Debug(r.Status)
+		} else if MatchStatusCode(r.StatusCode, 300) {
+			logger.Debug(r.Status)
+			logger.Debug(string(r.Body))
+		} else if MatchStatusCode(r.StatusCode, 400) || MatchStatusCode(r.StatusCode, 500) {
+			logger.Debug(r.Status)
+			handleError(r)
 			HandleExit(1, exitOnError)
 		}
 	}
@@ -111,4 +134,17 @@ func HandleExit(code int, exit bool) {
 // MatchStatusCode : match the status code range
 func MatchStatusCode(statusCode, matchCode int) bool {
 	return (statusCode - matchCode) < 100
+}
+
+func handleError(r *Response) {
+	data := map[string]interface{}{}
+	if err := json.Unmarshal(r.Body, &data); err != nil {
+		logger.Error("Error while parsing error message: " + string(r.Body))
+		return
+	}
+	if val, ok := data["error"]; ok {
+		logger.Error(fmt.Sprintf("%v", val))
+		return
+	}
+	logger.Error(string(r.Body))
 }

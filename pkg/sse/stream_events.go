@@ -6,7 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
+	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/internal/ui"
 	"github.com/dream11/odin/pkg/request"
 	"github.com/r3labs/sse"
@@ -20,17 +23,22 @@ type StreamResponse request.Response
 
 var logger ui.Logger
 
+var SPINNER_COLOR = "fgHiBlue"
+var SPINNER_STYLE = "bold"
+var SPINNER_TYPE = 14
+var SPINNER_DELAY = 100 * time.Millisecond
+
 func (sr *StreamRequest) Stream() StreamResponse {
 	payload := new(bytes.Buffer)
 	err := json.NewEncoder(payload).Encode(sr.Body)
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Debug(err.Error())
 		return StreamResponse{Error: err}
 	}
 
 	req, err := http.NewRequest(sr.Method, sr.URL, payload)
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Debug(err.Error())
 		return StreamResponse{Error: err}
 	}
 
@@ -55,14 +63,31 @@ func (sr *StreamRequest) Stream() StreamResponse {
 
 	resp, err := sseClient.Connection.Do(req)
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Debug(err.Error())
 		return StreamResponse{Error: err}
 	}
 
 	data := bufio.NewScanner(resp.Body)
+	s := spinner.New(spinner.CharSets[SPINNER_TYPE], SPINNER_DELAY)
 	for data.Scan() {
-		line := data.Bytes()
-		logger.Output(string(line))
+		line := string(data.Bytes())
+		if line == "" {
+			continue
+		}
+		if strings.Contains(line, ui.SPINNER) {
+			parts := strings.Split(line, ui.SPINNER)
+			s.Prefix = parts[0]
+			s.Suffix = parts[1]
+			s.HideCursor = false
+			err := s.Color(SPINNER_COLOR, SPINNER_STYLE)
+			if err != nil {
+				logger.Error(err.Error())
+			}
+			s.Start()
+		} else {
+			s.Stop()
+			logger.Output(line + "\n")
+		}
 	}
 
 	return StreamResponse{

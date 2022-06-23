@@ -23,9 +23,10 @@ Verb convention:
 	- logs
 	- deploy
 	- destroy
+	- generate
 
 Resources are the entities on with the verbs will run,
-like: environment, profile, etc...
+like: environment, service-set, etc...
 
 Options are merely the flags that are required with the
 command.
@@ -35,7 +36,7 @@ command.
 TODO:
 - status & logs verbs for env resource
 - status & logs verbs for service resource
-- add verbs for profile resource
+- add verbs for service-set resource
 */
 
 // CommandsCatalog : initiate commands catalog
@@ -49,9 +50,6 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"create env": func() (cli.Command, error) {
 			return &commands.Env{Create: true}, nil
 		},
-		"update env": func() (cli.Command, error) {
-			return &commands.Env{Update: true}, nil
-		},
 		"describe env": func() (cli.Command, error) {
 			return &commands.Env{Describe: true}, nil
 		},
@@ -61,10 +59,7 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"delete env": func() (cli.Command, error) {
 			return &commands.Env{Delete: true}, nil
 		},
-		"get-history env": func() (cli.Command, error) {
-			return &commands.Env{GetHistory: true}, nil
-		},
-		"describe-history env": func() (cli.Command, error) {
+		"history env": func() (cli.Command, error) {
 			return &commands.Env{DescribeHistory: true}, nil
 		},
 		"status env": func() (cli.Command, error) {
@@ -82,8 +77,8 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		},
 
 		// Verbs for `service` resource
-		"create service": func() (cli.Command, error) {
-			return &commands.Service{Create: true}, nil
+		"release service": func() (cli.Command, error) {
+			return &commands.Service{Release: true}, nil
 		},
 		"describe service": func() (cli.Command, error) {
 			return &commands.Service{Describe: true}, nil
@@ -94,11 +89,20 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"label service": func() (cli.Command, error) {
 			return &commands.Service{Label: true}, nil
 		},
+		"unlabel service": func() (cli.Command, error) {
+			return &commands.Service{Unlabel: true}, nil
+		},
+		"create label": func() (cli.Command, error) {
+			return &commands.Label{Create: true}, nil
+		},
+		"list label": func() (cli.Command, error) {
+			return &commands.Label{List: true}, nil
+		},
+		"delete label": func() (cli.Command, error) {
+			return &commands.Label{Delete: true}, nil
+		},
 		"deploy service": func() (cli.Command, error) {
 			return &commands.Service{Deploy: true}, nil
-		},
-		"delete service": func() (cli.Command, error) {
-			return &commands.Service{Delete: true}, nil
 		},
 		"undeploy service": func() (cli.Command, error) {
 			return &commands.Service{Undeploy: true}, nil
@@ -106,6 +110,31 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"status service": func() (cli.Command, error) {
 			return &commands.Service{Status: true}, nil
 		},
+		// Verbs for `service-set` resource
+		"create service-set": func() (cli.Command, error) {
+			return &commands.ServiceSet{Create: true}, nil
+		},
+		"list service-set": func() (cli.Command, error) {
+			return &commands.ServiceSet{List: true}, nil
+		},
+		"describe service-set": func() (cli.Command, error) {
+			return &commands.ServiceSet{Describe: true}, nil
+		},
+		"delete service-set": func() (cli.Command, error) {
+			return &commands.ServiceSet{Delete: true}, nil
+		},
+		"deploy service-set": func() (cli.Command, error) {
+			return &commands.ServiceSet{Deploy: true}, nil
+		},
+		"undeploy service-set": func() (cli.Command, error) {
+			return &commands.ServiceSet{Undeploy: true}, nil
+		},
+
+		// Verb for application-template
+		"generate application-template": func() (cli.Command, error) {
+			return &commands.ApplicationTemplate{Generate: true}, nil
+		},
+
 		/*
 			Sample commands -
 

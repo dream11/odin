@@ -1,16 +1,13 @@
 package commands
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/dream11/odin/api/environment"
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/datetime"
-	"github.com/dream11/odin/pkg/file"
 	"github.com/dream11/odin/pkg/table"
 	"gopkg.in/yaml.v3"
 )
@@ -28,12 +25,10 @@ func (e *Env) Run(args []string) int {
 	// create flags
 	name := flagSet.String("name", "", "name of environment")
 	team := flagSet.String("team", "", "display environments created by a team")
-	purpose := flagSet.String("purpose", "", "reason to create environment")
 	env := flagSet.String("env-type", "dev", "environment to attach with environment")
 	service := flagSet.String("service", "", "service name to filter out describe environment")
 	component := flagSet.String("component", "", "component name to filter out describe environment")
 	providerAccount := flagSet.String("account", "", "account name to provision the environment in")
-	filePath := flagSet.String("file", "environment.yaml", "file to read environment config")
 	id := flagSet.Int("id", 0, "unique id of a changelog of an env")
 
 	err := flagSet.Parse(args)
@@ -45,10 +40,8 @@ func (e *Env) Run(args []string) int {
 	if e.Create {
 		emptyParameters := emptyParameters(map[string]string{"--env-type": *env})
 		if len(emptyParameters) == 0 {
-			e.Logger.Info("Initiating environment creation for team: " + *team)
+
 			envConfig := environment.Env{
-				Team:    *team,
-				Purpose: *purpose,
 				EnvType: *env,
 				Account: *providerAccount,
 			}
@@ -92,11 +85,7 @@ func (e *Env) Run(args []string) int {
 					})
 				}
 
-				err = table.Write(tableHeaders, tableData)
-				if err != nil {
-					e.Logger.Error(err.Error())
-					return 1
-				}
+				table.Write(tableHeaders, tableData)
 
 			} else {
 				e.Logger.Info(fmt.Sprintf("Fetching status for environment: %s", *name))
@@ -119,54 +108,12 @@ func (e *Env) Run(args []string) int {
 					})
 				}
 
-				err = table.Write(tableHeaders, tableData)
-				if err != nil {
-					e.Logger.Error(err.Error())
-					return 1
-				}
+				table.Write(tableHeaders, tableData)
+
 			}
 
 			return 0
 		}
-		e.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
-		return 1
-	}
-
-	if e.Update {
-		emptyParameters := emptyParameters(map[string]string{"--name": *name})
-		if len(emptyParameters) == 0 {
-			e.Logger.Warn("Updating environment: " + *name)
-
-			configData, err := file.Read(*filePath)
-			if err != nil {
-				e.Logger.Error("Unable to read from " + *filePath + "\n" + err.Error())
-				return 1
-			}
-
-			var parsedConfig interface{}
-
-			if strings.Contains(*filePath, ".yaml") || strings.Contains(*filePath, ".yml") {
-				err = yaml.Unmarshal(configData, &parsedConfig)
-				if err != nil {
-					e.Logger.Error("Unable to parse YAML. " + err.Error())
-					return 1
-				}
-			} else if strings.Contains(*filePath, ".json") {
-				err = json.Unmarshal(configData, &parsedConfig)
-				if err != nil {
-					e.Logger.Error("Unable to parse JSON. " + err.Error())
-					return 1
-				}
-			} else {
-				e.Logger.Error("Unrecognized file format")
-				return 1
-			}
-
-			envClient.UpdateEnv(*name, parsedConfig)
-
-			return 0
-		}
-
 		e.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
 		return 1
 	}
@@ -189,7 +136,7 @@ func (e *Env) Run(args []string) int {
 
 			e.Logger.Output(fmt.Sprintf("\n%s", details))
 			if *service == "" && *component == "" {
-				e.Logger.Output("\nCommand to descibe env")
+				e.Logger.Output("\nCommand to describe a service component deployed in an env")
 				e.Logger.ItalicEmphasize(fmt.Sprintf("odin describe env --name %s --service <serviceName> --component <componentName>", *name))
 			}
 			return 0
@@ -206,115 +153,95 @@ func (e *Env) Run(args []string) int {
 			return 1
 		}
 
-		tableHeaders := []string{"Name", "Team", "Env Type", "State", "Account", "Deletion Time", "Purpose", "CreatedAt", "CreatedBy", "UpdatedAt", "UpdatedBy"}
+		tableHeaders := []string{"Name", "Team", "Env Type", "State", "Account"}
 		var tableData [][]interface{}
 
 		for _, env := range envList {
-			relativeDeletionTimestamp := datetime.DateTimeFromNow(env.DeletionTime)
-			relativeCreatedAtTimestamp := datetime.DateTimeFromNow(env.CreatedAt)
-			relativeUpdatedAtTimestamp := datetime.DateTimeFromNow(env.UpdatedAt)
 			tableData = append(tableData, []interface{}{
 				env.Name,
 				env.Team,
 				env.EnvType,
 				env.State,
 				env.Account,
-				relativeDeletionTimestamp,
-				env.Purpose,
-				relativeCreatedAtTimestamp,
-				env.CreatedBy,
-				relativeUpdatedAtTimestamp,
-				env.UpdatedBy,
 			})
 		}
 
-		err = table.Write(tableHeaders, tableData)
-		if err != nil {
-			e.Logger.Error(err.Error())
-			return 1
-		}
+		table.Write(tableHeaders, tableData)
+
 		return 0
 	}
 
 	if e.Delete {
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
-			envClient.DeleteEnvStream(*name)
-			return 0
-		}
-
-		e.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
-		return 1
-	}
-
-	if e.GetHistory {
-		emptyParameters := emptyParameters(map[string]string{"--name": *name})
-		if len(emptyParameters) == 0 {
-			e.Logger.Info("Fetching changelog for env: " + *name)
-			envResp, err := envClient.GetHistoryEnv(*name)
+			e.Logger.Info("Environment(" + *name + ") deletion initiated")
+			response, err := envClient.DeleteEnv(*name)
 			if err != nil {
 				e.Logger.Error(err.Error())
 				return 1
 			}
-
-			tableHeaders := []string{"ID", "State", "Action", "Resource Details", "Modified by", "Last Modified"}
-			var tableData [][]interface{}
-
-			for _, env := range envResp {
-				relativeCreationTimestamp := datetime.DateTimeFromNow(env.CreatedAt)
-				tableData = append(tableData, []interface{}{
-					env.ID,
-					env.State,
-					env.Action,
-					env.ResourceDetails,
-					env.CreatedBy,
-					relativeCreationTimestamp,
-				})
-			}
-			err = table.Write(tableHeaders, tableData)
-			if err != nil {
-				e.Logger.Error(err.Error())
-				return 1
-			}
-
-			e.Logger.Output("\nCommand to describe a changelog in detail")
-			e.Logger.ItalicEmphasize("odin describe-history env --name <envName> --id <changelogId>")
+			e.Logger.Output(fmt.Sprintf("Deletion request accepted. Env [%s] will be deleted.", response.EnvResponse.Name))
 			return 0
 		}
+
 		e.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
 		return 1
 	}
 
 	if e.DescribeHistory {
-		s := ""
-		if *id > 0 {
-			s = strconv.Itoa(*id)
-		}
 
-		emptyParameters := emptyParameters(map[string]string{"--name": *name, "--id": s})
+		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
-			e.Logger.Info("Detailed description of a changelog for env: " + *name + " with ID: " + s)
-			envResp, err := envClient.DescribeHistoryEnv(*name, s)
-			if err != nil {
-				e.Logger.Error(err.Error())
-				return 1
+			if *id == 0 {
+				e.Logger.Info("Fetching changelog for env: " + *name)
+				envResp, err := envClient.GetHistoryEnv(*name)
+				if err != nil {
+					e.Logger.Error(err.Error())
+					return 1
+				}
+
+				tableHeaders := []string{"ID", "State", "Action", "Resource Details", "Modified by", "Last Modified"}
+				var tableData [][]interface{}
+
+				for _, env := range envResp {
+					relativeCreationTimestamp := datetime.DateTimeFromNow(env.CreatedAt)
+					tableData = append(tableData, []interface{}{
+						env.ID,
+						env.State,
+						env.Action,
+						env.ResourceDetails,
+						env.CreatedBy,
+						relativeCreationTimestamp,
+					})
+				}
+				table.Write(tableHeaders, tableData)
+
+				e.Logger.Output("\nCommand to describe a changelog in detail")
+				e.Logger.ItalicEmphasize("odin history env --name <envName> --id <changelogId>")
+				return 0
+
+			} else {
+				s := ""
+				if *id > 0 {
+					s = strconv.Itoa(*id)
+				}
+				e.Logger.Info("Detailed description of a changelog for env: " + *name + " with ID: " + s)
+				envResp, err := envClient.DescribeHistoryEnv(*name, s)
+				if err != nil {
+					e.Logger.Error(err.Error())
+					return 1
+				}
+
+				details, err := yaml.Marshal(envResp[0])
+				if err != nil {
+					e.Logger.Error(err.Error())
+					return 1
+				}
+
+				e.Logger.Output(string(details))
+
+				return 0
 			}
-
-			if len(envResp) == 0 {
-				e.Logger.Output("\nCommand to get the correct ID of the changelog")
-				e.Logger.ItalicEmphasize("odin get-history env --name " + *name)
-				return 1
-			}
-
-			details, err := yaml.Marshal(envResp[0])
-			if err != nil {
-				e.Logger.Error(err.Error())
-				return 1
-			}
-
-			e.Logger.Output(string(details))
-
-			return 0
 		}
 		e.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
 		return 1
@@ -327,61 +254,46 @@ func (e *Env) Run(args []string) int {
 // Help : returns an explanatory string
 func (e *Env) Help() string {
 	if e.Create {
-		return commandHelper("create", "environment", []string{
-			"--team=team name to associate the environment with",
-			"--purpose=reason to create environment",
-			"--env-type=type of environment",
-			"--account=account name to provision the environment in (optional)",
-		})
-	}
-
-	if e.Update {
-		return commandHelper("update", "environment", []string{
-			"--name=name of environment to update",
-			"--file=file path to pick update config",
+		return commandHelper("create", "environment", "", []Options{
+			{Flag: "--env-type", Description: "type of environment"},
+			{Flag: "--account", Description: "account name to provision the environment in (optional)"},
 		})
 	}
 
 	if e.List {
-		return commandHelper("list", "environment", []string{
-			"--name=name of env",
-			"--team=name of team",
-			"--env-type=env type of the environment",
-			"--account=cloud provider account name",
+		return commandHelper("list", "environment", "", []Options{
+			{Flag: "--name", Description: "name of env"},
+			{Flag: "--team", Description: "name of team"},
+			{Flag: "--env-type", Description: "env type of the environment"},
+			{Flag: "--account", Description: "cloud provider account name"},
 		})
 	}
 
 	if e.Describe {
-		return commandHelper("describe", "environment", []string{
-			"--name=name of environment to describe",
-			"--service service config that is deployed on env",
-			"--component component config that is deployed on env",
+		return commandHelper("describe", "environment", "", []Options{
+			{Flag: "--name", Description: "name of environment to describe"},
+			{Flag: "--service", Description: "service config that is deployed on env"},
+			{Flag: "--component", Description: "component config that is deployed on env"},
 		})
 	}
 
 	if e.Delete {
-		return commandHelper("delete", "environment", []string{
-			"--name=name of environment to delete",
-		})
-	}
-
-	if e.GetHistory {
-		return commandHelper("get-history", "environment", []string{
-			"--name=name of environment fetch changelog for",
+		return commandHelper("delete", "environment", "", []Options{
+			{Flag: "--name", Description: "name of environment to delete"},
 		})
 	}
 
 	if e.DescribeHistory {
-		return commandHelper("describe-history", "environment", []string{
-			"--name=name of environment to fetch changelog for",
-			"--id=unique id of a changelog for the specified env to get details for (positive integer)",
+		return commandHelper("history", "environment", "", []Options{
+			{Flag: "--name", Description: "name of environment to fetch changelog for"},
+			{Flag: "--id", Description: "unique id of a changelog for the specified env to get details for (positive integer)"},
 		})
 	}
 
 	if e.Status {
-		return commandHelper("status", "environment", []string{
-			"--name=name of environment",
-			"--service=name of service",
+		return commandHelper("status", "environment", "", []Options{
+			{Flag: "--name", Description: "name of environment"},
+			{Flag: "--service", Description: "name of service"},
 		})
 	}
 
@@ -394,10 +306,6 @@ func (e *Env) Synopsis() string {
 		return "create an environment"
 	}
 
-	if e.Update {
-		return "update an environment"
-	}
-
 	if e.List {
 		return "list all active environment"
 	}
@@ -408,10 +316,6 @@ func (e *Env) Synopsis() string {
 
 	if e.Delete {
 		return "delete an environment"
-	}
-
-	if e.GetHistory {
-		return "get changelog of an environment"
 	}
 
 	if e.DescribeHistory {
