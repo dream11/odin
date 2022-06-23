@@ -74,7 +74,7 @@ func (s *Service) Run(args []string) int {
 			return 0
 		}
 
-		if exists, err := dir.Exists(*directoryPath); !exists || err != nil {
+		if exists, err := dir.IsDir(*directoryPath); !exists || err != nil {
 			s.Logger.Error("Provided directory path : " + *directoryPath + " , is not valid")
 			return 1
 		}
@@ -107,37 +107,37 @@ func (s *Service) Run(args []string) int {
 			s.Logger.Error(err.Error())
 			return 1
 		}
-		envFileMap := make(map[string]string)
 		r, _ := regexp.Compile(`provisioning-([a-zA-Z]*)\.json`)
-		for _, file := range allFiles {
-			envType := r.FindStringSubmatch(file)
-			if len(envType) > 1 {
-				envFileMap[envType[1]] = file
-			}
-		}
-
 		provisioningConfigMap := make(map[string]interface{})
-		for _, envType := range envTypes.EnvTypes {
-			if envFileMap[envType] == "" {
-				continue
-			}
-			f := filepath.Join(*directoryPath, utils.GetProvisioningFileName(envType))
 
-			data, provisioningFilePath, err := file.FindAndReadAllAllowedFormat(f, []string{".json", ".yml", ".yaml"})
-			// Ignore empty provisioning files
-			if len(data) == 0 {
-				continue
+		for _, fileName := range allFiles {
+			envType := r.FindStringSubmatch(fileName)
+			if len(envType) == 0 {
+				if fileName != "definition.json" {
+					s.Logger.Warn(fmt.Sprintf("Ignoring %s. Provisioning config files should be in following format provisioning-<env_type>.json", fileName))
+				}
+			} else {
+				if !utils.Contains(append(envTypes.EnvTypes, "default"), envType[1]) {
+					s.Logger.Warn(fmt.Sprintf("Ignoring %s as env type %s does not exist", fileName, envType[1]))
+					continue
+				}
+				f := filepath.Join(*directoryPath, utils.GetProvisioningFileName(envType[1]))
+				data, provisioningFilePath, err := file.FindAndReadAllAllowedFormat(f, []string{".json", ".yml", ".yaml"})
+				// Ignore empty provisioning files
+				if len(data) == 0 {
+					continue
+				}
+				if err != nil {
+					s.Logger.Error(err.Error())
+					return 1
+				}
+				parsedProvisioningConfig, err := utils.ParserYmlOrJson(provisioningFilePath, data)
+				if err != nil {
+					s.Logger.Error(err.Error())
+					return 1
+				}
+				provisioningConfigMap[envType[1]] = parsedProvisioningConfig
 			}
-			if err != nil {
-				s.Logger.Error(err.Error())
-				return 1
-			}
-			parsedProvisioningConfig, err := utils.ParserYmlOrJson(provisioningFilePath, data)
-			if err != nil {
-				s.Logger.Error(err.Error())
-				return 1
-			}
-			provisioningConfigMap[envType] = parsedProvisioningConfig
 		}
 		serviceClient.CreateServiceStream(parsedServiceDefinition, provisioningConfigMap)
 		return 0
@@ -324,7 +324,7 @@ func (s *Service) Run(args []string) int {
 func (s *Service) deployUnreleasedService(envName *string, serviceDefinition map[string]interface{}, provisioningConfigFile *string, configStoreNamespace *string) int {
 
 	if serviceDefinition["name"] == nil || len(serviceDefinition["name"].(string)) == 0 {
-		s.Logger.Error(fmt.Sprintf("key 'name' mandatory in the service definition file."))
+		s.Logger.Error("key 'name' mandatory in the service definition file.")
 		return 1
 	}
 
@@ -392,7 +392,7 @@ func (s *Service) validateDeployService(envName *string, serviceName string, ser
 		if !strings.HasPrefix(envService.Version, VOLATILE) {
 			s.Logger.Info(fmt.Sprintf("service: %s already exists in the env with different version: %s", serviceName, envService.Version))
 			s.Logger.Output("Press [Y] to force deploy service or press [n] to skip service deploy.")
-			message := fmt.Sprintf("Do you want to override? [Y/n]: ")
+			message := "Do you want to override? [Y/n]: "
 
 			allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
 			val, err := s.Input.AskWithConstraints(message, allowedInputs)
