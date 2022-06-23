@@ -24,6 +24,8 @@ var serviceClient backend.Service
 // Service : command declaration
 type Service command
 
+const VOLATILE = "volatile"
+
 // Run : implements the actual functionality of the command
 func (s *Service) Run(args []string) int {
 	// Define flag set
@@ -320,14 +322,14 @@ func (s *Service) Run(args []string) int {
 }
 
 func (s *Service) deployUnreleasedService(envName *string, serviceDefinition map[string]interface{}, provisioningConfigFile *string, configStoreNamespace *string) int {
-	serviceName := serviceDefinition["name"].(string)
-	serviceVersion := serviceDefinition["version"].(string)
 
-	emptyParameters := emptyParameters(map[string]string{"name": serviceName, "version": serviceVersion})
-	if len(emptyParameters) != 0 {
-		s.Logger.Error(fmt.Sprintf("%s mandatory in the service definition file.", emptyParameters))
+	if serviceDefinition["name"] == nil || len(serviceDefinition["name"].(string)) == 0 {
+		s.Logger.Error("key 'name' mandatory in the service definition file.")
 		return 1
 	}
+
+	serviceName := serviceDefinition["name"].(string)
+	serviceVersion := ""
 
 	rebuildService, forceService, parsedProvisioningConfig, i, done := s.validateDeployService(envName, serviceName, serviceVersion, provisioningConfigFile)
 	if done {
@@ -387,21 +389,23 @@ func (s *Service) validateDeployService(envName *string, serviceName string, ser
 	}
 
 	if forceService {
-		s.Logger.Info(fmt.Sprintf("service: %s already exists in the env with different version: %s", serviceName, envService.Version))
-		s.Logger.Output("Press [Y] to force deploy service or press [n] to skip service deploy.\n")
-		message := fmt.Sprintf("Update version of Service %s : %s -> %s[Y/n]: ", serviceName, envService.Version, serviceVersion)
+		if !strings.HasPrefix(envService.Version, VOLATILE) {
+			s.Logger.Info(fmt.Sprintf("service: %s already exists in the env with different version: %s", serviceName, envService.Version))
+			s.Logger.Output("Press [Y] to force deploy service or press [n] to skip service deploy.")
+			message := "Do you want to override? [Y/n]: "
 
-		allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
-		val, err := s.Input.AskWithConstraints(message, allowedInputs)
+			allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
+			val, err := s.Input.AskWithConstraints(message, allowedInputs)
 
-		if err != nil {
-			s.Logger.Error(err.Error())
-			return false, false, nil, 1, true
-		}
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return false, false, nil, 1, true
+			}
 
-		if val != "Y" {
-			s.Logger.Info("Skipping force service deploy")
-			return false, false, nil, 0, true
+			if val != "Y" {
+				s.Logger.Info("Skipping force service deploy")
+				return false, false, nil, 0, true
+			}
 		}
 	}
 
