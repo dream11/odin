@@ -254,14 +254,12 @@ func (s *Service) Run(args []string) int {
 
 		emptyUnreleasedParameters := emptyParameters(map[string]string{"--env": *envName, "--file": *filePath})
 		if len(emptyUnreleasedParameters) == 0 {
-			var serviceDefinition map[string]interface{}
-
 			err, parsedConfig := parseFile(*filePath)
-			serviceDefinition = parsedConfig.(map[string]interface{})
 			if err != nil {
 				s.Logger.Error("Error while parsing service file, err: \n" + err.Error())
 				return 1
 			}
+			serviceDefinition := parsedConfig.(map[string]interface{})
 
 			return s.deployUnreleasedService(envName, serviceDefinition, provisioningConfigFile, configStoreNamespace)
 		}
@@ -413,12 +411,11 @@ func (s *Service) validateDeployService(envName *string, serviceName string, ser
 
 	if len(*provisioningConfigFile) > 0 {
 		err, parsedConfig := parseFile(*provisioningConfigFile)
-		parsedProvisioningConfig = parsedConfig
-
 		if err != nil {
 			s.Logger.Error("Error while parsing provisioning file, err: \n" + err.Error())
 			return false, false, nil, 1, true
 		}
+		parsedProvisioningConfig = parsedConfig
 	}
 	return rebuildService, forceService, parsedProvisioningConfig, 0, false
 }
