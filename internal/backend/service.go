@@ -2,7 +2,6 @@ package backend
 
 import (
 	"encoding/json"
-	"fmt"
 	"path"
 
 	"github.com/dream11/odin/api/service"
@@ -103,11 +102,9 @@ func (s *Service) UnlabelService(service, version, label string) {
 }
 
 // DeployServiceStream : deploy a service in an Env and stream creation events
-func (s *Service) DeployReleasedServiceStream(service, version, env, configStoreNamespace string, force, rebuild bool, provisionConfig interface{}) {
+func (s *Service) DeployReleasedServiceStream(service, version, env, configStoreNamespace string, provisionConfig interface{}) {
 	client := newStreamingApiClient()
 	client.QueryParams["env_name"] = env
-	client.QueryParams["force"] = fmt.Sprintf("%v", force)
-	client.QueryParams["rebuild"] = fmt.Sprintf("%v", rebuild)
 	client.QueryParams["config_store_namespace"] = configStoreNamespace
 
 	data := map[string]interface{}{}
@@ -121,11 +118,9 @@ func (s *Service) DeployReleasedServiceStream(service, version, env, configStore
 }
 
 // DeployServiceStream : deploy a service in an Env and stream creation events
-func (s *Service) DeployUnreleasedServiceStream(serviceDefinition, provisionConfig interface{}, env, configStoreNamespace string, force, rebuild bool) {
+func (s *Service) DeployUnreleasedServiceStream(serviceDefinition, provisionConfig interface{}, env, configStoreNamespace string) {
 	client := newStreamingApiClient()
 	client.QueryParams["env_name"] = env
-	client.QueryParams["force"] = fmt.Sprintf("%v", force)
-	client.QueryParams["rebuild"] = fmt.Sprintf("%v", rebuild)
 	client.QueryParams["config_store_namespace"] = configStoreNamespace
 
 	data := map[string]interface{}{
