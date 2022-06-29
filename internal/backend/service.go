@@ -14,27 +14,12 @@ type Service struct{}
 // root entity
 var serviceEntity = "services"
 
-// CreateService : register a service version with backend
-func (s *Service) CreateService(service interface{}) {
-	client := newApiClient()
-
-	response := client.actionWithRetry(serviceEntity+"/", "POST", service)
-	response.Process(true) // process response and exit if error
-}
-
 func (s *Service) CreateServiceStream(serviceDefinition interface{}, provisioningConfigMap map[string]interface{}) {
 	client := newStreamingApiClient()
 	response := client.stream(serviceEntity+"/", "POST", service.MergedService{Service: serviceDefinition, ProvisioningConfig: provisioningConfigMap})
 	response.Process(true) // process response and exit if error
 }
 
-// RebuildService : rebuild a service
-func (s *Service) RebuildService(service, version string) {
-	client := newApiClient()
-
-	response := client.actionWithRetry(path.Join(serviceEntity, service, "versions", version, "rebuild")+"/", "PUT", nil)
-	response.Process(true)
-}
 
 // RebuildServiceStream : rebuild a service using streams
 func (s *Service) RebuildServiceStream(service, version string) {
@@ -73,15 +58,6 @@ func (s *Service) ListServices(team, version, serviceName string, label string) 
 	err := json.Unmarshal(response.Body, &serviceResponse)
 
 	return serviceResponse.Response, err
-}
-
-// UndeployService : To remove a service from a given env
-func (s *Service) UndeployService(serviceName, envName string) {
-	client := newApiClient()
-	client.QueryParams["env_name"] = envName
-
-	response := client.actionWithRetry(path.Join(serviceEntity, "undeploy", serviceName)+"/", "DELETE", nil)
-	response.Process(true)
 }
 
 // UnDeployServiceStream : un-deploy a service in an Env and stream creation events
@@ -162,16 +138,6 @@ func (s *Service) DeployUnreleasedServiceStream(serviceDefinition, provisionConf
 	}
 
 	response := client.streamWithRetry(path.Join(serviceEntity, "deploy")+"/", "POST", data)
-	response.Process(true)
-}
-
-func (s *Service) BuildAndDeployServiceStream(serviceDefinition interface{}, env, configStoreNamespace, serviceName, serviceVersion string) {
-	client := newStreamingApiClient()
-	client.QueryParams["env_name"] = env
-	client.QueryParams["service_name"] = serviceName
-	client.QueryParams["service_version"] = serviceVersion
-	client.QueryParams["config_store_namespace"] = configStoreNamespace
-	response := client.stream(path.Join(serviceEntity, "builddeploy")+"/", "POST", serviceDefinition)
 	response.Process(true)
 }
 
