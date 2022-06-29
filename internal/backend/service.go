@@ -20,7 +20,6 @@ func (s *Service) CreateServiceStream(serviceDefinition interface{}, provisionin
 	response.Process(true) // process response and exit if error
 }
 
-
 // RebuildServiceStream : rebuild a service using streams
 func (s *Service) RebuildServiceStream(service, version string) {
 	client := newStreamingApiClient()
