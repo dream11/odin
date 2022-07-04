@@ -485,6 +485,7 @@ func (s *Service) Help() string {
 			{Flag: "--env", Description: "name of environment to deploy service in"},
 			{Flag: "--d11-config-store-namespace", Description: "config store branch/tag to use"},
 			{Flag: "--provisioning", Description: "file to read provisioning config."},
+			{Flag: "--file", Description: "file to read service definition."},
 		})
 	}
 
