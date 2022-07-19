@@ -1,12 +1,12 @@
 {
   "name": "profile",
-  "version": "1.0.0-QA-SNAPSHOT",
+  "version": "1.0.0-SNAPSHOT",
   "team": "sdet",
   "components": [
     {
       "type": "application",
       "name": "profile",
-      "version": "1.0.0-QA-SNAPSHOT",
+      "version": "1.0.0-SNAPSHOT",
       "config": {
         "build_type": "java",
         "build_version": "8"
