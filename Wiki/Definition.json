@@ -1,0 +1,31 @@
+{
+  "name": "profile",
+  "version": "1.0.0-QA-SNAPSHOT",
+  "team": "sdet",
+  "components": [
+    {
+      "type": "application",
+      "name": "profile",
+      "version": "1.0.0-QA-SNAPSHOT",
+      "config": {
+        "build_type": "java",
+        "build_version": "8"
+      }
+    },
+    {
+      "type": "redis",
+      "name": "profile-elasticache",
+      "version": "6.2.1-1.0.0"
+    },
+    {
+      "type": "rds",
+      "name": "profile-aurora",
+      "version": "5.7-1.0.0",
+      "config": {
+        "binlog": {
+          "enable": "false"
+        }
+      }
+    }
+  ]
+} 
