@@ -1,0 +1,20 @@
+[
+  {
+    "component_name": "profile",
+    "deployment_type": "container",
+    "params": {
+      "lb_type": "alb"
+    }
+  },
+  {
+    "component_name": "profile-elasticache",
+    "deployment_type": "container"
+  },
+  {
+    "component_name": "profile-aurora",
+    "deployment_type": "vm",
+    "params": {
+      "instance_type": "db.r5.large"
+    }
+  }
+]
