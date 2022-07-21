@@ -148,7 +148,6 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.List {
-		*name = envClient.FetchSetEnv(*name)
 		e.Logger.Info("Listing all environment(s)")
 		envList, err := envClient.ListEnv(*name, *team, *env, *providerAccount)
 		if err != nil {
