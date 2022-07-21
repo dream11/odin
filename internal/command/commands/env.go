@@ -46,7 +46,7 @@ func (e *Env) Run(args []string) int {
 			}
 
 			envClient.CreateEnvStream(envConfig)
-			e.Logger.Output("Command to set default Env")
+			e.Logger.Output("Command to set default Env. Once you do this, no need to pass --env everytime.")
 			e.Logger.ItalicEmphasize("odin set env --name <envName>")
 			return 0
 		}
