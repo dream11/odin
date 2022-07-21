@@ -251,7 +251,7 @@ func (s *Service) Run(args []string) int {
 			s.Logger.Error("Please provide both --name and --version.")
 			return 1
 		}
-
+		*envName = envClient.FetchSetEnv(*envName)
 		emptyUnreleasedParameters := emptyParameters(map[string]string{"--env": *envName, "--file": *filePath})
 		if len(emptyUnreleasedParameters) == 0 {
 			err, parsedConfig := parseFile(*filePath)
@@ -274,6 +274,7 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Undeploy {
+		*envName = envClient.FetchSetEnv(*envName)
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--env": *envName})
 		if len(emptyParameters) == 0 {
 			serviceClient.UnDeployServiceStream(*serviceName, *envName)

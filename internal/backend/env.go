@@ -2,9 +2,14 @@ package backend
 
 import (
 	"encoding/json"
-	"path"
-
+	"fmt"
 	envResp "github.com/dream11/odin/api/environment"
+	"github.com/dream11/odin/internal/config"
+	"github.com/dream11/odin/pkg/file"
+	"os"
+	"path"
+	"regexp"
+	"strings"
 )
 
 // Env entity
@@ -59,7 +64,6 @@ func (e *Env) ListEnv(name, team, env, providerAccount string) ([]envResp.Env, e
 
 	var envResponse envResp.ListResponse
 	err := json.Unmarshal(response.Body, &envResponse)
-
 	return envResponse.Response, err
 }
 
@@ -152,4 +156,31 @@ func (e *Env) EnvTypes() (envResp.EnvTypesResponse, error) {
 	err := json.Unmarshal(response.Body, &envResponse)
 
 	return envResponse, err
+}
+
+func (e *Env) SetEnv(envName string) error {
+	dirname, err := os.UserHomeDir()
+	data, err := file.Read(dirname + "/.odin/config")
+	result := ""
+	r, _ := regexp.Compile("(?:odinEnvName: [a-zA-Z]+-\\w+)")
+	match := r.FindString(string(data))
+	if match != "" {
+		result = strings.Replace(string(data), match, fmt.Sprintf("odinEnvName: %s", envName), 1)
+	} else {
+		result = string(data) + fmt.Sprintf("odinEnvName: %s\n", envName)
+	}
+	errWrite := file.Write(dirname+"/.odin/config", result, 0755)
+	if errWrite != nil {
+		return errWrite
+	}
+	return err
+}
+
+func (e *Env) FetchSetEnv(envName string) string {
+	if envName != "" {
+		return envName
+	} else {
+		var appConfig = config.Get()
+		return appConfig.OdinEnvName
+	}
 }

@@ -12,4 +12,5 @@ type Configuration struct {
 	Keys         SecretKeys
 	AccessToken  string `yaml:"access_token,omitempty" json:"access_token,omitempty"`
 	RefreshToken string `yaml:"refresh_token,omitempty" json:"refresh_token,omitempty"`
+	OdinEnvName  string `yaml:"odinEnvName,omitempty" json:"odinEnvName:,omitempty"`
 }

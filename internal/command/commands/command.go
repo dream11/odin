@@ -30,6 +30,7 @@ type command struct {
 	Generate        bool // Generate resources
 	Unlabel         bool // Unlabel a resource
 	Release         bool // Release a resource record
+	Set             bool // Set a default env
 
 	Logger ui.Logger // Use this to log messages
 	Input  ui.Input  // Use this to take inputs

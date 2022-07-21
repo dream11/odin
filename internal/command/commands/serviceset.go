@@ -136,6 +136,7 @@ func (s *ServiceSet) Run(args []string) int {
 	}
 
 	if s.Deploy {
+		*envName = envClient.FetchSetEnv(*envName)
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceSetName, "--env": *envName})
 		if len(emptyParameters) == 0 {
 			var forceDeployServices []serviceset.ListEnvService
@@ -207,6 +208,7 @@ func (s *ServiceSet) Run(args []string) int {
 	}
 
 	if s.Undeploy {
+		*envName = envClient.FetchSetEnv(*envName)
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceSetName, "--env": *envName})
 		if len(emptyParameters) == 0 {
 			var forceUndeployServices []serviceset.ListEnvService

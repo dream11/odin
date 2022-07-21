@@ -3,13 +3,12 @@ package commands
 import (
 	"flag"
 	"fmt"
-	"strconv"
-
 	"github.com/dream11/odin/api/environment"
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/datetime"
 	"github.com/dream11/odin/pkg/table"
 	"gopkg.in/yaml.v3"
+	"strconv"
 )
 
 // initiate backend client for environment
@@ -47,7 +46,8 @@ func (e *Env) Run(args []string) int {
 			}
 
 			envClient.CreateEnvStream(envConfig)
-
+			e.Logger.Output("Command to set default Env")
+			e.Logger.ItalicEmphasize("odin set env --name <envName>")
 			return 0
 		}
 
@@ -57,6 +57,7 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Status {
+		*name = envClient.FetchSetEnv(*name)
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 
@@ -119,6 +120,7 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Describe {
+		*name = envClient.FetchSetEnv(*name)
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 			e.Logger.Info("Describing " + *name)
@@ -146,6 +148,7 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.List {
+		*name = envClient.FetchSetEnv(*name)
 		e.Logger.Info("Listing all environment(s)")
 		envList, err := envClient.ListEnv(*name, *team, *env, *providerAccount)
 		if err != nil {
@@ -172,6 +175,7 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Delete {
+		*name = envClient.FetchSetEnv(*name)
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 			e.Logger.Info("Environment(" + *name + ") deletion initiated")
@@ -189,7 +193,7 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.DescribeHistory {
-
+		*name = envClient.FetchSetEnv(*name)
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 			if *id == 0 {
@@ -247,6 +251,21 @@ func (e *Env) Run(args []string) int {
 		return 1
 	}
 
+	if e.Set {
+		emptyParameters := emptyParameters(map[string]string{"--name": *name})
+		if len(emptyParameters) == 0 {
+			err := envClient.SetEnv(*name)
+			if err != nil {
+				e.Logger.Error(err.Error())
+				return 1
+			}
+			e.Logger.Output(fmt.Sprintf("Default environment has been set to %s", *name))
+			return 0
+		}
+		e.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		return 1
+	}
+
 	e.Logger.Error("Not a valid command")
 	return 127
 }
@@ -297,6 +316,12 @@ func (e *Env) Help() string {
 		})
 	}
 
+	if e.Set {
+		return commandHelper("set", "environment", "", []Options{
+			{Flag: "--name", Description: "name of environment"},
+		})
+	}
+
 	return defaultHelper()
 }
 
@@ -324,6 +349,10 @@ func (e *Env) Synopsis() string {
 
 	if e.Status {
 		return "Fetch deployment status of the environment"
+	}
+
+	if e.Set {
+		return "Set a default env"
 	}
 	return defaultHelper()
 }
