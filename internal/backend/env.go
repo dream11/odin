@@ -162,7 +162,7 @@ func (e *Env) SetEnv(envName string) error {
 	dirname, err := os.UserHomeDir()
 	data, err := file.Read(dirname + "/.odin/config")
 	result := ""
-	r, _ := regexp.Compile("(?:odinEnvName: [a-zA-Z]+-\\w+)")
+	r, _ := regexp.Compile(`(?:odinEnvName: [a-zA-Z]+-\w+)`)
 	match := r.FindString(string(data))
 	if match != "" {
 		result = strings.Replace(string(data), match, fmt.Sprintf("odinEnvName: %s", envName), 1)
