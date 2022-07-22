@@ -66,7 +66,7 @@ func SetEnv(envName string) error {
 	return err
 }
 
-func FetchSetEnv(envName string) string {
+func FetchEnv(envName string) string {
 	if envName != "" {
 		return envName
 	} else {

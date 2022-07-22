@@ -233,7 +233,7 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Deploy {
-		*envName = utils.FetchSetEnv(*envName)
+		*envName = utils.FetchEnv(*envName)
 		isEnvPresent := len(*envName) > 0
 		isFilePresent := len(*filePath) > 0
 		isServiceNamePresent := len(*serviceName) > 0
@@ -273,7 +273,7 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Undeploy {
-		*envName = utils.FetchSetEnv(*envName)
+		*envName = utils.FetchEnv(*envName)
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--env": *envName})
 		if len(emptyParameters) == 0 {
 			serviceClient.UnDeployServiceStream(*serviceName, *envName)

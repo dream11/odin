@@ -59,7 +59,7 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Status {
-		*name = utils.FetchSetEnv(*name)
+		*name = utils.FetchEnv(*name)
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 
@@ -122,7 +122,7 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Describe {
-		*name = utils.FetchSetEnv(*name)
+		*name = utils.FetchEnv(*name)
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 			e.Logger.Info("Describing " + *name)
@@ -176,7 +176,7 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Delete {
-		*name = utils.FetchSetEnv(*name)
+		*name = utils.FetchEnv(*name)
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 			e.Logger.Info("Environment(" + *name + ") deletion initiated")
@@ -194,7 +194,7 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.DescribeHistory {
-		*name = utils.FetchSetEnv(*name)
+		*name = utils.FetchEnv(*name)
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 			if *id == 0 {
