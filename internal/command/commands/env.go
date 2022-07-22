@@ -3,12 +3,13 @@ package commands
 import (
 	"flag"
 	"fmt"
+	"strconv"
+
 	"github.com/dream11/odin/api/environment"
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/datetime"
 	"github.com/dream11/odin/pkg/table"
 	"gopkg.in/yaml.v3"
-	"strconv"
 )
 
 // initiate backend client for environment
