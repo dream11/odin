@@ -53,9 +53,8 @@ func SetEnv(envName string) error {
 		return err
 	}
 	result := ""
-	r, _ := regexp.Compile(`(?:envName: [a-zA-Z]+-\w+)`)
-	match := r.FindString(string(data))
-	if match != "" {
+	match, found := SearchString(string(data), `(?:envName: [a-zA-Z]+-\w+)`)
+	if found {
 		result = strings.Replace(string(data), match, fmt.Sprintf("envName: %s", envName), 1)
 	} else {
 		result = string(data) + fmt.Sprintf("envName: %s\n", envName)
@@ -65,6 +64,15 @@ func SetEnv(envName string) error {
 		return err
 	}
 	return err
+}
+
+func SearchString(stringMeta string, stringToSearch string) (string, bool) {
+	r, _ := regexp.Compile(stringToSearch)
+	match := r.FindString(stringMeta)
+	if match != "" {
+		return match, true
+	}
+	return "", false
 }
 
 func FetchKey(keyName string) string {

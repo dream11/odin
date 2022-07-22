@@ -234,7 +234,7 @@ func (s *Service) Run(args []string) int {
 
 	if s.Deploy {
 		if *envName == "" {
-			*envName = utils.FetchKey(KEYTOFETCH)
+			*envName = utils.FetchKey(ENV_NAME_KEY)
 		}
 		isEnvPresent := len(*envName) > 0
 		isFilePresent := len(*filePath) > 0
@@ -277,7 +277,7 @@ func (s *Service) Run(args []string) int {
 
 	if s.Undeploy {
 		if *envName == "" {
-			*envName = utils.FetchKey(KEYTOFETCH)
+			*envName = utils.FetchKey(ENV_NAME_KEY)
 		}
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--env": *envName})
 		if len(emptyParameters) == 0 {

@@ -19,7 +19,7 @@ var envClient backend.Env
 // Env : command declaration
 type Env command
 
-const KEYTOFETCH = "EnvName"
+const ENV_NAME_KEY = "EnvName"
 
 // Run : implements the actual functionality of the command
 func (e *Env) Run(args []string) int {
@@ -62,7 +62,7 @@ func (e *Env) Run(args []string) int {
 
 	if e.Status {
 		if *name == "" {
-			*name = utils.FetchKey(KEYTOFETCH)
+			*name = utils.FetchKey(ENV_NAME_KEY)
 		}
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
@@ -127,7 +127,7 @@ func (e *Env) Run(args []string) int {
 
 	if e.Describe {
 		if *name == "" {
-			*name = utils.FetchKey(KEYTOFETCH)
+			*name = utils.FetchKey(ENV_NAME_KEY)
 		}
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
@@ -183,7 +183,7 @@ func (e *Env) Run(args []string) int {
 
 	if e.Delete {
 		if *name == "" {
-			*name = utils.FetchKey(KEYTOFETCH)
+			*name = utils.FetchKey(ENV_NAME_KEY)
 		}
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
@@ -203,7 +203,7 @@ func (e *Env) Run(args []string) int {
 
 	if e.DescribeHistory {
 		if *name == "" {
-			*name = utils.FetchKey(KEYTOFETCH)
+			*name = utils.FetchKey(ENV_NAME_KEY)
 		}
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
