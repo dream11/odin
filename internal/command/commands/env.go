@@ -9,6 +9,7 @@ import (
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/datetime"
 	"github.com/dream11/odin/pkg/table"
+	"github.com/dream11/odin/pkg/utils"
 	"gopkg.in/yaml.v3"
 )
 
@@ -17,6 +18,8 @@ var envClient backend.Env
 
 // Env : command declaration
 type Env command
+
+const ENV_NAME_KEY = "EnvName"
 
 // Run : implements the actual functionality of the command
 func (e *Env) Run(args []string) int {
@@ -47,7 +50,8 @@ func (e *Env) Run(args []string) int {
 			}
 
 			envClient.CreateEnvStream(envConfig)
-
+			e.Logger.Output("Command to set default Env. Once you do this, no need to pass --env everytime.")
+			e.Logger.ItalicEmphasize("odin set env --name <envName>")
 			return 0
 		}
 
@@ -57,6 +61,9 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Status {
+		if *name == "" {
+			*name = utils.FetchKey(ENV_NAME_KEY)
+		}
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 
@@ -119,6 +126,9 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Describe {
+		if *name == "" {
+			*name = utils.FetchKey(ENV_NAME_KEY)
+		}
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 			e.Logger.Info("Describing " + *name)
@@ -172,6 +182,9 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Delete {
+		if *name == "" {
+			*name = utils.FetchKey(ENV_NAME_KEY)
+		}
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 			e.Logger.Info("Environment(" + *name + ") deletion initiated")
@@ -189,7 +202,9 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.DescribeHistory {
-
+		if *name == "" {
+			*name = utils.FetchKey(ENV_NAME_KEY)
+		}
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 			if *id == 0 {
@@ -247,6 +262,21 @@ func (e *Env) Run(args []string) int {
 		return 1
 	}
 
+	if e.Set {
+		emptyParameters := emptyParameters(map[string]string{"--name": *name})
+		if len(emptyParameters) == 0 {
+			err := utils.SetEnv(*name)
+			if err != nil {
+				e.Logger.Error(err.Error())
+				return 1
+			}
+			e.Logger.Output(fmt.Sprintf("Default environment has been set to %s", *name))
+			return 0
+		}
+		e.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		return 1
+	}
+
 	e.Logger.Error("Not a valid command")
 	return 127
 }
@@ -297,6 +327,12 @@ func (e *Env) Help() string {
 		})
 	}
 
+	if e.Set {
+		return commandHelper("set", "environment", "", []Options{
+			{Flag: "--name", Description: "name of environment"},
+		})
+	}
+
 	return defaultHelper()
 }
 
@@ -324,6 +360,10 @@ func (e *Env) Synopsis() string {
 
 	if e.Status {
 		return "Fetch deployment status of the environment"
+	}
+
+	if e.Set {
+		return "Set a default env"
 	}
 	return defaultHelper()
 }
