@@ -59,6 +59,7 @@ func (e *Env) ListEnv(name, team, env, providerAccount string) ([]envResp.Env, e
 
 	var envResponse envResp.ListResponse
 	err := json.Unmarshal(response.Body, &envResponse)
+
 	return envResponse.Response, err
 }
 

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"path"
+	"reflect"
 	"regexp"
 	"strings"
 
@@ -66,11 +67,9 @@ func SetEnv(envName string) error {
 	return err
 }
 
-func FetchEnv(envName string) string {
-	if envName != "" {
-		return envName
-	} else {
-		var appConfig = config.Get()
-		return appConfig.EnvName
-	}
+func FetchKey(keyName string) string {
+	var appConfig = config.Get()
+	r := reflect.ValueOf(appConfig)
+	f := reflect.Indirect(r).FieldByName(keyName)
+	return f.String()
 }
