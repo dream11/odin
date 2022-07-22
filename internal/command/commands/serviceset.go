@@ -138,7 +138,7 @@ func (s *ServiceSet) Run(args []string) int {
 
 	if s.Deploy {
 		if *envName == "" {
-			*envName = utils.FetchKey("EnvName")
+			*envName = utils.FetchKey(KEYTOFETCH)
 		}
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceSetName, "--env": *envName})
 		if len(emptyParameters) == 0 {
@@ -212,7 +212,7 @@ func (s *ServiceSet) Run(args []string) int {
 
 	if s.Undeploy {
 		if *envName == "" {
-			*envName = utils.FetchKey("EnvName")
+			*envName = utils.FetchKey(KEYTOFETCH)
 		}
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceSetName, "--env": *envName})
 		if len(emptyParameters) == 0 {
