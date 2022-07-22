@@ -4,8 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"path"
+	"regexp"
 	"strings"
 
+	"github.com/dream11/odin/app"
+	"github.com/dream11/odin/internal/config"
+	"github.com/dream11/odin/pkg/file"
 	"gopkg.in/yaml.v2"
 )
 
@@ -38,4 +43,34 @@ func Contains(s []string, str string) bool {
 		}
 	}
 	return false
+}
+
+func SetEnv(envName string) error {
+	configPath := path.Join(app.WorkDir.Location, app.WorkDir.ConfigFile)
+	data, err := file.Read(configPath)
+	if err != nil {
+		return err
+	}
+	result := ""
+	r, _ := regexp.Compile(`(?:envName: [a-zA-Z]+-\w+)`)
+	match := r.FindString(string(data))
+	if match != "" {
+		result = strings.Replace(string(data), match, fmt.Sprintf("envName: %s", envName), 1)
+	} else {
+		result = string(data) + fmt.Sprintf("envName: %s\n", envName)
+	}
+	err = file.Write(configPath, result, 0755)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+func FetchSetEnv(envName string) string {
+	if envName != "" {
+		return envName
+	} else {
+		var appConfig = config.Get()
+		return appConfig.EnvName
+	}
 }

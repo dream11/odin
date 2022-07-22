@@ -10,6 +10,7 @@ import (
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/file"
 	"github.com/dream11/odin/pkg/table"
+	"github.com/dream11/odin/pkg/utils"
 	"gopkg.in/yaml.v3"
 )
 
@@ -136,7 +137,7 @@ func (s *ServiceSet) Run(args []string) int {
 	}
 
 	if s.Deploy {
-		*envName = envClient.FetchSetEnv(*envName)
+		*envName = utils.FetchSetEnv(*envName)
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceSetName, "--env": *envName})
 		if len(emptyParameters) == 0 {
 			var forceDeployServices []serviceset.ListEnvService
@@ -208,7 +209,7 @@ func (s *ServiceSet) Run(args []string) int {
 	}
 
 	if s.Undeploy {
-		*envName = envClient.FetchSetEnv(*envName)
+		*envName = utils.FetchSetEnv(*envName)
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceSetName, "--env": *envName})
 		if len(emptyParameters) == 0 {
 			var forceUndeployServices []serviceset.ListEnvService

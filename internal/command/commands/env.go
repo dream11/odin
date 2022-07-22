@@ -9,6 +9,7 @@ import (
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/datetime"
 	"github.com/dream11/odin/pkg/table"
+	"github.com/dream11/odin/pkg/utils"
 	"gopkg.in/yaml.v3"
 )
 
@@ -58,7 +59,7 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Status {
-		*name = envClient.FetchSetEnv(*name)
+		*name = utils.FetchSetEnv(*name)
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 
@@ -121,7 +122,7 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Describe {
-		*name = envClient.FetchSetEnv(*name)
+		*name = utils.FetchSetEnv(*name)
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 			e.Logger.Info("Describing " + *name)
@@ -175,7 +176,7 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Delete {
-		*name = envClient.FetchSetEnv(*name)
+		*name = utils.FetchSetEnv(*name)
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 			e.Logger.Info("Environment(" + *name + ") deletion initiated")
@@ -193,7 +194,7 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.DescribeHistory {
-		*name = envClient.FetchSetEnv(*name)
+		*name = utils.FetchSetEnv(*name)
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 			if *id == 0 {
@@ -254,7 +255,7 @@ func (e *Env) Run(args []string) int {
 	if e.Set {
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
-			err := envClient.SetEnv(*name)
+			err := utils.SetEnv(*name)
 			if err != nil {
 				e.Logger.Error(err.Error())
 				return 1
