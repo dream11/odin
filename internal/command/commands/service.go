@@ -233,7 +233,9 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Deploy {
-
+		if *envName == "" {
+			*envName = utils.FetchKey(ENV_NAME_KEY)
+		}
 		isEnvPresent := len(*envName) > 0
 		isFilePresent := len(*filePath) > 0
 		isServiceNamePresent := len(*serviceName) > 0
@@ -254,14 +256,12 @@ func (s *Service) Run(args []string) int {
 
 		emptyUnreleasedParameters := emptyParameters(map[string]string{"--env": *envName, "--file": *filePath})
 		if len(emptyUnreleasedParameters) == 0 {
-			var serviceDefinition map[string]interface{}
-
 			err, parsedConfig := parseFile(*filePath)
-			serviceDefinition = parsedConfig.(map[string]interface{})
 			if err != nil {
 				s.Logger.Error("Error while parsing service file, err: \n" + err.Error())
 				return 1
 			}
+			serviceDefinition := parsedConfig.(map[string]interface{})
 
 			return s.deployUnreleasedService(envName, serviceDefinition, provisioningConfigFile, configStoreNamespace)
 		}
@@ -276,6 +276,9 @@ func (s *Service) Run(args []string) int {
 	}
 
 	if s.Undeploy {
+		if *envName == "" {
+			*envName = utils.FetchKey(ENV_NAME_KEY)
+		}
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceName, "--env": *envName})
 		if len(emptyParameters) == 0 {
 			serviceClient.UnDeployServiceStream(*serviceName, *envName)
@@ -331,14 +334,14 @@ func (s *Service) deployUnreleasedService(envName *string, serviceDefinition map
 	serviceName := serviceDefinition["name"].(string)
 	serviceVersion := ""
 
-	rebuildService, forceService, parsedProvisioningConfig, i, done := s.validateDeployService(envName, serviceName, serviceVersion, provisioningConfigFile)
+	parsedProvisioningConfig, i, done := s.validateDeployService(envName, serviceName, serviceVersion, provisioningConfigFile)
 	if done {
 		return i
 	}
 
-	s.Logger.Debug(fmt.Sprintf("%s: %s : %s: %s: %t: %t", serviceName, serviceVersion, *envName, *configStoreNamespace, forceService, rebuildService))
+	s.Logger.Debug(fmt.Sprintf("%s: %s : %s: %s:", serviceName, serviceVersion, *envName, *configStoreNamespace))
 	s.Logger.Info("Initiating service deployment: " + serviceName + "@" + serviceVersion + " in " + *envName)
-	serviceClient.DeployUnreleasedServiceStream(serviceDefinition, parsedProvisioningConfig, *envName, *configStoreNamespace, forceService, rebuildService)
+	serviceClient.DeployUnreleasedServiceStream(serviceDefinition, parsedProvisioningConfig, *envName, *configStoreNamespace)
 
 	return 0
 }
@@ -346,38 +349,36 @@ func (s *Service) deployUnreleasedService(envName *string, serviceDefinition map
 func (s *Service) deployReleasedService(envName *string, serviceName *string, serviceVersion *string,
 	provisioningConfigFile *string, configStoreNamespace *string) int {
 
-	rebuildService, forceService, parsedProvisioningConfig, i, done := s.validateDeployService(envName, *serviceName, *serviceVersion, provisioningConfigFile)
+	parsedProvisioningConfig, i, done := s.validateDeployService(envName, *serviceName, *serviceVersion, provisioningConfigFile)
 	if done {
 		return i
 	}
 
-	s.Logger.Debug(fmt.Sprintf("%s: %s : %s: %s: %t: %t", *serviceName, *serviceVersion, *envName, *configStoreNamespace, forceService, rebuildService))
+	s.Logger.Debug(fmt.Sprintf("%s: %s : %s: %s:", *serviceName, *serviceVersion, *envName, *configStoreNamespace))
 	s.Logger.Info("Initiating service deployment: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
-	serviceClient.DeployReleasedServiceStream(*serviceName, *serviceVersion, *envName, *configStoreNamespace, forceService, rebuildService, parsedProvisioningConfig)
+	serviceClient.DeployReleasedServiceStream(*serviceName, *serviceVersion, *envName, *configStoreNamespace, parsedProvisioningConfig)
 
 	return 0
 }
 
 /*
 validateDeployService
-	returns rebuildService: bool, forceService: bool, parsedProvisioningConfig: interface{}, exitCode int, toExit bool
+	returns parsedProvisioningConfig: interface{}, exitCode int, toExit bool
 */
-func (s *Service) validateDeployService(envName *string, serviceName string, serviceVersion string, provisioningConfigFile *string) (bool, bool, interface{}, int, bool) {
+func (s *Service) validateDeployService(envName *string, serviceName string, serviceVersion string, provisioningConfigFile *string) (interface{}, int, bool) {
 	envServices, err := envClient.DescribeEnv(*envName, "", "")
 
 	if err != nil {
 		s.Logger.Error(err.Error())
-		return false, false, nil, 1, true
+		return nil, 1, true
 	}
 
 	envService := service.Service{}
 
-	rebuildService := false
 	forceService := false
 
 	for _, curService := range envServices.Services {
 		if curService.Name == serviceName && curService.Version == serviceVersion {
-			rebuildService = true
 			envService = curService
 			break
 		}
@@ -399,12 +400,12 @@ func (s *Service) validateDeployService(envName *string, serviceName string, ser
 
 			if err != nil {
 				s.Logger.Error(err.Error())
-				return false, false, nil, 1, true
+				return nil, 1, true
 			}
 
 			if val != "Y" {
 				s.Logger.Info("Skipping force service deploy")
-				return false, false, nil, 0, true
+				return nil, 0, true
 			}
 		}
 	}
@@ -413,14 +414,13 @@ func (s *Service) validateDeployService(envName *string, serviceName string, ser
 
 	if len(*provisioningConfigFile) > 0 {
 		err, parsedConfig := parseFile(*provisioningConfigFile)
-		parsedProvisioningConfig = parsedConfig
-
 		if err != nil {
 			s.Logger.Error("Error while parsing provisioning file, err: \n" + err.Error())
-			return false, false, nil, 1, true
+			return nil, 1, true
 		}
+		parsedProvisioningConfig = parsedConfig
 	}
-	return rebuildService, forceService, parsedProvisioningConfig, 0, false
+	return parsedProvisioningConfig, 0, false
 }
 
 func parseFile(filePath string) (error, interface{}) {
@@ -490,6 +490,7 @@ func (s *Service) Help() string {
 			{Flag: "--env", Description: "name of environment to deploy service in"},
 			{Flag: "--d11-config-store-namespace", Description: "config store branch/tag to use"},
 			{Flag: "--provisioning", Description: "file to read provisioning config."},
+			{Flag: "--file", Description: "file to read service definition."},
 		})
 	}
 
