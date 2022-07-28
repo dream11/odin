@@ -1,0 +1,22 @@
+{
+  "name": "MyAuth",
+  "version": "1.0.0",
+  "team": "tech",
+  "components": [
+    {
+      "type": "application",
+      "name": "my-auth",
+      "version": "1.0.0"
+    },
+    {
+      "type": "cassandra",
+      "name": "foo-cassandra",
+      "version": "1.1.0"
+    },
+    {
+      "type": "aerospike",
+      "name": "foo-aerospike",
+      "version": "1.2.0"
+    }
+  ]
+}
