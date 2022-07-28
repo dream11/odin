@@ -1,0 +1,33 @@
+Describing component type: s3@
+
+{
+  "name": "s3",
+  "version": "1.0.0",
+  "createdBy": "root@dream11.com",
+  "updatedBy": "root@dream11.com",
+  "createdAt": "2022-07-05T07:43:40.965000Z",
+  "updatedAt": "2022-07-05T07:43:40.965000Z",
+  "config": {
+    "access": "private",
+    "bucket_name": "",
+    "force_destroy": "true",
+    "versioning": "Enabled"
+  },
+  "behaviour": {
+    "default": {
+      "platform": "vm"
+    }
+  }
+}
+
+List of exposed configs :
+
+  CONFIG               | MANDATORY | DATA TYPE  
+-----------------------+-----------+------------
+  config.access        | false     | string     
+  config.bucket_name   | true      | string     
+  config.force_destroy | false     | string     
+  config.versioning    | false     | string     
+  name                 | true      | string     
+  type                 | true      | string     
+  version              | true      | string  
