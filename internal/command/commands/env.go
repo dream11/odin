@@ -44,7 +44,7 @@ func (e *Env) Run(args []string) int {
 		emptyParameters := emptyParameters(map[string]string{"--env-type": *env, "--name": *name})
 		if len(emptyParameters) == 0 {
 			if len(*name) > 9 {
-				e.Logger.Error(fmt.Sprintf("Env Name should not be of length more than 9"))
+				e.Logger.Error("Env Name should not be of length more than 9")
 				return 1
 			}
 			envConfig := environment.Env{
