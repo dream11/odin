@@ -304,7 +304,7 @@ func (s *Service) Run(args []string) int {
 			for _, componentStatus := range serviceStatus {
 				tableData = append(tableData, []interface{}{
 					componentStatus.Name,
-					componentStatus.VM,
+					componentStatus.AWS_EC2,
 					componentStatus.Container,
 				})
 			}
