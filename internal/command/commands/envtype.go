@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"strings"
+
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/table"
 )
@@ -11,25 +13,26 @@ var envTypeClient backend.EnvType
 // Env : command declaration
 type EnvType command
 
-
 // Run : implements the actual functionality of the command
 func (e *EnvType) Run(args []string) int {
 
 	if e.ListEnvType {
-		e.Logger.Info("Listing all sdsdsdssdsdsdsds(s)")
+		e.Logger.Info("Listing all env type")
 		envList, err := envClient.ListEnvType()
+		e.Logger.Info(strings.Join(envList, ""))
 		if err != nil {
 			e.Logger.Error(err.Error())
 			return 1
 		}
 
-		tableHeaders := []string{"Name", "Team", "Env Type", "State", "Account"}
+		tableHeaders := []string{"Name"}
 		var tableData [][]interface{}
 
-		for _, env := range envList {
-			tableData = append(tableData, []interface{}{
-			})
-		}
+		// for _, env := range envList {
+		// 	tableData = append(tableData, []interface{}{
+		// 		e.Name,
+		// 	})
+		// }
 
 		table.Write(tableHeaders, tableData)
 

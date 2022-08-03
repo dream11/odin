@@ -7,5 +7,5 @@ type EnvType struct {
 
 // ListResponse interface
 type ListResponse struct {
-	Response []EnvType `yaml:"resp,omitempty" json:"resp,omitempty"`
+	Response []string `yaml:"resp,omitempty" json:"resp,omitempty"`
 }

@@ -10,16 +10,16 @@ import (
 type EnvType struct{}
 
 // root entity
-var envEntityType = "envs"
+var envEntityType = "envtypes"
 
 // ListEnv : list all environment(s) with filters
-func (e *Env) ListEnvType() ([]envTypeResp.EnvType, error) {
+func (e *Env) ListEnvType() ([]string, error) {
 	client := newApiClient()
 	response := client.actionWithRetry(envEntityType+"/", "GET", nil)
 	response.Process(true) // process response and exit if error
 
-	var envResponse envTypeResp.ListResponse
-	err := json.Unmarshal(response.Body, &envResponse)
+	var envTypeResponse envTypeResp.ListResponse
+	err := json.Unmarshal(response.Body, &envTypeResponse)
 
-	return envResponse.Response, err
+	return envTypeResponse.Response, err
 }
