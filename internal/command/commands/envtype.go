@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"strings"
 
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/table"
@@ -18,8 +17,7 @@ func (e *EnvType) Run(args []string) int {
 
 	if e.ListEnvType {
 		e.Logger.Info("Listing all env type")
-		envList, err := envClient.ListEnvType()
-		e.Logger.Info(strings.Join(envList, ""))
+		envList, err := envTypeClient.ListEnvType()
 		if err != nil {
 			e.Logger.Error(err.Error())
 			return 1
@@ -28,11 +26,11 @@ func (e *EnvType) Run(args []string) int {
 		tableHeaders := []string{"Name"}
 		var tableData [][]interface{}
 
-		// for _, env := range envList {
-		// 	tableData = append(tableData, []interface{}{
-		// 		e.Name,
-		// 	})
-		// }
+		for _, env := range envList {
+			tableData = append(tableData, []interface{}{
+				env.Name,
+			})
+		}
 
 		table.Write(tableHeaders, tableData)
 

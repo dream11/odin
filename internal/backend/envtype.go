@@ -13,7 +13,7 @@ type EnvType struct{}
 var envEntityType = "envtypes"
 
 // ListEnv : list all environment(s) with filters
-func (e *Env) ListEnvType() ([]string, error) {
+func (e *EnvType) ListEnvType() ([]envTypeResp.EnvType, error) {
 	client := newApiClient()
 	response := client.actionWithRetry(envEntityType+"/", "GET", nil)
 	response.Process(true) // process response and exit if error
