@@ -1,11 +1,10 @@
 package envtype
 
-// Env Type interface
-type EnvType struct {
-	Name string `yaml:"name,omitempty" json:"name,omitempty"`
+// ListResponse interface
+type ListTypeResponse struct {
+	Response []Type
 }
 
-// ListResponse interface
-type ListResponse struct {
-	Response []EnvType `yaml:"resp,omitempty" json:"resp,omitempty"`
+type Type struct {
+	Things []string
 }

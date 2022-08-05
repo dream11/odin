@@ -2,8 +2,7 @@ package backend
 
 import (
 	"encoding/json"
-
-	envTypeResp "github.com/dream11/odin/api/envtype"
+	"github.com/dream11/odin/api/envtype"
 )
 
 // Env entity
@@ -13,12 +12,12 @@ type EnvType struct{}
 var envEntityType = "envtypes"
 
 // ListEnv : list all environment(s) with filters
-func (e *EnvType) ListEnvType() ([]envTypeResp.EnvType, error) {
+func (e *EnvType) ListEnvType() ([]envtype.Type, error) {
 	client := newApiClient()
 	response := client.actionWithRetry(envEntityType+"/", "GET", nil)
 	response.Process(true) // process response and exit if error
 
-	var envTypeResponse envTypeResp.ListResponse
+	var envTypeResponse envtype.ListTypeResponse
 	err := json.Unmarshal(response.Body, &envTypeResponse)
 
 	return envTypeResponse.Response, err
