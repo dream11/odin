@@ -15,7 +15,7 @@ type EnvType command
 func (e *EnvType) Run(args []string) int {
 
 	if e.ListEnvType {
-		e.Logger.Info("Listing all env type")
+		e.Logger.Info("Listing all env type\n")
 		envTypeList, err := envTypeClient.ListEnvType()
 		if err != nil {
 			e.Logger.Error(err.Error())
