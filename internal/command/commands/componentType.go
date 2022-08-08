@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"strings"
 
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/table"
@@ -37,20 +38,22 @@ func (c *ComponentType) Run(args []string) int {
 		var tableHeaders []string
 		var tableData [][]interface{}
 		if len(*componentTypeName) == 0 {
-			tableHeaders = []string{"Component Name", "Latest Version", "Total Versions Available"}
+			tableHeaders = []string{"Component Name", "Latest Version", "Deployemnt Types", "Total Versions Available"}
 			for _, componentType := range componentTypeList {
 				tableData = append(tableData, []interface{}{
 					componentType.Name,
 					componentType.Version,
+					strings.Join(componentType.DeploymentTypes, ", "),
 					componentType.TotalVersions,
 				})
 			}
 		} else {
-			tableHeaders = []string{"Component Name", "Version"}
+			tableHeaders = []string{"Component Name", "Version", "Deployemnt Types"}
 			for _, componentType := range componentTypeList {
 				tableData = append(tableData, []interface{}{
 					componentType.Name,
 					componentType.Version,
+					strings.Join(componentType.DeploymentTypes, ", "),
 				})
 			}
 		}
