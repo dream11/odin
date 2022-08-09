@@ -14,7 +14,7 @@ type EnvType command
 // Run : implements the actual functionality of the command
 func (e *EnvType) Run(args []string) int {
 
-	if e.ListEnvType {
+	if e.List {
 		e.Logger.Info("Listing all env type\n")
 		envTypeList, err := envTypeClient.ListEnvType()
 		if err != nil {
@@ -41,8 +41,8 @@ func (e *EnvType) Run(args []string) int {
 // Help : returns an explanatory string
 func (e *EnvType) Help() string {
 
-	if e.ListEnvType {
-		return commandHelper("list env-type", "environment", "", []Options{})
+	if e.List {
+		return commandHelper("list env-type", "env type", "", []Options{})
 	}
 
 	return defaultHelper()
@@ -51,7 +51,7 @@ func (e *EnvType) Help() string {
 // Synopsis : returns a brief helper text for the command's verbs
 func (e *EnvType) Synopsis() string {
 
-	if e.ListEnvType {
+	if e.List {
 		return "List env types"
 	}
 	return defaultHelper()
