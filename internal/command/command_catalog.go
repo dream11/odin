@@ -68,6 +68,9 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"set env": func() (cli.Command, error) {
 			return &commands.Env{Set: true}, nil
 		},
+		"list env-type": func() (cli.Command, error) {
+			return &commands.EnvType{List: true}, nil
+		},
 
 		// Verbs for `component-type` resource
 		"list component-type": func() (cli.Command, error) {
