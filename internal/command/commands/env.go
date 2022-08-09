@@ -191,9 +191,10 @@ func (e *Env) Run(args []string) int {
 		}
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
-			val, err := e.Input.Ask("Please re enter the env name:")
+			val, err := e.Input.Ask("Please re enter the Env Name:")
 			if err != nil {
 				e.Logger.Error(err.Error())
+				return 1
 			}
 			if val != *name {
 				e.Logger.Error("Env Name does not match !!")
