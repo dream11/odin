@@ -12,7 +12,7 @@
   },
   {
     "component_name": "profile-aurora",
-    "deployment_type": "vm",
+    "deployment_type": "aws_rds_aurora",
     "params": {
       "instance_type": "db.r5.large"
     }
