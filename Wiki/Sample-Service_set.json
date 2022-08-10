@@ -4,15 +4,15 @@
     "name": "gameplay",
     "services": [
         {
-            "name": "abc",
+            "name": "service_1",
             "version: "1.0.0"
         },
         {
-            "name": "cde",
+            "name": "service_2",
             "version: "1.1.0"
         },
         {
-            "name": "edg",
+            "name": "service_3",
             "version: "2.1.0"
         }
     ]
