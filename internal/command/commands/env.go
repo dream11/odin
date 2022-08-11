@@ -41,12 +41,16 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Create {
-		emptyParameters := emptyParameters(map[string]string{"--env-type": *env})
+		emptyParameters := emptyParameters(map[string]string{"--env-type": *env, "--name": *name})
 		if len(emptyParameters) == 0 {
-
+			if len(*name) > 9 {
+				e.Logger.Error("Env Name should not be of length more than 9")
+				return 1
+			}
 			envConfig := environment.Env{
 				EnvType: *env,
 				Account: *providerAccount,
+				Name:    *name,
 			}
 
 			envClient.CreateEnvStream(envConfig)
@@ -187,6 +191,15 @@ func (e *Env) Run(args []string) int {
 		}
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
+			val, err := e.Input.Ask("Please re enter the Env Name:")
+			if err != nil {
+				e.Logger.Error(err.Error())
+				return 1
+			}
+			if val != *name {
+				e.Logger.Error("Env Name does not match !!")
+				return 1
+			}
 			e.Logger.Info("Environment(" + *name + ") deletion initiated")
 			response, err := envClient.DeleteEnv(*name)
 			if err != nil {
