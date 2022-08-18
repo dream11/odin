@@ -186,21 +186,15 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Delete {
-		if *name == "" {
-			*name = utils.FetchKey(ENV_NAME_KEY)
-		}
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
-			val, err := e.Input.Ask("Please re enter the Env Name:")
-			if err != nil {
-				e.Logger.Error(err.Error())
-				return 1
+
+			i, done := UserInput(name, e)
+			if done {
+				return i
 			}
-			if val != *name {
-				e.Logger.Error("Env Name does not match !!")
-				return 1
-			}
-			e.Logger.Info("Environment(" + *name + ") deletion initiated")
+
+			e.Logger.Info(fmt.Sprintf("Environment(%s) deletion initiated", *name))
 			response, err := envClient.DeleteEnv(*name)
 			if err != nil {
 				e.Logger.Error(err.Error())
@@ -292,6 +286,24 @@ func (e *Env) Run(args []string) int {
 
 	e.Logger.Error("Not a valid command")
 	return 127
+}
+
+func UserInput(name *string, e *Env) (int, bool) {
+	message := fmt.Sprintf("Are you sure you want to delete env: %s? [Y/n]: ", *name)
+	allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
+
+	val, err := e.Input.AskWithConstraints(message, allowedInputs)
+
+	if err != nil {
+		e.Logger.Error(err.Error())
+		return 1, true
+	}
+
+	if val != "Y" {
+		e.Logger.Info("Skipping env deletion")
+		return 0, true
+	}
+	return 0, false
 }
 
 // Help : returns an explanatory string
