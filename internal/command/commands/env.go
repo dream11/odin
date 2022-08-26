@@ -310,6 +310,7 @@ func UserInput(name *string, e *Env) (int, bool) {
 func (e *Env) Help() string {
 	if e.Create {
 		return commandHelper("create", "environment", "", []Options{
+			{Flag: "--name", Description: "name of environment"},
 			{Flag: "--env-type", Description: "type of environment"},
 			{Flag: "--account", Description: "account name to provision the environment in (optional)"},
 		})
