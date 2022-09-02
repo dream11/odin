@@ -28,7 +28,7 @@ func (e *Env) Run(args []string) int {
 	// create flags
 	name := flagSet.String("name", "", "name of environment")
 	team := flagSet.String("team", "", "display environments created by a team")
-	env := flagSet.String("env-type", "dev", "environment to attach with environment")
+	env := flagSet.String("env-type", "", "environment to attach with environment")
 	service := flagSet.String("service", "", "service name to filter out describe environment")
 	component := flagSet.String("component", "", "component name to filter out describe environment")
 	providerAccount := flagSet.String("account", "", "account name to provision the environment in")
@@ -41,6 +41,9 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Create {
+		if *env == "" {
+			*env = "dev"
+		}
 		emptyParameters := emptyParameters(map[string]string{"--env-type": *env, "--name": *name})
 		if len(emptyParameters) == 0 {
 			if len(*name) > 9 {
