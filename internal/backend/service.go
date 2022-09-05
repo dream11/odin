@@ -136,11 +136,14 @@ func (s *Service) DeployUnreleasedServiceStream(serviceDefinition, provisionConf
 }
 
 // CompareReleasedService : Find diff in service
-func (s *Service) CompareService(envName, service, serviceDefinition interface{}, parsedProvisioningConfig interface{}) {
+func (s *Service) CompareService(envName, service, version, serviceDefinition interface{}, parsedProvisioningConfig interface{}, configStoreNamespace *string) {
 	client := newApiClient()
 	data := map[string]interface{}{
 		"serviceDefinition":  serviceDefinition,
+		"provisioningConfig":  parsedProvisioningConfig,
+		"configStoreNamespace":  configStoreNamespace,
 		"serviceName":        service,
+		"serviceVersion":        version,
 		"envName":        envName,
 	}
 	response := client.actionWithRetry(path.Join(serviceEntity, "compare"), "GET", data)

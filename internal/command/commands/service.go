@@ -334,7 +334,7 @@ func (s *Service) deployUnreleasedService(envName *string, serviceDefinition map
 	serviceName := serviceDefinition["name"].(string)
 	serviceVersion := ""
 
-	parsedProvisioningConfig, i, done := s.validateDeployService(envName, serviceName, serviceVersion, serviceDefinition, provisioningConfigFile)
+	parsedProvisioningConfig, i, done := s.validateDeployService(envName, serviceName, serviceVersion, serviceDefinition, provisioningConfigFile, configStoreNamespace)
 	if done {
 		return i
 	}
@@ -349,7 +349,7 @@ func (s *Service) deployUnreleasedService(envName *string, serviceDefinition map
 func (s *Service) deployReleasedService(envName *string, serviceName *string, serviceVersion *string,
 	provisioningConfigFile *string, configStoreNamespace *string) int {
 
-	parsedProvisioningConfig, i, done := s.validateDeployService(envName, *serviceName, *serviceVersion, nil, provisioningConfigFile)
+	parsedProvisioningConfig, i, done := s.validateDeployService(envName, *serviceName, *serviceVersion, nil, provisioningConfigFile, configStoreNamespace)
 	if done {
 		return i
 	}
@@ -365,7 +365,7 @@ func (s *Service) deployReleasedService(envName *string, serviceName *string, se
 validateDeployService
 	returns parsedProvisioningConfig: interface{}, exitCode int, toExit bool
 */
-func (s *Service) validateDeployService(envName *string, serviceName string, serviceVersion string, serviceDefinition map[string]interface{}, provisioningConfigFile *string) (interface{}, int, bool) {
+func (s *Service) validateDeployService(envName *string, serviceName string, serviceVersion string, serviceDefinition map[string]interface{}, provisioningConfigFile *string, configStoreNamespace *string) (interface{}, int, bool) {
 	envServices, err := envClient.DescribeEnv(*envName, "", "")
 
 	if err != nil {
@@ -397,7 +397,7 @@ func (s *Service) validateDeployService(envName *string, serviceName string, ser
 	}
 
 	if forceService {
-		serviceClient.CompareService(envName, envService.Name, serviceDefinition, parsedProvisioningConfig)
+		serviceClient.CompareService(envName, envService.Name, envService.Version, serviceDefinition, parsedProvisioningConfig, configStoreNamespace)
 		s.Logger.Info(fmt.Sprintf("service: %s already exists in the env with different version: %s", serviceName, envService.Version))
 		s.Logger.Output("Press [Y] to force deploy service or press [n] to skip service deploy.")
 		message := "Do you want to override? [Y/n]: "
