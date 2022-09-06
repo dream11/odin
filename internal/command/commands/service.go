@@ -397,7 +397,12 @@ func (s *Service) validateDeployService(envName *string, serviceName string, ser
 	}
 
 	if forceService {
-		serviceClient.CompareService(envName, envService.Name, envService.Version, serviceDefinition, parsedProvisioningConfig, configStoreNamespace)
+		diff, err := serviceClient.CompareService(envName, envService.Name, envService.Version, serviceDefinition, parsedProvisioningConfig, configStoreNamespace)
+		if err != nil {
+			s.Logger.Error(err.Error())
+			return nil, 1, true
+		}
+		s.Logger.Info(fmt.Sprintf("Testing: %s", diff))
 		s.Logger.Info(fmt.Sprintf("service: %s already exists in the env with different version: %s", serviceName, envService.Version))
 		s.Logger.Output("Press [Y] to force deploy service or press [n] to skip service deploy.")
 		message := "Do you want to override? [Y/n]: "

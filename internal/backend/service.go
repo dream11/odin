@@ -136,18 +136,23 @@ func (s *Service) DeployUnreleasedServiceStream(serviceDefinition, provisionConf
 }
 
 // CompareReleasedService : Find diff in service
-func (s *Service) CompareService(envName, service, version, serviceDefinition interface{}, parsedProvisioningConfig interface{}, configStoreNamespace *string) {
+func (s *Service) CompareService(envName, serviceName, version, serviceDefinition interface{}, parsedProvisioningConfig interface{}, configStoreNamespace *string) (interface{}, error) {
 	client := newApiClient()
 	data := map[string]interface{}{
-		"serviceDefinition":  serviceDefinition,
-		"provisioningConfig":  parsedProvisioningConfig,
-		"configStoreNamespace":  configStoreNamespace,
-		"serviceName":        service,
-		"serviceVersion":        version,
-		"envName":        envName,
+		"serviceDefinition":    serviceDefinition,
+		"provisioningConfig":   parsedProvisioningConfig,
+		"configStoreNamespace": configStoreNamespace,
+		"serviceName":          serviceName,
+		"serviceVersion":       version,
+		"envName":              envName,
 	}
 	response := client.actionWithRetry(path.Join(serviceEntity, "compare"), "GET", data)
 	response.Process(true)
+
+	var compareResponse service.CompareResponse
+	err := json.Unmarshal(response.Body, &compareResponse)
+
+	return compareResponse.Response, err
 }
 
 // StatusService : get status of a service
