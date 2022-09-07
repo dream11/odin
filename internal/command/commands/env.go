@@ -50,6 +50,11 @@ func (e *Env) Run(args []string) int {
 				e.Logger.Error("Env Name should not be of length more than 9")
 				return 1
 			}
+			allowed_input := "^[a-z][a-z0-9-]*$"
+			if (utils.SearchString(*name, allowed_input)) == "nil" {
+				e.Logger.Error("Env Name should follow naming convention: " + allowed_input)
+				return 1
+			}
 			envConfig := environment.Env{
 				EnvType: *env,
 				Account: *providerAccount,
