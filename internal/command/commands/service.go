@@ -402,22 +402,24 @@ func (s *Service) validateDeployService(envName *string, serviceName string, ser
 			s.Logger.Error(err.Error())
 			return nil, 1, true
 		}
-		s.Logger.Info(fmt.Sprintf("Testing: %s", diff))
-		s.Logger.Info(fmt.Sprintf("service: %s already exists in the env with different version: %s", serviceName, envService.Version))
-		s.Logger.Output("Press [Y] to force deploy service or press [n] to skip service deploy.")
-		message := "Do you want to override? [Y/n]: "
+		if diff != "" {
+			s.Logger.Info(fmt.Sprintf("Below changes will happen after this deployement, Do you Accept??\n: %s", diff))
+			s.Logger.Info(fmt.Sprintf("service: %s already exists in the env with different version: %s", serviceName, envService.Version))
+			s.Logger.Output("Press [Y] to force deploy service or press [n] to skip service deploy.")
+			message := "Do you want to override? [Y/n]: "
 
-		allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
-		val, err := s.Input.AskWithConstraints(message, allowedInputs)
+			allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
+			val, err := s.Input.AskWithConstraints(message, allowedInputs)
 
-		if err != nil {
-			s.Logger.Error(err.Error())
-			return nil, 1, true
-		}
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return nil, 1, true
+			}
 
-		if val != "Y" {
-			s.Logger.Info("Skipping force service deploy")
-			return nil, 0, true
+			if val != "Y" {
+				s.Logger.Info("Skipping force service deploy")
+				return nil, 0, true
+			}
 		}
 	}
 
