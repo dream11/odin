@@ -397,7 +397,7 @@ func (s *Service) validateDeployService(envName *string, serviceName string, ser
 	}
 
 	if forceService {
-		diff, err := serviceClient.CompareService(envName, envService.Name, envService.Version, serviceDefinition, parsedProvisioningConfig, configStoreNamespace)
+		diff, err := serviceClient.CompareService(envName, serviceName, serviceVersion, serviceDefinition, parsedProvisioningConfig, configStoreNamespace)
 		if err != nil {
 			s.Logger.Error(err.Error())
 			return nil, 1, true
