@@ -404,7 +404,7 @@ func (s *Service) validateDeployService(envName *string, serviceName string, ser
 		}
 		if diff != "" {
 			s.Logger.Info(fmt.Sprintf("service: %s already exists in the env with version: %s\n", serviceName, envService.Version))
-			message := fmt.Sprintf("Below changes will happen after this deployement\n%s\nDo you Accept? [Y/n]: ", diff)
+			message := fmt.Sprintf("Below changes will happen after this deployement\n\n%s\nDo you Accept? [Y/n]: ", diff)
 
 			allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
 			val, err := s.Input.AskWithConstraints(message, allowedInputs)
