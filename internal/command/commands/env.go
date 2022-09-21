@@ -428,6 +428,14 @@ func (e *Env) Help() string {
 		})
 	}
 
+	if e.Update {
+		return commandHelper("update", "environment", "", []Options{
+			{Flag: "--name", Description: "name of environment"},
+			{Flag: "--data", Description: "JSON data which has values for the fields that should be updated in the env"},
+			{Flag: "--file", Description: "JSON file which has values for the fields that should be updated in the env"},
+		})
+	}
+
 	return defaultHelper()
 }
 
@@ -459,6 +467,9 @@ func (e *Env) Synopsis() string {
 
 	if e.Set {
 		return "Set a default env"
+	}
+	if e.Update {
+		return "update an env"
 	}
 	return defaultHelper()
 }
