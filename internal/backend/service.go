@@ -146,7 +146,7 @@ func (s *Service) CompareService(envName, serviceName, version, serviceDefinitio
 		"serviceVersion":       version,
 		"envName":              envName,
 	}
-	response := client.actionWithRetry(path.Join(serviceEntity, "compare"), "GET", data)
+	response := client.actionWithRetry(path.Join(serviceEntity, "compare")+"/", "PUT", data)
 	response.Process(true)
 
 	var compareResponse service.CompareResponse
