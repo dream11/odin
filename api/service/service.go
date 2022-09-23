@@ -47,3 +47,8 @@ type MergedService struct {
 	Service            interface{}
 	ProvisioningConfig map[string]interface{}
 }
+
+// CompareResponse
+type CompareResponse struct {
+	Response interface{} `yaml:"resp,omitempty" json:"resp,omitempty"`
+}

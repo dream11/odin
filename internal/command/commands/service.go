@@ -334,7 +334,7 @@ func (s *Service) deployUnreleasedService(envName *string, serviceDefinition map
 	serviceName := serviceDefinition["name"].(string)
 	serviceVersion := ""
 
-	parsedProvisioningConfig, i, done := s.validateDeployService(envName, serviceName, serviceVersion, provisioningConfigFile)
+	parsedProvisioningConfig, i, done := s.validateDeployService(envName, serviceName, serviceVersion, serviceDefinition, provisioningConfigFile, configStoreNamespace)
 	if done {
 		return i
 	}
@@ -349,7 +349,7 @@ func (s *Service) deployUnreleasedService(envName *string, serviceDefinition map
 func (s *Service) deployReleasedService(envName *string, serviceName *string, serviceVersion *string,
 	provisioningConfigFile *string, configStoreNamespace *string) int {
 
-	parsedProvisioningConfig, i, done := s.validateDeployService(envName, *serviceName, *serviceVersion, provisioningConfigFile)
+	parsedProvisioningConfig, i, done := s.validateDeployService(envName, *serviceName, *serviceVersion, nil, provisioningConfigFile, configStoreNamespace)
 	if done {
 		return i
 	}
@@ -365,7 +365,7 @@ func (s *Service) deployReleasedService(envName *string, serviceName *string, se
 validateDeployService
 	returns parsedProvisioningConfig: interface{}, exitCode int, toExit bool
 */
-func (s *Service) validateDeployService(envName *string, serviceName string, serviceVersion string, provisioningConfigFile *string) (interface{}, int, bool) {
+func (s *Service) validateDeployService(envName *string, serviceName string, serviceVersion string, serviceDefinition map[string]interface{}, provisioningConfigFile *string, configStoreNamespace *string) (interface{}, int, bool) {
 	envServices, err := envClient.DescribeEnv(*envName, "", "")
 
 	if err != nil {
@@ -378,22 +378,33 @@ func (s *Service) validateDeployService(envName *string, serviceName string, ser
 	forceService := false
 
 	for _, curService := range envServices.Services {
-		if curService.Name == serviceName && curService.Version == serviceVersion {
-			envService = curService
-			break
-		}
-		if curService.Name == serviceName && curService.Version != serviceVersion {
+		if curService.Name == serviceName {
 			forceService = true
 			envService = curService
 			break
 		}
 	}
 
+	var parsedProvisioningConfig interface{}
+
+	if len(*provisioningConfigFile) > 0 {
+		err, parsedConfig := parseFile(*provisioningConfigFile)
+		if err != nil {
+			s.Logger.Error("Error while parsing provisioning file, err: \n" + err.Error())
+			return nil, 1, true
+		}
+		parsedProvisioningConfig = parsedConfig
+	}
+
 	if forceService {
-		if !strings.HasPrefix(envService.Version, VOLATILE) {
-			s.Logger.Info(fmt.Sprintf("service: %s already exists in the env with different version: %s", serviceName, envService.Version))
-			s.Logger.Output("Press [Y] to force deploy service or press [n] to skip service deploy.")
-			message := "Do you want to override? [Y/n]: "
+		diff, err := serviceClient.CompareService(envName, serviceName, serviceVersion, serviceDefinition, parsedProvisioningConfig, configStoreNamespace)
+		if err != nil {
+			s.Logger.Error(err.Error())
+			return nil, 1, true
+		}
+		if diff != "" {
+			s.Logger.Info(fmt.Sprintf("service: %s already exists in the env with version: %s\n", serviceName, envService.Version))
+			message := fmt.Sprintf("Below changes will happen after this deployement\n\n%s\nDo you Accept? [Y/n]: ", diff)
 
 			allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
 			val, err := s.Input.AskWithConstraints(message, allowedInputs)
@@ -410,16 +421,6 @@ func (s *Service) validateDeployService(envName *string, serviceName string, ser
 		}
 	}
 
-	var parsedProvisioningConfig interface{}
-
-	if len(*provisioningConfigFile) > 0 {
-		err, parsedConfig := parseFile(*provisioningConfigFile)
-		if err != nil {
-			s.Logger.Error("Error while parsing provisioning file, err: \n" + err.Error())
-			return nil, 1, true
-		}
-		parsedProvisioningConfig = parsedConfig
-	}
 	return parsedProvisioningConfig, 0, false
 }
 
