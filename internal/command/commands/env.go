@@ -327,7 +327,7 @@ func (e *Env) Run(args []string) int {
 		if isFilePresent {
 			err, parsedConfig := parseFile(*filePath)
 			if err != nil {
-				e.Logger.Error("Error while parsing service file " + *filePath + " : " + err.Error())
+				e.Logger.Error("Error while parsing service file, err: \n" + err.Error())
 				return 1
 			}
 			updationData = parsedConfig.(map[string]interface{})
@@ -344,7 +344,7 @@ func (e *Env) Run(args []string) int {
 			return 1
 		}
 
-		e.Logger.Info("Updating Env: " + *name)
+		e.Logger.Info("Updating " + *name)
 
 		envResp, err := envClient.UpdateEnv(*name, updationData)
 
