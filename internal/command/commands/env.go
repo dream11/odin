@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"strconv"
@@ -33,6 +34,8 @@ func (e *Env) Run(args []string) int {
 	component := flagSet.String("component", "", "component name to filter out describe environment")
 	providerAccount := flagSet.String("account", "", "account name to provision the environment in")
 	id := flagSet.Int("id", 0, "unique id of a changelog of an env")
+	filePath := flagSet.String("file", "", "file to update env")
+	data := flagSet.String("data", "", "data for updating the env")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -291,6 +294,65 @@ func (e *Env) Run(args []string) int {
 		return 1
 	}
 
+	if e.Update {
+		if *name == "" {
+			*name = utils.FetchKey(ENV_NAME_KEY)
+		}
+
+		isNamePresent := len(*name) > 0
+		isDataPresent := len(*data) > 0
+		isFilePresent := len(*filePath) > 0
+
+		if !isNamePresent {
+			e.Logger.Error("--name cannot be blank")
+			return 1
+		}
+
+		if isDataPresent && isFilePresent {
+			e.Logger.Error("You can provide either --data or --file but not both")
+			return 1
+		}
+
+		if !isDataPresent && !isFilePresent {
+			e.Logger.Error("You should provide either --data or --file")
+			return 1
+		}
+
+		var updationData map[string]interface{}
+
+		if isFilePresent {
+			err, parsedConfig := parseFile(*filePath)
+			if err != nil {
+				e.Logger.Error("Error while parsing service file, err: \n" + err.Error())
+				return 1
+			}
+			updationData = parsedConfig.(map[string]interface{})
+		} else if isDataPresent {
+			err = json.Unmarshal([]byte(*data), &updationData)
+			if err != nil {
+				e.Logger.Error("Unable to parse JSON data " + err.Error())
+				return 1
+			}
+		}
+
+		if len(updationData) == 0 {
+			e.Logger.Error("You can't send an empty JSON data")
+			return 1
+		}
+
+		e.Logger.Info("Updating " + *name)
+
+		envResp, err := envClient.UpdateEnv(*name, updationData)
+
+		if err != nil {
+			e.Logger.Error(err.Error())
+			return 1
+		}
+
+		e.Logger.Output(fmt.Sprintf("The new autoDeletionTime is [%s]", envResp.DeletionTime))
+		return 0
+	}
+
 	e.Logger.Error("Not a valid command")
 	return 127
 }
@@ -366,6 +428,14 @@ func (e *Env) Help() string {
 		})
 	}
 
+	if e.Update {
+		return commandHelper("update", "environment", "", []Options{
+			{Flag: "--name", Description: "name of environment"},
+			{Flag: "--data", Description: "JSON data which has values for the fields that should be updated in the env"},
+			{Flag: "--file", Description: "JSON file which has values for the fields that should be updated in the env"},
+		})
+	}
+
 	return defaultHelper()
 }
 
@@ -397,6 +467,9 @@ func (e *Env) Synopsis() string {
 
 	if e.Set {
 		return "Set a default env"
+	}
+	if e.Update {
+		return "update an env"
 	}
 	return defaultHelper()
 }
