@@ -53,7 +53,7 @@ func SetEnv(envName string) error {
 		return err
 	}
 	result := ""
-	match := SearchString(string(data), `(?:envName: [a-zA-Z]+-\w+)`)
+	match := SearchString(string(data), `(?:envName: \S+)`)
 	if match != "nil" {
 		result = strings.Replace(string(data), match, fmt.Sprintf("envName: %s", envName), 1)
 	} else {

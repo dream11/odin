@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"strconv"
@@ -28,11 +29,13 @@ func (e *Env) Run(args []string) int {
 	// create flags
 	name := flagSet.String("name", "", "name of environment")
 	team := flagSet.String("team", "", "display environments created by a team")
-	env := flagSet.String("env-type", "dev", "environment to attach with environment")
+	env := flagSet.String("env-type", "", "environment to attach with environment")
 	service := flagSet.String("service", "", "service name to filter out describe environment")
 	component := flagSet.String("component", "", "component name to filter out describe environment")
 	providerAccount := flagSet.String("account", "", "account name to provision the environment in")
 	id := flagSet.Int("id", 0, "unique id of a changelog of an env")
+	filePath := flagSet.String("file", "", "file to update env")
+	data := flagSet.String("data", "", "data for updating the env")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -41,10 +44,17 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Create {
+		if *env == "" {
+			*env = "dev"
+		}
 		emptyParameters := emptyParameters(map[string]string{"--env-type": *env, "--name": *name})
 		if len(emptyParameters) == 0 {
 			if len(*name) > 9 {
 				e.Logger.Error("Env Name should not be of length more than 9")
+				return 1
+			}
+			if (utils.SearchString(*name, "^[a-z][a-z0-9-]*$")) == "nil" {
+				e.Logger.Error("Env name only allows lower case alphabets, numbers and '-'. And should start with an alphabet.")
 				return 1
 			}
 			envConfig := environment.Env{
@@ -186,21 +196,15 @@ func (e *Env) Run(args []string) int {
 	}
 
 	if e.Delete {
-		if *name == "" {
-			*name = utils.FetchKey(ENV_NAME_KEY)
-		}
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
-			val, err := e.Input.Ask("Please re enter the Env Name:")
-			if err != nil {
-				e.Logger.Error(err.Error())
-				return 1
+
+			i, done := UserInput(name, e)
+			if done {
+				return i
 			}
-			if val != *name {
-				e.Logger.Error("Env Name does not match !!")
-				return 1
-			}
-			e.Logger.Info("Environment(" + *name + ") deletion initiated")
+
+			e.Logger.Info(fmt.Sprintf("Environment(%s) deletion initiated", *name))
 			response, err := envClient.DeleteEnv(*name)
 			if err != nil {
 				e.Logger.Error(err.Error())
@@ -290,14 +294,92 @@ func (e *Env) Run(args []string) int {
 		return 1
 	}
 
+	if e.Update {
+		if *name == "" {
+			*name = utils.FetchKey(ENV_NAME_KEY)
+		}
+
+		isNamePresent := len(*name) > 0
+		isDataPresent := len(*data) > 0
+		isFilePresent := len(*filePath) > 0
+
+		if !isNamePresent {
+			e.Logger.Error("--name cannot be blank")
+			return 1
+		}
+
+		if isDataPresent && isFilePresent {
+			e.Logger.Error("You can provide either --data or --file but not both")
+			return 1
+		}
+
+		if !isDataPresent && !isFilePresent {
+			e.Logger.Error("You should provide either --data or --file")
+			return 1
+		}
+
+		var updationData map[string]interface{}
+
+		if isFilePresent {
+			err, parsedConfig := parseFile(*filePath)
+			if err != nil {
+				e.Logger.Error("Error while parsing service file, err: \n" + err.Error())
+				return 1
+			}
+			updationData = parsedConfig.(map[string]interface{})
+		} else if isDataPresent {
+			err = json.Unmarshal([]byte(*data), &updationData)
+			if err != nil {
+				e.Logger.Error("Unable to parse JSON data " + err.Error())
+				return 1
+			}
+		}
+
+		if len(updationData) == 0 {
+			e.Logger.Error("You can't send an empty JSON data")
+			return 1
+		}
+
+		e.Logger.Info("Updating " + *name)
+
+		envResp, err := envClient.UpdateEnv(*name, updationData)
+
+		if err != nil {
+			e.Logger.Error(err.Error())
+			return 1
+		}
+
+		e.Logger.Output(fmt.Sprintf("The new autoDeletionTime is [%s]", envResp.DeletionTime))
+		return 0
+	}
+
 	e.Logger.Error("Not a valid command")
 	return 127
+}
+
+func UserInput(name *string, e *Env) (int, bool) {
+	message := fmt.Sprintf("Are you sure you want to delete env: %s? [Y/n]: ", *name)
+	allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
+
+	val, err := e.Input.AskWithConstraints(message, allowedInputs)
+
+	if err != nil {
+		e.Logger.Error(err.Error())
+		return 1, true
+	}
+
+	if val != "Y" {
+		e.Logger.Info("Skipping env deletion")
+		return 0, true
+	}
+	return 0, false
 }
 
 // Help : returns an explanatory string
 func (e *Env) Help() string {
 	if e.Create {
 		return commandHelper("create", "environment", "", []Options{
+			{Flag: "--name", Description: "name of environment"},
 			{Flag: "--env-type", Description: "type of environment"},
 			{Flag: "--account", Description: "account name to provision the environment in (optional)"},
 		})
@@ -346,6 +428,14 @@ func (e *Env) Help() string {
 		})
 	}
 
+	if e.Update {
+		return commandHelper("update", "environment", "", []Options{
+			{Flag: "--name", Description: "name of environment"},
+			{Flag: "--data", Description: "JSON data which has values for the fields that should be updated in the env"},
+			{Flag: "--file", Description: "JSON file which has values for the fields that should be updated in the env"},
+		})
+	}
+
 	return defaultHelper()
 }
 
@@ -377,6 +467,9 @@ func (e *Env) Synopsis() string {
 
 	if e.Set {
 		return "Set a default env"
+	}
+	if e.Update {
+		return "update an env"
 	}
 	return defaultHelper()
 }

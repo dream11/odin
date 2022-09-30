@@ -83,11 +83,15 @@ func (e *Env) DeleteEnvStream(env string) {
 }
 
 // UpdateEnv : update a created environment
-func (e *Env) UpdateEnv(env string, config interface{}) {
+func (e *Env) UpdateEnv(env string, config interface{}) (envResp.Env, error) {
 	client := newApiClient()
 
 	response := client.actionWithRetry(path.Join(envEntity, env)+"/", "PUT", config)
 	response.Process(true) // process response and exit if error
+
+	var envResponse envResp.DetailResponse
+	err := json.Unmarshal(response.Body, &envResponse)
+	return envResponse.Response, err
 }
 
 // GetHistoryEnv : get historical changes in an Env
