@@ -6,9 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
+	"github.com/apoorvam/goterminal"
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/internal/ui"
 	"github.com/dream11/odin/pkg/request"
@@ -67,6 +69,9 @@ func (sr *StreamRequest) Stream() StreamResponse {
 		return StreamResponse{Error: err}
 	}
 
+	writer := goterminal.New(os.Stdout)
+	ms := ui.New(spinner.CharSets[SPINNER_TYPE], SPINNER_DELAY, writer, SPINNER_TYPE)
+
 	data := bufio.NewScanner(resp.Body)
 	s := spinner.New(spinner.CharSets[SPINNER_TYPE], SPINNER_DELAY)
 	for data.Scan() {
@@ -74,7 +79,11 @@ func (sr *StreamRequest) Stream() StreamResponse {
 		if line == "" {
 			continue
 		}
-		if strings.Contains(line, ui.SPINNER) {
+		if strings.Contains(line, ui.MULTISPINNER) {
+			ms.Data = line
+			s.Stop()
+			ms.Start()
+		} else if strings.Contains(line, ui.SPINNER) {
 			parts := strings.Split(line, ui.SPINNER)
 			s.Prefix = parts[0]
 			s.Suffix = parts[1]
@@ -83,9 +92,11 @@ func (sr *StreamRequest) Stream() StreamResponse {
 			if err != nil {
 				logger.Error(err.Error())
 			}
+			ms.Stop()
 			s.Start()
 		} else {
 			s.Stop()
+			ms.Stop()
 			logger.Output(line + "\n")
 		}
 	}
