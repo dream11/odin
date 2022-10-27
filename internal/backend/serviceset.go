@@ -54,8 +54,8 @@ func (s *ServiceSet) DeleteServiceSet(serviceSetName string) {
 	response.Process(true)
 }
 
-func (s *ServiceSet) DeployServiceSet(serviceSetName, env, configStoreNamespace string, forceDeployServices []serviceset.ListEnvService, force bool) ([]serviceset.ServiceSetDeploy, error) {
-	client := newApiClient()
+func (s *ServiceSet) DeployServiceSet(serviceSetName, env, configStoreNamespace string, forceDeployServices []serviceset.ListEnvService, force bool) {
+	client := newStreamingApiClient()
 	client.QueryParams["env_name"] = env
 	client.QueryParams["force"] = fmt.Sprintf("%v", force)
 	client.QueryParams["config_store_namespace"] = configStoreNamespace
@@ -64,13 +64,9 @@ func (s *ServiceSet) DeployServiceSet(serviceSetName, env, configStoreNamespace 
 		"forceDeployServices": forceDeployServices,
 	}
 
-	response := client.actionWithRetry(path.Join(serviceSetEntity, "deploy", serviceSetName, "env", env)+"/", "POST", data)
+	response := client.streamWithRetry(path.Join(serviceSetEntity, "deploy", serviceSetName, "env", env)+"/", "POST", data)
 	response.Process(true)
 
-	var serviceResponse serviceset.ServiceSetDeployResponse
-	err := json.Unmarshal(response.Body, &serviceResponse)
-
-	return serviceResponse.Response, err
 }
 
 func (s ServiceSet) ListEnvServices(serviceSetName, env, filterBy string) ([]serviceset.ListEnvService, error) {
@@ -86,8 +82,8 @@ func (s ServiceSet) ListEnvServices(serviceSetName, env, filterBy string) ([]ser
 	return serviceResponse.Response, err
 }
 
-func (s *ServiceSet) UndeployServiceSet(serviceSetName, env string, forceUndeployServices []serviceset.ListEnvService, force bool) ([]serviceset.ServiceSetDeploy, error) {
-	client := newApiClient()
+func (s *ServiceSet) UndeployServiceSet(serviceSetName, env string, forceUndeployServices []serviceset.ListEnvService, force bool) {
+	client := newStreamingApiClient()
 	client.QueryParams["env_name"] = env
 	client.QueryParams["force"] = fmt.Sprintf("%v", force)
 
@@ -95,13 +91,8 @@ func (s *ServiceSet) UndeployServiceSet(serviceSetName, env string, forceUndeplo
 		"forceUndeployServices": forceUndeployServices,
 	}
 
-	response := client.actionWithRetry(path.Join(serviceSetEntity, "undeploy", serviceSetName, "env", env)+"/", "DELETE", data)
+	response := client.streamWithRetry(path.Join(serviceSetEntity, "undeploy", serviceSetName, "env", env)+"/", "DELETE", data)
 	response.Process(true)
-
-	var serviceResponse serviceset.ServiceSetDeployResponse
-	err := json.Unmarshal(response.Body, &serviceResponse)
-
-	return serviceResponse.Response, err
 }
 
 func (s *ServiceSet) UpdateServiceSet(serviceSetName string, serviceSet interface{}) {

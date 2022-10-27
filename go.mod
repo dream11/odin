@@ -30,6 +30,7 @@ require (
 require github.com/olekukonko/tablewriter v0.0.5
 
 require (
+	github.com/apoorvam/goterminal v0.0.0-20180523175556-614d345c47e5 // indirect
 	github.com/briandowns/spinner v1.18.1 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/stretchr/testify v1.7.0 // indirect
