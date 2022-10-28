@@ -177,31 +177,7 @@ func (s *ServiceSet) Run(args []string) int {
 
 			/*deploy service-set*/
 			s.Logger.Debug("Deploying service-set: " + *serviceSetName + " in " + *envName)
-			serviceSetList, err := serviceSetClient.DeployServiceSet(*serviceSetName, *envName, *configStoreNamespace, forceDeployServices, *force)
-			if err != nil {
-				s.Logger.Error(err.Error())
-				return 1
-			}
-
-			tableHeaders := []string{"Name", "Version", "Status"}
-			var tableData [][]interface{}
-
-			for _, serviceSet := range serviceSetList {
-				status := "STARTED"
-
-				if len(serviceSet.Error) > 0 {
-					status = "FAILURE: " + serviceSet.Error
-				}
-
-				tableData = append(tableData, []interface{}{
-					serviceSet.Name,
-					serviceSet.Version,
-					status,
-				})
-			}
-
-			s.Logger.Success(fmt.Sprintf("Deployment of service-set %s is started on env %s\n", *serviceSetName, *envName))
-			table.Write(tableHeaders, tableData)
+			serviceSetClient.DeployServiceSet(*serviceSetName, *envName, *configStoreNamespace, forceDeployServices, *force)
 
 			return 0
 		}
@@ -246,32 +222,8 @@ func (s *ServiceSet) Run(args []string) int {
 			}
 
 			/*deploy service-set*/
-			s.Logger.Info("Undeploying service-set: " + *serviceSetName + " in Env:" + *envName)
-			serviceSetList, err := serviceSetClient.UndeployServiceSet(*serviceSetName, *envName, forceUndeployServices, *force)
-			if err != nil {
-				s.Logger.Error(err.Error())
-				return 1
-			}
-
-			tableHeaders := []string{"Name", "Version", "ExecutorUrl", "Error"}
-			var tableData [][]interface{}
-
-			for _, serviceSet := range serviceSetList {
-				status := "STARTED"
-
-				if len(serviceSet.Error) > 0 {
-					status = "FAILURE: " + serviceSet.Error
-				}
-
-				tableData = append(tableData, []interface{}{
-					serviceSet.Name,
-					serviceSet.Version,
-					status,
-				})
-			}
-
-			s.Logger.Success(fmt.Sprintf("Undeployment of service-set %s is started on env %s\n", *serviceSetName, *envName))
-			table.Write(tableHeaders, tableData)
+			s.Logger.Debug("Undeploying service-set: " + *serviceSetName + " in Env:" + *envName)
+			serviceSetClient.UndeployServiceSet(*serviceSetName, *envName, forceUndeployServices, *force)
 
 			return 0
 		}
