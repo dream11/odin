@@ -90,7 +90,7 @@ func (s *ServiceSet) Run(args []string) int {
 		table.Write(tableHeaders, tableData)
 
 		s.Logger.Output("\nCommand to describe serviceset")
-		s.Logger.ItalicEmphasize("odin describe serviceset --name <serviceSetName>")
+		s.Logger.ItalicEmphasize("odin describe service-set --name <serviceSetName>")
 		return 0
 	}
 
