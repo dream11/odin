@@ -32,6 +32,7 @@ type command struct {
 	Release         bool // Release a resource record
 	Set             bool // Set a default env
 	Update          bool // Update a env
+	Validate		bool // validate service definition
 
 	Logger ui.Logger // Use this to log messages
 	Input  ui.Input  // Use this to take inputs

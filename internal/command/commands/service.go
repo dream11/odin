@@ -320,6 +320,20 @@ func (s *Service) Run(args []string) int {
 		return 1
 	}
 
+	if s.Validate {
+		emptyParameters := emptyParameters(map[string]string{"--path": *directoryPath})
+		if len(emptyParameters) == 0 {
+			parsedServiceDefinition, provisioningConfigMap, exitCode := s.validateServiceDefinition(directoryPath)
+			if exitCode > 0 {
+				return exitCode
+			}
+			serviceClient.CreateServiceStream(parsedServiceDefinition, provisioningConfigMap)
+			return 0
+		}
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		return 1
+	}
+
 	s.Logger.Error("Not a valid command")
 	return 127
 }
@@ -361,6 +375,78 @@ func (s *Service) deployReleasedService(envName *string, serviceName *string, se
 	return 0
 }
 
+/*
+validateServiceDefinition
+	returns parsedServiceDefinition interface{}, provisioningConfigMap map[string]interface{}, exitCode int
+*/
+func (s * Service) validateServiceDefinition(directoryPath *string) (interface{}, map[string]interface{}, int) {
+	if exists, err := dir.IsDir(*directoryPath); !exists || err != nil {
+		s.Logger.Error("Provided directory path : " + *directoryPath + " , is not valid")
+		return nil, nil, 1
+	}
+
+	serviceDefinition, serviceDefinitionPath, err := file.FindAndReadAllAllowedFormat(*directoryPath+"/definition", []string{".json", ".yml", ".yaml"})
+	if err != nil {
+		s.Logger.Error("Unable to read from " + *directoryPath + "/definition.json\n")
+		return nil, nil, 1
+	}
+
+	// Throw error on empty service def file
+	if len(serviceDefinition) == 0 {
+		s.Logger.Error("service definition file(definition.json) cannot be empty")
+		return nil, nil, 1
+	}
+	parsedServiceDefinition, err := utils.ParserYmlOrJson(serviceDefinitionPath, serviceDefinition)
+	if err != nil {
+		s.Logger.Error(err.Error())
+		return nil, nil, 1
+	}
+
+	envTypes, err := envClient.EnvTypes()
+	if err != nil {
+		s.Logger.Error(err.Error())
+		return nil, nil, 1
+	}
+
+	allFiles, err := dir.SubDirs(*directoryPath)
+	if err != nil {
+		s.Logger.Error(err.Error())
+		return nil, nil, 1
+	}
+	r, _ := regexp.Compile(`provisioning-([a-zA-Z]*)\.json`)
+	provisioningConfigMap := make(map[string]interface{})
+
+	for _, fileName := range allFiles {
+		envType := r.FindStringSubmatch(fileName)
+		if len(envType) == 0 {
+			if fileName != "definition.json" {
+				s.Logger.Warn(fmt.Sprintf("Ignoring %s. Provisioning config files should be in following format provisioning-<env_type>.json", fileName))
+			}
+		} else {
+			if !utils.Contains(append(envTypes.EnvTypes, "default"), envType[1]) {
+				s.Logger.Warn(fmt.Sprintf("Ignoring %s as env type %s does not exist", fileName, envType[1]))
+				continue
+			}
+			f := filepath.Join(*directoryPath, utils.GetProvisioningFileName(envType[1]))
+			data, provisioningFilePath, err := file.FindAndReadAllAllowedFormat(f, []string{".json", ".yml", ".yaml"})
+			// Ignore empty provisioning files
+			if len(data) == 0 {
+				continue
+			}
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return nil, nil, 1
+			}
+			parsedProvisioningConfig, err := utils.ParserYmlOrJson(provisioningFilePath, data)
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return nil, nil, 1
+			}
+			provisioningConfigMap[envType[1]] = parsedProvisioningConfig
+		}
+	}
+	return parsedServiceDefinition, provisioningConfigMap, 0
+}
 /*
 validateDeployService
 	returns parsedProvisioningConfig: interface{}, exitCode int, toExit bool
@@ -506,6 +592,12 @@ func (s *Service) Help() string {
 		return commandHelper("status", "service", "", []Options{
 			{Flag: "--name", Description: "name of service"},
 			{Flag: "--version", Description: "version of service"},
+		})
+	}
+
+	if s.Validate {
+		return commandHelper("validate", "service", "", []Options{
+			{Flag: "--path", Description: "path to directory containing service definition and provisioning config"},
 		})
 	}
 

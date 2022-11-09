@@ -52,3 +52,7 @@ type MergedService struct {
 type CompareResponse struct {
 	Response interface{} `yaml:"resp,omitempty" json:"resp,omitempty"`
 }
+
+type ValidateServiceResponse struct {
+	Response interface{} `yaml:"resp,omitempty" json:"resp,omitempty"`
+}

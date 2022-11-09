@@ -19,6 +19,17 @@ func (s *Service) CreateServiceStream(serviceDefinition interface{}, provisionin
 	response.Process(true) // process response and exit if error
 }
 
+// Validate service release
+func (s *Service) ValidateService(serviceDefinition interface{}, provisioningConfigMap map[string]interface{}) (service.Service, error){
+	client := newApiClient()
+	response := client.actionWithRetry(serviceEntity+"/", "POST", service.MergedService{Service: serviceDefinition, ProvisioningConfig: provisioningConfigMap})
+	response.Process(true) // process response and exit if error
+	var serviceResponse service.DetailResponse
+	err := json.Unmarshal(response.Body, &serviceResponse)
+
+	return serviceResponse.Response, err
+}
+
 // RebuildServiceStream : rebuild a service using streams
 func (s *Service) RebuildServiceStream(service, version string) {
 	client := newStreamingApiClient()
