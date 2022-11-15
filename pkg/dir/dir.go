@@ -1,7 +1,6 @@
 package dir
 
 import (
-	"io/ioutil"
 	"os"
 )
 
@@ -19,7 +18,7 @@ func Create(dirPath string, permission os.FileMode) error {
 func SubDirs(dirPath string) ([]string, error) {
 	subDirs := []string{}
 
-	files, err := ioutil.ReadDir(dirPath)
+	files, err := os.ReadDir(dirPath)
 	if err != nil {
 		return subDirs, err
 	}
