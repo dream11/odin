@@ -12,6 +12,7 @@ import (
 	"github.com/dream11/odin/app"
 	"github.com/dream11/odin/internal/config"
 	"github.com/dream11/odin/pkg/file"
+	"github.com/google/uuid"
 	"gopkg.in/yaml.v2"
 )
 
@@ -80,4 +81,8 @@ func FetchKey(keyName string) string {
 	r := reflect.ValueOf(appConfig)
 	f := reflect.Indirect(r).FieldByName(keyName)
 	return f.String()
+}
+
+func GetUUID() string {
+	return uuid.New().String()
 }

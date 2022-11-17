@@ -34,10 +34,11 @@ func (e *Env) CreateEnvStream(envDetails interface{}) {
 }
 
 // DescribeEnv : describe an Env
-func (e *Env) DescribeEnv(env, service, component string) (envResp.Env, error) {
+func (e *Env) DescribeEnv(env, service, component string, traceId string) (envResp.Env, error) {
 	client := newApiClient()
 	client.QueryParams["service"] = service
 	client.QueryParams["component"] = component
+	client.QueryParams["traceId"] = traceId
 	response := client.actionWithRetry(path.Join(envEntity, env)+"/", "GET", nil)
 	response.Process(true) // process response and exit if error
 

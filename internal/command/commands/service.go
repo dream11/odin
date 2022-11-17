@@ -262,13 +262,17 @@ func (s *Service) Run(args []string) int {
 				return 1
 			}
 			serviceDefinition := parsedConfig.(map[string]interface{})
-
-			return s.deployUnreleasedService(envName, serviceDefinition, provisioningConfigFile, configStoreNamespace)
+			
+			// Generate tracce-id
+			traceId := utils.GetUUID()
+			return s.deployUnreleasedService(envName, serviceDefinition, provisioningConfigFile, configStoreNamespace, traceId)
 		}
 
 		emptyReleasedParameters := emptyParameters(map[string]string{"--env": *envName, "--name": *serviceName, "--version": *serviceVersion})
 		if len(emptyReleasedParameters) == 0 {
-			return s.deployReleasedService(envName, serviceName, serviceVersion, provisioningConfigFile, configStoreNamespace)
+			// Generate tracce-id
+			traceId := utils.GetUUID()
+			return s.deployReleasedService(envName, serviceName, serviceVersion, provisioningConfigFile, configStoreNamespace, traceId)
 		}
 
 		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyUnreleasedParameters))
@@ -324,7 +328,7 @@ func (s *Service) Run(args []string) int {
 	return 127
 }
 
-func (s *Service) deployUnreleasedService(envName *string, serviceDefinition map[string]interface{}, provisioningConfigFile *string, configStoreNamespace *string) int {
+func (s *Service) deployUnreleasedService(envName *string, serviceDefinition map[string]interface{}, provisioningConfigFile *string, configStoreNamespace *string, traceId string) int {
 
 	if serviceDefinition["name"] == nil || len(serviceDefinition["name"].(string)) == 0 {
 		s.Logger.Error("key 'name' mandatory in the service definition file.")
@@ -334,7 +338,7 @@ func (s *Service) deployUnreleasedService(envName *string, serviceDefinition map
 	serviceName := serviceDefinition["name"].(string)
 	serviceVersion := ""
 
-	parsedProvisioningConfig, i, done := s.validateDeployService(envName, serviceName, serviceVersion, serviceDefinition, provisioningConfigFile, configStoreNamespace)
+	parsedProvisioningConfig, i, done := s.validateDeployService(envName, serviceName, serviceVersion, serviceDefinition, provisioningConfigFile, configStoreNamespace, traceId)
 	if done {
 		return i
 	}
@@ -347,9 +351,9 @@ func (s *Service) deployUnreleasedService(envName *string, serviceDefinition map
 }
 
 func (s *Service) deployReleasedService(envName *string, serviceName *string, serviceVersion *string,
-	provisioningConfigFile *string, configStoreNamespace *string) int {
+	provisioningConfigFile *string, configStoreNamespace *string, traceId string) int {
 
-	parsedProvisioningConfig, i, done := s.validateDeployService(envName, *serviceName, *serviceVersion, nil, provisioningConfigFile, configStoreNamespace)
+	parsedProvisioningConfig, i, done := s.validateDeployService(envName, *serviceName, *serviceVersion, nil, provisioningConfigFile, configStoreNamespace, traceId)
 	if done {
 		return i
 	}
@@ -365,8 +369,8 @@ func (s *Service) deployReleasedService(envName *string, serviceName *string, se
 validateDeployService
 	returns parsedProvisioningConfig: interface{}, exitCode int, toExit bool
 */
-func (s *Service) validateDeployService(envName *string, serviceName string, serviceVersion string, serviceDefinition map[string]interface{}, provisioningConfigFile *string, configStoreNamespace *string) (interface{}, int, bool) {
-	envServices, err := envClient.DescribeEnv(*envName, "", "")
+func (s *Service) validateDeployService(envName *string, serviceName string, serviceVersion string, serviceDefinition map[string]interface{}, provisioningConfigFile *string, configStoreNamespace *string, traceId string) (interface{}, int, bool) {
+	envServices, err := envClient.DescribeEnv(*envName, "", "", traceId)
 
 	if err != nil {
 		s.Logger.Error(err.Error())

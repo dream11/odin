@@ -146,7 +146,10 @@ func (e *Env) Run(args []string) int {
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
 			e.Logger.Info("Describing " + *name)
-			envResp, err := envClient.DescribeEnv(*name, *service, *component)
+
+			// Generate tracce-id
+			traceId := utils.GetUUID()
+			envResp, err := envClient.DescribeEnv(*name, *service, *component, traceId)
 			if err != nil {
 				e.Logger.Error(err.Error())
 				return 1
