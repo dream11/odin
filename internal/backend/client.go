@@ -69,7 +69,7 @@ func newClient() clientProperties {
 		address: appConfig.BackendAddr + "/",
 		Headers: map[string]string{
 			"Content-Type": "application/json",
-			"Version": odin.App.Version,
+			"App-Version":  odin.App.Version,
 		},
 		QueryParams: map[string]string{},
 	}
@@ -132,7 +132,7 @@ func newStreamingClient() streamingClientProperties {
 		address: appConfig.BackendAddr + "/",
 		Headers: map[string]string{
 			"Content-Type": "application/json",
-			"Version": odin.App.Version,
+			"App-Version":  odin.App.Version,
 		},
 		QueryParams: map[string]string{},
 	}
