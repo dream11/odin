@@ -292,7 +292,7 @@ func (e *Env) Run(args []string) int {
 			e.Logger.Output(fmt.Sprintf("Default environment has been set to %s", *name))
 			return 0
 		}
-		e.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		e.Logger.Error(constant.ENV_NAME_OPTION)
 		return 1
 	}
 
@@ -342,7 +342,7 @@ func (e *Env) Run(args []string) int {
 			return 1
 		}
 
-		e.Logger.Info("Updating " + *name)
+		e.Logger.Info("Updating Env: " + *name)
 
 		envResp, err := envClient.UpdateEnv(*name, updationData)
 

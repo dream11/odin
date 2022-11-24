@@ -46,16 +46,19 @@ func isLatestVersion(currentVersion string, latestVersion string) bool {
 
 func main() {
 	c := cli.Cli(odin.App.Name, odin.App.Version)
+	exitStatus, err := c.Run()
+
 	latestVersion := getLatestVersion()
 	if latestVersion != "" && !isLatestVersion(odin.App.Version, latestVersion) {
 		logger.Info(fmt.Sprintf("\nYou are using odin version %s; however, version %s is available", odin.App.Version, latestVersion))
 		logger.Info("Upgrade to the latest version via command 'brew install dream11/tools/odin'")
 	}
-	exitStatus, err := c.Run()
+
 	if err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}
+
 	os.Exit(exitStatus)
 }
 

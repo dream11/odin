@@ -16,7 +16,7 @@ var logger ui.Logger
 const (
 	RetryCount     = 3
 	BackoffSeconds = 2
-);
+)
 
 // initiation of an HTTP client for backend interactions
 type clientProperties struct {

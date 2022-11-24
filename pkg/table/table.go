@@ -8,7 +8,7 @@ import (
 )
 
 // Write : write provided input as tabular format
-	func Write(headers []string, data [][]interface{}) {
+func Write(headers []string, data [][]interface{}) {
 
 	table := tablewriter.NewWriter(os.Stdout)
 
