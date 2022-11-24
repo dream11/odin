@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	odin "github.com/dream11/odin/app"
 	"github.com/dream11/odin/internal/config"
 	"github.com/dream11/odin/internal/ui"
 	"github.com/dream11/odin/pkg/request"
@@ -15,7 +16,7 @@ var logger ui.Logger
 const (
 	RetryCount     = 3
 	BackoffSeconds = 2
-)
+);
 
 // initiation of an HTTP client for backend interactions
 type clientProperties struct {
@@ -68,6 +69,7 @@ func newClient() clientProperties {
 		address: appConfig.BackendAddr + "/",
 		Headers: map[string]string{
 			"Content-Type": "application/json",
+			"Version": odin.App.Version,
 		},
 		QueryParams: map[string]string{},
 	}
@@ -130,6 +132,7 @@ func newStreamingClient() streamingClientProperties {
 		address: appConfig.BackendAddr + "/",
 		Headers: map[string]string{
 			"Content-Type": "application/json",
+			"Version": odin.App.Version,
 		},
 		QueryParams: map[string]string{},
 	}
