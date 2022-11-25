@@ -3,9 +3,9 @@ package backend
 import (
 	"encoding/json"
 	"fmt"
-	"path"
-
 	"github.com/dream11/odin/api/serviceset"
+	"path"
+	"strconv"
 )
 
 // ServiceSet entity
@@ -18,6 +18,13 @@ func (s *ServiceSet) CreateServiceSet(serviceSetDefinition interface{}) {
 	client := newApiClient()
 
 	response := client.actionWithRetry(serviceSetEntity+"/", "POST", serviceSetDefinition)
+	response.ProcessHandleError(true)
+}
+
+func (s *ServiceSet) CreateTempServiceSet(serviceSetDefinition interface{}) {
+	client := newApiClient()
+
+	response := client.actionWithRetry(serviceSetEntity+"/file/", "POST", serviceSetDefinition)
 	response.ProcessHandleError(true)
 }
 
@@ -54,11 +61,12 @@ func (s *ServiceSet) DeleteServiceSet(serviceSetName string) {
 	response.Process(true)
 }
 
-func (s *ServiceSet) DeployServiceSet(serviceSetName, env, configStoreNamespace string, forceDeployServices []serviceset.ListEnvService, force bool) {
+func (s *ServiceSet) DeployServiceSet(serviceSetName, env, configStoreNamespace string, forceDeployServices []serviceset.ListEnvService, force bool, isFile bool) {
 	client := newStreamingApiClient()
 	client.QueryParams["env_name"] = env
 	client.QueryParams["force"] = fmt.Sprintf("%v", force)
 	client.QueryParams["config_store_namespace"] = configStoreNamespace
+	client.QueryParams["isFile"] = fmt.Sprintf("%v", isFile)
 
 	data := map[string]interface{}{
 		"forceDeployServices": forceDeployServices,
@@ -69,9 +77,10 @@ func (s *ServiceSet) DeployServiceSet(serviceSetName, env, configStoreNamespace 
 
 }
 
-func (s ServiceSet) ListEnvServices(serviceSetName, env, filterBy string) ([]serviceset.ListEnvService, error) {
+func (s ServiceSet) ListEnvServices(serviceSetName, env, filterBy string, isFile bool) ([]serviceset.ListEnvService, error) {
 	client := newApiClient()
 	client.QueryParams["filter_by"] = filterBy
+	client.QueryParams["isFile"] = strconv.FormatBool(isFile)
 
 	response := client.actionWithRetry(path.Join(serviceSetEntity, serviceSetName, "env", env, "service")+"/", "GET", nil)
 	response.Process(true)

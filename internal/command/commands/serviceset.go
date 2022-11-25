@@ -26,6 +26,7 @@ func (s *ServiceSet) Run(args []string) int {
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
 	// create flags
 	filePath := flagSet.String("file", "service-set.json", "file to read service-set config")
+	setFilePath := flagSet.String("setFile", "service-set.json", "file to read temporary service-set config")
 	serviceSetName := flagSet.String("name", "", "name of service-set to be used")
 	serviceName := flagSet.String("service", "", "name of service in service-set")
 	envName := flagSet.String("env", "", "name of environment to deploy the service-set in")
@@ -140,13 +141,99 @@ func (s *ServiceSet) Run(args []string) int {
 		if *envName == "" {
 			*envName = utils.FetchKey(ENV_NAME_KEY)
 		}
+		isEnvPresent := len(*envName) > 0
+		isFilePresent := len(*setFilePath) > 0
+		isServiceSetNamePresent := len(*serviceSetName) > 0
+
+		if !isEnvPresent {
+			s.Logger.Error("--env is mandatory")
+			return 1
+		}
+		if isFilePresent && isServiceSetNamePresent {
+			s.Logger.Error("--name should not be provided when --setFile is provided.")
+			return 1
+		} else if !isFilePresent && !isServiceSetNamePresent {
+			s.Logger.Error("Please provide either --name or --setFile.")
+			return 1
+		}
+		emptyTempCreatedParameters := emptyParameters(map[string]string{"--env": *envName, "--setFile": *setFilePath})
+		if len(emptyTempCreatedParameters) == 0 {
+			// Create a service set in Temporary Table
+			configData, err := file.Read(*setFilePath)
+			if err != nil {
+				s.Logger.Error("Unable to read from " + *setFilePath + "\n" + err.Error())
+				return 1
+			}
+
+			var parsedConfig interface{}
+
+			if strings.Contains(*setFilePath, ".yaml") || strings.Contains(*setFilePath, ".yml") {
+				err = yaml.Unmarshal(configData, &parsedConfig)
+				if err != nil {
+					s.Logger.Error("Unable to parse YAML. " + err.Error())
+					return 1
+				}
+			} else if strings.Contains(*setFilePath, ".json") {
+				err = json.Unmarshal(configData, &parsedConfig)
+				if err != nil {
+					s.Logger.Error("Unable to parse JSON. " + err.Error())
+					return 1
+				}
+			} else {
+				s.Logger.Error("Unrecognized file format")
+				return 1
+			}
+			serviceDataMap := parsedConfig.(map[string]interface{})
+
+			serviceSetClient.CreateTempServiceSet(parsedConfig)
+			s.Logger.Success(fmt.Sprintf("Temporary ServiceSet: %s initialised Successfully.", serviceDataMap["name"].(string)))
+
+			var forceDeployServices []serviceset.ListEnvService
+			if !*force {
+				//get list of env services
+				s.Logger.Debug(fmt.Sprintf("Env Services of service-set %s and env %s", *serviceSetName, *envName))
+				serviceSetList, err := serviceSetClient.ListEnvServices(fmt.Sprintf("%v", serviceDataMap["name"]), *envName, "conflictedVersion", true)
+
+				if err != nil {
+					s.Logger.Error(err.Error())
+					return 1
+				}
+
+				if len(serviceSetList) > 0 {
+					s.Logger.Output("Following services have conflicting versions in the Env: " + *envName)
+					s.Logger.Output("Press [Y] to update the service version or press [n] to skip service.\n")
+					allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
+					for _, serviceSet := range serviceSetList {
+						message := fmt.Sprintf("Update version of Service %s : %s -> %s[Y/n]: ", serviceSet.Name, serviceSet.EnvVersion, serviceSet.Version)
+						//s.Logger.Output(message)
+
+						val, err := s.Input.AskWithConstraints(message, allowedInputs)
+
+						if err != nil {
+							s.Logger.Error(err.Error())
+							return 1
+						}
+
+						if val == "Y" {
+							forceDeployServices = append(forceDeployServices, serviceSet)
+						}
+					}
+				}
+			}
+
+			/*deploy service-set*/
+			s.Logger.ItalicEmphasize("Deploying temporary service-set: " + fmt.Sprintf("%v", serviceDataMap["name"]) + " in " + *envName)
+			serviceSetClient.DeployServiceSet(fmt.Sprintf("%v", serviceDataMap["name"]), *envName, *configStoreNamespace, forceDeployServices, *force, true)
+
+			return 0
+		}
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceSetName, "--env": *envName})
 		if len(emptyParameters) == 0 {
 			var forceDeployServices []serviceset.ListEnvService
 			if !*force {
 				//get list of env services
 				s.Logger.Debug(fmt.Sprintf("Env Services of service-set %s and env %s", *serviceSetName, *envName))
-				serviceSetList, err := serviceSetClient.ListEnvServices(*serviceSetName, *envName, "conflictedVersion")
+				serviceSetList, err := serviceSetClient.ListEnvServices(*serviceSetName, *envName, "conflictedVersion", false)
 
 				if err != nil {
 					s.Logger.Error(err.Error())
@@ -177,12 +264,12 @@ func (s *ServiceSet) Run(args []string) int {
 
 			/*deploy service-set*/
 			s.Logger.Debug("Deploying service-set: " + *serviceSetName + " in " + *envName)
-			serviceSetClient.DeployServiceSet(*serviceSetName, *envName, *configStoreNamespace, forceDeployServices, *force)
+			serviceSetClient.DeployServiceSet(*serviceSetName, *envName, *configStoreNamespace, forceDeployServices, *force, false)
 
 			return 0
 		}
 
-		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		s.Logger.Error(fmt.Sprintf("%s cannot be blank. Please execute {%s} for all the available options", emptyParameters, "odin deploy service-set --help"))
 		return 1
 	}
 
@@ -194,8 +281,8 @@ func (s *ServiceSet) Run(args []string) int {
 		if len(emptyParameters) == 0 {
 			var forceUndeployServices []serviceset.ListEnvService
 			if !*force {
-				serviceSetList, err := serviceSetClient.ListEnvServices(*serviceSetName, *envName, "conflictedVersion")
-
+				serviceSetList, err := serviceSetClient.ListEnvServices(*serviceSetName, *envName, "conflictedVersion", false)
+				// ToDo : Fix this handling
 				if err != nil {
 					s.Logger.Error(err.Error())
 					return 1
@@ -239,7 +326,7 @@ func (s *ServiceSet) Run(args []string) int {
 func (s *ServiceSet) Help() string {
 	if s.Create {
 		return commandHelper("create", "service-set", "", []Options{
-			{Flag: "--file", Description: "yaml file to read service-set definition"},
+			{Flag: "--file", Description: "yaml/json file to read service-set definition"},
 		})
 	}
 
@@ -268,6 +355,7 @@ func (s *ServiceSet) Help() string {
 			{Flag: "--env", Description: "name of environment to deploy service-set in"},
 			{Flag: "--force", Description: "forcefully deploy service-set into the Env"},
 			{Flag: "--d11", Description: "config-store-namespace=config store branch/tag to use"},
+			{Flag: "--setFile", Description: "json file to read temporary service-set definition "},
 		})
 	}
 
