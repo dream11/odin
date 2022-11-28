@@ -2,10 +2,10 @@ package commands
 
 import (
 	"flag"
-	"fmt"
 
 	"github.com/dream11/odin/api/label"
 	"github.com/dream11/odin/internal/backend"
+	"github.com/dream11/odin/internal/constant"
 	"github.com/dream11/odin/pkg/table"
 )
 
@@ -30,6 +30,7 @@ func (l *Label) Run(args []string) int {
 	if l.Create {
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
+			l.Logger.Info("Creating label: " + *name)
 			labelData := label.Label{
 				Name:                             *name,
 				VersionCardinalityGreaterThanOne: *versionCardinalityGreaterThanOne,
@@ -40,7 +41,7 @@ func (l *Label) Run(args []string) int {
 			return 0
 		}
 
-		l.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		l.Logger.Error(constant.LABEL_NAME_OPTION)
 
 		return 1
 	}
@@ -70,13 +71,14 @@ func (l *Label) Run(args []string) int {
 
 	if l.Delete {
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
+		l.Logger.Info("Deleting label: " + *name)
 		if len(emptyParameters) == 0 {
 			labelClient.DeleteLabel(*name)
 			l.Logger.Success("Successfully deleted label: " + *name)
 			return 0
 		}
 
-		l.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		l.Logger.Error(constant.LABEL_NAME_OPTION)
 		return 1
 	}
 	l.Logger.Error("Not a valid command")

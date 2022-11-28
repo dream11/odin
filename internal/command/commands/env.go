@@ -8,6 +8,7 @@ import (
 
 	"github.com/dream11/odin/api/environment"
 	"github.com/dream11/odin/internal/backend"
+	"github.com/dream11/odin/internal/constant"
 	"github.com/dream11/odin/pkg/datetime"
 	"github.com/dream11/odin/pkg/table"
 	"github.com/dream11/odin/pkg/utils"
@@ -69,7 +70,7 @@ func (e *Env) Run(args []string) int {
 			return 0
 		}
 
-		e.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		e.Logger.Error(constant.ENV_NAME_OPTION)
 
 		return 1
 	}
@@ -135,7 +136,7 @@ func (e *Env) Run(args []string) int {
 
 			return 0
 		}
-		e.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		e.Logger.Error(constant.ENV_NAME_OPTION)
 		return 1
 	}
 
@@ -145,7 +146,7 @@ func (e *Env) Run(args []string) int {
 		}
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
-			e.Logger.Info("Describing " + *name)
+			e.Logger.Info("Describing Env: " + *name)
 			envResp, err := envClient.DescribeEnv(*name, *service, *component)
 			if err != nil {
 				e.Logger.Error(err.Error())
@@ -165,7 +166,7 @@ func (e *Env) Run(args []string) int {
 			}
 			return 0
 		}
-		e.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		e.Logger.Error(constant.ENV_NAME_OPTION)
 		return 1
 	}
 
@@ -204,7 +205,7 @@ func (e *Env) Run(args []string) int {
 				return i
 			}
 
-			e.Logger.Info(fmt.Sprintf("Environment(%s) deletion initiated", *name))
+			e.Logger.Info(fmt.Sprintf("Initialising Env: [%s] deletion", *name))
 			response, err := envClient.DeleteEnv(*name)
 			if err != nil {
 				e.Logger.Error(err.Error())
@@ -214,7 +215,7 @@ func (e *Env) Run(args []string) int {
 			return 0
 		}
 
-		e.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		e.Logger.Error(constant.ENV_NAME_OPTION)
 		return 1
 	}
 
@@ -275,13 +276,14 @@ func (e *Env) Run(args []string) int {
 				return 0
 			}
 		}
-		e.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		e.Logger.Error(constant.ENV_NAME_OPTION)
 		return 1
 	}
 
 	if e.Set {
 		emptyParameters := emptyParameters(map[string]string{"--name": *name})
 		if len(emptyParameters) == 0 {
+			e.Logger.Info(fmt.Sprintf("Setting default environment to %s", *name))
 			err := utils.SetEnv(*name)
 			if err != nil {
 				e.Logger.Error(err.Error())
@@ -290,7 +292,7 @@ func (e *Env) Run(args []string) int {
 			e.Logger.Output(fmt.Sprintf("Default environment has been set to %s", *name))
 			return 0
 		}
-		e.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
+		e.Logger.Error(constant.ENV_NAME_OPTION)
 		return 1
 	}
 
@@ -340,7 +342,7 @@ func (e *Env) Run(args []string) int {
 			return 1
 		}
 
-		e.Logger.Info("Updating " + *name)
+		e.Logger.Info("Updating Env: " + *name)
 
 		envResp, err := envClient.UpdateEnv(*name, updationData)
 

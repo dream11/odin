@@ -188,16 +188,21 @@ func (s *Service) Run(args []string) int {
 		}
 		var tableHeaders []string
 		if len(*serviceName) == 0 {
-			tableHeaders = []string{"Name", "Latest Version", "Description", "Team"}
+			tableHeaders = []string{"Name", "Latest Version", "Label", "Description", "Team"}
 		} else {
-			tableHeaders = []string{"Name", "Version", "Description", "Team"}
+			tableHeaders = []string{"Name", "Version", "Label", "Description", "Team"}
 		}
 		var tableData [][]interface{}
 
 		for _, service := range serviceList {
+			var labelList []string
+			for _, label := range service.Labels {
+				labelList = append(labelList, label.Name)
+			}
 			tableData = append(tableData, []interface{}{
 				service.Name,
 				service.Version,
+				strings.Join(labelList, ", "),
 				service.Description,
 				service.Team,
 			})
@@ -363,6 +368,7 @@ func (s *Service) deployReleasedService(envName *string, serviceName *string, se
 
 /*
 validateDeployService
+
 	returns parsedProvisioningConfig: interface{}, exitCode int, toExit bool
 */
 func (s *Service) validateDeployService(envName *string, serviceName string, serviceVersion string, serviceDefinition map[string]interface{}, provisioningConfigFile *string, configStoreNamespace *string) (interface{}, int, bool) {
@@ -484,6 +490,14 @@ func (s *Service) Help() string {
 		})
 	}
 
+	if s.Unlabel {
+		return commandHelper("unlabel", "service", "", []Options{
+			{Flag: "--name", Description: "name of service to label"},
+			{Flag: "--version", Description: "version of service to label"},
+			{Flag: "--label", Description: "name of the label"},
+		})
+	}
+
 	if s.Deploy {
 		return commandHelper("deploy", "service", "", []Options{
 			{Flag: "--name", Description: "name of service to deploy"},
@@ -528,6 +542,10 @@ func (s *Service) Synopsis() string {
 
 	if s.Label {
 		return "label a service version"
+	}
+
+	if s.Unlabel {
+		return "unlabel a service version"
 	}
 
 	if s.Deploy {
