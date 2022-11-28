@@ -26,7 +26,7 @@ func (s *ServiceSet) Run(args []string) int {
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
 	// create flags
 	filePath := flagSet.String("file", "service-set.json", "file to read service-set config")
-	setFilePath := flagSet.String("setFile", "service-set.json", "file to read temporary service-set config")
+	setFilePath := flagSet.String("setFile", "", "file to read temporary service-set config")
 	serviceSetName := flagSet.String("name", "", "name of service-set to be used")
 	serviceName := flagSet.String("service", "", "name of service in service-set")
 	envName := flagSet.String("env", "", "name of environment to deploy the service-set in")
@@ -98,8 +98,9 @@ func (s *ServiceSet) Run(args []string) int {
 	if s.Describe {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceSetName})
 		if len(emptyParameters) == 0 {
+			isFile := serviceSetClient.IdentifyServiceSetType(*serviceSetName)
 			s.Logger.Info("Describing service-set: " + *serviceSetName)
-			serviceSetResp, err := serviceSetClient.DescribeServiceSet(*serviceSetName)
+			serviceSetResp, err := serviceSetClient.DescribeServiceSet(*serviceSetName, isFile)
 			if err != nil {
 				s.Logger.Error(err.Error())
 				return 1
@@ -126,9 +127,10 @@ func (s *ServiceSet) Run(args []string) int {
 
 	if s.Delete {
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceSetName})
+		isFile := serviceSetClient.IdentifyServiceSetType(*serviceSetName)
 		if len(emptyParameters) == 0 {
 			s.Logger.Info("Deleting service-set: " + *serviceSetName)
-			serviceSetClient.DeleteServiceSet(*serviceSetName)
+			serviceSetClient.DeleteServiceSet(*serviceSetName, isFile)
 
 			return 0
 		}
@@ -156,8 +158,8 @@ func (s *ServiceSet) Run(args []string) int {
 			s.Logger.Error("Please provide either --name or --setFile.")
 			return 1
 		}
-		emptyTempCreatedParameters := emptyParameters(map[string]string{"--env": *envName, "--setFile": *setFilePath})
-		if len(emptyTempCreatedParameters) == 0 {
+		emptyFileCreatedParameters := emptyParameters(map[string]string{"--env": *envName, "--setFile": *setFilePath})
+		if len(emptyFileCreatedParameters) == 0 {
 			// Create a service set in Temporary Table
 			configData, err := file.Read(*setFilePath)
 			if err != nil {
@@ -279,9 +281,10 @@ func (s *ServiceSet) Run(args []string) int {
 		}
 		emptyParameters := emptyParameters(map[string]string{"--name": *serviceSetName, "--env": *envName})
 		if len(emptyParameters) == 0 {
+			isFile := serviceSetClient.IdentifyServiceSetType(*serviceSetName)
 			var forceUndeployServices []serviceset.ListEnvService
 			if !*force {
-				serviceSetList, err := serviceSetClient.ListEnvServices(*serviceSetName, *envName, "conflictedVersion", false)
+				serviceSetList, err := serviceSetClient.ListEnvServices(*serviceSetName, *envName, "conflictedVersion", isFile)
 				// ToDo : Fix this handling
 				if err != nil {
 					s.Logger.Error(err.Error())
@@ -310,7 +313,7 @@ func (s *ServiceSet) Run(args []string) int {
 
 			/*deploy service-set*/
 			s.Logger.Debug("Undeploying service-set: " + *serviceSetName + " in Env:" + *envName)
-			serviceSetClient.UndeployServiceSet(*serviceSetName, *envName, forceUndeployServices, *force)
+			serviceSetClient.UndeployServiceSet(*serviceSetName, *envName, forceUndeployServices, *force, isFile)
 
 			return 0
 		}

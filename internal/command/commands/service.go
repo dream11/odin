@@ -363,6 +363,7 @@ func (s *Service) deployReleasedService(envName *string, serviceName *string, se
 
 /*
 validateDeployService
+
 	returns parsedProvisioningConfig: interface{}, exitCode int, toExit bool
 */
 func (s *Service) validateDeployService(envName *string, serviceName string, serviceVersion string, serviceDefinition map[string]interface{}, provisioningConfigFile *string, configStoreNamespace *string) (interface{}, int, bool) {
