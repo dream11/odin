@@ -105,31 +105,8 @@ func (r *Response) Process(exitOnError bool) {
 
 // Process Request Response and Return Status Code
 
-func (r *Response) GetStatusCode(exitOnError bool) int {
-
-	if r.Error != nil {
-		logger.Error(r.Error.Error())
-		HandleExit(1, exitOnError)
-	} else {
-		if MatchStatusCode(r.StatusCode, 200) {
-			logger.Debug(r.Status)
-			logger.Debug(string(r.Body))
-			return 200
-		} else if MatchStatusCode(r.StatusCode, 300) {
-			logger.Debug(r.Status)
-			logger.Debug(string(r.Body))
-			return 300
-		} else if MatchStatusCode(r.StatusCode, 400) {
-			logger.Debug(r.Status)
-			logger.Debug(string(r.Body))
-			return 400
-		} else if MatchStatusCode(r.StatusCode, 500) {
-			logger.Debug(r.Status)
-			logger.Debug(string(r.Body))
-			return 500
-		}
-	}
-	return 0
+func (r *Response) GetStatusCode() int {
+	return r.StatusCode
 }
 
 // Process : process request response to generate valid output

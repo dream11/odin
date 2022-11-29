@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/dream11/odin/api/serviceset"
-	"github.com/dream11/odin/pkg/request"
 )
 
 // ServiceSet entity
@@ -24,7 +23,7 @@ func (s *ServiceSet) CreateServiceSet(serviceSetDefinition interface{}) {
 	response.ProcessHandleError(true)
 }
 
-func (s *ServiceSet) CreateTempServiceSet(serviceSetDefinition interface{}) {
+func (s *ServiceSet) CreateUpdateTempServiceSet(serviceSetDefinition interface{}) {
 	client := newApiClient()
 
 	response := client.actionWithRetry(serviceSetEntityFile+"/", "POST", serviceSetDefinition)
@@ -45,15 +44,12 @@ func (s *ServiceSet) ListServiceSet(serviceSetName, serviceName string) ([]servi
 	return serviceResponse.Response, err
 }
 
-func (s *ServiceSet) DescribeServiceSet(serviceSetName string, isFile bool) (serviceset.Describe, error) {
+func (s *ServiceSet) DescribeServiceSet(serviceSetName string) (serviceset.Describe, error) {
 	client := newApiClient()
-	var response request.Response
-	if isFile {
-		response = client.actionWithRetry(path.Join(serviceSetEntityFile, serviceSetName), "GET", nil)
-	} else {
-		response = client.actionWithRetry(path.Join(serviceSetEntity, serviceSetName), "GET", nil)
-	}
+
+	response := client.actionWithRetry(path.Join(serviceSetEntity, serviceSetName), "GET", nil)
 	response.Process(true)
+
 	var serviceResponse serviceset.DescribeResponse
 	err := json.Unmarshal(response.Body, &serviceResponse)
 
@@ -65,34 +61,27 @@ func (s *ServiceSet) IdentifyServiceSetType(serviceSetName string) bool {
 	client := newApiClient()
 	response := client.actionWithRetry(path.Join(serviceSetEntityFile, serviceSetName), "GET", nil)
 
-	if response.GetStatusCode(true) == 200 {
+	if response.GetStatusCode() == 200 {
 		isFile = true
-	} else if response.GetStatusCode(true) == 500 {
+	} else if response.GetStatusCode() == 500 {
 		response.Process(true)
 	}
 	return isFile
 }
 
-func (s *ServiceSet) DeleteServiceSet(serviceSetName string, isFile bool) {
-
+func (s *ServiceSet) DeleteServiceSet(serviceSetName string) {
 	client := newApiClient()
-	var response request.Response
-	if isFile {
-		response = client.actionWithRetry(path.Join(serviceSetEntityFile, serviceSetName)+"/", "DELETE", nil)
 
-	} else {
-		response = client.actionWithRetry(path.Join(serviceSetEntity, serviceSetName)+"/", "DELETE", nil)
-	}
-
+	response := client.actionWithRetry(path.Join(serviceSetEntity, serviceSetName)+"/", "DELETE", nil)
 	response.Process(true)
 }
 
-func (s *ServiceSet) DeployServiceSet(serviceSetName, env, configStoreNamespace string, forceDeployServices []serviceset.ListEnvService, force bool, isFile bool) {
+func (s *ServiceSet) DeployServiceSet(serviceSetName, env, configStoreNamespace string, forceDeployServices []serviceset.ListEnvService, force bool, serviceSetUsingFile bool) {
 	client := newStreamingApiClient()
 	client.QueryParams["env_name"] = env
 	client.QueryParams["force"] = fmt.Sprintf("%v", force)
 	client.QueryParams["config_store_namespace"] = configStoreNamespace
-	client.QueryParams["isFile"] = fmt.Sprintf("%v", isFile)
+	client.QueryParams["isFile"] = fmt.Sprintf("%v", serviceSetUsingFile)
 
 	data := map[string]interface{}{
 		"forceDeployServices": forceDeployServices,
