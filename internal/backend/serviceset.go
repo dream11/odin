@@ -61,9 +61,9 @@ func (s *ServiceSet) IdentifyServiceSetType(serviceSetName string) bool {
 	client := newApiClient()
 	response := client.actionWithRetry(path.Join(serviceSetEntityFile, serviceSetName), "GET", nil)
 
-	if response.GetStatusCode() == 200 {
+	if response.StatusCode == 200 {
 		isFile = true
-	} else if response.GetStatusCode() == 500 {
+	} else if response.StatusCode == 500 {
 		response.Process(true)
 	}
 	return isFile

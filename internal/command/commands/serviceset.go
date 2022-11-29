@@ -198,9 +198,9 @@ func (s *ServiceSet) Help() string {
 	}
 
 	if s.Undeploy {
-		return commandHelper("deploy", "service-set", "", []Options{
+		return commandHelper("undeploy", "service-set", "", []Options{
 			{Flag: "--name", Description: "name of service-set to undeploy"},
-			{Flag: "--env", Description: "name of environment to deploy service-set in"},
+			{Flag: "--env", Description: "name of environment to undeploy service-set in"},
 			{Flag: "--force", Description: "forcefully undeploy service-set from the Env"},
 		})
 	}

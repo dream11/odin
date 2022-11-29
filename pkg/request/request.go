@@ -103,12 +103,6 @@ func (r *Response) Process(exitOnError bool) {
 	}
 }
 
-// Process Request Response and Return Status Code
-
-func (r *Response) GetStatusCode() int {
-	return r.StatusCode
-}
-
 // Process : process request response to generate valid output
 // Exit on error, only if specified
 func (r *Response) ProcessHandleError(exitOnError bool) {
