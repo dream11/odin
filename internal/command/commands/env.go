@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/dream11/odin/api/environment"
 	"github.com/dream11/odin/internal/backend"
@@ -96,7 +97,7 @@ func (e *Env) Run(args []string) int {
 				e.Logger.Output("Last deployed: " + relativeDeployedSinceTime)
 				e.Logger.Output("Component details: ")
 
-				tableHeaders := []string{"Name", "Version", "Status"}
+				tableHeaders := []string{"Name", "Version", "Status", "Address"}
 				var tableData [][]interface{}
 
 				for _, component := range envServiceStatus.Components {
@@ -104,6 +105,7 @@ func (e *Env) Run(args []string) int {
 						component.Name,
 						component.Version,
 						component.Status,
+						strings.Join(component.Address, ", "),
 					})
 				}
 
