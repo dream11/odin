@@ -91,9 +91,10 @@ type EnvStatusPerService struct {
 }
 
 type Status struct {
-	Status  string `yaml:"status,omitempty" json:"status,omitempty"`
-	Name    string `yaml:"name,omitempty" json:"name,omitempty"`
-	Version string `yaml:"version,omitempty" json:"version,omitempty"`
+	Status  string   `yaml:"status,omitempty" json:"status,omitempty"`
+	Name    string   `yaml:"name,omitempty" json:"name,omitempty"`
+	Version string   `yaml:"version,omitempty" json:"version,omitempty"`
+	Address []string `yaml:"address,omitempty" json:"address,omitempty"`
 }
 
 // DetailResponse interface
