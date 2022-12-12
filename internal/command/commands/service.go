@@ -263,7 +263,7 @@ func (s *Service) Run(args []string) int {
 		if len(emptyUnreleasedParameters) == 0 {
 			err, parsedConfig := parseFile(*filePath)
 			if err != nil {
-				s.Logger.Error("Error while parsing service file, err: \n" + err.Error())
+				s.Logger.Error("Error while parsing service file "+ *filePath + " : " + err.Error())
 				return 1
 			}
 			serviceDefinition := parsedConfig.(map[string]interface{})
@@ -332,7 +332,7 @@ func (s *Service) Run(args []string) int {
 func (s *Service) deployUnreleasedService(envName *string, serviceDefinition map[string]interface{}, provisioningConfigFile *string, configStoreNamespace *string) int {
 
 	if serviceDefinition["name"] == nil || len(serviceDefinition["name"].(string)) == 0 {
-		s.Logger.Error("key 'name' mandatory in the service definition file.")
+		s.Logger.Error("Service name cannot be blank. Please provide service name")
 		return 1
 	}
 
@@ -396,7 +396,7 @@ func (s *Service) validateDeployService(envName *string, serviceName string, ser
 	if len(*provisioningConfigFile) > 0 {
 		err, parsedConfig := parseFile(*provisioningConfigFile)
 		if err != nil {
-			s.Logger.Error("Error while parsing provisioning file, err: \n" + err.Error())
+			s.Logger.Error("Error while parsing provisioning file " + *provisioningConfigFile + " : " + err.Error())
 			return nil, 1, true
 		}
 		parsedProvisioningConfig = parsedConfig
@@ -436,7 +436,7 @@ func parseFile(filePath string) (error, interface{}) {
 
 		fileDefinition, err := file.Read(filePath)
 		if err != nil {
-			return errors.New("Unable to read from " + filePath + "\n" + err.Error()), parsedDefinition
+			return errors.New("file does not exist"), parsedDefinition
 		}
 
 		if strings.Contains(filePath, ".yaml") || strings.Contains(filePath, ".yml") {
