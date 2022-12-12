@@ -263,7 +263,7 @@ func (s *Service) Run(args []string) int {
 		if len(emptyUnreleasedParameters) == 0 {
 			err, parsedConfig := parseFile(*filePath)
 			if err != nil {
-				s.Logger.Error("Error while parsing service file "+ *filePath + " : " + err.Error())
+				s.Logger.Error("Error while parsing service file " + *filePath + " : " + err.Error())
 				return 1
 			}
 			serviceDefinition := parsedConfig.(map[string]interface{})
