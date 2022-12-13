@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path"
+	"strconv"
 
 	"github.com/dream11/odin/api/serviceset"
 )
@@ -13,11 +14,19 @@ type ServiceSet struct{}
 
 // root entity
 var serviceSetEntity = "serviceset"
+var serviceSetEntityFile = "servicesetfile"
 
 func (s *ServiceSet) CreateServiceSet(serviceSetDefinition interface{}) {
 	client := newApiClient()
 
 	response := client.actionWithRetry(serviceSetEntity+"/", "POST", serviceSetDefinition)
+	response.ProcessHandleError(true)
+}
+
+func (s *ServiceSet) CreateUpdateTempServiceSet(serviceSetDefinition interface{}) {
+	client := newApiClient()
+
+	response := client.actionWithRetry(serviceSetEntityFile+"/", "POST", serviceSetDefinition)
 	response.ProcessHandleError(true)
 }
 
@@ -47,6 +56,19 @@ func (s *ServiceSet) DescribeServiceSet(serviceSetName string) (serviceset.Descr
 	return serviceResponse.Response, err
 }
 
+func (s *ServiceSet) IdentifyServiceSetType(serviceSetName string) bool {
+	isFile := false
+	client := newApiClient()
+	response := client.actionWithRetry(path.Join(serviceSetEntityFile, serviceSetName), "GET", nil)
+
+	if response.StatusCode == 200 {
+		isFile = true
+	} else if response.StatusCode == 500 {
+		response.Process(true)
+	}
+	return isFile
+}
+
 func (s *ServiceSet) DeleteServiceSet(serviceSetName string) {
 	client := newApiClient()
 
@@ -54,11 +76,12 @@ func (s *ServiceSet) DeleteServiceSet(serviceSetName string) {
 	response.Process(true)
 }
 
-func (s *ServiceSet) DeployServiceSet(serviceSetName, env, configStoreNamespace string, forceDeployServices []serviceset.ListEnvService, force bool) {
+func (s *ServiceSet) DeployServiceSet(serviceSetName, env, configStoreNamespace string, forceDeployServices []serviceset.ListEnvService, force bool, serviceSetUsingFile bool) {
 	client := newStreamingApiClient()
 	client.QueryParams["env_name"] = env
 	client.QueryParams["force"] = fmt.Sprintf("%v", force)
 	client.QueryParams["config_store_namespace"] = configStoreNamespace
+	client.QueryParams["isFile"] = fmt.Sprintf("%v", serviceSetUsingFile)
 
 	data := map[string]interface{}{
 		"forceDeployServices": forceDeployServices,
@@ -69,9 +92,10 @@ func (s *ServiceSet) DeployServiceSet(serviceSetName, env, configStoreNamespace 
 
 }
 
-func (s ServiceSet) ListEnvServices(serviceSetName, env, filterBy string) ([]serviceset.ListEnvService, error) {
+func (s ServiceSet) ListEnvServices(serviceSetName, env, filterBy string, isFile bool) ([]serviceset.ListEnvService, error) {
 	client := newApiClient()
 	client.QueryParams["filter_by"] = filterBy
+	client.QueryParams["isFile"] = strconv.FormatBool(isFile)
 
 	response := client.actionWithRetry(path.Join(serviceSetEntity, serviceSetName, "env", env, "service")+"/", "GET", nil)
 	response.Process(true)
@@ -82,10 +106,11 @@ func (s ServiceSet) ListEnvServices(serviceSetName, env, filterBy string) ([]ser
 	return serviceResponse.Response, err
 }
 
-func (s *ServiceSet) UndeployServiceSet(serviceSetName, env string, forceUndeployServices []serviceset.ListEnvService, force bool) {
+func (s *ServiceSet) UndeployServiceSet(serviceSetName, env string, forceUndeployServices []serviceset.ListEnvService, force bool, isFile bool) {
 	client := newStreamingApiClient()
 	client.QueryParams["env_name"] = env
 	client.QueryParams["force"] = fmt.Sprintf("%v", force)
+	client.QueryParams["isFile"] = fmt.Sprintf("%v", isFile)
 
 	data := map[string]interface{}{
 		"forceUndeployServices": forceUndeployServices,
