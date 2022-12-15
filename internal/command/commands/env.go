@@ -213,7 +213,7 @@ func (e *Env) Run(args []string) int {
 				e.Logger.Error(err.Error())
 				return 1
 			}
-			e.Logger.Output(fmt.Sprintf("Deletion request accepted. Env [%s] will be deleted.", response.EnvResponse.Name))
+			e.Logger.Output(fmt.Sprintf("Deletion request accepted for Env [%s], You can track the progress here: %s", response.EnvResponse.Name, response.EnvResponse.ExecutorUrl))
 			return 0
 		}
 
