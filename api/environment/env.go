@@ -68,7 +68,8 @@ type EnvTypesResponse struct {
 }
 
 type EnvDelete struct {
-	Name string `yaml:"name,omitempty" json:"name,omitempty"`
+	Name        string `yaml:"name,omitempty" json:"name,omitempty"`
+	ExecutorUrl string `yaml:"executorUrl,omitempty" json:"executorUrl,omitempty"`
 }
 
 type EnvServiceStatus struct {
@@ -91,9 +92,10 @@ type EnvStatusPerService struct {
 }
 
 type Status struct {
-	Status  string `yaml:"status,omitempty" json:"status,omitempty"`
-	Name    string `yaml:"name,omitempty" json:"name,omitempty"`
-	Version string `yaml:"version,omitempty" json:"version,omitempty"`
+	Status  string   `yaml:"status,omitempty" json:"status,omitempty"`
+	Name    string   `yaml:"name,omitempty" json:"name,omitempty"`
+	Version string   `yaml:"version,omitempty" json:"version,omitempty"`
+	Address []string `yaml:"address,omitempty" json:"address,omitempty"`
 }
 
 // DetailResponse interface
