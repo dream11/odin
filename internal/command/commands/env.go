@@ -38,6 +38,7 @@ func (e *Env) Run(args []string) int {
 	id := flagSet.Int("id", 0, "unique id of a changelog of an env")
 	filePath := flagSet.String("file", "", "file to update env")
 	data := flagSet.String("data", "", "data for updating the env")
+	displayAll := flagSet.Bool("all", false, "whether to display all environments")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -174,19 +175,20 @@ func (e *Env) Run(args []string) int {
 
 	if e.List {
 		e.Logger.Info("Listing all environment(s)")
-		envList, err := envClient.ListEnv(*name, *team, *env, *providerAccount)
+		envList, err := envClient.ListEnv(*name, *team, *env, *providerAccount, *displayAll)
 		if err != nil {
 			e.Logger.Error(err.Error())
 			return 1
 		}
 
-		tableHeaders := []string{"Name", "Team", "Env Type", "State", "Account"}
+		tableHeaders := []string{"Name", "Team", "Created By", "Env Type", "State", "Account"}
 		var tableData [][]interface{}
 
 		for _, env := range envList {
 			tableData = append(tableData, []interface{}{
 				env.Name,
 				env.Team,
+				env.CreatedBy,
 				env.EnvType,
 				env.State,
 				env.Account,
