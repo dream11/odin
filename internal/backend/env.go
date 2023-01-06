@@ -48,12 +48,15 @@ func (e *Env) DescribeEnv(env, service, component string) (envResp.Env, error) {
 }
 
 // ListEnv : list all environment(s) with filters
-func (e *Env) ListEnv(name, team, env, providerAccount string) ([]envResp.Env, error) {
+func (e *Env) ListEnv(name, team, env, providerAccount string, displayAll bool) ([]envResp.Env, error) {
 	client := newApiClient()
 	client.QueryParams["name"] = name
 	client.QueryParams["team"] = team
 	client.QueryParams["envType"] = env
 	client.QueryParams["cloudProviderAccount"] = providerAccount
+	if displayAll {
+		client.QueryParams["displayAll"] = "true"
+	}
 	response := client.actionWithRetry(envEntity+"/", "GET", nil)
 	response.Process(true) // process response and exit if error
 
