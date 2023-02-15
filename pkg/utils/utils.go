@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/dream11/odin/api/service"
 	"github.com/dream11/odin/app"
 	"github.com/dream11/odin/internal/config"
 	"github.com/dream11/odin/pkg/file"
@@ -80,4 +81,20 @@ func FetchKey(keyName string) string {
 	r := reflect.ValueOf(appConfig)
 	f := reflect.Indirect(r).FieldByName(keyName)
 	return f.String()
+}
+
+func MaxWidth(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func GetColumnWidth(services []service.Service) []int {
+	a := []int{4, 7, 15}
+	for _, service := range services {
+		a[0] = MaxWidth(a[0], len(service.Name))
+		a[1] = MaxWidth(a[1], len(service.Version))
+	}
+	return a
 }

@@ -114,27 +114,41 @@ func (e *Env) Run(args []string) int {
 
 			} else {
 				e.Logger.Info(fmt.Sprintf("Fetching status for environment: %s", *name))
-				envStatus, err := envClient.EnvStatus(*name)
+				envDetail, err := envClient.DescribeEnv(*name, *service, *component)
 				if err != nil {
 					e.Logger.Error(err.Error())
 					return 1
 				}
-				e.Logger.Output(fmt.Sprintf("Environment Status: %s\n", envStatus.Status))
+				e.Logger.Output(fmt.Sprintf("Environment Status: %s\n", envDetail.State))
 				tableHeaders := []string{"Name", "Version", "Status", "Last deployed"}
-				var tableData [][]interface{}
+				var tableData []interface{}
 				e.Logger.Output("Services:")
-				for _, serviceStatus := range envStatus.ServiceStatus {
-					relativeDeployedSinceTime := datetime.DateTimeFromNow(serviceStatus.LastDeployedAt)
-					tableData = append(tableData, []interface{}{
-						serviceStatus.Name,
-						serviceStatus.Version,
-						serviceStatus.Status,
-						relativeDeployedSinceTime,
-					})
+				colWidth := utils.GetColumnWidth(envDetail.Services)
+				table.PrintHeader(tableHeaders, colWidth)
+
+				c := make(chan serviceStatus)
+				for _, service := range envDetail.Services {
+					serviceName := service.Name
+					go e.GetServiceStatus(*name, serviceName, c)
 				}
 
-				table.Write(tableHeaders, tableData)
+				for range envDetail.Services {
+					result := <-c
+					if result.err != nil {
+						e.Logger.Error(fmt.Sprintf("Error fetching status of service %s: %s", result.serviceName, result.err.Error()))
+					} else {
+						relativeDeployedSinceTime := datetime.DateTimeFromNow(result.response.LastDeployedAt)
+						tableData = []interface{}{
+							result.serviceName,
+							result.response.Version,
+							result.response.Status,
+							relativeDeployedSinceTime,
+						}
+						table.AppendRow(tableData, colWidth)
+					}
+				}
 
+				close(c)
 			}
 
 			return 0
@@ -478,4 +492,15 @@ func (e *Env) Synopsis() string {
 		return "update an env"
 	}
 	return defaultHelper()
+}
+
+func (e *Env) GetServiceStatus(name string, serviceName string, c chan serviceStatus) {
+	envServiceStatus, err := envClient.EnvServiceStatus(name, serviceName)
+	c <- serviceStatus{serviceName, envServiceStatus, err}
+}
+
+type serviceStatus struct {
+	serviceName string
+	response    environment.EnvServiceStatus
+	err         error
 }
