@@ -83,7 +83,7 @@ func FetchKey(keyName string) string {
 	return f.String()
 }
 
-func MaxWidth(a, b int) int {
+func maxWidth(a, b int) int {
 	if a > b {
 		return a
 	}
@@ -93,8 +93,8 @@ func MaxWidth(a, b int) int {
 func GetColumnWidth(services []service.Service) []int {
 	a := []int{4, 7, 15}
 	for _, service := range services {
-		a[0] = MaxWidth(a[0], len(service.Name))
-		a[1] = MaxWidth(a[1], len(service.Version))
+		a[0] = maxWidth(a[0], len(service.Name))
+		a[1] = maxWidth(a[1], len(service.Version))
 	}
 	return a
 }
