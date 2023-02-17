@@ -411,6 +411,7 @@ func (e *Env) Help() string {
 			{Flag: "--team", Description: "name of team"},
 			{Flag: "--env-type", Description: "env type of the environment"},
 			{Flag: "--account", Description: "cloud provider account name"},
+			{Flag: "--all", Description: "list all environments"},
 		})
 	}
 
