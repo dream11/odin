@@ -341,7 +341,7 @@ func (e *Env) Run(args []string) int {
 		var updationData map[string]interface{}
 
 		if isFilePresent {
-			err, parsedConfig := parseFile(*filePath)
+			parsedConfig, err := parseFile(*filePath)
 			if err != nil {
 				e.Logger.Error("Error while parsing service file " + *filePath + " : " + err.Error())
 				return 1
