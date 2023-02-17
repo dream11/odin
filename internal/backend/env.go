@@ -150,7 +150,7 @@ func (e *Env) EnvServiceStatus(env, serviceName string) (envResp.EnvServiceStatu
 	if response.Error != nil {
 		return envResponse.ServiceResponse, response.Error
 	}
-	if !request.MatchStatusCode(response.StatusCode, 200) {
+	if request.MatchStatusCode(response.StatusCode, 400) || request.MatchStatusCode(response.StatusCode, 500) {
 		return envResponse.ServiceResponse, errors.New(string(response.Body))
 	}
 
