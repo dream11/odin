@@ -17,7 +17,7 @@ func (o *Operation) Run(args []string) int {
 	// Define flag set
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
 	name:= flagSet.String("name", "", "name of the operation")
-	component:= flagSet.String("component", "", "name of the component on which operations will be performed")
+	componentType:= flagSet.String("component-type", "", "component-type on which operations will be performed")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -26,10 +26,10 @@ func (o *Operation) Run(args []string) int {
 	}
 
 	if o.List {
-		emptyParameters := emptyParameters(map[string]string{"--component": *component})
+		emptyParameters := emptyParameters(map[string]string{"--component-type": *componentType})
 		if len(emptyParameters) == 0 {
 			o.Logger.Info("Listing all operation(s)")
-			operationList, err:= operationClient.ListOperations(*component)
+			operationList, err:= operationClient.ListOperations(*componentType)
 			if err != nil {
 				o.Logger.Error(err.Error())
 				return 1
@@ -54,10 +54,10 @@ func (o *Operation) Run(args []string) int {
 	}
 
 	if o.Describe {
-		emptyParameters := emptyParameters(map[string]string{"--name": *name, "--component": *component})
+		emptyParameters := emptyParameters(map[string]string{"--name": *name, "--component-type": *componentType})
 		if len(emptyParameters) == 0 {
-			o.Logger.Info("Describing operation: " + *name + " on component " + *component)
-			operationList, err:= operationClient.ListOperations(*component)
+			o.Logger.Info("Describing operation: " + *name + " on component " + *componentType)
+			operationList, err:= operationClient.ListOperations(*componentType)
 			if err != nil {
 				o.Logger.Error(err.Error())
 				return 1
@@ -74,7 +74,7 @@ func (o *Operation) Run(args []string) int {
 			}
 
 			if(operationKeys == nil) {
-				o.Logger.Error(fmt.Sprintf("operation: %s does not exist for the component: %s", *name, *component))
+				o.Logger.Error(fmt.Sprintf("operation: %s does not exist for the component: %s", *name, *componentType))
 				return 1
 			}
 
@@ -98,13 +98,13 @@ func (o *Operation) Run(args []string) int {
 func (o *Operation) Help() string {
 	if o.List {
 		return commandHelper("list", "operation", "", []Options{
-			{Flag: "--component", Description: "name of the component on which operations will be performed"},
+			{Flag: "--component-type", Description: "component-type on which operations will be performed"},
 		})
 	}
 	if o.Describe {
 		return commandHelper("describe", "operation", "", []Options{
 			{Flag: "--name", Description: "name of the operation"},
-			{Flag: "--component", Description: "name of the component on which operations will be performed"},
+			{Flag: "--component-type", Description: "component-type on which operations will be performed"},
 		})
 	}
 	return defaultHelper()
@@ -113,10 +113,10 @@ func (o *Operation) Help() string {
 // Synopsis : returns a brief helper text for the command's verbs
 func (o *Operation) Synopsis() string {
 	if o.List {
-		return "list all operations on a component"
+		return "list all operations on a component-type"
 	}
 	if o.Describe {
-		return "describe operation on a component"
+		return "describe operation on a component-type"
 	}
 	return defaultHelper()
 }
