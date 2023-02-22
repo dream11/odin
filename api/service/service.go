@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/dream11/odin/api/component"
+	"github.com/dream11/odin/api/componenttype"
 	"github.com/dream11/odin/api/label"
 )
 
@@ -17,7 +17,7 @@ type Service struct {
 	Active      *bool                 `yaml:"isActive,omitempty" json:"isActive,omitempty"`
 	Tags        interface{}           `yaml:"tags,omitempty" json:"tags,omitempty"`
 	Labels      []label.Label         `yaml:"labels,omitempty" json:"labels,omitempty"`
-	Components  []component.Component `yaml:"components,omitempty" json:"components,omitempty"`
+	Components  []componenttype.Component `yaml:"components,omitempty" json:"components,omitempty"`
 }
 
 // ListResponse interface
