@@ -138,7 +138,13 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"undeploy service-set": func() (cli.Command, error) {
 			return &commands.ServiceSet{Undeploy: true}, nil
 		},
-
+		"list operation": func() (cli.Command, error) {
+			return &commands.Operation{List: true}, nil
+		},
+		"describe operation": func() (cli.Command, error) {
+			return &commands.Operation{Describe: true}, nil
+		},
+		
 		// Verb for application-template
 		"generate application-template": func() (cli.Command, error) {
 			return &commands.ApplicationTemplate{Generate: true}, nil
