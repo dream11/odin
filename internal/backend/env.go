@@ -6,7 +6,6 @@ import (
 	"path"
 
 	envResp "github.com/dream11/odin/api/environment"
-	"github.com/dream11/odin/pkg/request"
 )
 
 // Env entity
@@ -150,7 +149,7 @@ func (e *Env) EnvServiceStatus(env, serviceName string) (envResp.EnvServiceStatu
 	if response.Error != nil {
 		return envResponse.ServiceResponse, response.Error
 	}
-	if request.MatchStatusCode(response.StatusCode, 400) || request.MatchStatusCode(response.StatusCode, 500) {
+	if response.StatusCode >= 400 {
 		return envResponse.ServiceResponse, errors.New(string(response.Body))
 	}
 
