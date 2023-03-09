@@ -2,6 +2,7 @@ package backend
 
 import (
 	"encoding/json"
+	"errors"
 	"path"
 
 	envResp "github.com/dream11/odin/api/environment"
@@ -141,10 +142,16 @@ func (e *Env) EnvServiceStatus(env, serviceName string) (envResp.EnvServiceStatu
 	client := newApiClient()
 
 	response := client.actionWithRetry(path.Join(envEntity, env)+"/services/"+serviceName+"/status", "GET", nil)
-	response.Process(true) // process response and exit if error
 
 	var envResponse envResp.EnvServiceStatusResponse
 	err := json.Unmarshal(response.Body, &envResponse)
+
+	if response.Error != nil {
+		return envResponse.ServiceResponse, response.Error
+	}
+	if response.StatusCode >= 400 {
+		return envResponse.ServiceResponse, errors.New(string(response.Body))
+	}
 
 	return envResponse.ServiceResponse, err
 }

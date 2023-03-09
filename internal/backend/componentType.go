@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"path"
 
-	"github.com/dream11/odin/api/component"
+	"github.com/dream11/odin/api/componenttype"
 )
 
 // ComponentType entity
 type ComponentType struct{}
 
 // ListComponentTypes : list all available component types
-func (c *ComponentType) ListComponentTypes(componentTypeName, version string) ([]component.Type, error) {
+func (c *ComponentType) ListComponentTypes(componentTypeName, version string) ([]componenttype.Type, error) {
 	client := newApiClient()
 	client.QueryParams["version"] = version
 	client.QueryParams["name"] = componentTypeName
@@ -19,20 +19,20 @@ func (c *ComponentType) ListComponentTypes(componentTypeName, version string) ([
 
 	response.Process(true) // process response and exit if error
 
-	var componentTypeResponse component.ListTypeResponse
+	var componentTypeResponse componenttype.ListTypeResponse
 	err := json.Unmarshal(response.Body, &componentTypeResponse)
 
 	return componentTypeResponse.Response, err
 }
 
 // DescribeComponentTypes : describe a component type
-func (c *ComponentType) DescribeComponentType(componentTypeName, version string) (component.ComponentDetails, error) {
+func (c *ComponentType) DescribeComponentType(componentTypeName, version string) (componenttype.ComponentDetails, error) {
 	client := newApiClient()
 	client.QueryParams["version"] = version
 	response := client.actionWithRetry(path.Join("componenttypes", componentTypeName), "GET", nil)
 	response.Process(true) // process response and exit if error
 
-	var componentDetailsResponse component.ComponentDetailsResponse
+	var componentDetailsResponse componenttype.ComponentDetailsResponse
 	err := json.Unmarshal(response.Body, &componentDetailsResponse)
 
 	return componentDetailsResponse.Response, err

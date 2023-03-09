@@ -261,7 +261,7 @@ func (s *Service) Run(args []string) int {
 
 		emptyUnreleasedParameters := emptyParameters(map[string]string{"--env": *envName, "--file": *filePath})
 		if len(emptyUnreleasedParameters) == 0 {
-			err, parsedConfig := parseFile(*filePath)
+			parsedConfig, err := parseFile(*filePath)
 			if err != nil {
 				s.Logger.Error("Error while parsing service file " + *filePath + " : " + err.Error())
 				return 1
@@ -394,7 +394,7 @@ func (s *Service) validateDeployService(envName *string, serviceName string, ser
 	var parsedProvisioningConfig interface{}
 
 	if len(*provisioningConfigFile) > 0 {
-		err, parsedConfig := parseFile(*provisioningConfigFile)
+		parsedConfig, err := parseFile(*provisioningConfigFile)
 		if err != nil {
 			s.Logger.Error("Error while parsing provisioning file " + *provisioningConfigFile + " : " + err.Error())
 			return nil, 1, true
@@ -430,31 +430,31 @@ func (s *Service) validateDeployService(envName *string, serviceName string, ser
 	return parsedProvisioningConfig, 0, false
 }
 
-func parseFile(filePath string) (error, interface{}) {
+func parseFile(filePath string) (interface{}, error) {
 	if len(filePath) != 0 {
 		var parsedDefinition interface{}
 
 		fileDefinition, err := file.Read(filePath)
 		if err != nil {
-			return errors.New("file does not exist"), parsedDefinition
+			return parsedDefinition, errors.New("file does not exist")
 		}
 
 		if strings.Contains(filePath, ".yaml") || strings.Contains(filePath, ".yml") {
 			err = yaml.Unmarshal(fileDefinition, &parsedDefinition)
 			if err != nil {
-				return errors.New("Unable to parse YAML. " + err.Error()), parsedDefinition
+				return parsedDefinition, errors.New("Unable to parse YAML. " + err.Error())
 			}
 		} else if strings.Contains(filePath, ".json") {
 			err = json.Unmarshal(fileDefinition, &parsedDefinition)
 			if err != nil {
-				return errors.New("Unable to parse JSON. " + err.Error()), parsedDefinition
+				return parsedDefinition, errors.New("Unable to parse JSON. " + err.Error())
 			}
 		} else {
-			return errors.New("unrecognized file format"), parsedDefinition
+			return parsedDefinition, errors.New("unrecognized file format")
 		}
-		return nil, parsedDefinition
+		return parsedDefinition, nil
 	}
-	return nil, errors.New("filepath cannot be empty")
+	return errors.New("filepath cannot be empty"), nil
 }
 
 // Help : returns an explanatory string
