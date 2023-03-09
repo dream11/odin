@@ -49,6 +49,14 @@ func (e *Env) DescribeEnv(env, service, component string) (envResp.Env, error) {
 	return envResponse.Response, err
 }
 
+// CheckService : Check wether a service exist in the env
+func (e *Env) CheckService(env, service string) request.Response {
+	client := newApiClient()
+	client.QueryParams["service"] = service
+	response := client.actionWithRetry(path.Join(envEntity, env)+"/", "GET", nil)
+	return response
+}
+
 // ListEnv : list all environment(s) with filters
 func (e *Env) ListEnv(name, team, env, providerAccount string, displayAll bool) ([]envResp.Env, error) {
 	client := newApiClient()

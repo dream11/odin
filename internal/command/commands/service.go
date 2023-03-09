@@ -267,13 +267,46 @@ func (s *Service) Run(args []string) int {
 				return 1
 			}
 			serviceDefinition := parsedConfig.(map[string]interface{})
+			unreleasedServicename := serviceDefinition["name"].(string)
+			if len(unreleasedServicename) == 0 {
+				s.Logger.Error("Service name cannot be empty in the service defintion file")
+				return 1
+			}
 
-			return s.deployUnreleasedService(envName, serviceDefinition, provisioningConfigFile, configStoreNamespace)
+			response := envClient.CheckService(*envName, unreleasedServicename)
+
+			if response.Error != nil {
+				s.Logger.Error(response.Error.Error())
+				return 1
+			}
+			if response.StatusCode == 404 {
+				return s.deployUnreleasedService(envName, serviceDefinition, provisioningConfigFile, configStoreNamespace)
+			} else if response.StatusCode == 200 {
+				s.Logger.Error(fmt.Sprintf("%s is already deployed in %s environment, use odin operate command to modify the service", unreleasedServicename, *envName))
+				return 1
+			} else {
+				s.Logger.Error(fmt.Sprintf("something went wrong: %s", response.Body))
+				return 1
+			}
 		}
 
 		emptyReleasedParameters := emptyParameters(map[string]string{"--env": *envName, "--name": *serviceName, "--version": *serviceVersion})
 		if len(emptyReleasedParameters) == 0 {
-			return s.deployReleasedService(envName, serviceName, serviceVersion, provisioningConfigFile, configStoreNamespace)
+			response := envClient.CheckService(*envName, *serviceName)
+
+			if response.Error != nil {
+				s.Logger.Error(response.Error.Error())
+				return 1
+			}
+			if response.StatusCode == 404 {
+				return s.deployReleasedService(envName, serviceName, serviceVersion, provisioningConfigFile, configStoreNamespace)
+			} else if response.StatusCode == 200 {
+				s.Logger.Error(fmt.Sprintf("%s is already deployed in %s environment, use odin operate command to modify the service", *serviceName, *envName))
+				return 1
+			} else {
+				s.Logger.Error(fmt.Sprintf("something went wrong: %s", response.Body))
+				return 1
+			}
 		}
 
 		s.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyUnreleasedParameters))
