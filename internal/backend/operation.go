@@ -14,6 +14,6 @@ func (o *Operation) ListOperations(componentTypeName string) ([]operationapi.Ope
 	response := client.actionWithRetry(path.Join("component", componentTypeName, "operate"), "GET", nil)
 	response.Process(true) // process response and exit if error
 	var listResponse operationapi.ListOperation
-	err :=json.Unmarshal(response.Body, &listResponse)
+	err := json.Unmarshal(response.Body, &listResponse)
 	return listResponse.Response, err
 }

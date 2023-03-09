@@ -16,8 +16,8 @@ type Operation command
 func (o *Operation) Run(args []string) int {
 	// Define flag set
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
-	name:= flagSet.String("name", "", "name of the operation")
-	componentType:= flagSet.String("component-type", "", "component-type on which operations will be performed")
+	name := flagSet.String("name", "", "name of the operation")
+	componentType := flagSet.String("component-type", "", "component-type on which operations will be performed")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -28,13 +28,13 @@ func (o *Operation) Run(args []string) int {
 	if o.List {
 		emptyParameters := emptyParameters(map[string]string{"--component-type": *componentType})
 		if len(emptyParameters) == 0 {
-			o.Logger.Info("Listing all operation(s)")
-			operationList, err:= operationClient.ListOperations(*componentType)
+			operationList, err := operationClient.ListOperations(*componentType)
 			if err != nil {
 				o.Logger.Error(err.Error())
 				return 1
 			}
 
+			o.Logger.Info("Listing all operation(s)")
 			tableHeaders := []string{"Name", "Descrption"}
 			var tableData [][]interface{}
 
@@ -56,14 +56,13 @@ func (o *Operation) Run(args []string) int {
 	if o.Describe {
 		emptyParameters := emptyParameters(map[string]string{"--name": *name, "--component-type": *componentType})
 		if len(emptyParameters) == 0 {
-			o.Logger.Info("Describing operation: " + *name + " on component " + *componentType)
-			operationList, err:= operationClient.ListOperations(*componentType)
+			operationList, err := operationClient.ListOperations(*componentType)
 			if err != nil {
 				o.Logger.Error(err.Error())
 				return 1
 			}
 
-
+			o.Logger.Info("Describing operation: " + *name + " on component " + *componentType)
 			var operationKeys interface{}
 
 			for i := range operationList {
@@ -73,7 +72,7 @@ func (o *Operation) Run(args []string) int {
 				}
 			}
 
-			if(operationKeys == nil) {
+			if operationKeys == nil {
 				o.Logger.Error(fmt.Sprintf("operation: %s does not exist for the component: %s", *name, *componentType))
 				return 1
 			}
@@ -83,7 +82,8 @@ func (o *Operation) Run(args []string) int {
 				o.Logger.Error(err.Error())
 				return 1
 			}
-		    o.Logger.Output(fmt.Sprintf("\n%s", operationKeysJson))
+
+			o.Logger.Output(fmt.Sprintf("\n%s", operationKeysJson))
 			return 0
 		}
 
@@ -120,4 +120,3 @@ func (o *Operation) Synopsis() string {
 	}
 	return defaultHelper()
 }
-

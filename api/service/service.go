@@ -6,17 +6,17 @@ import (
 )
 
 type Service struct {
-	Name        string                `yaml:"name,omitempty" json:"name,omitempty"`
-	Version     string                `yaml:"version,omitempty" json:"version,omitempty"`
-	Team        string                `yaml:"team,omitempty" json:"team,omitempty"`
-	Description string                `yaml:"description,omitempty" json:"description,omitempty"`
-	CreatedBy   string                `yaml:"createdBy,omitempty" json:"createdBy,omitempty"`
-	UpdatedBy   string                `yaml:"updatedBy,omitempty" json:"updatedBy,omitempty"`
-	CreatedAt   string                `yaml:"createdAt,omitempty" json:"createdAt,omitempty"`
-	UpdatedAt   string                `yaml:"updatedAt,omitempty" json:"updatedAt,omitempty"`
-	Active      *bool                 `yaml:"isActive,omitempty" json:"isActive,omitempty"`
-	Tags        interface{}           `yaml:"tags,omitempty" json:"tags,omitempty"`
-	Labels      []label.Label         `yaml:"labels,omitempty" json:"labels,omitempty"`
+	Name        string                    `yaml:"name,omitempty" json:"name,omitempty"`
+	Version     string                    `yaml:"version,omitempty" json:"version,omitempty"`
+	Team        string                    `yaml:"team,omitempty" json:"team,omitempty"`
+	Description string                    `yaml:"description,omitempty" json:"description,omitempty"`
+	CreatedBy   string                    `yaml:"createdBy,omitempty" json:"createdBy,omitempty"`
+	UpdatedBy   string                    `yaml:"updatedBy,omitempty" json:"updatedBy,omitempty"`
+	CreatedAt   string                    `yaml:"createdAt,omitempty" json:"createdAt,omitempty"`
+	UpdatedAt   string                    `yaml:"updatedAt,omitempty" json:"updatedAt,omitempty"`
+	Active      *bool                     `yaml:"isActive,omitempty" json:"isActive,omitempty"`
+	Tags        interface{}               `yaml:"tags,omitempty" json:"tags,omitempty"`
+	Labels      []label.Label             `yaml:"labels,omitempty" json:"labels,omitempty"`
 	Components  []componenttype.Component `yaml:"components,omitempty" json:"components,omitempty"`
 }
 

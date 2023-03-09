@@ -147,7 +147,7 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"operate component": func() (cli.Command, error) {
 			return &commands.Component{Operate: true}, nil
 		},
-		
+
 		// Verb for application-template
 		"generate application-template": func() (cli.Command, error) {
 			return &commands.ApplicationTemplate{Generate: true}, nil

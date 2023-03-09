@@ -5,9 +5,9 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/dream11/odin/pkg/utils"
-	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/api/component"
+	"github.com/dream11/odin/internal/backend"
+	"github.com/dream11/odin/pkg/utils"
 )
 
 var componentClient backend.Component
@@ -17,11 +17,11 @@ type Component command
 func (c *Component) Run(args []string) int {
 	// Define flag set
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
-	name:= flagSet.String("name", "", "name of the component")
-	serviceName:= flagSet.String("service", "", "name of the service in which the component is deployed")
-	envName:= flagSet.String("env", "", "name of the environment in which the service is deployed")
-	operation:= flagSet.String("operation", "", "name of the operation to performed on the component")
-	options:= flagSet.String("options", "", "options of the operation in JSON format")
+	name := flagSet.String("name", "", "name of the component")
+	serviceName := flagSet.String("service", "", "name of the service in which the component is deployed")
+	envName := flagSet.String("env", "", "name of the environment in which the service is deployed")
+	operation := flagSet.String("operation", "", "name of the operation to performed on the component")
+	options := flagSet.String("options", "", "options of the operation in JSON format")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -42,20 +42,20 @@ func (c *Component) Run(args []string) int {
 				return 1
 			}
 
-			data:= component.OperateComponentRequest{
+			data := component.OperateComponentRequest{
 				Data: component.Data{
-					EnvName: *envName,
+					EnvName:     *envName,
 					ServiceName: *serviceName,
 					Operations: []component.Operation{
 						{
-							Name: *operation,
+							Name:   *operation,
 							Values: optionsJson,
 						},
 					},
 				},
 			}
-			
-			componentClient.OperateComponent(*name,data)
+
+			componentClient.OperateComponent(*name, data)
 			return 0
 		}
 
@@ -88,4 +88,3 @@ func (c *Component) Synopsis() string {
 	}
 	return defaultHelper()
 }
-
