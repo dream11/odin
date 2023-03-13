@@ -338,7 +338,6 @@ func (s *Service) Run(args []string) int {
 		isOperationPresnt := len(*operation) > 0
 		isEnvNamePresent := len(*envName) > 0
 
-
 		if !isNamePresent {
 			s.Logger.Error("--name cannot be blank")
 			return 1
@@ -385,17 +384,17 @@ func (s *Service) Run(args []string) int {
 			return 1
 		}
 
-		data := service.OperationRequest {
+		data := service.OperationRequest{
 			EnvName: *envName,
-			Operations: []service.Operation {
+			Operations: []service.Operation{
 				{
 					Name: *operation,
 					Data: optionsData,
 				},
 			},
 		}
-		
-		s.Logger.Info("Validating the operation: "+ *operation +" on the service: "+ *serviceName)
+
+		s.Logger.Info("Validating the operation: " + *operation + " on the service: " + *serviceName)
 
 		validateOperateResponse, err := serviceClient.ValidateOperation(*serviceName, data)
 
@@ -424,9 +423,9 @@ func (s *Service) Run(args []string) int {
 			}
 		}
 
-		s.Logger.Info("Performing the operation: "+ *operation +"on the service: "+ *serviceName)
+		s.Logger.Info("Performing the operation: " + *operation + "on the service: " + *serviceName)
 
-		serviceClient.OperateService(*serviceName, data);
+		serviceClient.OperateService(*serviceName, data)
 		return 0
 	}
 

@@ -49,14 +49,14 @@ type MergedService struct {
 }
 
 type Operation struct {
-	Name   string      `yaml:"name,omitempty" json:"name,omitempty"`
-	Data   interface{} `yaml:"data,omitempty" json:"data,omitempty"`
+	Name string      `yaml:"name,omitempty" json:"name,omitempty"`
+	Data interface{} `yaml:"data,omitempty" json:"data,omitempty"`
 }
 
 type OperationConsent struct {
-	Name   string      `yaml:"name,omitempty" json:"name,omitempty"`
-    IsFeedbackRequired bool `yaml:"is_feedback_required,omitempty" json:"is_feedback_required,omitempty"`
-	Message string `yaml:"message,omitempty" json:"message,omitempty"`
+	Name               string `yaml:"name,omitempty" json:"name,omitempty"`
+	IsFeedbackRequired bool   `yaml:"is_feedback_required,omitempty" json:"is_feedback_required,omitempty"`
+	Message            string `yaml:"message,omitempty" json:"message,omitempty"`
 }
 
 type OperationValidationResponseBody struct {
@@ -69,8 +69,8 @@ type CompareResponse struct {
 }
 
 type OperationRequest struct {
-	EnvName  string      `yaml:"env_name,omitempty" json:"env_name,omitempty"`
-	Operations  []Operation `yaml:"operations,omitempty" json:"operations,omitempty"`
+	EnvName    string      `yaml:"env_name,omitempty" json:"env_name,omitempty"`
+	Operations []Operation `yaml:"operations,omitempty" json:"operations,omitempty"`
 }
 
 type OperationValidationResponse struct {

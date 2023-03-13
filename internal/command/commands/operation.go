@@ -5,9 +5,9 @@ import (
 	"flag"
 	"fmt"
 
+	operationapi "github.com/dream11/odin/api/operation"
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/table"
-	operationapi "github.com/dream11/odin/api/operation"
 )
 
 var operationClient backend.Operation
@@ -48,7 +48,7 @@ func (o *Operation) Run(args []string) int {
 		} else {
 			o.Logger.Info("Listing all service operations")
 		}
-		
+
 		tableHeaders := []string{"Name", "Descrption"}
 		var tableData [][]interface{}
 
@@ -61,7 +61,7 @@ func (o *Operation) Run(args []string) int {
 		table.Write(tableHeaders, tableData)
 
 		return 0
-		
+
 	}
 
 	if o.Describe {
@@ -86,7 +86,7 @@ func (o *Operation) Run(args []string) int {
 			o.Logger.Error(err.Error())
 			return 1
 		}
-		
+
 		var operationKeys interface{}
 
 		for i := range operationList {
