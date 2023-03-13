@@ -48,7 +48,31 @@ type MergedService struct {
 	ProvisioningConfig map[string]interface{}
 }
 
+type Operation struct {
+	Name   string      `yaml:"name,omitempty" json:"name,omitempty"`
+	Data   interface{} `yaml:"data,omitempty" json:"data,omitempty"`
+}
+
+type OperationConsent struct {
+	Name   string      `yaml:"name,omitempty" json:"name,omitempty"`
+    IsFeedbackRequired bool `yaml:"is_feedback_required,omitempty" json:"is_feedback_required,omitempty"`
+	Message string `yaml:"message,omitempty" json:"message,omitempty"`
+}
+
+type OperationValidationResponseBody struct {
+	Operations []OperationConsent `yaml:"operations,omitempty" json:"operations,omitempty"`
+}
+
 // CompareResponse
 type CompareResponse struct {
 	Response interface{} `yaml:"resp,omitempty" json:"resp,omitempty"`
+}
+
+type OperationRequest struct {
+	EnvName  string      `yaml:"env_name,omitempty" json:"env_name,omitempty"`
+	Operations  []Operation `yaml:"operations,omitempty" json:"operations,omitempty"`
+}
+
+type OperationValidationResponse struct {
+	Response OperationValidationResponseBody `yaml:"resp,omitempty" json:"resp,omitempty"`
 }
