@@ -182,7 +182,7 @@ func (s * Service) ValidateOperation(serviceName string, data service.OperationR
 
 func (s * Service) OperateService(serviceName string, data service.OperationRequest) {
 	client := newStreamingApiClient()
-
+	client.Headers["Command-Verb"] = "operate"
 	response := client.streamWithRetry(path.Join(serviceEntity, serviceName)+"/operate/", "PUT", data)
 	response.Process(true)
 }
