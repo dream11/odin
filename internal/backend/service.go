@@ -167,3 +167,22 @@ func (s *Service) StatusService(serviceName, version string) ([]service.Status, 
 
 	return serviceResponse.Response, err
 }
+
+func (s *Service) ValidateOperation(serviceName string, data service.OperationRequest) (service.OperationValidationResponse, error) {
+	client := newApiClient()
+
+	response := client.actionWithRetry(path.Join(serviceEntity, serviceName)+"/operate/validate/", "GET", data)
+	response.Process(true)
+
+	var validateOperationResponse service.OperationValidationResponse
+	err := json.Unmarshal(response.Body, &validateOperationResponse)
+
+	return validateOperationResponse, err
+}
+
+func (s *Service) OperateService(serviceName string, data service.OperationRequest) {
+	client := newStreamingApiClient()
+	client.Headers["Command-Verb"] = "operate"
+	response := client.streamWithRetry(path.Join(serviceEntity, serviceName)+"/operate/", "PUT", data)
+	response.Process(true)
+}

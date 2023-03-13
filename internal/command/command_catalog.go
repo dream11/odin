@@ -119,6 +119,9 @@ func CommandsCatalog() map[string]cli.CommandFactory {
 		"status service": func() (cli.Command, error) {
 			return &commands.Service{Status: true}, nil
 		},
+		"operate service": func() (cli.Command, error) {
+			return &commands.Service{Operate: true}, nil
+		},
 		// Verbs for `service-set` resource
 		"create service-set": func() (cli.Command, error) {
 			return &commands.ServiceSet{Create: true}, nil

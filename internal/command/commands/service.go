@@ -31,7 +31,7 @@ func (s *Service) Run(args []string) int {
 	// Define flag set
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
 	// create flags
-	filePath := flagSet.String("file", "", "file to read service config")
+	filePath := flagSet.String("file", "", "file to read service config or to provide options for service operations")
 	serviceName := flagSet.String("name", "", "name of service to be used")
 	serviceVersion := flagSet.String("version", "", "version of service to be used")
 	envName := flagSet.String("env", "", "name of environment to deploy the service in")
@@ -41,6 +41,8 @@ func (s *Service) Run(args []string) int {
 	label := flagSet.String("label", "", "name of the label")
 	provisioningConfigFile := flagSet.String("provisioning", "", "file to read provisioning config")
 	directoryPath := flagSet.String("path", "", "path to directory containing service definition and provisioning config")
+	operation := flagSet.String("operation", "", "name of the operation to performed on the component")
+	options := flagSet.String("options", "", "options for service operations")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -325,6 +327,108 @@ func (s *Service) Run(args []string) int {
 		return 1
 	}
 
+	if s.Operate {
+		if *envName == "" {
+			*envName = utils.FetchKey(ENV_NAME_KEY)
+		}
+
+		isNamePresent := len(*serviceName) > 0
+		isOptionsPresent := len(*options) > 0
+		isFilePresent := len(*filePath) > 0
+		isOperationPresnt := len(*operation) > 0
+		isEnvNamePresent := len(*envName) > 0
+
+		if !isNamePresent {
+			s.Logger.Error("--name cannot be blank")
+			return 1
+		}
+
+		if !isOperationPresnt {
+			s.Logger.Error("--opertion cannot be blank")
+			return 1
+		}
+
+		if !isEnvNamePresent {
+			s.Logger.Error("--env cannot be blank")
+		}
+
+		if isOptionsPresent && isFilePresent {
+			s.Logger.Error("You can provide either --options or --file but not both")
+			return 1
+		}
+
+		if !isOptionsPresent && !isFilePresent {
+			s.Logger.Error("You should provide either --options or --file")
+			return 1
+		}
+
+		var optionsData map[string]interface{}
+
+		if isFilePresent {
+			parsedConfig, err := parseFile(*filePath)
+			if err != nil {
+				s.Logger.Error("Error while parsing service file " + *filePath + " : " + err.Error())
+				return 1
+			}
+			optionsData = parsedConfig.(map[string]interface{})
+		} else if isOptionsPresent {
+			err = json.Unmarshal([]byte(*options), &optionsData)
+			if err != nil {
+				s.Logger.Error("Unable to parse JSON data " + err.Error())
+				return 1
+			}
+		}
+
+		if len(optionsData) == 0 {
+			s.Logger.Error("You can't send an empty JSON data")
+			return 1
+		}
+
+		data := service.OperationRequest{
+			EnvName: *envName,
+			Operations: []service.Operation{
+				{
+					Name: *operation,
+					Data: optionsData,
+				},
+			},
+		}
+
+		s.Logger.Info("Validating the operation: " + *operation + " on the service: " + *serviceName)
+
+		validateOperateResponse, err := serviceClient.ValidateOperation(*serviceName, data)
+
+		if err != nil {
+			s.Logger.Error(err.Error())
+			return 1
+		}
+
+		isFeedbackRequired := validateOperateResponse.Response.Operations[0].IsFeedbackRequired
+		message := validateOperateResponse.Response.Operations[0].Message
+
+		if isFeedbackRequired {
+			consentMessage := fmt.Sprintf("\n%s", message)
+
+			allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
+			val, err := s.Input.AskWithConstraints(consentMessage, allowedInputs)
+
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return 1
+			}
+
+			if val != "Y" {
+				s.Logger.Info("Aborting the operation")
+				return 1
+			}
+		}
+
+		s.Logger.Info("Performing the operation: " + *operation + "on the service: " + *serviceName)
+
+		serviceClient.OperateService(*serviceName, data)
+		return 0
+	}
+
 	s.Logger.Error("Not a valid command")
 	return 127
 }
@@ -523,6 +627,16 @@ func (s *Service) Help() string {
 		})
 	}
 
+	if s.Operate {
+		return commandHelper("operate", "service", "", []Options{
+			{Flag: "--name", Description: "name of service"},
+			{Flag: "--env", Description: "name of environment"},
+			{Flag: "--operate", Description: "name of the operation to be performed on the service"},
+			{Flag: "--file", Description: "path of the file which contains the options for the operation in JSON format"},
+			{Flag: "--options", Description: "options for the operation in JSON format"},
+		})
+	}
+
 	return defaultHelper()
 }
 
@@ -558,6 +672,10 @@ func (s *Service) Synopsis() string {
 
 	if s.Status {
 		return "get status of a service version"
+	}
+
+	if s.Operate {
+		return "perform operations on a service"
 	}
 
 	return defaultHelper()
