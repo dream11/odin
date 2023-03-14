@@ -350,6 +350,7 @@ func (s *Service) Run(args []string) int {
 
 		if !isEnvNamePresent {
 			s.Logger.Error("--env cannot be blank")
+			return 1
 		}
 
 		if isOptionsPresent && isFilePresent {
@@ -403,23 +404,25 @@ func (s *Service) Run(args []string) int {
 			return 1
 		}
 
-		isFeedbackRequired := validateOperateResponse.Response.Operations[0].IsFeedbackRequired
-		message := validateOperateResponse.Response.Operations[0].Message
+		for _, operation := range validateOperateResponse.Response.Operations {
+			isFeedbackRequired := operation.IsFeedbackRequired
+			message := operation.Message
 
-		if isFeedbackRequired {
-			consentMessage := fmt.Sprintf("\n%s", message)
+			if isFeedbackRequired {
+				consentMessage := fmt.Sprintf("\n%s", message)
 
-			allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
-			val, err := s.Input.AskWithConstraints(consentMessage, allowedInputs)
+				allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
+				val, err := s.Input.AskWithConstraints(consentMessage, allowedInputs)
 
-			if err != nil {
-				s.Logger.Error(err.Error())
-				return 1
-			}
+				if err != nil {
+					s.Logger.Error(err.Error())
+					return 1
+				}
 
-			if val != "Y" {
-				s.Logger.Info("Aborting the operation")
-				return 1
+				if val != "Y" {
+					s.Logger.Info("Aborting the operation")
+					return 1
+				}
 			}
 		}
 
