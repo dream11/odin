@@ -60,8 +60,15 @@ func (o *Operation) Run(args []string) int {
 		}
 		table.Write(tableHeaders, tableData)
 
-		return 0
+		if isComponentTypePresent {
+			o.Logger.Output("\nCommand to describe component operation(s)")
+			o.Logger.ItalicEmphasize("odin describe operation --name <operationName> --component-type <componentTypeName>")
+		} else {
+			o.Logger.Output("\nCommand to describe service operations")
+			o.Logger.ItalicEmphasize("odin describe operation --name <operationName>")
+		}
 
+		return 0
 	}
 
 	if o.Describe {
