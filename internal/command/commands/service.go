@@ -404,10 +404,9 @@ func (s *Service) Run(args []string) int {
 			return 1
 		}
 
-
 		for _, operation := range validateOperateResponse.Response.Operations {
 			isFeedbackRequired := operation.IsFeedbackRequired
-			message := validateOperateResponse.Response.Operations[0].Message
+			message := operation.Message
 
 			if isFeedbackRequired {
 				consentMessage := fmt.Sprintf("\n%s", message)
