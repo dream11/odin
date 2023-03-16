@@ -426,8 +426,6 @@ func (s *Service) Run(args []string) int {
 			}
 		}
 
-		s.Logger.Info("Performing the operation: " + *operation + "on the service: " + *serviceName)
-
 		serviceClient.OperateService(*serviceName, data)
 		return 0
 	}
