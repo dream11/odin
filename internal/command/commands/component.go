@@ -51,12 +51,12 @@ func (c *Component) Run(args []string) int {
 				consentMessage := "\nYou are executing the above command on production environment. Are you sure? Enter Y/n: "
 				allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
 				val, err := c.Input.AskWithConstraints(consentMessage, allowedInputs)
-	
+
 				if err != nil {
 					c.Logger.Error(err.Error())
 					return 1
 				}
-	
+
 				if val != "Y" {
 					c.Logger.Info("Aborting the operation")
 					return 1
