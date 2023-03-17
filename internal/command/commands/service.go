@@ -385,6 +385,27 @@ func (s *Service) Run(args []string) int {
 			return 1
 		}
 
+		envTypeResp, err := envTypeClient.GetEnvType(*envName)
+		if err != nil {
+			s.Logger.Error(err.Error())
+			return 1
+		}
+		if envTypeResp.Strict {
+			consentMessage := "\nYou are executing the above command on production environment. Are you sure? Enter Y/n:"
+			allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
+			val, err := s.Input.AskWithConstraints(consentMessage, allowedInputs)
+
+			if err != nil {
+				s.Logger.Error(err.Error())
+				return 1
+			}
+
+			if val != "Y" {
+				s.Logger.Info("Aborting the operation")
+				return 1
+			}
+		}
+
 		data := service.OperationRequest{
 			EnvName: *envName,
 			Operations: []service.Operation{
