@@ -268,6 +268,10 @@ func (s *Service) Run(args []string) int {
 				s.Logger.Error("Error while parsing service file " + *filePath + " : " + err.Error())
 				return 1
 			}
+			consent := s.askForConsent(envName)
+			if consent == 1 {
+				return 1
+			}
 			serviceDefinition := parsedConfig.(map[string]interface{})
 
 			return s.deployUnreleasedService(envName, serviceDefinition, provisioningConfigFile, configStoreNamespace)
@@ -275,6 +279,10 @@ func (s *Service) Run(args []string) int {
 
 		emptyReleasedParameters := emptyParameters(map[string]string{"--env": *envName, "--name": *serviceName, "--version": *serviceVersion})
 		if len(emptyReleasedParameters) == 0 {
+			consent := s.askForConsent(envName)
+			if consent == 1 {
+				return 1
+			}
 			return s.deployReleasedService(envName, serviceName, serviceVersion, provisioningConfigFile, configStoreNamespace)
 		}
 
@@ -385,6 +393,12 @@ func (s *Service) Run(args []string) int {
 			return 1
 		}
 
+		consent := s.askForConsent(envName)
+
+		if consent == 1 {
+			return 1
+		}
+
 		data := service.OperationRequest{
 			EnvName: *envName,
 			Operations: []service.Operation{
@@ -432,6 +446,30 @@ func (s *Service) Run(args []string) int {
 
 	s.Logger.Error("Not a valid command")
 	return 127
+}
+
+func (s *Service) askForConsent(envName *string) int {
+	envTypeResp, err := envTypeClient.GetEnvType(*envName)
+	if err != nil {
+		s.Logger.Error(err.Error())
+		return 1
+	}
+	if envTypeResp.Strict {
+		consentMessage := "\nYou are executing the above command on production environment. Are you sure? Enter Y/n:"
+		allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
+		val, err := s.Input.AskWithConstraints(consentMessage, allowedInputs)
+
+		if err != nil {
+			s.Logger.Error(err.Error())
+			return 1
+		}
+
+		if val != "Y" {
+			s.Logger.Info("Aborting the operation")
+			return 1
+		}
+	}
+	return 0
 }
 
 func (s *Service) deployUnreleasedService(envName *string, serviceDefinition map[string]interface{}, provisioningConfigFile *string, configStoreNamespace *string) int {
