@@ -300,13 +300,12 @@ func (s *Service) Run(args []string) int {
 			return s.deployUnreleasedService(envName, serviceDefinition, provisioningConfigFile, configStoreNamespace)
 		}
 
-		consent := s.askForConsent(envName)
-		if consent == 1 {
-			return 1
-		}
-
 		emptyReleasedParameters := emptyParameters(map[string]string{"--env": *envName, "--name": *serviceName, "--version": *serviceVersion})
 		if len(emptyReleasedParameters) == 0 {
+			consent := s.askForConsent(envName)
+			if consent == 1 {
+				return 1
+			}
 			return s.deployReleasedService(envName, serviceName, serviceVersion, provisioningConfigFile, configStoreNamespace)
 		}
 
