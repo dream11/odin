@@ -289,7 +289,7 @@ func (s *Service) Run(args []string) int {
 				s.Logger.Error("Error while parsing service file " + *filePath + " : " + err.Error())
 				return 1
 			}
-			
+
 			consent := s.askForConsent(envName)
 			if consent == 1 {
 				return 1
