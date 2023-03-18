@@ -455,16 +455,15 @@ func (s *Service) askForConsent(envName *string) int {
 		return 1
 	}
 	if envTypeResp.Strict {
-		consentMessage := "\nYou are executing the above command on production environment. Are you sure? Enter Y/n:"
-		allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
-		val, err := s.Input.AskWithConstraints(consentMessage, allowedInputs)
+		consentMessage := fmt.Sprintf("\nYou are executing the above command on a restricted environment. Are you sure? Enter \033[1m%s\033[0m to continue:", *envName)
+		val, err := s.Input.Ask(consentMessage)
 
 		if err != nil {
 			s.Logger.Error(err.Error())
 			return 1
 		}
 
-		if val != "Y" {
+		if val != *envName {
 			s.Logger.Info("Aborting the operation")
 			return 1
 		}
