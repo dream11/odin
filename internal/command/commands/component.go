@@ -42,6 +42,26 @@ func (c *Component) Run(args []string) int {
 				return 1
 			}
 
+			envTypeResp, err := envTypeClient.GetEnvType(*envName)
+			if err != nil {
+				c.Logger.Error(err.Error())
+				return 1
+			}
+			if envTypeResp.Strict {
+				consentMessage := fmt.Sprintf("\nYou are executing the above command on a restricted environment. Are you sure? Enter \033[1m%s\033[0m to continue:", *envName)
+				val, err := c.Input.Ask(consentMessage)
+
+				if err != nil {
+					c.Logger.Error(err.Error())
+					return 1
+				}
+
+				if val != *envName {
+					c.Logger.Info("Aborting the operation")
+					return 1
+				}
+			}
+
 			data := component.OperateComponentRequest{
 				Data: component.Data{
 					EnvName:     *envName,

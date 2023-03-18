@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 
+	operationapi "github.com/dream11/odin/api/operation"
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/table"
 )
@@ -26,69 +27,105 @@ func (o *Operation) Run(args []string) int {
 	}
 
 	if o.List {
-		emptyParameters := emptyParameters(map[string]string{"--component-type": *componentType})
-		if len(emptyParameters) == 0 {
-			operationList, err := operationClient.ListOperations(*componentType)
-			if err != nil {
-				o.Logger.Error(err.Error())
-				return 1
-			}
+		isComponentTypePresent := len(*componentType) > 0
 
-			o.Logger.Info("Listing all operation(s)")
-			tableHeaders := []string{"Name", "Descrption"}
-			var tableData [][]interface{}
+		var operationList []operationapi.Operation
+		var err error
 
-			for _, operation := range operationList {
-				tableData = append(tableData, []interface{}{
-					operation.Name,
-					operation.Description,
-				})
-			}
-			table.Write(tableHeaders, tableData)
-
-			return 0
+		if isComponentTypePresent {
+			operationList, err = operationClient.ListComponentTypeOperations(*componentType)
+		} else {
+			operationList, err = operationClient.ListServiceOperations()
 		}
 
-		o.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
-		return 1
+		if err != nil {
+			o.Logger.Error(err.Error())
+			return 1
+		}
+
+		if isComponentTypePresent {
+			o.Logger.Info("Listing all operation(s)" + " on component " + *componentType)
+		} else {
+			o.Logger.Info("Listing all service operations")
+		}
+
+		tableHeaders := []string{"Name", "Descrption"}
+		var tableData [][]interface{}
+
+		for _, operation := range operationList {
+			tableData = append(tableData, []interface{}{
+				operation.Name,
+				operation.Description,
+			})
+		}
+		table.Write(tableHeaders, tableData)
+
+		if isComponentTypePresent {
+			o.Logger.Output("\nCommand to describe component operation(s)")
+			o.Logger.ItalicEmphasize("odin describe operation --name <operationName> --component-type <componentTypeName>")
+		} else {
+			o.Logger.Output("\nCommand to describe service operations")
+			o.Logger.ItalicEmphasize("odin describe operation --name <operationName>")
+		}
+
+		return 0
 	}
 
 	if o.Describe {
-		emptyParameters := emptyParameters(map[string]string{"--name": *name, "--component-type": *componentType})
-		if len(emptyParameters) == 0 {
-			operationList, err := operationClient.ListOperations(*componentType)
-			if err != nil {
-				o.Logger.Error(err.Error())
-				return 1
-			}
+		isNamePresent := len(*name) > 0
+		isComponentTypePresent := len(*componentType) > 0
 
-			o.Logger.Info("Describing operation: " + *name + " on component " + *componentType)
-			var operationKeys interface{}
-
-			for i := range operationList {
-				if operationList[i].Name == *name {
-					operationKeys = operationList[i].InputSchema
-					break
-				}
-			}
-
-			if operationKeys == nil {
-				o.Logger.Error(fmt.Sprintf("operation: %s does not exist for the component: %s", *name, *componentType))
-				return 1
-			}
-
-			operationKeysJson, err := json.MarshalIndent(operationKeys, "", "  ")
-			if err != nil {
-				o.Logger.Error(err.Error())
-				return 1
-			}
-
-			o.Logger.Output(fmt.Sprintf("\n%s", operationKeysJson))
-			return 0
+		if !isNamePresent {
+			o.Logger.Error("--name cannot be blank")
+			return 1
 		}
 
-		o.Logger.Error(fmt.Sprintf("%s cannot be blank", emptyParameters))
-		return 1
+		var operationList []operationapi.Operation
+		var err error
+
+		if isComponentTypePresent {
+			operationList, err = operationClient.ListComponentTypeOperations(*componentType)
+		} else {
+			operationList, err = operationClient.ListServiceOperations()
+		}
+
+		if err != nil {
+			o.Logger.Error(err.Error())
+			return 1
+		}
+
+		var operationKeys interface{}
+
+		for i := range operationList {
+			if operationList[i].Name == *name {
+				operationKeys = operationList[i].InputSchema
+				break
+			}
+		}
+
+		if operationKeys == nil {
+			if isComponentTypePresent {
+				o.Logger.Error(fmt.Sprintf("operation: %s does not exist for the component: %s", *name, *componentType))
+			} else {
+				o.Logger.Error(fmt.Sprintf("operation: %s is not a valid service operation", *name))
+			}
+			return 1
+		}
+
+		operationKeysJson, err := json.MarshalIndent(operationKeys, "", "  ")
+		if err != nil {
+			o.Logger.Error(err.Error())
+			return 1
+		}
+
+		if isComponentTypePresent {
+			o.Logger.Info("Describing operation: " + *name + " on component " + *componentType)
+		} else {
+			o.Logger.Info("Describing the service operation: " + *name)
+		}
+
+		o.Logger.Output(fmt.Sprintf("\n%s", operationKeysJson))
+		return 0
 	}
 	o.Logger.Error("Not a valid command")
 	return 127
@@ -113,10 +150,10 @@ func (o *Operation) Help() string {
 // Synopsis : returns a brief helper text for the command's verbs
 func (o *Operation) Synopsis() string {
 	if o.List {
-		return "list all operations on a component-type"
+		return "list all operations on service or a component-type"
 	}
 	if o.Describe {
-		return "describe operation on a component-type"
+		return "describe a operation on service or a component-type"
 	}
 	return defaultHelper()
 }
