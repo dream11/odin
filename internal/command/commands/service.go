@@ -352,7 +352,7 @@ func (s *Service) Run(args []string) int {
 		}
 
 		if !isOperationPresnt {
-			s.Logger.Error("--opertion cannot be blank")
+			s.Logger.Error("--operation cannot be blank")
 			return 1
 		}
 
@@ -396,6 +396,16 @@ func (s *Service) Run(args []string) int {
 		consent := s.askForConsent(envName)
 
 		if consent == 1 {
+			return 1
+		}
+
+		dataForScalingConsent := map[string]interface{}{
+			"env_name": *envName,
+			"action":   *operation,
+			"config":   optionsData,
+		}
+		scalingConsent := s.askForScalingConset(serviceName, envName, dataForScalingConsent)
+		if scalingConsent == 1 {
 			return 1
 		}
 
@@ -471,6 +481,30 @@ func (s *Service) askForConsent(envName *string) int {
 	return 0
 }
 
+func (s *Service) askForScalingConset(serviceName *string, envName *string, data map[string]interface{}) int {
+	componentListResponse, err := serviceClient.ScalingServiceConsent(*serviceName, data)
+	if err != nil {
+		s.Logger.Error(err.Error())
+		return 1
+	}
+	for _, component := range componentListResponse.Response {
+		consentMessage := fmt.Sprintf("\nYou have enabled reactive scaling for %s, this means %s will no longer be scaled using Scaler. Do you wish to continue? [Y/n]:", component, component)
+		allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
+		val, err := s.Input.AskWithConstraints(consentMessage, allowedInputs)
+
+		if err != nil {
+			s.Logger.Error(err.Error())
+			return 1
+		}
+
+		if val != "Y" {
+			s.Logger.Info("Aborting...")
+			return 1
+		}
+	}
+	return 0
+}
+
 func (s *Service) deployUnreleasedService(envName *string, serviceDefinition map[string]interface{}, provisioningConfigFile *string, configStoreNamespace *string) int {
 
 	if serviceDefinition["name"] == nil || len(serviceDefinition["name"].(string)) == 0 {
@@ -485,7 +519,19 @@ func (s *Service) deployUnreleasedService(envName *string, serviceDefinition map
 	if done {
 		return i
 	}
-
+	config := map[string]interface{}{
+		"service_definition":  serviceDefinition,
+		"provisioning_config": parsedProvisioningConfig,
+	}
+	dataForScalingConsent := map[string]interface{}{
+		"env_name": *envName,
+		"action":   "unreleased_service_deploy",
+		"config":   config,
+	}
+	scalingConsent := s.askForScalingConset(&serviceName, envName, dataForScalingConsent)
+	if scalingConsent == 1 {
+		return 1
+	}
 	s.Logger.Debug(fmt.Sprintf("%s: %s : %s: %s:", serviceName, serviceVersion, *envName, *configStoreNamespace))
 	s.Logger.Info("Initiating service deployment: " + serviceName + "@" + serviceVersion + " in " + *envName)
 	serviceClient.DeployUnreleasedServiceStream(serviceDefinition, parsedProvisioningConfig, *envName, *configStoreNamespace)
@@ -500,7 +546,16 @@ func (s *Service) deployReleasedService(envName *string, serviceName *string, se
 	if done {
 		return i
 	}
-
+	dataForScalingConsent := map[string]interface{}{
+		"env_name":        *envName,
+		"service_version": *serviceVersion,
+		"action":          "released_service_deploy",
+		"config":          parsedProvisioningConfig,
+	}
+	scalingConsent := s.askForScalingConset(serviceName, envName, dataForScalingConsent)
+	if scalingConsent == 1 {
+		return 1
+	}
 	s.Logger.Debug(fmt.Sprintf("%s: %s : %s: %s:", *serviceName, *serviceVersion, *envName, *configStoreNamespace))
 	s.Logger.Info("Initiating service deployment: " + *serviceName + "@" + *serviceVersion + " in " + *envName)
 	serviceClient.DeployReleasedServiceStream(*serviceName, *serviceVersion, *envName, *configStoreNamespace, parsedProvisioningConfig)

@@ -76,3 +76,7 @@ type OperationRequest struct {
 type OperationValidationResponse struct {
 	Response OperationValidationResponseBody `yaml:"resp,omitempty" json:"resp,omitempty"`
 }
+
+type ScalingConsentResponse struct {
+	Response []string `yaml:"resp,omitempty" json:"resp,omitempty"`
+}

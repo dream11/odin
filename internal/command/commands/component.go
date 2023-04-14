@@ -22,6 +22,7 @@ func (c *Component) Run(args []string) int {
 	envName := flagSet.String("env", "", "name of the environment in which the service is deployed")
 	operation := flagSet.String("operation", "", "name of the operation to performed on the component")
 	options := flagSet.String("options", "", "options of the operation in JSON format")
+	filePath := flagSet.String("file", "", "file to provide options for component operations")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -33,13 +34,36 @@ func (c *Component) Run(args []string) int {
 		if *envName == "" {
 			*envName = utils.FetchKey(ENV_NAME_KEY)
 		}
-		emptyParameters := emptyParameters(map[string]string{"--name": *name, "--service": *serviceName, "--env": *envName, "--operation": *operation, "--options": *options})
+		emptyParameters := emptyParameters(map[string]string{"--name": *name, "--service": *serviceName, "--env": *envName, "--operation": *operation})
 		if len(emptyParameters) == 0 {
-			var optionsJson interface{}
-			err = json.Unmarshal([]byte(*options), &optionsJson)
-			if err != nil {
-				c.Logger.Error("Unable to parse options JSON " + err.Error())
+			isOptionsPresent := len(*options) > 0
+			isFilePresent := len(*filePath) > 0
+
+			if isOptionsPresent && isFilePresent {
+				c.Logger.Error("You can provide either --options or --file but not both")
 				return 1
+			}
+
+			if !isOptionsPresent && !isFilePresent {
+				c.Logger.Error("You should provide either --options or --file")
+				return 1
+			}
+
+			var optionsData map[string]interface{}
+
+			if isFilePresent {
+				parsedConfig, err := parseFile(*filePath)
+				if err != nil {
+					c.Logger.Error("Error while parsing file " + *filePath + " : " + err.Error())
+					return 1
+				}
+				optionsData = parsedConfig.(map[string]interface{})
+			} else if isOptionsPresent {
+				err = json.Unmarshal([]byte(*options), &optionsData)
+				if err != nil {
+					c.Logger.Error("Unable to parse JSON data " + err.Error())
+					return 1
+				}
 			}
 
 			envTypeResp, err := envTypeClient.GetEnvType(*envName)
@@ -62,6 +86,33 @@ func (c *Component) Run(args []string) int {
 				}
 			}
 
+			dataForScalingConsent := map[string]interface{}{
+				"env_name":       *envName,
+				"component_name": *name,
+				"action":         *operation,
+				"config":         optionsData,
+			}
+			componentListResponse, err := serviceClient.ScalingServiceConsent(*serviceName, dataForScalingConsent)
+			if err != nil {
+				c.Logger.Error(err.Error())
+				return 1
+			}
+			for _, component := range componentListResponse.Response {
+				consentMessage := fmt.Sprintf("\nYou have enabled reactive scaling for %s, this means %s will no longer be scaled using Scaler. Do you wish to continue? [Y/n]:", component, component)
+				allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
+				val, err := c.Input.AskWithConstraints(consentMessage, allowedInputs)
+
+				if err != nil {
+					c.Logger.Error(err.Error())
+					return 1
+				}
+
+				if val != "Y" {
+					c.Logger.Info("Aborting...")
+					return 1
+				}
+			}
+
 			data := component.OperateComponentRequest{
 				Data: component.Data{
 					EnvName:     *envName,
@@ -69,7 +120,7 @@ func (c *Component) Run(args []string) int {
 					Operations: []component.Operation{
 						{
 							Name:   *operation,
-							Values: optionsJson,
+							Values: optionsData,
 						},
 					},
 				},
@@ -96,6 +147,7 @@ func (c *Component) Help() string {
 			{Flag: "--env", Description: "name of the environment in which the service is deployed"},
 			{Flag: "--operation", Description: "name of the operation to performed on the component"},
 			{Flag: "--options", Description: "options of the operation in JSON format"},
+			{Flag: "--file", Description: "path of the file which contains the options for the operation in JSON format"},
 		})
 	}
 	return defaultHelper()
