@@ -108,7 +108,7 @@ func (c *Component) Run(args []string) int {
 				}
 
 				if val != "Y" {
-					c.Logger.Info("Aborting...")
+					c.Logger.Info("\nAborting...")
 					return 1
 				}
 			}

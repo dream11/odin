@@ -498,7 +498,7 @@ func (s *Service) askForScalingConset(serviceName *string, envName *string, data
 		}
 
 		if val != "Y" {
-			s.Logger.Info("Aborting...")
+			s.Logger.Info("\nAborting...")
 			return 1
 		}
 	}
