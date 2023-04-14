@@ -404,7 +404,7 @@ func (s *Service) Run(args []string) int {
 			"action":   *operation,
 			"config":   optionsData,
 		}
-		scalingConsent := s.askForScalingConset(serviceName, envName, dataForScalingConsent)
+		scalingConsent := s.askForScalingConsent(serviceName, envName, dataForScalingConsent)
 		if scalingConsent == 1 {
 			return 1
 		}
@@ -481,7 +481,7 @@ func (s *Service) askForConsent(envName *string) int {
 	return 0
 }
 
-func (s *Service) askForScalingConset(serviceName *string, envName *string, data map[string]interface{}) int {
+func (s *Service) askForScalingConsent(serviceName *string, envName *string, data map[string]interface{}) int {
 	componentListResponse, err := serviceClient.ScalingServiceConsent(*serviceName, data)
 	if err != nil {
 		s.Logger.Error(err.Error())
@@ -528,7 +528,7 @@ func (s *Service) deployUnreleasedService(envName *string, serviceDefinition map
 		"action":   "unreleased_service_deploy",
 		"config":   config,
 	}
-	scalingConsent := s.askForScalingConset(&serviceName, envName, dataForScalingConsent)
+	scalingConsent := s.askForScalingConsent(&serviceName, envName, dataForScalingConsent)
 	if scalingConsent == 1 {
 		return 1
 	}
@@ -552,7 +552,7 @@ func (s *Service) deployReleasedService(envName *string, serviceName *string, se
 		"action":          "released_service_deploy",
 		"config":          parsedProvisioningConfig,
 	}
-	scalingConsent := s.askForScalingConset(serviceName, envName, dataForScalingConsent)
+	scalingConsent := s.askForScalingConsent(serviceName, envName, dataForScalingConsent)
 	if scalingConsent == 1 {
 		return 1
 	}
