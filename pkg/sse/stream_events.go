@@ -102,18 +102,15 @@ func (sr *StreamRequest) Stream() StreamResponse {
 			logger.Output(line + "\n")
 		}
 		/**
-
 		This is to evaluate if the streamed response from BE has any error information,
-		if yes the idea to extract the response code from the response data and use it set status codes.
+		if yes the idea is to extract the response code from the response data and use it to set status codes.
 		Ex. Error message from BE is of the following format,
 		ERROR(400): Cloud Provider Account 'adsdsasdassd' is not one of ['load', 'prod', 'proto', 'proto-dev', 'staging']
-
 		*/
 		if strings.HasPrefix(line, "ERROR") {
 			re := regexp.MustCompile("\\d+")
 			resp.StatusCode, _ = strconv.Atoi(re.FindAllString(line, 1)[0])
 		}
-
 	}
 
 	return StreamResponse{
