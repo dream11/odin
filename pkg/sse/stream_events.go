@@ -111,7 +111,7 @@ func (sr *StreamRequest) Stream() StreamResponse {
 		*/
 		if strings.HasPrefix(line, "ERROR") {
 			re := regexp.MustCompile("\\d+")
-			resp.StatusCode, _ = strconv.Atoi(re.FindAllString(line, -1)[0])
+			resp.StatusCode, _ = strconv.Atoi(re.FindAllString(line, 1)[0])
 		}
 
 	}
