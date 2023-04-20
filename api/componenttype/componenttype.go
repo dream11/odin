@@ -34,6 +34,7 @@ type ExposedConfig struct {
 	Config    string `yaml:"config,omitempty" json:"config,omitempty"`
 	Mandatory bool   `yaml:"mandatory,omitempty" json:"mandatory,omitempty"`
 	DataType  string `yaml:"data_type,omitempty" json:"data_type,omitempty"`
+	Location  string `yaml:"location,omitempty" json:"location,omitempty"`
 }
 
 // ListTypeResponse interface
