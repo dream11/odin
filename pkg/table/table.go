@@ -8,12 +8,12 @@ import (
 )
 
 func setDefaultConfig(table *tablewriter.Table) {
-	table.SetRowLine(false)
+	table.SetRowLine(true)
 	table.SetColumnSeparator("|")
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
 	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
-	table.SetAutoWrapText(false)
+	table.SetAutoWrapText(true)
 }
 
 // Write : write provided input as tabular format

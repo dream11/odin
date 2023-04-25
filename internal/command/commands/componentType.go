@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"strings"
@@ -75,29 +74,41 @@ func (c *ComponentType) Run(args []string) int {
 				return 1
 			}
 
-			details, err := json.MarshalIndent(componentDetailsResponse.Details, "", "  ")
-			if err != nil {
-				c.Logger.Error(err.Error())
-				return 1
-			}
-
-			c.Logger.Output(fmt.Sprintf("\n%s", details))
+			//details, err := json.MarshalIndent(componentDetailsResponse.Details, "", "  ")
+			//if err != nil {
+			//	c.Logger.Error(err.Error())
+			//	return 1
+			//}
+			//
+			//c.Logger.Output(fmt.Sprintf("\n%s", details))
 			var tableHeaders []string
-			var tableData [][]interface{}
+			var serviceDefinitionData [][]interface{}
+			var provisioningData [][]interface{}
 			if len(componentDetailsResponse.ExposedConfigs) > 0 {
-				tableHeaders = []string{"Config", "Mandatory", "Data Type", "Location", "Description"}
+				tableHeaders = []string{"Config", "Description", "Data Type", "Mandatory",
+					"Scema",
+				}
+
 				for _, exposed_config := range componentDetailsResponse.ExposedConfigs {
-					tableData = append(tableData, []interface{}{
+					tableRow := []interface{}{
 						exposed_config.Config,
-						exposed_config.Mandatory,
-						exposed_config.DataType,
-						exposed_config.Location,
 						exposed_config.Description,
-					})
+						exposed_config.DataType,
+						exposed_config.Mandatory,
+						exposed_config.Schema,
+					}
+					if exposed_config.Action == "create" {
+						serviceDefinitionData = append(serviceDefinitionData, tableRow)
+					} else {
+						provisioningData = append(provisioningData, tableRow)
+					}
 				}
 			}
-			c.Logger.ItalicEmphasize("\nList of exposed configs :\n")
-			table.Write(tableHeaders, tableData)
+			c.Logger.ItalicEmphasize("\nList of exposed configs in service definition file:\n")
+			table.Write(tableHeaders, serviceDefinitionData)
+
+			c.Logger.ItalicEmphasize("\nList of exposed configs in provisioning file:\n")
+			table.Write(tableHeaders, provisioningData)
 			return 0
 		}
 
