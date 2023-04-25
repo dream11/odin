@@ -75,6 +75,29 @@ func (c *Component) Run(args []string) int {
 				},
 			}
 
+
+			diff, err := componentClient.CompareOperationChanges(*name, data)
+			if err != nil {
+				c.Logger.Error(err.Error())
+				return 1
+			}
+			if diff != "" {
+				message := fmt.Sprintf("Below changes will happen after this operation\n\n%s\nDo you Accept? [Y/n]: ", diff)
+
+				allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
+				val, err := c.Input.AskWithConstraints(message, allowedInputs)
+
+				if err != nil {
+					c.Logger.Error(err.Error())
+					return 1
+				}
+
+				if val != "Y" {
+					c.Logger.Info("Aborting the operation")
+					return 1
+				}
+			}
+
 			componentClient.OperateComponent(*name, data)
 			return 0
 		}

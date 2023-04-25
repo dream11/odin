@@ -14,3 +14,7 @@ type Data struct {
 type OperateComponentRequest struct {
 	Data Data `yaml:"data,omitempty" json:"data,omitempty"`
 }
+
+type CompareOperationChangesResponse struct {
+	Response interface{} `yaml:"resp,omitempty" json:"resp,omitempty"`
+}
