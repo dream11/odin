@@ -15,6 +15,11 @@ type OperateComponentRequest struct {
 	Data Data `yaml:"data,omitempty" json:"data,omitempty"`
 }
 
+type CompareOperationChangesResponseBody struct {
+	OldValues []map[string]interface{} `yaml:"old_values,omitempty" json:"old_values,omitempty"`
+	NewValues []map[string]interface{} `yaml:"new_values,omitempty" json:"new_values,omitempty"`
+}
+
 type CompareOperationChangesResponse struct {
-	Response interface{} `yaml:"resp,omitempty" json:"resp,omitempty"`
+	Response CompareOperationChangesResponseBody `yaml:"resp,omitempty" json:"resp,omitempty"`
 }

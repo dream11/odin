@@ -4,10 +4,14 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"sort"
+	"strings"
 
 	"github.com/dream11/odin/api/component"
 	"github.com/dream11/odin/internal/backend"
+	"github.com/dream11/odin/pkg/table"
 	"github.com/dream11/odin/pkg/utils"
+	"github.com/fatih/color"
 )
 
 var componentClient backend.Component
@@ -22,6 +26,7 @@ func (c *Component) Run(args []string) int {
 	envName := flagSet.String("env", "", "name of the environment in which the service is deployed")
 	operation := flagSet.String("operation", "", "name of the operation to performed on the component")
 	options := flagSet.String("options", "", "options of the operation in JSON format")
+	filePath := flagSet.String("file", "", "file to provide options for component operations")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -33,13 +38,114 @@ func (c *Component) Run(args []string) int {
 		if *envName == "" {
 			*envName = utils.FetchKey(ENV_NAME_KEY)
 		}
-		emptyParameters := emptyParameters(map[string]string{"--name": *name, "--service": *serviceName, "--env": *envName, "--operation": *operation, "--options": *options})
+		emptyParameters := emptyParameters(map[string]string{"--name": *name, "--service": *serviceName, "--env": *envName, "--operation": *operation})
 		if len(emptyParameters) == 0 {
-			var optionsJson interface{}
-			err = json.Unmarshal([]byte(*options), &optionsJson)
-			if err != nil {
-				c.Logger.Error("Unable to parse options JSON " + err.Error())
+			isOptionsPresent := len(*options) > 0
+			isFilePresent := len(*filePath) > 0
+
+			if isOptionsPresent && isFilePresent {
+				c.Logger.Error("You can provide either --options or --file but not both")
 				return 1
+			}
+
+			if !isOptionsPresent && !isFilePresent {
+				c.Logger.Error("You should provide either --options or --file")
+				return 1
+			}
+
+			var optionsData map[string]interface{}
+
+			if isFilePresent {
+				parsedConfig, err := parseFile(*filePath)
+				if err != nil {
+					c.Logger.Error("Error while parsing file " + *filePath + " : " + err.Error())
+					return 1
+				}
+				optionsData = parsedConfig.(map[string]interface{})
+			} else if isOptionsPresent {
+				err = json.Unmarshal([]byte(*options), &optionsData)
+				if err != nil {
+					c.Logger.Error("Unable to parse JSON data " + err.Error())
+					return 1
+				}
+			}
+
+			data := component.OperateComponentRequest{
+				Data: component.Data{
+					EnvName:     *envName,
+					ServiceName: *serviceName,
+					Operations: []component.Operation{
+						{
+							Name:   *operation,
+							Values: optionsData,
+						},
+					},
+				},
+			}
+
+			diffValues, err := componentClient.CompareOperationChanges(*name, data)
+			if err != nil {
+				c.Logger.Error(err.Error())
+				return 1
+			}
+			oldComponentValuesList := diffValues.OldValues
+			newComponentValuesList := diffValues.NewValues
+
+			if len(oldComponentValuesList) > 0 {
+				c.Logger.Info("\nBelow changes will happen after this operation:")
+				tableHeaders := []string{"Component Name", "Key", "Old Value", "New Value"}
+				var tableData [][]interface{}
+
+				for i, oldComponentValues := range oldComponentValuesList {
+					componentName := oldComponentValues["name"].(string)
+					delete(oldComponentValues, "name")
+					delete(newComponentValuesList[i], "name")
+					flatendOldComponentValues := flattenMap(oldComponentValues, "")
+					flatendNewComponentValues := flattenMap(newComponentValuesList[i], "")
+
+					keys := make([]string, 0, len(flatendOldComponentValues))
+					for k := range flatendOldComponentValues {
+						keys = append(keys, k)
+					}
+					sort.Strings(keys)
+
+					for _, key := range keys {
+						oldValue := flatendOldComponentValues[key]
+						newValue := flatendNewComponentValues[key]
+						var oldValueString string
+						var newValueString string
+
+						switch oldValue := oldValue.(type) {
+						case []interface{}:
+							strSlice := make([]string, len(oldValue))
+							for i, v := range oldValue {
+								strSlice[i] = fmt.Sprintf("%v", v)
+							}
+							oldValueString = color.RedString("[" + strings.Join(strSlice, ", ") + "]")
+						default:
+							oldValueString = color.RedString(fmt.Sprintf("%v", oldValue))
+						}
+
+						switch newValue := newValue.(type) {
+						case []interface{}:
+							strSlice := make([]string, len(newValue))
+							for i, v := range newValue {
+								strSlice[i] = fmt.Sprintf("%v", v)
+							}
+							newValueString = color.GreenString("[" + strings.Join(strSlice, ", ") + "]")
+						default:
+							newValueString = color.GreenString(fmt.Sprintf("%v", flatendNewComponentValues[key]))
+						}
+
+						tableData = append(tableData, []interface{}{
+							componentName,
+							key,
+							oldValueString,
+							newValueString,
+						})
+					}
+				}
+				table.Write(tableHeaders, tableData)
 			}
 
 			envTypeResp, err := envTypeClient.GetEnvType(*envName)
@@ -60,30 +166,8 @@ func (c *Component) Run(args []string) int {
 					c.Logger.Info("Aborting the operation")
 					return 1
 				}
-			}
-
-			data := component.OperateComponentRequest{
-				Data: component.Data{
-					EnvName:     *envName,
-					ServiceName: *serviceName,
-					Operations: []component.Operation{
-						{
-							Name:   *operation,
-							Values: optionsJson,
-						},
-					},
-				},
-			}
-
-
-			diff, err := componentClient.CompareOperationChanges(*name, data)
-			if err != nil {
-				c.Logger.Error(err.Error())
-				return 1
-			}
-			if diff != "" {
-				message := fmt.Sprintf("Below changes will happen after this operation\n\n%s\nDo you Accept? [Y/n]: ", diff)
-
+			} else {
+				message := "\nDo you want to proceed with the above command? [Y/n]:"
 				allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
 				val, err := c.Input.AskWithConstraints(message, allowedInputs)
 
@@ -110,6 +194,25 @@ func (c *Component) Run(args []string) int {
 	return 127
 }
 
+func flattenMap(m map[string]interface{}, prefix string) map[string]interface{} {
+	flattened := make(map[string]interface{})
+	for k, v := range m {
+		key := prefix + k
+		if prefix != "" {
+			key = prefix + "." + k
+		}
+		if vm, ok := v.(map[string]interface{}); ok {
+			flattenedMap := flattenMap(vm, key)
+			for fk, fv := range flattenedMap {
+				flattened[fk] = fv
+			}
+		} else {
+			flattened[key] = v
+		}
+	}
+	return flattened
+}
+
 // Help : returns an explanatory string
 func (c *Component) Help() string {
 	if c.Operate {
@@ -119,6 +222,7 @@ func (c *Component) Help() string {
 			{Flag: "--env", Description: "name of the environment in which the service is deployed"},
 			{Flag: "--operation", Description: "name of the operation to performed on the component"},
 			{Flag: "--options", Description: "options of the operation in JSON format"},
+			{Flag: "--file", Description: "path of the file which contains the options for the operation in JSON format"},
 		})
 	}
 	return defaultHelper()

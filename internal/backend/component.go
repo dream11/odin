@@ -16,9 +16,8 @@ func (c *Component) OperateComponent(componentName string, data component.Operat
 	response.Process(true)
 }
 
-func (c *Component) CompareOperationChanges(componentName string, data component.OperateComponentRequest) (interface{}, error){
+func (c *Component) CompareOperationChanges(componentName string, data component.OperateComponentRequest) (component.CompareOperationChangesResponseBody, error) {
 	client := newApiClient()
-	client.Headers["Command-Verb"] = "operate"
 	response := client.actionWithRetry(path.Join("component", componentName, "compare"), "POST", data)
 	response.Process(true)
 	var compareResponse component.CompareOperationChangesResponse
