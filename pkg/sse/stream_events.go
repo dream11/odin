@@ -99,6 +99,22 @@ func (sr *StreamRequest) Stream() StreamResponse {
 			ms.Stop()
 			logger.Output(line + "\n")
 		}
+		/**
+		This is to evaluate if the streamed response from BE has any error information,
+		if yes the idea is to identify the presence of Error and set resp's status code to 417
+		Ex. Error message from BE is of the following format,
+		ERROR(400): Cloud Provider Account 'adsdsasdassd' is not one of ['load', 'prod', 'proto', 'proto-dev', 'staging']
+
+		Status code is set to 417, because in case of failures from jenkins like healthcheck failures etc, the message comes as
+		ERROR(500): Service deployment failed with trace:
+
+		Provisioning application failed with error:
+
+		If we fetch 500 and set it as statusCode, the client makes a retry again for deployment. In order to avoid this behaviour the status code is set to 417.
+		*/
+		if strings.HasPrefix(line, "ERROR(") {
+			resp.StatusCode = 417
+		}
 	}
 
 	return StreamResponse{
@@ -124,7 +140,6 @@ func (r *StreamResponse) Process(exitOnError bool) {
 			logger.Debug(string(r.Body))
 		} else if request.MatchStatusCode(r.StatusCode, 400) || request.MatchStatusCode(r.StatusCode, 500) {
 			logger.Debug(r.Status)
-			logger.Error(string(r.Body))
 			request.HandleExit(1, exitOnError)
 		}
 	}
