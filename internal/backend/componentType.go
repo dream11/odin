@@ -29,6 +29,7 @@ func (c *ComponentType) ListComponentTypes(componentTypeName, version string) ([
 func (c *ComponentType) DescribeComponentType(componentTypeName, version string) (componenttype.ComponentDetails, error) {
 	client := newApiClient()
 	client.QueryParams["version"] = version
+	client.QueryParams["compact"] = "true"
 	response := client.actionWithRetry(path.Join("componenttypes", componentTypeName), "GET", nil)
 	response.Process(true) // process response and exit if error
 

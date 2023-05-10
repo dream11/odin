@@ -85,12 +85,14 @@ func (c *ComponentType) Run(args []string) int {
 			var tableHeaders []string
 			var tableData [][]interface{}
 			if len(componentDetailsResponse.ExposedConfigs) > 0 {
-				tableHeaders = []string{"Config", "Mandatory", "Data Type"}
+				tableHeaders = []string{"Config", "Mandatory", "Data Type", "Location", "Description"}
 				for _, exposed_config := range componentDetailsResponse.ExposedConfigs {
 					tableData = append(tableData, []interface{}{
 						exposed_config.Config,
 						exposed_config.Mandatory,
 						exposed_config.DataType,
+						exposed_config.Location,
+						exposed_config.Description,
 					})
 				}
 			}
