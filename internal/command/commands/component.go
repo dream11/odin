@@ -96,7 +96,6 @@ func (c *Component) Run(args []string) int {
 				tableHeaders := []string{"Component Name", "Key", "Old Value", "New Value"}
 				var tableData [][]interface{}
 
-				
 				componentName := *name
 				flatendOldComponentValues := flattenMap(oldComponentValues, "")
 				flatendNewComponentValues := flattenMap(newComponentValues, "")
@@ -142,7 +141,7 @@ func (c *Component) Run(args []string) int {
 						newValueString,
 					})
 				}
-				
+
 				table.Write(tableHeaders, tableData)
 			}
 
