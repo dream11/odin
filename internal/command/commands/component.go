@@ -88,63 +88,61 @@ func (c *Component) Run(args []string) int {
 				c.Logger.Error(err.Error())
 				return 1
 			}
-			oldComponentValuesList := diffValues.OldValues
-			newComponentValuesList := diffValues.NewValues
+			oldComponentValues := diffValues.OldValues
+			newComponentValues := diffValues.NewValues
 
-			if len(oldComponentValuesList) > 0 {
+			if len(oldComponentValues) > 0 {
 				c.Logger.Info("\nBelow changes will happen after this operation:")
 				tableHeaders := []string{"Component Name", "Key", "Old Value", "New Value"}
 				var tableData [][]interface{}
 
-				for i, oldComponentValues := range oldComponentValuesList {
-					componentName := oldComponentValues["name"].(string)
-					delete(oldComponentValues, "name")
-					delete(newComponentValuesList[i], "name")
-					flatendOldComponentValues := flattenMap(oldComponentValues, "")
-					flatendNewComponentValues := flattenMap(newComponentValuesList[i], "")
+				
+				componentName := *name
+				flatendOldComponentValues := flattenMap(oldComponentValues, "")
+				flatendNewComponentValues := flattenMap(newComponentValues, "")
 
-					keys := make([]string, 0, len(flatendOldComponentValues))
-					for k := range flatendOldComponentValues {
-						keys = append(keys, k)
-					}
-					sort.Strings(keys)
-
-					for _, key := range keys {
-						oldValue := flatendOldComponentValues[key]
-						newValue := flatendNewComponentValues[key]
-						var oldValueString string
-						var newValueString string
-
-						switch oldValue := oldValue.(type) {
-						case []interface{}:
-							strSlice := make([]string, len(oldValue))
-							for i, v := range oldValue {
-								strSlice[i] = fmt.Sprintf("%v", v)
-							}
-							oldValueString = color.RedString("[" + strings.Join(strSlice, ", ") + "]")
-						default:
-							oldValueString = color.RedString(fmt.Sprintf("%v", oldValue))
-						}
-
-						switch newValue := newValue.(type) {
-						case []interface{}:
-							strSlice := make([]string, len(newValue))
-							for i, v := range newValue {
-								strSlice[i] = fmt.Sprintf("%v", v)
-							}
-							newValueString = color.GreenString("[" + strings.Join(strSlice, ", ") + "]")
-						default:
-							newValueString = color.GreenString(fmt.Sprintf("%v", flatendNewComponentValues[key]))
-						}
-
-						tableData = append(tableData, []interface{}{
-							componentName,
-							key,
-							oldValueString,
-							newValueString,
-						})
-					}
+				keys := make([]string, 0, len(flatendNewComponentValues))
+				for k := range flatendOldComponentValues {
+					keys = append(keys, k)
 				}
+				sort.Strings(keys)
+
+				for _, key := range keys {
+					oldValue := flatendOldComponentValues[key]
+					newValue := flatendNewComponentValues[key]
+					var oldValueString string
+					var newValueString string
+
+					switch oldValue := oldValue.(type) {
+					case []interface{}:
+						strSlice := make([]string, len(oldValue))
+						for i, v := range oldValue {
+							strSlice[i] = fmt.Sprintf("%v", v)
+						}
+						oldValueString = color.RedString("[" + strings.Join(strSlice, ", ") + "]")
+					default:
+						oldValueString = color.RedString(fmt.Sprintf("%v", oldValue))
+					}
+
+					switch newValue := newValue.(type) {
+					case []interface{}:
+						strSlice := make([]string, len(newValue))
+						for i, v := range newValue {
+							strSlice[i] = fmt.Sprintf("%v", v)
+						}
+						newValueString = color.GreenString("[" + strings.Join(strSlice, ", ") + "]")
+					default:
+						newValueString = color.GreenString(fmt.Sprintf("%v", flatendNewComponentValues[key]))
+					}
+
+					tableData = append(tableData, []interface{}{
+						componentName,
+						key,
+						oldValueString,
+						newValueString,
+					})
+				}
+				
 				table.Write(tableHeaders, tableData)
 			}
 
