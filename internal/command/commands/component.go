@@ -109,40 +109,41 @@ func (c *Component) Run(args []string) int {
 				for _, key := range keys {
 					oldValue := flatendOldComponentValues[key]
 					newValue := flatendNewComponentValues[key]
-					var oldValueString string
-					var newValueString string
+					if fmt.Sprintf("%v", oldValue) != fmt.Sprintf("%v", newValue){
+						var oldValueString string
+						var newValueString string
 
-					switch oldValue := oldValue.(type) {
-					case []interface{}:
-						strSlice := make([]string, len(oldValue))
-						for i, v := range oldValue {
-							strSlice[i] = fmt.Sprintf("%v", v)
+						switch oldValue := oldValue.(type) {
+						case []interface{}:
+							strSlice := make([]string, len(oldValue))
+							for i, v := range oldValue {
+								strSlice[i] = fmt.Sprintf("%v", v)
+							}
+							oldValueString = color.RedString("[" + strings.Join(strSlice, ", ") + "]")
+						default:
+							oldValueString = color.RedString(fmt.Sprintf("%v", oldValue))
 						}
-						oldValueString = color.RedString("[" + strings.Join(strSlice, ", ") + "]")
-					default:
-						oldValueString = color.RedString(fmt.Sprintf("%v", oldValue))
-					}
 
-					switch newValue := newValue.(type) {
-					case []interface{}:
-						strSlice := make([]string, len(newValue))
-						for i, v := range newValue {
-							strSlice[i] = fmt.Sprintf("%v", v)
+						switch newValue := newValue.(type) {
+						case []interface{}:
+							strSlice := make([]string, len(newValue))
+							for i, v := range newValue {
+								strSlice[i] = fmt.Sprintf("%v", v)
+							}
+							newValueString = color.GreenString("[" + strings.Join(strSlice, ", ") + "]")
+						default:
+							newValueString = color.GreenString(fmt.Sprintf("%v", flatendNewComponentValues[key]))
 						}
-						newValueString = color.GreenString("[" + strings.Join(strSlice, ", ") + "]")
-					default:
-						newValueString = color.GreenString(fmt.Sprintf("%v", flatendNewComponentValues[key]))
-					}
 
-					tableData = append(tableData, []interface{}{
-						componentName,
-						key,
-						oldValueString,
-						newValueString,
-					})
+						tableData = append(tableData, []interface{}{
+							componentName,
+							key,
+							oldValueString,
+							newValueString,
+						})
+					}
 				}
-
-				table.Write(tableHeaders, tableData)
+					table.Write(tableHeaders, tableData)
 			}
 
 			envTypeResp, err := envTypeClient.GetEnvType(*envName)
@@ -200,6 +201,9 @@ func flattenMap(m map[string]interface{}, prefix string) map[string]interface{} 
 		}
 		if vm, ok := v.(map[string]interface{}); ok {
 			flattenedMap := flattenMap(vm, key)
+			if len (flattenedMap) == 0 {
+				flattened[key] = make(map[string]interface{}) 
+			}
 			for fk, fv := range flattenedMap {
 				flattened[fk] = fv
 			}
