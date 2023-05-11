@@ -109,7 +109,7 @@ func (c *Component) Run(args []string) int {
 				for _, key := range keys {
 					oldValue := flatendOldComponentValues[key]
 					newValue := flatendNewComponentValues[key]
-					if fmt.Sprintf("%v", oldValue) != fmt.Sprintf("%v", newValue){
+					if fmt.Sprintf("%v", oldValue) != fmt.Sprintf("%v", newValue) {
 						var oldValueString string
 						var newValueString string
 
@@ -143,7 +143,7 @@ func (c *Component) Run(args []string) int {
 						})
 					}
 				}
-					table.Write(tableHeaders, tableData)
+				table.Write(tableHeaders, tableData)
 			}
 
 			envTypeResp, err := envTypeClient.GetEnvType(*envName)
@@ -201,8 +201,8 @@ func flattenMap(m map[string]interface{}, prefix string) map[string]interface{} 
 		}
 		if vm, ok := v.(map[string]interface{}); ok {
 			flattenedMap := flattenMap(vm, key)
-			if len (flattenedMap) == 0 {
-				flattened[key] = make(map[string]interface{}) 
+			if len(flattenedMap) == 0 {
+				flattened[key] = make(map[string]interface{})
 			}
 			for fk, fv := range flattenedMap {
 				flattened[fk] = fv
