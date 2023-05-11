@@ -88,30 +88,28 @@ func (c *Component) Run(args []string) int {
 				c.Logger.Error(err.Error())
 				return 1
 			}
-			oldComponentValuesList := diffValues.OldValues
-			newComponentValuesList := diffValues.NewValues
+			oldComponentValues := diffValues.OldValues
+			newComponentValues := diffValues.NewValues
 
-			if len(oldComponentValuesList) > 0 {
+			if len(oldComponentValues) > 0 {
 				c.Logger.Info("\nBelow changes will happen after this operation:")
 				tableHeaders := []string{"Component Name", "Key", "Old Value", "New Value"}
 				var tableData [][]interface{}
 
-				for i, oldComponentValues := range oldComponentValuesList {
-					componentName := oldComponentValues["name"].(string)
-					delete(oldComponentValues, "name")
-					delete(newComponentValuesList[i], "name")
-					flatendOldComponentValues := flattenMap(oldComponentValues, "")
-					flatendNewComponentValues := flattenMap(newComponentValuesList[i], "")
+				componentName := *name
+				flatendOldComponentValues := flattenMap(oldComponentValues, "")
+				flatendNewComponentValues := flattenMap(newComponentValues, "")
 
-					keys := make([]string, 0, len(flatendOldComponentValues))
-					for k := range flatendOldComponentValues {
-						keys = append(keys, k)
-					}
-					sort.Strings(keys)
+				keys := make([]string, 0, len(flatendNewComponentValues))
+				for k := range flatendOldComponentValues {
+					keys = append(keys, k)
+				}
+				sort.Strings(keys)
 
-					for _, key := range keys {
-						oldValue := flatendOldComponentValues[key]
-						newValue := flatendNewComponentValues[key]
+				for _, key := range keys {
+					oldValue := flatendOldComponentValues[key]
+					newValue := flatendNewComponentValues[key]
+					if fmt.Sprintf("%v", oldValue) != fmt.Sprintf("%v", newValue) {
 						var oldValueString string
 						var newValueString string
 
@@ -203,6 +201,9 @@ func flattenMap(m map[string]interface{}, prefix string) map[string]interface{} 
 		}
 		if vm, ok := v.(map[string]interface{}); ok {
 			flattenedMap := flattenMap(vm, key)
+			if len(flattenedMap) == 0 {
+				flattened[key] = make(map[string]interface{})
+			}
 			for fk, fv := range flattenedMap {
 				flattened[fk] = fv
 			}
