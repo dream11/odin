@@ -169,6 +169,17 @@ func (c *Component) Run(args []string) int {
 				allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
 				val, err := c.Input.AskWithConstraints(message, allowedInputs)
 
+				if err != nil {
+					c.Logger.Error(err.Error())
+					return 1
+				}
+
+				if val != "Y" {
+					c.Logger.Info("Aborting the operation")
+					return 1
+				}
+			}
+
 			dataForScalingConsent := map[string]interface{}{
 				"env_name":       *envName,
 				"component_name": *name,
@@ -194,19 +205,6 @@ func (c *Component) Run(args []string) int {
 					c.Logger.Info("Aborting the operation")
 					return 1
 				}
-			}
-
-			data := component.OperateComponentRequest{
-				Data: component.Data{
-					EnvName:     *envName,
-					ServiceName: *serviceName,
-					Operations: []component.Operation{
-						{
-							Name:   *operation,
-							Values: optionsData,
-						},
-					},
-				},
 			}
 
 			componentClient.OperateComponent(*name, data)
