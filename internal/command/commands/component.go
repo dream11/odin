@@ -4,10 +4,14 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"sort"
+	"strings"
 
 	"github.com/dream11/odin/api/component"
 	"github.com/dream11/odin/internal/backend"
+	"github.com/dream11/odin/pkg/table"
 	"github.com/dream11/odin/pkg/utils"
+	"github.com/fatih/color"
 )
 
 var componentClient backend.Component
@@ -66,6 +70,82 @@ func (c *Component) Run(args []string) int {
 				}
 			}
 
+			data := component.OperateComponentRequest{
+				Data: component.Data{
+					EnvName:     *envName,
+					ServiceName: *serviceName,
+					Operations: []component.Operation{
+						{
+							Name:   *operation,
+							Values: optionsData,
+						},
+					},
+				},
+			}
+
+			diffValues, err := componentClient.CompareOperationChanges(*name, data)
+			if err != nil {
+				c.Logger.Error(err.Error())
+				return 1
+			}
+			oldComponentValues := diffValues.OldValues
+			newComponentValues := diffValues.NewValues
+
+			if len(oldComponentValues) > 0 {
+				c.Logger.Info("\nBelow changes will happen after this operation:")
+				tableHeaders := []string{"Component Name", "Key", "Old Value", "New Value"}
+				var tableData [][]interface{}
+
+				componentName := *name
+				flatendOldComponentValues := flattenMap(oldComponentValues, "")
+				flatendNewComponentValues := flattenMap(newComponentValues, "")
+
+				keys := make([]string, 0, len(flatendNewComponentValues))
+				for k := range flatendOldComponentValues {
+					keys = append(keys, k)
+				}
+				sort.Strings(keys)
+
+				for _, key := range keys {
+					oldValue := flatendOldComponentValues[key]
+					newValue := flatendNewComponentValues[key]
+					if fmt.Sprintf("%v", oldValue) != fmt.Sprintf("%v", newValue) {
+						var oldValueString string
+						var newValueString string
+
+						switch oldValue := oldValue.(type) {
+						case []interface{}:
+							strSlice := make([]string, len(oldValue))
+							for i, v := range oldValue {
+								strSlice[i] = fmt.Sprintf("%v", v)
+							}
+							oldValueString = color.RedString("[" + strings.Join(strSlice, ", ") + "]")
+						default:
+							oldValueString = color.RedString(fmt.Sprintf("%v", oldValue))
+						}
+
+						switch newValue := newValue.(type) {
+						case []interface{}:
+							strSlice := make([]string, len(newValue))
+							for i, v := range newValue {
+								strSlice[i] = fmt.Sprintf("%v", v)
+							}
+							newValueString = color.GreenString("[" + strings.Join(strSlice, ", ") + "]")
+						default:
+							newValueString = color.GreenString(fmt.Sprintf("%v", flatendNewComponentValues[key]))
+						}
+
+						tableData = append(tableData, []interface{}{
+							componentName,
+							key,
+							oldValueString,
+							newValueString,
+						})
+					}
+				}
+				table.Write(tableHeaders, tableData)
+			}
+
 			envTypeResp, err := envTypeClient.GetEnvType(*envName)
 			if err != nil {
 				c.Logger.Error(err.Error())
@@ -84,7 +164,10 @@ func (c *Component) Run(args []string) int {
 					c.Logger.Info("Aborting the operation")
 					return 1
 				}
-			}
+			} else {
+				message := "\nDo you want to proceed with the above command? [Y/n]:"
+				allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
+				val, err := c.Input.AskWithConstraints(message, allowedInputs)
 
 			dataForScalingConsent := map[string]interface{}{
 				"env_name":       *envName,
@@ -108,7 +191,7 @@ func (c *Component) Run(args []string) int {
 				}
 
 				if val != "Y" {
-					c.Logger.Info("\nAborting...")
+					c.Logger.Info("Aborting the operation")
 					return 1
 				}
 			}
@@ -136,6 +219,28 @@ func (c *Component) Run(args []string) int {
 
 	c.Logger.Error("Not a valid command")
 	return 127
+}
+
+func flattenMap(m map[string]interface{}, prefix string) map[string]interface{} {
+	flattened := make(map[string]interface{})
+	for k, v := range m {
+		key := prefix + k
+		if prefix != "" {
+			key = prefix + "." + k
+		}
+		if vm, ok := v.(map[string]interface{}); ok {
+			flattenedMap := flattenMap(vm, key)
+			if len(flattenedMap) == 0 {
+				flattened[key] = make(map[string]interface{})
+			}
+			for fk, fv := range flattenedMap {
+				flattened[fk] = fv
+			}
+		} else {
+			flattened[key] = v
+		}
+	}
+	return flattened
 }
 
 // Help : returns an explanatory string
