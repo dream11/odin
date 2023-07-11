@@ -488,7 +488,7 @@ func (s *Service) askForScalingConsent(serviceName *string, envName *string, dat
 		return 1
 	}
 	for _, component := range componentListResponse.Response {
-		consentMessage := fmt.Sprintf("\nYou have enabled reactive scaling for %s, this means %s will no longer be scaled using Scaler post this operation. Do you wish to continue? [Y/n]:", component, component)
+		consentMessage := fmt.Sprintf("\nAs you have enabled ASG auto scaling policy for %s, It will no longer be scaled using Scaler post this operation. Do you wish to continue? [Y/n]:", component)
 		allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
 		val, err := s.Input.AskWithConstraints(consentMessage, allowedInputs)
 
