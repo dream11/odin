@@ -519,19 +519,7 @@ func (s *Service) deployUnreleasedService(envName *string, serviceDefinition map
 	if done {
 		return i
 	}
-	config := map[string]interface{}{
-		"service_definition":  serviceDefinition,
-		"provisioning_config": parsedProvisioningConfig,
-	}
-	dataForScalingConsent := map[string]interface{}{
-		"env_name": *envName,
-		"action":   "unreleased_service_deploy",
-		"config":   config,
-	}
-	scalingConsent := s.askForScalingConsent(&serviceName, envName, dataForScalingConsent)
-	if scalingConsent == 1 {
-		return 1
-	}
+
 	s.Logger.Debug(fmt.Sprintf("%s: %s : %s: %s:", serviceName, serviceVersion, *envName, *configStoreNamespace))
 	s.Logger.Info("Initiating service deployment: " + serviceName + "@" + serviceVersion + " in " + *envName)
 	serviceClient.DeployUnreleasedServiceStream(serviceDefinition, parsedProvisioningConfig, *envName, *configStoreNamespace)
