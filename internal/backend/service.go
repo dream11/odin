@@ -190,7 +190,7 @@ func (s *Service) OperateService(serviceName string, data service.OperationReque
 func (s *Service) ScalingServiceConsent(serviceName string, data interface{}) (service.ScalingConsentResponse, error) {
 	client := newApiClient()
 
-	response := client.actionWithRetry(path.Join(serviceEntity, serviceName)+"/reactivescaledscalercomponents", "POST", data)
+	response := client.actionWithRetry(path.Join(serviceEntity, serviceName)+"/reactive-scaled-scaler-components", "POST", data)
 	response.Process(true)
 
 	var scalingConsentResponse service.ScalingConsentResponse
