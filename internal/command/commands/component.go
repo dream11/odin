@@ -180,6 +180,33 @@ func (c *Component) Run(args []string) int {
 				}
 			}
 
+			dataForScalingConsent := map[string]interface{}{
+				"env_name":       *envName,
+				"component_name": *name,
+				"action":         *operation,
+				"config":         optionsData,
+			}
+			componentListResponse, err := serviceClient.ScalingServiceConsent(*serviceName, dataForScalingConsent)
+			if err != nil {
+				c.Logger.Error(err.Error())
+				return 1
+			}
+			for _, component := range componentListResponse.Response {
+				consentMessage := fmt.Sprintf("\nAs you have enabled ASG auto scaling policy for %s, It will no longer be scaled using Scaler post this operation. Do you wish to continue? [Y/n]:", component)
+				allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
+				val, err := c.Input.AskWithConstraints(consentMessage, allowedInputs)
+
+				if err != nil {
+					c.Logger.Error(err.Error())
+					return 1
+				}
+
+				if val != "Y" {
+					c.Logger.Info("Aborting...")
+					return 1
+				}
+			}
+
 			componentClient.OperateComponent(*name, data)
 			return 0
 		}
