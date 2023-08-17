@@ -7,6 +7,7 @@ package create
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	backend "github.com/dream11/odin/internal/backend"
 )
 
 // envCmd represents the env command
@@ -17,6 +18,7 @@ var envCmd = &cobra.Command{
 	Long: `Creates an environment in which services will be deployed`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(fmt.Sprintf("env name %s", name))
+		backend.GrpcClient()
 	},
 }
 

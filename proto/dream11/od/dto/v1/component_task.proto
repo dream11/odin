@@ -1,0 +1,21 @@
+syntax = "proto3";
+package dream11.od.dto.v1;
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1";
+
+message ComponentTask {
+  optional int64 id = 1;
+  optional google.protobuf.Timestamp created_at = 2;
+  optional google.protobuf.Timestamp updated_at = 3;
+  optional int64 created_by = 4;
+  optional int64 org_id = 6;
+  optional string name = 7;
+  optional string version = 8;
+  optional string type = 9;
+  optional string status = 10;
+  optional int64 service_deployment_id = 11;
+  optional google.protobuf.Struct config = 12;
+}

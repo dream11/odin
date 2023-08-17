@@ -9,6 +9,8 @@ import (
 	"github.com/dream11/odin/internal/ui"
 	"github.com/dream11/odin/pkg/request"
 	"github.com/dream11/odin/pkg/sse"
+	pb "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
+	"google.golang.org/grpc"
 )
 
 var logger ui.Logger
@@ -146,4 +148,13 @@ func newStreamingApiClient() streamingClientProperties {
 	streamClient.Headers["Authorization"] = "Bearer " + appConfig.AccessToken
 
 	return streamClient
+}
+
+func GrpcClient() {
+	var opts []grpc.DialOption
+	conn, err := grpc.Dial("localhost", opts...)
+	if err != nil {
+	}
+	defer conn.Close()
+	pb.NewEnvironmentServiceClient(conn)
 }

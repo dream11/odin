@@ -1,4 +1,5 @@
 install:
+	protoc --proto_path=proto/ --go_out=paths=source_relative:proto/gen/go --go-grpc_out=. --go-grpc_opt=module=github.com/dream11/odin $(shell find proto -name '*.proto')
 	go mod download
 	go build .
 	sudo mv ./odin /usr/local/bin
