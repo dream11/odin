@@ -1,16 +1,14 @@
 package config
 
 import (
-	"path"
-
 	"github.com/dream11/odin/api/configuration"
 	"github.com/dream11/odin/app"
-	"github.com/dream11/odin/internal/ui"
 	"github.com/dream11/odin/pkg/file"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
+	"path"
 )
 
-var logger ui.Logger
 var secretText = "<secret text>"
 
 // Get : fetch credentials from all sources
@@ -21,7 +19,7 @@ func Get() configuration.Configuration {
 	rawConfig, _ := file.Read(configPath)
 	err := yaml.Unmarshal(rawConfig, &configs)
 	if err != nil {
-		logger.Error("Unable to parse configuration. " + err.Error())
+		log.Error("Unable to parse configuration. " + err.Error())
 	}
 
 	// if len(configs.AccessToken) == 0 {

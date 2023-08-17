@@ -13,4 +13,5 @@ type Configuration struct {
 	AccessToken  string `yaml:"access_token,omitempty" json:"access_token,omitempty"`
 	RefreshToken string `yaml:"refresh_token,omitempty" json:"refresh_token,omitempty"`
 	EnvName      string `yaml:"envName,omitempty" json:"envName:,omitempty"`
+	Insecure     bool   `yaml:"insecure,omitempty" json:"insecure:,omitempty"`
 }

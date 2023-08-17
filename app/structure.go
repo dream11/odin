@@ -1,12 +1,11 @@
 package app
 
 import (
+	"github.com/dream11/odin/pkg/dir"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"path"
 	"strings"
-
-	"github.com/dream11/odin/internal/ui"
-	"github.com/dream11/odin/pkg/dir"
 )
 
 type workdir struct {
@@ -36,22 +35,20 @@ var WorkDir = workdir{
 	EnvVarPrefix: strings.ToUpper(App.Name) + "_",
 }
 
-var logger ui.Logger
-
 // initiate dir structure on app initialization
 func init() {
 	err := WorkDir.Create()
 	if err != nil {
-		logger.Error(err.Error())
+		log.Error(err.Error())
 		os.Exit(1)
 	}
 
 	secretCredentialsExist, err := dir.Exists(path.Join(WorkDir.Location, WorkDir.ConfigFile))
 	if err != nil {
-		logger.Error(err.Error())
+		log.Error(err.Error())
 	}
 
 	if !secretCredentialsExist {
-		logger.Warn("Run, `odin configure` to configure odin")
+		log.Warn("Run, `odin configure` to configure odin")
 	}
 }
