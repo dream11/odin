@@ -2,6 +2,7 @@ package list
 
 import (
 	"context"
+	"github.com/dream11/odin/api/configuration"
 	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/table"
 	environment "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
@@ -10,10 +11,12 @@ import (
 	"os"
 	"strconv"
 )
+
 var name string
 var provisioningType string
 var account string
 var displayAll bool
+var appConfig *configuration.Configuration
 
 var environmentClient = backend.Env{}
 var envCmd = &cobra.Command{
@@ -28,10 +31,10 @@ var envCmd = &cobra.Command{
 func execute(ctx context.Context) {
 	response, err := environmentClient.ListEnvironments(ctx, &environment.ListEnvironmentRequest{
 		Params: map[string]string{
-			"name":              name,
-			"account":           account,
-			"provisioning-type": provisioningType,
-			"display-all":       strconv.FormatBool(displayAll)},
+			"name":             name,
+			"account":          account,
+			"provisioningType": provisioningType,
+			"displayAll":       strconv.FormatBool(displayAll)},
 	})
 
 	if err != nil {
