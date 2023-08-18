@@ -15,7 +15,7 @@ var provisioningType string
 var account string
 var displayAll bool
 
-var environmentClient = backend.Env{}
+var environmentClient = backend.Environment{}
 var environmentCmd = &cobra.Command{
 	Use:   "environment",
 	Short: "List environments",
@@ -26,7 +26,7 @@ var environmentCmd = &cobra.Command{
 }
 
 func execute(ctx context.Context) {
-	response, err := environmentClient.ListEnvironments(ctx, &environment.ListEnvironmentRequest{
+	response, err := environmentClient.ListEnvironments(&ctx, &environment.ListEnvironmentRequest{
 		Params: map[string]string{
 			"name":             name,
 			"account":          account,
@@ -38,15 +38,15 @@ func execute(ctx context.Context) {
 		log.Fatal("Failed to list environments ", err)
 	}
 
-	tableHeaders := []string{"Name", "Created By", "Provisioning Type", "State", "Account"}
+	tableHeaders := []string{"Name", "Created By", "State", "Account"}
 	var tableData [][]interface{}
 
 	for _, env := range response.Environments {
 		tableData = append(tableData, []interface{}{
-			env.Name,
-			env.CreatedBy,
-			env.Status,
-			env.ProviderAccountName,
+			*env.Name,
+			*env.CreatedBy,
+			*env.Status,
+			*env.ProviderAccountName,
 		})
 	}
 
