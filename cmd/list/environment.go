@@ -3,6 +3,7 @@ package list
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dream11/odin/pkg/constant"
 	"strconv"
 
 	"github.com/dream11/odin/internal/service"
@@ -52,11 +53,13 @@ func execute(cmd *cobra.Command) {
 }
 
 func writeOutput(response *environment.ListEnvironmentResponse, format string) {
-	if format == "text" {
+
+	switch format {
+	case constant.TEXT:
 		writeAsText(response)
-	} else if format == "json" {
-		writeAsJson(response)
-	} else {
+	case constant.JSON:
+		writeAsJSON(response)
+	default:
 		log.Fatal("Unknown output format: ", format)
 	}
 }
@@ -76,7 +79,7 @@ func writeAsText(response *environment.ListEnvironmentResponse) {
 	table.Write(tableHeaders, tableData)
 }
 
-func writeAsJson(response *environment.ListEnvironmentResponse) error {
+func writeAsJSON(response *environment.ListEnvironmentResponse) {
 	var environments []map[string]interface{}
 	for _, env := range response.Environments {
 		environments = append(environments, map[string]interface{}{
@@ -86,12 +89,8 @@ func writeAsJson(response *environment.ListEnvironmentResponse) error {
 			"account":   *env.ProviderAccountName,
 		})
 	}
-	output, err := json.MarshalIndent(environments, "", "  ")
-	if err != nil {
-		return err
-	}
+	output, _ := json.MarshalIndent(environments, "", "  ")
 	fmt.Print(string(output))
-	return nil
 }
 
 func init() {
