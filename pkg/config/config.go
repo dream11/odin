@@ -17,7 +17,7 @@ var err error
 func readConfig() (*configuration.Configuration, error) {
 	configuration := configuration.Configuration{}
 	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
+	viper.SetConfigType("toml")
 	viper.AddConfigPath("$HOME/.odin")
 	viper.SetEnvPrefix("ODIN")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(`.`, `_`))
@@ -29,7 +29,8 @@ func readConfig() (*configuration.Configuration, error) {
 		}
 		return nil, err
 	}
-	err := viper.Unmarshal(&configuration)
+	profile := viper.GetString("profile")
+	err := viper.UnmarshalKey(profile, &configuration)
 	if err != nil {
 		log.Fatal("Configuration can't be loaded: ", err)
 		return nil, err
@@ -43,7 +44,7 @@ func GetConfig() *configuration.Configuration {
 		appConfig, err = readConfig()
 	})
 	if err != nil {
-		log.Fatal("Error while reading config")
+		log.Fatal("Error while reading config ", err)
 	}
 	return appConfig
 }

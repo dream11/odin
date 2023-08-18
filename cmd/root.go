@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/spf13/viper"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -19,4 +20,10 @@ func Execute() {
 	if err != nil {
 		os.Exit(1)
 	}
+}
+
+func init() {
+	RootCmd.PersistentFlags().StringP("profile", "p", "default", "odin profile")
+	viper.BindPFlag("profile", RootCmd.PersistentFlags().Lookup("profile"))
+	viper.SetDefault("profile", "default")
 }

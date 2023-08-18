@@ -20,7 +20,10 @@ var environmentClient = backend.Environment{}
 var environmentCmd = &cobra.Command{
 	Use:   "environment",
 	Short: "List environments",
-	Long:  `List all types of environments created by current user or all environments`,
+	Args: func(cmd *cobra.Command, args []string) error {
+		return cobra.NoArgs(cmd, args)
+	},
+	Long: `List all types of environments created by current user or all environments`,
 	Run: func(cmd *cobra.Command, args []string) {
 		execute(cmd.Context())
 	},
