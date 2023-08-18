@@ -4,8 +4,8 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"github.com/dream11/odin/pkg/config"
 
+	"github.com/dream11/odin/pkg/config"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"

@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/dream11/odin/app"
 
+	"github.com/dream11/odin/app"
 	"github.com/spf13/cobra"
 )
 

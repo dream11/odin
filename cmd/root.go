@@ -1,12 +1,14 @@
 package cmd
 
 import (
-	"github.com/spf13/viper"
 	"os"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
+// RootCmd cobra root command
 var RootCmd = &cobra.Command{
 	Use:   "odin",
 	Short: "Interface for service definitions & deployments into self-managed environments",
@@ -24,6 +26,9 @@ func Execute() {
 
 func init() {
 	RootCmd.PersistentFlags().StringP("profile", "p", "default", "odin profile")
-	viper.BindPFlag("profile", RootCmd.PersistentFlags().Lookup("profile"))
+	err := viper.BindPFlag("profile", RootCmd.PersistentFlags().Lookup("profile"))
+	if err != nil {
+		log.Fatal("Error while binding profile flag")
+	}
 	viper.SetDefault("profile", "default")
 }

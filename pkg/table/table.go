@@ -41,6 +41,7 @@ func Write(headers []string, data [][]interface{}) {
 	table.Render()
 }
 
+// AppendRow append row
 func AppendRow(row []interface{}, colWidth []int) {
 	table := tablewriter.NewWriter(os.Stdout)
 
@@ -58,6 +59,7 @@ func AppendRow(row []interface{}, colWidth []int) {
 	table.Render()
 }
 
+// PrintHeader print table headers
 func PrintHeader(headers []string, colWidth []int) {
 	table := tablewriter.NewWriter(os.Stdout)
 
