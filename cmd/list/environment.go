@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/dream11/odin/internal/backend"
+	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/table"
 	environment "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
 	log "github.com/sirupsen/logrus"
@@ -17,7 +17,7 @@ var provisioningType string
 var account string
 var displayAll bool
 
-var environmentClient = backend.Environment{}
+var environmentClient = service.Environment{}
 var environmentCmd = &cobra.Command{
 	Use:   "environment",
 	Short: "List environments",
