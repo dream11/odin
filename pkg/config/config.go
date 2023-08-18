@@ -2,11 +2,12 @@ package config
 
 import (
 	"errors"
+	"strings"
+	"sync"
+
 	"github.com/dream11/odin/api/configuration"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"strings"
-	"sync"
 )
 
 var once sync.Once

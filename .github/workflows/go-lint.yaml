@@ -4,6 +4,7 @@ on:
     branches:
       - main
       - development
+      - 2.x.x
 permissions:
   contents: read
 jobs:
