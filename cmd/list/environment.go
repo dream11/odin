@@ -1,7 +1,8 @@
 package list
 
 import (
-	"context"
+	"encoding/json"
+	"fmt"
 	"strconv"
 
 	"github.com/dream11/odin/internal/backend"
@@ -25,11 +26,12 @@ var environmentCmd = &cobra.Command{
 	},
 	Long: `List all types of environments created by current user or all environments`,
 	Run: func(cmd *cobra.Command, args []string) {
-		execute(cmd.Context())
+		execute(cmd)
 	},
 }
 
-func execute(ctx context.Context) {
+func execute(cmd *cobra.Command) {
+	ctx := cmd.Context()
 	response, err := environmentClient.ListEnvironments(&ctx, &environment.ListEnvironmentRequest{
 		Params: map[string]string{
 			"name":             name,
@@ -42,9 +44,26 @@ func execute(ctx context.Context) {
 		log.Fatal("Failed to list environments ", err)
 	}
 
+	outputFormat, err := cmd.Flags().GetString("output")
+	if err != nil {
+		log.Fatal(err)
+	}
+	writeOutput(response, outputFormat)
+}
+
+func writeOutput(response *environment.ListEnvironmentResponse, format string) {
+	if format == "text" {
+		writeAsText(response)
+	} else if format == "json" {
+		writeAsJson(response)
+	} else {
+		log.Fatal("Unknown output format: ", format)
+	}
+}
+
+func writeAsText(response *environment.ListEnvironmentResponse) {
 	tableHeaders := []string{"Name", "Created By", "State", "Account"}
 	var tableData [][]interface{}
-
 	for _, env := range response.Environments {
 		tableData = append(tableData, []interface{}{
 			*env.Name,
@@ -55,6 +74,24 @@ func execute(ctx context.Context) {
 	}
 
 	table.Write(tableHeaders, tableData)
+}
+
+func writeAsJson(response *environment.ListEnvironmentResponse) error {
+	var environments []map[string]interface{}
+	for _, env := range response.Environments {
+		environments = append(environments, map[string]interface{}{
+			"name":      *env.Name,
+			"createdBy": *env.CreatedBy,
+			"status":    *env.Status,
+			"account":   *env.ProviderAccountName,
+		})
+	}
+	output, err := json.MarshalIndent(environments, "", "  ")
+	if err != nil {
+		return err
+	}
+	fmt.Print(string(output))
+	return nil
 }
 
 func init() {
