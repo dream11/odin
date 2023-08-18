@@ -20,8 +20,8 @@ func grpcClient() (*grpc.ClientConn, error) {
 	if appConfig.Insecure {
 		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	} else {
-		creds := credentials.NewTLS(&tls.Config{})
-		opts = append(opts, grpc.WithTransportCredentials(creds))
+		cred := credentials.NewTLS(&tls.Config{})
+		opts = append(opts, grpc.WithTransportCredentials(cred))
 	}
 
 	conn, err := grpc.Dial(appConfig.BackendAddr, opts...)
