@@ -1,0 +1,8 @@
+syntax = "proto3";
+package dream11.od.dto.v1;
+
+option go_package = "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1";
+
+message ProvisioningType {
+  string name = 1;
+}

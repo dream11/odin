@@ -1,0 +1,48 @@
+syntax = "proto3";
+package dream11.od.environment.v1;
+
+import "dream11/od/dto/v1/environment.proto";
+import "google/protobuf/struct.proto";
+
+option go_package = "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1";
+
+service EnvironmentService {
+  rpc ListEnvironment(ListEnvironmentRequest) returns (ListEnvironmentResponse) {}
+  rpc DescribeEnvironment(DescribeEnvironmentRequest) returns (DescribeEnvironmentResponse) {}
+  rpc UpdateEnvironment(UpdateEnvironmentRequest) returns (UpdateEnvironmentResponse) {}
+  rpc CreateEnvironment(CreateEnvironmentRequest) returns (stream CreateEnvironmentResponse) {}
+}
+
+message ListEnvironmentRequest {
+  map<string, string> params = 1;
+}
+
+message ListEnvironmentResponse {
+  repeated dream11.od.dto.v1.Environment environments = 1;
+}
+
+message DescribeEnvironmentRequest {
+  string env_name = 1;
+  map<string, string> params = 2;
+}
+
+message DescribeEnvironmentResponse {
+  dream11.od.dto.v1.Environment environment = 1;
+}
+
+message UpdateEnvironmentRequest {
+  string env_name = 1;
+  google.protobuf.Struct data = 2;
+}
+
+message UpdateEnvironmentResponse {}
+
+message CreateEnvironmentRequest {
+  string env_name = 1;
+  string account = 2;
+  string provisioning_type = 3;
+}
+
+message CreateEnvironmentResponse {
+  string message = 1;
+}
