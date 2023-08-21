@@ -15,15 +15,6 @@ var RootCmd = &cobra.Command{
 	Long:  `Deploy services in environments`,
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
-	err := RootCmd.Execute()
-	if err != nil {
-		os.Exit(1)
-	}
-}
-
 func init() {
 	RootCmd.PersistentFlags().StringP("profile", "p", "default", "odin profile")
 	RootCmd.PersistentFlags().StringP("output", "o", "text", "odin profile")
@@ -32,4 +23,13 @@ func init() {
 		log.Fatal("Error while binding profile flag")
 	}
 	viper.SetDefault("profile", "default")
+}
+
+// Execute adds all child commands to the root command and sets flags appropriately.
+// This is called by main.main(). It only needs to happen once to the rootCmd.
+func Execute() {
+	err := RootCmd.Execute()
+	if err != nil {
+		os.Exit(1)
+	}
 }

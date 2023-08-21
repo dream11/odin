@@ -31,6 +31,14 @@ var environmentCmd = &cobra.Command{
 	},
 }
 
+func init() {
+	environmentCmd.Flags().StringVar(&name, "name", "", "name of the env")
+	environmentCmd.Flags().StringVar(&provisioningType, "provisioning-type", "", "provisioning type of the environment")
+	environmentCmd.Flags().StringVar(&account, "account", "", "cloud provider account name")
+	environmentCmd.Flags().BoolVarP(&displayAll, "all", "A", false, "list all environments")
+	listCmd.AddCommand(environmentCmd)
+}
+
 func execute(cmd *cobra.Command) {
 	ctx := cmd.Context()
 	response, err := environmentClient.ListEnvironments(&ctx, &environment.ListEnvironmentRequest{
@@ -93,10 +101,3 @@ func writeAsJSON(response *environment.ListEnvironmentResponse) {
 	fmt.Print(string(output))
 }
 
-func init() {
-	environmentCmd.Flags().StringVar(&name, "name", "", "name of the env")
-	environmentCmd.Flags().StringVar(&provisioningType, "provisioning-type", "", "provisioning type of the environment")
-	environmentCmd.Flags().StringVar(&account, "account", "", "cloud provider account name")
-	environmentCmd.Flags().BoolVarP(&displayAll, "all", "A", false, "list all environments")
-	listCmd.AddCommand(environmentCmd)
-}
