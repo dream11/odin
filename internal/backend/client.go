@@ -81,7 +81,8 @@ func newApiClient() clientProperties {
 
 	apiClient := newClient()
 	apiClient.address += "api/integration/cli/v2/"
-	apiClient.Headers["Authorization"] = "Bearer " + appConfig.AccessToken
+	apiClient.Headers["Odin-Access-Key"] = appConfig.Keys.AccessKey
+	apiClient.Headers["Odin-Secret-Access-Key"] = appConfig.Keys.SecretAccessKey
 
 	return apiClient
 }
@@ -143,7 +144,8 @@ func newStreamingApiClient() streamingClientProperties {
 
 	streamClient := newStreamingClient()
 	streamClient.address += "api/integration/cli/stream/v2/"
-	streamClient.Headers["Authorization"] = "Bearer " + appConfig.AccessToken
+	streamClient.Headers["Odin-Access-Key"] = appConfig.Keys.AccessKey
+	streamClient.Headers["Odin-Secret-Access-Key"] = appConfig.Keys.SecretAccessKey
 
 	return streamClient
 }

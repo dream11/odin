@@ -11,7 +11,6 @@ import (
 )
 
 var logger ui.Logger
-var secretText = "<secret text>"
 
 // Get : fetch credentials from all sources
 func Get() configuration.Configuration {
@@ -29,11 +28,10 @@ func Get() configuration.Configuration {
 	// }
 
 	// do not expose access key, secret access key & refresh tokens
-	configs.Keys = configuration.SecretKeys{
-		AccessKey:       secretText,
-		SecretAccessKey: secretText,
-	}
-	configs.RefreshToken = secretText
+	// configs.Keys = configuration.SecretKeys{
+	// 	AccessKey:       secretText,
+	// 	SecretAccessKey: secretText,
+	// }
 
 	return configs
 }

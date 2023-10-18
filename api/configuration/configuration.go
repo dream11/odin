@@ -10,7 +10,5 @@ type SecretKeys struct {
 type Configuration struct {
 	BackendAddr  string `yaml:"backend_addr,omitempty" json:"backend_addr,omitempty"`
 	Keys         SecretKeys
-	AccessToken  string `yaml:"access_token,omitempty" json:"access_token,omitempty"`
-	RefreshToken string `yaml:"refresh_token,omitempty" json:"refresh_token,omitempty"`
 	EnvName      string `yaml:"envName,omitempty" json:"envName:,omitempty"`
 }
