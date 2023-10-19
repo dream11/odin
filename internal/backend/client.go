@@ -70,6 +70,8 @@ func newClient() clientProperties {
 		Headers: map[string]string{
 			"Content-Type": "application/json",
 			"App-Version":  odin.App.Version,
+			"Odin-Access-Key": appConfig.Keys.AccessKey,
+			"Odin-Secret-Access-Key": appConfig.Keys.SecretAccessKey,
 		},
 		QueryParams: map[string]string{},
 	}
@@ -77,12 +79,8 @@ func newClient() clientProperties {
 
 // initiate an API integration client on top of base-client
 func newApiClient() clientProperties {
-	var appConfig = config.Get()
-
 	apiClient := newClient()
 	apiClient.address += "api/integration/cli/v2/"
-	apiClient.Headers["Odin-Access-Key"] = appConfig.Keys.AccessKey
-	apiClient.Headers["Odin-Secret-Access-Key"] = appConfig.Keys.SecretAccessKey
 
 	return apiClient
 }
@@ -134,18 +132,16 @@ func newStreamingClient() streamingClientProperties {
 		Headers: map[string]string{
 			"Content-Type": "application/json",
 			"App-Version":  odin.App.Version,
+			"Odin-Access-Key": appConfig.Keys.AccessKey,
+			"Odin-Secret-Access-Key": appConfig.Keys.SecretAccessKey,
 		},
 		QueryParams: map[string]string{},
 	}
 }
 
 func newStreamingApiClient() streamingClientProperties {
-	var appConfig = config.Get()
-
 	streamClient := newStreamingClient()
 	streamClient.address += "api/integration/cli/stream/v2/"
-	streamClient.Headers["Odin-Access-Key"] = appConfig.Keys.AccessKey
-	streamClient.Headers["Odin-Secret-Access-Key"] = appConfig.Keys.SecretAccessKey
 
 	return streamClient
 }

@@ -27,11 +27,5 @@ func Get() configuration.Configuration {
 	// 	logger.Debug("Access Token not found at: " + app.WorkDir.ConfigFile)
 	// }
 
-	// do not expose access key, secret access key & refresh tokens
-	// configs.Keys = configuration.SecretKeys{
-	// 	AccessKey:       secretText,
-	// 	SecretAccessKey: secretText,
-	// }
-
 	return configs
 }

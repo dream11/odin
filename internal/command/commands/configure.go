@@ -7,11 +7,15 @@ import (
 
 	"github.com/dream11/odin/api/configuration"
 	"github.com/dream11/odin/app"
+	"github.com/dream11/odin/internal/backend"
 	"github.com/dream11/odin/pkg/file"
 	"gopkg.in/yaml.v3"
 	"crypto/sha256"
 	"encoding/hex"
 )
+
+// initiate backend client for auth
+var authClient backend.Auth
 
 // Configure : command declaration
 type Configure command
@@ -53,13 +57,11 @@ func (c *Configure) Run(args []string) int {
 		sha256 := sha256.New()
 		sha256.Write([]byte(os.Getenv("ODIN_SECRET_ACCESS_KEY")))
 		hashedResult := sha256.Sum(nil)
-		config.Keys.SecretAccessKey := hex.EncodeToString(hashedResult)
-		c = os.Getenv("ODIN_SECRET_ACCESS_KEY")
+		config.Keys.SecretAccessKey = hex.EncodeToString(hashedResult)
 	} else {
 		c.Logger.Error("Environment variable ODIN_SECRET_ACCESS_KEY is not set. Please set your secret access key in ODIN_SECRET_ACCESS_KEY environment variable")
 		return 1
 	}
-
 
 	// generate yaml
 	configYaml, err := yaml.Marshal(config)
@@ -72,6 +74,12 @@ func (c *Configure) Run(args []string) int {
 	err = file.Write(configPath, string(configYaml), 0755)
 	if err != nil {
 		c.Logger.Error("Unable to write configuration." + err.Error())
+		return 1
+	}
+
+	_, err = authClient.Authenticate(config.Keys.AccessKey, config.Keys.SecretAccessKey)
+	if err != nil {
+		c.Logger.Error("Configuration failed. " + err.Error())
 		return 1
 	}
 
