@@ -1,0 +1,19 @@
+syntax = "proto3";
+package dream11.od.auth.v1;
+
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/dream11/odin/proto/gen/go/dream11/od/auth/v1";
+
+service AuthService {
+  rpc GetUserToken(GetUserTokenRequest) returns (GetUserTokenResponse) {}
+}
+
+message GetUserTokenRequest {
+  string client_id = 1;
+  string client_secret_hash = 2;
+}
+
+message GetUserTokenResponse {
+  string token = 1;
+}

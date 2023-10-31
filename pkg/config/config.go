@@ -10,7 +10,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-var once sync.Once
+var onceGet sync.Once
+var onceSet sync.Once
 var appConfig *configuration.Configuration
 var err error
 
@@ -38,13 +39,35 @@ func readConfig() (*configuration.Configuration, error) {
 	return &configuration, nil
 }
 
+func writeConfig(config *configuration.Configuration) error {
+	viper.SetConfigName("config")
+	viper.SetConfigType("toml")
+	viper.AddConfigPath("$HOME/.odin")
+	viper.SetEnvPrefix("ODIN")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(`.`, `_`))
+	viper.AutomaticEnv()
+	profile := viper.GetString("profile")
+	viper.Set(profile, config)
+	if err := viper.WriteConfig(); err!= nil {
+		return err
+	}
+	return nil
+}
+
 // GetConfig returns the reference of viper config
 func GetConfig() *configuration.Configuration {
-	once.Do(func() {
+	onceGet.Do(func() {
 		appConfig, err = readConfig()
 	})
 	if err != nil {
 		log.Fatal("Error while reading config ", err)
 	}
 	return appConfig
+}
+
+func SetConfig(config *configuration.Configuration) error {
+	onceSet.Do(func() {
+		err = writeConfig(config)
+	})
+	return err
 }
