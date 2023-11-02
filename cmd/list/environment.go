@@ -100,3 +100,4 @@ func writeAsJSON(response *environment.ListEnvironmentResponse) {
 	output, _ := json.MarshalIndent(environments, "", "  ")
 	fmt.Print(string(output))
 }
+

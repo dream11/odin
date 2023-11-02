@@ -20,6 +20,7 @@ var odinAccessKey string
 var odinSecretAccessKey string
 var odinBackendAddress string
 var odinInsecure bool
+
 const DEFAULT_BACKEND_ADDR = "odin-backend.d11dev.com:443"
 
 var configureClient = service.Configure{}
@@ -52,6 +53,7 @@ func execute(cmd *cobra.Command) {
 		log.Fatal("Error checking the config file:", err)
 	}
 	config := viperConfig.GetConfig()
+	profile := viper.GetString("profile")
 
 	if odinBackendAddress != "" {
 		config.BackendAddr = odinBackendAddress
@@ -82,20 +84,23 @@ func execute(cmd *cobra.Command) {
 	sha256 := sha256.New()
 	sha256.Write([]byte(config.Keys.SecretAccessKey))
 	hashedResult := sha256.Sum(nil)
+	viper.Set(profile, config)
+	if err := viper.WriteConfig(); err != nil {
+		log.Fatal("Unable to write configuration: ", err)
+	}
 
 	ctx := cmd.Context()
 	response, err := configureClient.GetUserToken(&ctx, &auth.GetUserTokenRequest{
-		ClientId: string(config.Keys.AccessKey),
+		ClientId:         string(config.Keys.AccessKey),
 		ClientSecretHash: hex.EncodeToString(hashedResult),
 	})
 	if err != nil {
 		log.Fatal("Failed to get token ", err)
 	}
-	config.AccessToken = response.GetToken()
+	config.AccessToken = response.Token
 
-	profile := viper.GetString("profile")
 	viper.Set(profile, config)
-	if err := viperConfig.SetConfig(); err != nil {
+	if err := viper.WriteConfig(); err != nil {
 		log.Fatal("Unable to write configuration: ", err)
 	}
 
