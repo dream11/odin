@@ -39,15 +39,13 @@ func readConfig() (*configuration.Configuration, error) {
 	return &configuration, nil
 }
 
-func writeConfig(config *configuration.Configuration) error {
+func writeConfig() error {
 	viper.SetConfigName("config")
 	viper.SetConfigType("toml")
 	viper.AddConfigPath("$HOME/.odin")
 	viper.SetEnvPrefix("ODIN")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(`.`, `_`))
 	viper.AutomaticEnv()
-	profile := viper.GetString("profile")
-	viper.Set(profile, config)
 	if err := viper.WriteConfig(); err!= nil {
 		return err
 	}
@@ -65,9 +63,9 @@ func GetConfig() *configuration.Configuration {
 	return appConfig
 }
 
-func SetConfig(config *configuration.Configuration) error {
+func SetConfig() error {
 	onceSet.Do(func() {
-		err = writeConfig(config)
+		err = writeConfig()
 	})
 	return err
 }

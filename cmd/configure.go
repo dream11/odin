@@ -13,6 +13,7 @@ import (
 	auth "github.com/dream11/odin/proto/gen/go/dream11/od/auth/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var odinAccessKey string
@@ -81,23 +82,22 @@ func execute(cmd *cobra.Command) {
 	sha256 := sha256.New()
 	sha256.Write([]byte(config.Keys.SecretAccessKey))
 	hashedResult := sha256.Sum(nil)
-	config.Keys.SecretAccessKey = hex.EncodeToString(hashedResult)
 
 	ctx := cmd.Context()
 	response, err := configureClient.GetUserToken(&ctx, &auth.GetUserTokenRequest{
 		ClientId: string(config.Keys.AccessKey),
-		ClientSecretHash: string(config.Keys.SecretAccessKey),
+		ClientSecretHash: hex.EncodeToString(hashedResult),
 	})
 	if err != nil {
 		log.Fatal("Failed to get token ", err)
 	}
 	config.AccessToken = response.GetToken()
 
-	if err := viperConfig.SetConfig(config); err != nil {
+	profile := viper.GetString("profile")
+	viper.Set(profile, config)
+	if err := viperConfig.SetConfig(); err != nil {
 		log.Fatal("Unable to write configuration: ", err)
 	}
 
 	fmt.Println("Configured!")
 }
-
-
