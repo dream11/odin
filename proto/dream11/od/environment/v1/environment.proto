@@ -11,6 +11,7 @@ service EnvironmentService {
   rpc DescribeEnvironment(DescribeEnvironmentRequest) returns (DescribeEnvironmentResponse) {}
   rpc UpdateEnvironment(UpdateEnvironmentRequest) returns (UpdateEnvironmentResponse) {}
   rpc CreateEnvironment(CreateEnvironmentRequest) returns (stream CreateEnvironmentResponse) {}
+  rpc DeleteEnvironment(DeleteEnvironmentRequest) returns (stream DeleteEnvironmentResponse) {}
 }
 
 message ListEnvironmentRequest {
@@ -44,5 +45,13 @@ message CreateEnvironmentRequest {
 }
 
 message CreateEnvironmentResponse {
+  string message = 1;
+}
+
+message DeleteEnvironmentRequest {
+  string env_name = 1;
+}
+
+message DeleteEnvironmentResponse {
   string message = 1;
 }
