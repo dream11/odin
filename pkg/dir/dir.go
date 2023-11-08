@@ -60,3 +60,31 @@ func Exists(path string) (bool, error) {
 
 	return false, err
 }
+
+func CreateDirIfNotExist(path string) (error) {
+	wExists, err := Exists(path)
+	if err != nil {
+		return err
+	}
+	if wExists {
+		return nil
+	}
+	err = Create(path, 0755)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func CreateFileIfNotExist(path string) (error) {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		file, err := os.Create(path)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+	} else if err != nil {
+		return err
+	}
+	return nil
+}
