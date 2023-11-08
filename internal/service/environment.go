@@ -23,3 +23,20 @@ func (e *Environment) ListEnvironments(ctx *context.Context, request *environmen
 
 	return response, nil
 }
+
+// DeleteEnvironment : Delete environment
+func (e *Environment) DeleteEnvironment(ctx *context.Context, request *environment.DeleteEnvironmentRequest) (*environment.DeleteEnvironmentResponse, error) {
+	conn, requestCtx, err := grpcClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	client := environment.NewEnvironmentServiceClient(conn)
+	response, err := client.DeleteEnvironment(*requestCtx, request)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}

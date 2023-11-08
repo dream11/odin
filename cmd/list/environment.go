@@ -3,10 +3,10 @@ package list
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dream11/odin/pkg/constant"
 	"strconv"
 
 	"github.com/dream11/odin/internal/service"
+	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/table"
 	environment "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
 	log "github.com/sirupsen/logrus"
@@ -100,4 +100,3 @@ func writeAsJSON(response *environment.ListEnvironmentResponse) {
 	output, _ := json.MarshalIndent(environments, "", "  ")
 	fmt.Print(string(output))
 }
-
