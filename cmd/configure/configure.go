@@ -7,16 +7,14 @@ import (
 	"os"
 	"path"
 
-	"github.com/dream11/odin/api/configuration"
 	"github.com/dream11/odin/app"
 	"github.com/dream11/odin/cmd"
 	"github.com/dream11/odin/internal/service"
-	viperConfig "github.com/dream11/odin/pkg/config"
+	appConfig "github.com/dream11/odin/pkg/config"
 	"github.com/dream11/odin/pkg/dir"
 	auth "github.com/dream11/odin/proto/gen/go/dream11/od/auth/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var odinAccessKey string
@@ -46,7 +44,31 @@ func init() {
 }
 
 func execute(cmd *cobra.Command) {
-	dirPath:=path.Join(os.Getenv("HOME"), "."+app.App.Name)
+	createConfigFileIfNotExist()
+
+	config := appConfig.GetConfig()
+
+	config.BackendAddress = getConfigKey("backend-address", odinBackendAddress, "ODIN_BACKEND_ADDRESS", config.BackendAddress, defaultBackendAddress)
+	config.Insecure = odinInsecure
+	config.Keys.AccessKey = getConfigKey("access-key", odinAccessKey, "ODIN_ACCESS_KEY", config.Keys.AccessKey, "")
+	config.Keys.SecretAccessKey = getConfigKey("secret-access-key", odinSecretAccessKey, "ODIN_SECRET_ACCESS_KEY", config.Keys.SecretAccessKey, "")
+
+	ctx := cmd.Context()
+	response, err := configureClient.GetUserToken(&ctx, &auth.GetUserTokenRequest{
+		ClientId:         string(config.Keys.AccessKey),
+		ClientSecretHash: hashKey(config.Keys.SecretAccessKey),
+	})
+	if err != nil {
+		log.Fatal("Failed to get token ", err)
+	}
+
+	config.AccessToken = response.Token
+	appConfig.WriteConfig(config)
+	fmt.Println("Configured!")
+}
+
+func createConfigFileIfNotExist() {
+	dirPath := path.Join(os.Getenv("HOME"), "." + app.App.Name)
 	if err := dir.CreateDirIfNotExist(dirPath); err != nil {
 		log.Fatalf("Error creating the .%s folder: %v", app.App.Name, err)
 	}
@@ -54,31 +76,6 @@ func execute(cmd *cobra.Command) {
 	if err := dir.CreateFileIfNotExist(configPath); err != nil {
 		log.Fatal("Error creating the config file")
 	}
-
-	config := viperConfig.GetConfig()
-	profile := viper.GetString("profile")
-
-	config.BackendAddress = getConfigKey("backend-address", odinBackendAddress, "ODIN_BACKEND_ADDRESS", config.BackendAddress, defaultBackendAddress)
-	config.Insecure = odinInsecure
-	config.Keys.AccessKey = getConfigKey("access-key", odinAccessKey, "ODIN_ACCESS_KEY", config.Keys.AccessKey, "")
-	config.Keys.SecretAccessKey = getConfigKey("secret-access-key", odinSecretAccessKey, "ODIN_SECRET_ACCESS_KEY", config.Keys.SecretAccessKey, "")
-	setConfig(profile, config)
-
-	hash := sha256.New()
-	hash.Write([]byte(config.Keys.SecretAccessKey))
-	hashedResult := hash.Sum(nil)
-	ctx := cmd.Context()
-	response, err := configureClient.GetUserToken(&ctx, &auth.GetUserTokenRequest{
-		ClientId:         string(config.Keys.AccessKey),
-		ClientSecretHash: hex.EncodeToString(hashedResult),
-	})
-	if err != nil {
-		log.Fatal("Failed to get token ", err)
-	}
-
-	config.AccessToken = response.Token
-	setConfig(profile, config)
-	fmt.Println("Configured!")
 }
 
 func getConfigKey(flagKey string, flagValue string, envVariableName string, configValue string, defaultValue string) (string) {
@@ -95,9 +92,9 @@ func getConfigKey(flagKey string, flagValue string, envVariableName string, conf
 	return ""
 }
 
-func setConfig(profile string, config *configuration.Configuration) {
-	viper.Set(profile, config)
-	if err := viper.WriteConfig(); err != nil {
-		log.Fatal("Unable to write configuration: ", err)
-	}
+func hashKey(key string) (string) {
+	hash := sha256.New()
+	hash.Write([]byte(key))
+	hashedResult := hash.Sum(nil)
+	return hex.EncodeToString(hashedResult)
 }
