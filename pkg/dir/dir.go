@@ -62,7 +62,7 @@ func Exists(path string) (bool, error) {
 }
 
 // CreateDirIfNotExist : create directory if it doesn't exist
-func CreateDirIfNotExist(path string) (error) {
+func CreateDirIfNotExist(path string) error {
 	dirExists, err := Exists(path)
 	if err != nil {
 		return err
@@ -77,7 +77,7 @@ func CreateDirIfNotExist(path string) (error) {
 }
 
 // CreateFileIfNotExist : create file if it doesn't exist
-func CreateFileIfNotExist(path string) (error) {
+func CreateFileIfNotExist(path string) error {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		file, err := os.Create(path)
 		if err != nil {
