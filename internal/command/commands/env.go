@@ -24,6 +24,13 @@ type Env command
 
 const ENV_NAME_KEY = "EnvName"
 
+func splitProviderAccount(providerAccount string) []string {
+	if providerAccount == "" {
+		return nil // Return nil when providerAccount is empty
+	}
+	return strings.Split(providerAccount, ",")
+}
+
 // Run : implements the actual functionality of the command
 func (e *Env) Run(args []string) int {
 	// Define flag set
@@ -62,7 +69,7 @@ func (e *Env) Run(args []string) int {
 			}
 			envConfig := environment.Env{
 				EnvType: *env,
-				Account: *providerAccount,
+				Account: splitProviderAccount(*providerAccount),
 				Name:    *name,
 			}
 
