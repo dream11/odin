@@ -26,7 +26,7 @@ const ENV_NAME_KEY = "EnvName"
 
 func splitProviderAccount(providerAccount string) []string {
 	if providerAccount == "" {
-		return nil // Return nil when providerAccount is empty
+		return nil
 	}
 	return strings.Split(providerAccount, ",")
 }
