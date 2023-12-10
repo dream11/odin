@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/dream11/odin/api/configuration"
+	"github.com/dream11/odin/app"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -18,7 +19,7 @@ func readConfig() (*configuration.Configuration, error) {
 	configuration := configuration.Configuration{}
 	viper.SetConfigName("config")
 	viper.SetConfigType("toml")
-	viper.AddConfigPath("$HOME/.odin")
+	viper.AddConfigPath("$HOME/." + app.App.Name)
 	viper.SetEnvPrefix("ODIN")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(`.`, `_`))
 	viper.AutomaticEnv()
@@ -47,4 +48,13 @@ func GetConfig() *configuration.Configuration {
 		log.Fatal("Error while reading config ", err)
 	}
 	return appConfig
+}
+
+// WriteConfig writes the given config to the config file
+func WriteConfig(config *configuration.Configuration) {
+	profile := viper.GetString("profile")
+	viper.Set(profile, config)
+	if err := viper.WriteConfig(); err != nil {
+		log.Fatal("Unable to write configuration: ", err)
+	}
 }
