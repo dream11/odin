@@ -1,0 +1,21 @@
+syntax = "proto3";
+package dream11.od.service.v1;
+
+import "dream11/od/dto/v1/service.proto";
+
+option go_package = "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1";
+
+service ServiceService {
+  rpc DescribeService(DescribeServiceRequest) returns (DescribeServiceResponse) {}
+}
+
+message DescribeServiceRequest {
+  string service_name = 1;
+  string version = 2;
+  map<string, string> labels = 3;
+  map<string, string> params = 4;
+}
+
+message DescribeServiceResponse {
+  dream11.od.dto.v1.Service service = 1;
+}
