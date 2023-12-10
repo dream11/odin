@@ -2,16 +2,15 @@ package configuration
 
 // SecretKeys interface
 type SecretKeys struct {
-	AccessKey       string `mapstructure:"access_key,omitempty"`
-	SecretAccessKey string `mapstructure:"secret_access_key,omitempty"`
+	AccessKey       string `toml:"access_key,omitempty" mapstructure:"access_key,omitempty"`
+	SecretAccessKey string `toml:"secret_access_key,omitempty" mapstructure:"secret_access_key,omitempty"`
 }
 
 // Configuration interface
 type Configuration struct {
-	BackendAddr  string `mapstructure:"backend_addr,omitempty"`
+	BackendAddress  string `toml:"backend_address,omitempty" mapstructure:"backend_addr,omitempty"`
 	Keys         SecretKeys
-	AccessToken  string `mapstructure:"access_token,omitempty"`
-	RefreshToken string `mapstructure:"refresh_token,omitempty"`
-	EnvName      string `mapstructure:"envName,omitempty"`
-	Insecure     bool   `mapstructure:"insecure,omitempty"`
+	AccessToken  string `toml:"access_token,omitempty" mapstructure:"access_token,omitempty"`
+	EnvName      string `toml:"envName,omitempty" mapstructure:"envName,omitempty"`
+	Insecure     bool   `toml:"insecure,omitempty" mapstructure:"insecure,omitempty"`
 }

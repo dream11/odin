@@ -6,6 +6,7 @@ package main
 import (
 	"github.com/dream11/odin/cmd"
 	_ "github.com/dream11/odin/cmd/list"
+	_ "github.com/dream11/odin/cmd/configure"
 	_ "github.com/dream11/odin/internal/ui"
 )
 
