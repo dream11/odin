@@ -9,6 +9,7 @@ import (
 	service "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/iancoleman/orderedmap"
 )
 
 var serviceName string
@@ -41,40 +42,77 @@ func init() {
 }
 
 func execute(cmd *cobra.Command) {
-	err := json.Unmarshal([]byte(labelsJSON), &labels)
-	if err != nil {
-		log.Fatal("Error parsing JSON, the the key and values should be strings: ", err)
+
+	validateFlags()
+
+	params := map[string]string{
+		"verbose": strconv.FormatBool(verbose),
 	}
 
+	if component != "" {
+		params["component"] = component
+	}
+	
 	ctx := cmd.Context()
 	response, err := serviceClient.DescribeService(&ctx, &service.DescribeServiceRequest{
 		ServiceName: serviceName,
 		Version: serviceVersion,
 		Labels: labels,
-		Params: map[string]string{
-			"component":     component,
-			"verbose":       strconv.FormatBool(verbose)},
+		Params: params,
 	})
 
 	if err != nil {
-		log.Fatal("Failed to describe service ", err)
+		log.Fatal("Failed to describe service: ", err)
 	}
 
 	writeAsJSON(response)
 }
 
-func writeAsJSON(response *service.DescribeServiceResponse) {
-	serviceData := map[string]interface{}{
-		"name": response.Service.Name,
-		"version": response.Service.Version,
-		"defintion": response.Service.ServiceDefinition,
-		"provision": response.Service.ProvisioningConfigFiles,
-		"labels": response.Service.Labels,
-		"versions": response.Service.Versions,
+func validateFlags() {
+
+	if serviceName == "" {
+		log.Fatal("Please pass the --name flag")
 	}
+
+	if serviceVersion == "" && labelsJSON == "" {
+		log.Fatal("Please pass either --version flag or --labels flag")
+	}
+
+	if serviceVersion != "" && labelsJSON != "" {
+		log.Fatal("Please pass either --version flag or --labels flag but not both")
+	}
+
+	if labelsJSON != "" {
+		err := json.Unmarshal([]byte(labelsJSON), &labels)
+		if err != nil {
+			log.Fatal("Error parsing JSON, the the key and values should be strings: ", err)
+		}
+	}
+}
+
+func writeAsJSON(response *service.DescribeServiceResponse) {
+	serviceData := orderedmap.New()
+	serviceData.Set("name", response.Service.Name)
+
+	if response.Service.Version != nil && *response.Service.Version != "" {
+		serviceData.Set("version", *response.Service.Version)
+	}
+	if response.Service.Versions != nil && len(response.Service.Versions) > 0 {
+		serviceData.Set("versions", response.Service.Versions)
+	}
+	if response.Service.Labels != nil {
+		serviceData.Set("labels", response.Service.Labels)
+	}
+	if response.Service.ServiceDefinition != nil && len(response.Service.ServiceDefinition.GetFields()) > 0 {
+		serviceData.Set("definition", response.Service.ServiceDefinition)
+	}
+	if response.Service.ProvisioningConfigFiles != nil && len(response.Service.ProvisioningConfigFiles) > 0 {
+		serviceData.Set("provision", response.Service.ProvisioningConfigFiles)
+	}
+
 	output, err := json.MarshalIndent(serviceData, "", "  ")
 	if err != nil {
 		log.Fatal("Error marshaling JSON:", err)
 	}
-	fmt.Print(string(output))
+	fmt.Println(string(output))
 }

@@ -9,7 +9,7 @@ import (
 // Service performs operation on service like list, describe
 type Service struct{}
 
-// ListEnvironments List environments
+// DescribeSerice Describe service
 func (e *Service) DescribeService(ctx *context.Context, request *service.DescribeServiceRequest) (*service.DescribeServiceResponse, error) {
 	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {
