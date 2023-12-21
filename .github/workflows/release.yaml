@@ -89,7 +89,7 @@ jobs:
           darwin-arm64-url: https://github.com/dream11/odin/releases/download/${{ steps.commit.outputs.version }}/odin_darwin_arm64.tar.gz
           darwin-arm64-sha: ${{ steps.sha256.outputs.darwin_arm64 }}
           linux-amd64-url: https://github.com/dream11/odin/releases/download/${{ steps.commit.outputs.version }}/odin_linux_amd64.tar.gz
-          linux-amd64-url: ${{ steps.sha256.outputs.linux_amd64 }}
+          linux-amd64-sha: ${{ steps.sha256.outputs.linux_amd64 }}
           merge-pr: false
 
       - name: Comment homebrew-tools generated PR
