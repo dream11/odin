@@ -1,0 +1,53 @@
+syntax = "proto3";
+package dream11.od.service.v1;
+
+option go_package = "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1";
+
+
+service ServiceService {
+  rpc DeployService(DeployServiceRequest) returns (stream DeployServiceResponse) {}
+}
+
+message DeployServiceRequest {
+  string env_name = 1;
+  string service_definition = 2;
+  string provisioning_config = 3;
+}
+
+message DeployServiceResponse {
+  enum TYPE{
+    INFO = 0;
+    STATUS = 1;
+  }
+  TYPE type = 2;
+  Body body = 3;
+}
+
+message Body{
+  oneof response_body{
+    StatusBody status_body = 1;
+    InfoBody info_body = 2;
+  }
+}
+
+message StatusBody {
+  int64 id = 1;
+  string status = 2;
+  string action = 3;
+  repeated ComponentStatus component_status = 4;
+}
+
+message ComponentStatus {
+  int64 component_id = 1;
+  string status = 2;
+  string action = 3;
+  string response = 4;
+}
+
+message InfoBody {
+  int64 id = 1;
+  string status = 2;
+  string action = 3;
+  string info_message = 4;
+}
+
