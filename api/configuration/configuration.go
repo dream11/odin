@@ -8,9 +8,9 @@ type SecretKeys struct {
 
 // Configuration interface
 type Configuration struct {
-	BackendAddress  string `toml:"backend_address,omitempty" mapstructure:"backend_addr,omitempty"`
-	Keys         SecretKeys
-	AccessToken  string `toml:"access_token,omitempty" mapstructure:"access_token,omitempty"`
-	EnvName      string `toml:"envName,omitempty" mapstructure:"envName,omitempty"`
-	Insecure     bool   `toml:"insecure,omitempty" mapstructure:"insecure,omitempty"`
+	BackendAddress string `toml:"backend_address,omitempty" mapstructure:"backend_address,omitempty"`
+	Keys           SecretKeys
+	AccessToken    string `toml:"access_token,omitempty" mapstructure:"access_token,omitempty"`
+	EnvName        string `toml:"envName,omitempty" mapstructure:"envName,omitempty"`
+	Insecure       bool   `toml:"insecure,omitempty" mapstructure:"insecure,omitempty"`
 }

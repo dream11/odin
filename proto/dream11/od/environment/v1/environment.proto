@@ -39,7 +39,7 @@ message UpdateEnvironmentResponse {}
 
 message CreateEnvironmentRequest {
   string env_name = 1;
-  string account = 2;
+  repeated string accounts = 2;
   string provisioning_type = 3;
 }
 

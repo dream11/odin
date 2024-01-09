@@ -68,7 +68,7 @@ func execute(cmd *cobra.Command) {
 }
 
 func createConfigFileIfNotExist() {
-	dirPath := path.Join(os.Getenv("HOME"), "." + app.App.Name)
+	dirPath := path.Join(os.Getenv("HOME"), "."+app.App.Name)
 	if err := dir.CreateDirIfNotExist(dirPath); err != nil {
 		log.Fatalf("Error creating the .%s folder: %v", app.App.Name, err)
 	}
@@ -78,7 +78,7 @@ func createConfigFileIfNotExist() {
 	}
 }
 
-func getConfigKey(flagKey string, flagValue string, envVariableName string, configValue string, defaultValue string) (string) {
+func getConfigKey(flagKey string, flagValue string, envVariableName string, configValue string, defaultValue string) string {
 	if flagValue != "" {
 		return flagValue
 	} else if os.Getenv(envVariableName) != "" {
@@ -87,12 +87,12 @@ func getConfigKey(flagKey string, flagValue string, envVariableName string, conf
 		return configValue
 	} else if defaultValue != "" {
 		return defaultValue
-	} 
+	}
 	log.Fatalf("Please pass %s flag nor set environment variable %s to configure", flagKey, envVariableName)
 	return ""
 }
 
-func hashKey(key string) (string) {
+func hashKey(key string) string {
 	hash := sha256.New()
 	hash.Write([]byte(key))
 	hashedResult := hash.Sum(nil)

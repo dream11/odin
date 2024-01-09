@@ -11,7 +11,7 @@ message Environment {
   optional int64 id = 1;
   optional google.protobuf.Timestamp created_at = 2;
   optional google.protobuf.Timestamp updated_at = 3;
-  optional int64 created_by = 4;
+  optional string created_by = 4;
   optional int32 version = 5;
   optional int64 org_id = 6;
   optional string provider_account_name = 7;
@@ -20,4 +20,11 @@ message Environment {
   optional string status = 10;
   optional google.protobuf.Timestamp auto_deletion_time = 11;
   repeated dream11.od.dto.v1.ServiceTask services = 12;
+  repeated AccountInformation account_information = 13;
+}
+
+message AccountInformation {
+  string provider_account_name = 1;
+  google.protobuf.Struct service_accounts_snapshot = 2;
+  string status = 3;
 }
