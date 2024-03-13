@@ -192,7 +192,7 @@ func (s *ServiceSet) Help() string {
 			{Flag: "--name", Description: "name of service-set to deploy"},
 			{Flag: "--env", Description: "name of environment to deploy service-set in"},
 			{Flag: "--force", Description: "forcefully deploy service-set into the Env"},
-			{Flag: "--d11", Description: "config-store-namespace=config store branch/tag to use"},
+			{Flag: "--d11-config-store-namespace", Description: "config store branch/tag to use"},
 			{Flag: "--file", Description: "json file to read temporary service-set definition "},
 		})
 	}

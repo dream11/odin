@@ -43,9 +43,11 @@ func (e *Env) Run(args []string) int {
 	component := flagSet.String("component", "", "component name to filter out describe environment")
 	providerAccount := flagSet.String("account", "", "account name to provision the environment in")
 	id := flagSet.Int("id", 0, "unique id of a changelog of an env")
-	filePath := flagSet.String("file", "", "file to update env")
+	filePath := flagSet.String("file", "", "file to update env or provide options for environment operations")
 	data := flagSet.String("data", "", "data for updating the env")
 	displayAll := flagSet.Bool("all", false, "whether to display all environments")
+	operation := flagSet.String("operation", "", "name of the operation to performed on the environment")
+	options := flagSet.String("options", "", "options for environment operations")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -380,6 +382,98 @@ func (e *Env) Run(args []string) int {
 		return 0
 	}
 
+	if e.Operate {
+		if *name == "" {
+			*name = utils.FetchKey(ENV_NAME_KEY)
+		}
+
+		isNamePresent := len(*name) > 0
+		isOptionsPresent := len(*options) > 0
+		isFilePresent := len(*filePath) > 0
+		isOperationPresnt := len(*operation) > 0
+
+		if !isNamePresent {
+			e.Logger.Error("--name cannot be blank")
+			return 1
+		}
+		if !isOperationPresnt {
+			e.Logger.Error("--operation cannot be blank")
+			return 1
+		}
+		if isOptionsPresent && isFilePresent {
+			e.Logger.Error("You can provide either --options or --file but not both")
+			return 1
+		}
+
+		var optionsData map[string]interface{}
+
+		if isFilePresent {
+			parsedConfig, err := parseFile(*filePath)
+			if err != nil {
+				e.Logger.Error("Error while parsing service file " + *filePath + " : " + err.Error())
+				return 1
+			}
+			optionsData = parsedConfig.(map[string]interface{})
+		} else if isOptionsPresent {
+			err = json.Unmarshal([]byte(*options), &optionsData)
+			if err != nil {
+				e.Logger.Error("Unable to parse JSON data " + err.Error())
+				return 1
+			}
+		}
+
+		data := environment.OperationRequest{
+			Operations: []environment.Operation{
+				{
+					Name: *operation,
+					Data: optionsData,
+				},
+			},
+		}
+
+		e.Logger.Info("Validating the operation: " + *operation + " on the environment: " + *name)
+
+		validateOperateResponse, err := envClient.ValidateOperation(*name, data)
+		if err != nil {
+			e.Logger.Error(err.Error())
+			return 1
+		}
+
+		for _, operation := range validateOperateResponse.Response.Operations {
+			if operation.IsFeedbackRequired {
+				consentMessage := fmt.Sprintf("\n%s", operation.Message)
+				allowedInputs := map[string]struct{}{"Y": {}, "n": {}}
+				val, err := e.Input.AskWithConstraints(consentMessage, allowedInputs)
+				if err != nil {
+					e.Logger.Error(err.Error())
+					return 1
+				}
+				if val != "Y" {
+					e.Logger.Info("Aborting the operation")
+					return 1
+				}
+			} else {
+				e.Logger.Info("Validations succeeded. Proceeding...")
+			}
+		}
+
+		operateResponse, err := envClient.OperateService(*name, data)
+		if err != nil {
+			e.Logger.Error(err.Error())
+			return 1
+		}
+
+		errored := false
+		for _, operation := range operateResponse.Response.Operations {
+			e.Logger.Output(operation.Message)
+		}
+
+		if errored {
+			return 1
+		}
+		return 0
+	}
+
 	e.Logger.Error("Not a valid command")
 	return 127
 }
@@ -464,6 +558,15 @@ func (e *Env) Help() string {
 		})
 	}
 
+	if e.Operate {
+		return commandHelper("operate", "environment", "", []Options{
+			{Flag: "--name", Description: "name of environment"},
+			{Flag: "--operation", Description: "name of the operation to be performed on the environment"},
+			{Flag: "--options", Description: "options for the operation in JSON format"},
+			{Flag: "--file", Description: "path of the file which contains the options for the operation in JSON format"},
+		})
+	}
+
 	return defaultHelper()
 }
 
@@ -496,9 +599,15 @@ func (e *Env) Synopsis() string {
 	if e.Set {
 		return "Set a default env"
 	}
+
 	if e.Update {
 		return "update an env"
 	}
+
+	if e.Operate {
+		return "operate an environment"
+	}
+
 	return defaultHelper()
 }
 

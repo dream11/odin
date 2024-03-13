@@ -19,6 +19,7 @@ func (o *Operation) Run(args []string) int {
 	flagSet := flag.NewFlagSet("flagSet", flag.ContinueOnError)
 	name := flagSet.String("name", "", "name of the operation")
 	componentType := flagSet.String("component-type", "", "component-type on which operations will be performed")
+	entity := flagSet.String("entity", "", "name of the entity [env|service|component]")
 
 	err := flagSet.Parse(args)
 	if err != nil {
@@ -26,16 +27,30 @@ func (o *Operation) Run(args []string) int {
 		return 1
 	}
 
+	isComponentOperation := false
+	isEnvOperation := false
+	isServiceOperation := false
+
 	if o.List {
-		isComponentTypePresent := len(*componentType) > 0
+		if o.parseFlags(entity, componentType, &isEnvOperation, &isComponentOperation, &isServiceOperation) == 1 {
+			return 1
+		}
 
 		var operationList []operationapi.Operation
 		var err error
 
-		if isComponentTypePresent {
+		infoMsg := "Listing all " + *entity + " operations"
+		outputMsg := "\nCommand to describe " + *entity + " operations"
+		descibeCommandMsg := "odin describe operation --name <operationName> --entity " + *entity
+
+		if isComponentOperation {
 			operationList, err = operationClient.ListComponentTypeOperations(*componentType)
-		} else {
+			infoMsg = "Listing all component operations on component " + *componentType
+			descibeCommandMsg = "odin describe operation --name <operationName> --entity component --component-type <componentTypeName>"
+		} else if isServiceOperation {
 			operationList, err = operationClient.ListServiceOperations()
+		} else if isEnvOperation {
+			operationList, err = operationClient.ListEnvOperations()
 		}
 
 		if err != nil {
@@ -43,11 +58,7 @@ func (o *Operation) Run(args []string) int {
 			return 1
 		}
 
-		if isComponentTypePresent {
-			o.Logger.Info("Listing all operation(s)" + " on component " + *componentType)
-		} else {
-			o.Logger.Info("Listing all service operations")
-		}
+		o.Logger.Info(infoMsg)
 
 		tableHeaders := []string{"Name", "Descrption"}
 		var tableData [][]interface{}
@@ -60,33 +71,37 @@ func (o *Operation) Run(args []string) int {
 		}
 		table.Write(tableHeaders, tableData)
 
-		if isComponentTypePresent {
-			o.Logger.Output("\nCommand to describe component operation(s)")
-			o.Logger.ItalicEmphasize("odin describe operation --name <operationName> --component-type <componentTypeName>")
-		} else {
-			o.Logger.Output("\nCommand to describe service operations")
-			o.Logger.ItalicEmphasize("odin describe operation --name <operationName>")
-		}
+		o.Logger.Output(outputMsg)
+		o.Logger.ItalicEmphasize(descibeCommandMsg)
 
 		return 0
 	}
 
 	if o.Describe {
 		isNamePresent := len(*name) > 0
-		isComponentTypePresent := len(*componentType) > 0
-
 		if !isNamePresent {
 			o.Logger.Error("--name cannot be blank")
 			return 1
 		}
 
+		if o.parseFlags(entity, componentType, &isEnvOperation, &isComponentOperation, &isServiceOperation) == 1 {
+			return 1
+		}
+
+		infoMsg := "Describing the " + *entity + " operation: " + *name
+		errorMsg := "operation: " + *name + " is not a valid " + *entity + " operation"
+
 		var operationList []operationapi.Operation
 		var err error
 
-		if isComponentTypePresent {
+		if isComponentOperation {
 			operationList, err = operationClient.ListComponentTypeOperations(*componentType)
-		} else {
+			infoMsg = "Describing operation: " + *name + " on component " + *componentType
+			errorMsg = "operation: " + *name + " does not exist for the component: " + *componentType
+		} else if isServiceOperation {
 			operationList, err = operationClient.ListServiceOperations()
+		} else if isEnvOperation {
+			operationList, err = operationClient.ListEnvOperations()
 		}
 
 		if err != nil {
@@ -104,11 +119,7 @@ func (o *Operation) Run(args []string) int {
 		}
 
 		if operationKeys == nil {
-			if isComponentTypePresent {
-				o.Logger.Error(fmt.Sprintf("operation: %s does not exist for the component: %s", *name, *componentType))
-			} else {
-				o.Logger.Error(fmt.Sprintf("operation: %s is not a valid service operation", *name))
-			}
+			o.Logger.Error(errorMsg)
 			return 1
 		}
 
@@ -118,12 +129,7 @@ func (o *Operation) Run(args []string) int {
 			return 1
 		}
 
-		if isComponentTypePresent {
-			o.Logger.Info("Describing operation: " + *name + " on component " + *componentType)
-		} else {
-			o.Logger.Info("Describing the service operation: " + *name)
-		}
-
+		o.Logger.Info(infoMsg)
 		o.Logger.Output(fmt.Sprintf("\n%s", operationKeysJson))
 		return 0
 	}
@@ -131,17 +137,52 @@ func (o *Operation) Run(args []string) int {
 	return 127
 }
 
+func (o *Operation) parseFlags(entity, componentType *string, isEnvOperation, isComponentOperation, isServiceOperation *bool) int {
+	isComponentTypePresent := len(*componentType) > 0
+	isEntityPresent := len(*entity) > 0
+
+	if isEntityPresent {
+		if *entity == "component" {
+			if !isComponentTypePresent {
+				o.Logger.Error("--component-type cannot be blank when --entity is component")
+				return 1
+			}
+			*isComponentOperation = true
+		} else if isComponentTypePresent {
+			o.Logger.Error("--component-type should be used only when --entity is component")
+			return 1
+		} else if *entity == "env" {
+			*isEnvOperation = true
+		} else if *entity == "service" {
+			*isServiceOperation = true
+		} else {
+			o.Logger.Error("Unknown value for --entity. Use one of env|service|component")
+			return 1
+		}
+	} else {
+		if isComponentTypePresent {
+			*isComponentOperation = true
+		} else {
+			*isServiceOperation = true
+		}
+	}
+
+	return 0
+}
+
 // Help : returns an explanatory string
 func (o *Operation) Help() string {
 	if o.List {
 		return commandHelper("list", "operation", "", []Options{
 			{Flag: "--component-type", Description: "component-type on which operations will be performed"},
+			{Flag: "--entity", Description: "name of the entity [env|service|component]"},
 		})
 	}
 	if o.Describe {
 		return commandHelper("describe", "operation", "", []Options{
 			{Flag: "--name", Description: "name of the operation"},
 			{Flag: "--component-type", Description: "component-type on which operations will be performed"},
+			{Flag: "--entity", Description: "name of the entity [env|service|component]"},
 		})
 	}
 	return defaultHelper()
@@ -150,10 +191,10 @@ func (o *Operation) Help() string {
 // Synopsis : returns a brief helper text for the command's verbs
 func (o *Operation) Synopsis() string {
 	if o.List {
-		return "list all operations on service or a component-type"
+		return "list all operations on environment, service or a component-type"
 	}
 	if o.Describe {
-		return "describe a operation on service or a component-type"
+		return "describe a operation on environment, service or a component-type"
 	}
 	return defaultHelper()
 }
