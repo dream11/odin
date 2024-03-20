@@ -25,7 +25,7 @@ func (c *Component) Run(args []string) int {
 	serviceName := flagSet.String("service", "", "name of the service in which the component is deployed")
 	envName := flagSet.String("env", "", "name of the environment in which the service is deployed")
 	operation := flagSet.String("operation", "", "name of the operation to performed on the component")
-	options := flagSet.String("options", "", "options of the operation in JSON format")
+	options := flagSet.String("options", "{}", "options of the operation in JSON format")
 	filePath := flagSet.String("file", "", "file to provide options for component operations")
 
 	err := flagSet.Parse(args)
@@ -40,16 +40,11 @@ func (c *Component) Run(args []string) int {
 		}
 		emptyParameters := emptyParameters(map[string]string{"--name": *name, "--service": *serviceName, "--env": *envName, "--operation": *operation})
 		if len(emptyParameters) == 0 {
-			isOptionsPresent := len(*options) > 0
+			isOptionsPresent := *options != "{}"
 			isFilePresent := len(*filePath) > 0
 
 			if isOptionsPresent && isFilePresent {
 				c.Logger.Error("You can provide either --options or --file but not both")
-				return 1
-			}
-
-			if !isOptionsPresent && !isFilePresent {
-				c.Logger.Error("You should provide either --options or --file")
 				return 1
 			}
 
@@ -62,7 +57,7 @@ func (c *Component) Run(args []string) int {
 					return 1
 				}
 				optionsData = parsedConfig.(map[string]interface{})
-			} else if isOptionsPresent {
+			} else {
 				err = json.Unmarshal([]byte(*options), &optionsData)
 				if err != nil {
 					c.Logger.Error("Unable to parse JSON data " + err.Error())
