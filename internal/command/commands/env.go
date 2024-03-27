@@ -457,19 +457,14 @@ func (e *Env) Run(args []string) int {
 			}
 		}
 
-		operateResponse, err := envClient.OperateService(*name, data)
+		operateResponse, err := envClient.OperateEnv(*name, data)
 		if err != nil {
 			e.Logger.Error(err.Error())
 			return 1
 		}
 
-		errored := false
 		for _, operation := range operateResponse.Response.Operations {
 			e.Logger.Output(operation.Message)
-		}
-
-		if errored {
-			return 1
 		}
 		return 0
 	}
