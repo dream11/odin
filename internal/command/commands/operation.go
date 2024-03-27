@@ -162,8 +162,10 @@ func (o *Operation) parseFlags(entity, componentType *string, isEnvOperation, is
 	} else {
 		if isComponentTypePresent {
 			*isComponentOperation = true
+			*entity = "component"
 		} else {
 			*isServiceOperation = true
+			*entity = "service"
 		}
 	}
 
