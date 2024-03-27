@@ -102,3 +102,39 @@ type Status struct {
 type DetailResponse struct {
 	Response Env `yaml:"resp,omitempty" json:"resp,omitempty"`
 }
+
+type Operation struct {
+	Name string      `yaml:"name,omitempty" json:"name,omitempty"`
+	Data interface{} `yaml:"data,omitempty" json:"data,omitempty"`
+}
+
+type OperationRequest struct {
+	Operations []Operation `yaml:"operations,omitempty" json:"operations,omitempty"`
+}
+
+type OperationConsent struct {
+	Name               string `yaml:"name,omitempty" json:"name,omitempty"`
+	IsFeedbackRequired bool   `yaml:"is_feedback_required,omitempty" json:"is_feedback_required,omitempty"`
+	Message            string `yaml:"message,omitempty" json:"message,omitempty"`
+}
+
+type OperationValidationResponseBody struct {
+	Operations []OperationConsent `yaml:"operations,omitempty" json:"operations,omitempty"`
+}
+
+type OperationValidationResponse struct {
+	Response OperationValidationResponseBody `yaml:"resp,omitempty" json:"resp,omitempty"`
+}
+
+type OperationOutput struct {
+	Name    string `yaml:"name,omitempty" json:"name,omitempty"`
+	Message string `yaml:"message,omitempty" json:"message,omitempty"`
+}
+
+type OperationResponseBody struct {
+	Operations []OperationOutput `yaml:"operations,omitempty" json:"operations,omitempty"`
+}
+
+type OperationResponse struct {
+	Response OperationResponseBody `yaml:"resp,omitempty" json:"resp,omitempty"`
+}
