@@ -180,7 +180,7 @@ func (e *Env) ValidateOperation(envName string, data envResp.OperationRequest) (
 	return validateOperationResponse, err
 }
 
-func (e *Env) OperateService(envName string, data envResp.OperationRequest) (envResp.OperationResponse, error) {
+func (e *Env) OperateEnv(envName string, data envResp.OperationRequest) (envResp.OperationResponse, error) {
 	client := newApiClient()
 
 	response := client.actionWithRetry(path.Join(envEntity, envName)+"/operate/", "PUT", data)
