@@ -404,7 +404,7 @@ func (s *Service) Run(args []string) int {
 			"action":   *operation,
 			"config":   optionsData,
 		}
-		scalingConsent := s.askForScalingConsent(serviceName, envName, dataForScalingConsent)
+		scalingConsent := s.askForScalingConsent(serviceName, dataForScalingConsent)
 		if scalingConsent == 1 {
 			return 1
 		}
@@ -481,7 +481,7 @@ func (s *Service) askForConsent(envName *string) int {
 	return 0
 }
 
-func (s *Service) askForScalingConsent(serviceName *string, envName *string, data map[string]interface{}) int {
+func (s *Service) askForScalingConsent(serviceName *string, data map[string]interface{}) int {
 	componentListResponse, err := serviceClient.ScalingServiceConsent(*serviceName, data)
 	if err != nil {
 		s.Logger.Error(err.Error())
@@ -540,7 +540,7 @@ func (s *Service) deployReleasedService(envName *string, serviceName *string, se
 		"action":          "released_service_deploy",
 		"config":          parsedProvisioningConfig,
 	}
-	scalingConsent := s.askForScalingConsent(serviceName, envName, dataForScalingConsent)
+	scalingConsent := s.askForScalingConsent(serviceName, dataForScalingConsent)
 	if scalingConsent == 1 {
 		return 1
 	}
@@ -712,7 +712,7 @@ func (s *Service) Help() string {
 		return commandHelper("operate", "service", "", []Options{
 			{Flag: "--name", Description: "name of service"},
 			{Flag: "--env", Description: "name of environment"},
-			{Flag: "--operate", Description: "name of the operation to be performed on the service"},
+			{Flag: "--operation", Description: "name of the operation to be performed on the service"},
 			{Flag: "--file", Description: "path of the file which contains the options for the operation in JSON format"},
 			{Flag: "--options", Description: "options for the operation in JSON format"},
 		})

@@ -167,3 +167,27 @@ func (e *Env) EnvTypes() (envResp.EnvTypesResponse, error) {
 
 	return envResponse, err
 }
+
+func (e *Env) ValidateOperation(envName string, data envResp.OperationRequest) (envResp.OperationValidationResponse, error) {
+	client := newApiClient()
+
+	response := client.actionWithRetry(path.Join(envEntity, envName)+"/operate/validate/", "GET", data)
+	response.Process(true)
+
+	var validateOperationResponse envResp.OperationValidationResponse
+	err := json.Unmarshal(response.Body, &validateOperationResponse)
+
+	return validateOperationResponse, err
+}
+
+func (e *Env) OperateEnv(envName string, data envResp.OperationRequest) (envResp.OperationResponse, error) {
+	client := newApiClient()
+
+	response := client.actionWithRetry(path.Join(envEntity, envName)+"/operate/", "PUT", data)
+	response.Process(true)
+
+	var operationResponse envResp.OperationResponse
+	err := json.Unmarshal(response.Body, &operationResponse)
+
+	return operationResponse, err
+}
