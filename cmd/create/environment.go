@@ -1,9 +1,8 @@
 package create
 
 import (
-	"strings"
-
 	"github.com/dream11/odin/internal/service"
+	"github.com/dream11/odin/pkg/util"
 	environmentProto "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -43,18 +42,11 @@ func execute(cmd *cobra.Command) {
 
 	err := environmentClient.CreateEnvironment(&ctx, &environmentProto.CreateEnvironmentRequest{
 		EnvName:          envName,
-		Accounts:         splitProviderAccount(accounts),
+		Accounts:         util.SplitProviderAccount(accounts),
 		ProvisioningType: provisioningType,
 	})
 
 	if err != nil {
 		log.Fatal("Failed to create environment ", err)
 	}
-}
-
-func splitProviderAccount(providerAccounts string) []string {
-	if providerAccounts == "" {
-		return nil
-	}
-	return strings.Split(providerAccounts, ",")
 }
