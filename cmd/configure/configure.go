@@ -39,7 +39,7 @@ func init() {
 	configureCmd.Flags().StringVar(&odinAccessKey, "access-key", "", "odin access key")
 	configureCmd.Flags().StringVar(&odinSecretAccessKey, "secret-access-key", "", "odin secret access key")
 	configureCmd.Flags().StringVar(&odinBackendAddress, "backend-address", "", "odin backend address with port")
-	configureCmd.Flags().BoolVarP(&odinInsecure, "insecure", "I", false, "odin insecure")
+	configureCmd.Flags().BoolVarP(&odinInsecure, "insecure", "I", true, "odin insecure")
 	cmd.RootCmd.AddCommand(configureCmd)
 }
 
