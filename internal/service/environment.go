@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 
@@ -43,14 +44,16 @@ func (e *Environment) CreateEnvironment(ctx *context.Context, request *environme
 
 	log.Info("Creating environment...")
 	spinner := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-	spinner.Color(constant.SpinnerColor, constant.SpinnerStyle)
-
+	err = spinner.Color(constant.SpinnerColor, constant.SpinnerStyle)
+	if err != nil {
+		return err
+	}
 	var message string
 	for {
 		response, err := stream.Recv()
 		spinner.Stop()
 		if err != nil {
-			if err == context.Canceled || err == io.EOF {
+			if errors.Is(err, context.Canceled) || err == io.EOF {
 				break
 			}
 			return err
@@ -81,14 +84,16 @@ func (e *Environment) DeleteEnvironment(ctx *context.Context, request *environme
 
 	log.Info("Deleting environment...")
 	spinner := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-	spinner.Color(constant.SpinnerColor, constant.SpinnerStyle)
-
+	err = spinner.Color(constant.SpinnerColor, constant.SpinnerStyle)
+	if err != nil {
+		return err
+	}
 	var message string
 	for {
 		response, err := stream.Recv()
 		spinner.Stop()
 		if err != nil {
-			if err == context.Canceled || err == io.EOF {
+			if errors.Is(err, context.Canceled) || err == io.EOF {
 				break
 			}
 			return err
