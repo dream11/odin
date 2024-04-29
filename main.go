@@ -9,6 +9,7 @@ import (
 	_ "github.com/dream11/odin/cmd/create"
 	_ "github.com/dream11/odin/cmd/delete"
 	_ "github.com/dream11/odin/cmd/list"
+	_ "github.com/dream11/odin/cmd/undeploy"
 	_ "github.com/dream11/odin/internal/ui"
 )
 
