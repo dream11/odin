@@ -3,8 +3,9 @@ package operate
 import (
 	"encoding/json"
 
+	fileUtil "github.com/dream11/odin/pkg/util"
+
 	"github.com/dream11/odin/internal/service"
-	fileUtil "github.com/dream11/odin/pkg/file"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
