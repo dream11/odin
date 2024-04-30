@@ -43,15 +43,15 @@ func (e *Environment) CreateEnvironment(ctx *context.Context, request *environme
 	}
 
 	log.Info("Creating environment...")
-	spinner := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-	err = spinner.Color(constant.SpinnerColor, constant.SpinnerStyle)
+	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
+	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
 	if err != nil {
 		return err
 	}
 	var message string
 	for {
 		response, err := stream.Recv()
-		spinner.Stop()
+		spinnerInstance.Stop()
 		if err != nil {
 			if errors.Is(err, context.Canceled) || err == io.EOF {
 				break
@@ -60,8 +60,8 @@ func (e *Environment) CreateEnvironment(ctx *context.Context, request *environme
 		}
 		if response != nil {
 			message = response.Message
-			spinner.Prefix = fmt.Sprintf(" %s  ", response.Message)
-			spinner.Start()
+			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", response.Message)
+			spinnerInstance.Start()
 		}
 	}
 	log.Info(message)
@@ -83,15 +83,15 @@ func (e *Environment) DeleteEnvironment(ctx *context.Context, request *environme
 	}
 
 	log.Info("Deleting environment...")
-	spinner := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-	err = spinner.Color(constant.SpinnerColor, constant.SpinnerStyle)
+	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
+	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
 	if err != nil {
 		return err
 	}
 	var message string
 	for {
 		response, err := stream.Recv()
-		spinner.Stop()
+		spinnerInstance.Stop()
 		if err != nil {
 			if errors.Is(err, context.Canceled) || err == io.EOF {
 				break
@@ -100,8 +100,8 @@ func (e *Environment) DeleteEnvironment(ctx *context.Context, request *environme
 		}
 		if response != nil {
 			message = response.Message
-			spinner.Prefix = fmt.Sprintf(" %s  ", response.Message)
-			spinner.Start()
+			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", response.Message)
+			spinnerInstance.Start()
 		}
 	}
 	log.Info(message)
