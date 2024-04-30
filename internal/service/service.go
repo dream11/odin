@@ -28,7 +28,7 @@ func (e *Service) UndeployService(ctx *context.Context, request *service.Undeplo
 		return err
 	}
 
-	log.Info("Deleting environment...")
+	log.Info("Undeploying Service...")
 	spinner := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
 	err = spinner.Color(constant.SpinnerColor, constant.SpinnerStyle)
 	if err != nil {
