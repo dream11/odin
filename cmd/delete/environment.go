@@ -25,6 +25,11 @@ var environmentCmd = &cobra.Command{
 
 func init() {
 	environmentCmd.Flags().StringVar(&name, "name", "", "name of the env")
+	err := environmentCmd.MarkFlagRequired("name")
+	if err != nil {
+		log.Fatal("Error marking 'name' flag as required:", err)
+	}
+	
 	deleteCmd.AddCommand(environmentCmd)
 }
 
