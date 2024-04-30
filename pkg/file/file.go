@@ -23,6 +23,7 @@ func Write(filePath, data string, permission fs.FileMode) error {
 	return err
 }
 
+// FindAndReadAllAllowedFormat : takes in file path and allowed format list and returns data path and error
 func FindAndReadAllAllowedFormat(path string, allowedFormats []string) ([]byte, string, error) {
 	for _, allowedFormat := range allowedFormats {
 		filepath := path + allowedFormat
