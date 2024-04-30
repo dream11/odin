@@ -6,7 +6,6 @@ import "google/protobuf/struct.proto";
 
 option go_package = "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1";
 
-
 service ServiceService {
   rpc DeployService(DeployServiceRequest) returns (stream DeployServiceResponse) {}
   rpc ReleaseService(ReleaseServiceRequest) returns (stream ReleaseServiceResponse) {}
@@ -25,7 +24,6 @@ message DeployServiceResponse {
   repeated ComponentStatus components_status = 2;
   string message = 3;
 }
-
 
 message UndeployServiceRequest {
   string env_name = 1;
