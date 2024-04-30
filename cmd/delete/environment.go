@@ -29,7 +29,6 @@ func init() {
 	if err != nil {
 		log.Fatal("Error marking 'name' flag as required:", err)
 	}
-
 	deleteCmd.AddCommand(environmentCmd)
 }
 
