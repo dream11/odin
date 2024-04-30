@@ -10,7 +10,6 @@ import (
 var name string
 var envName string
 
-
 var serviceClient = service.Service{}
 
 var serviceCmd = &cobra.Command{
@@ -43,7 +42,7 @@ func execute(cmd *cobra.Command) {
 	ctx := cmd.Context()
 
 	err := serviceClient.UndeployService(&ctx, &serviceProto.UndeployServiceRequest{
-		EnvName: envName,
+		EnvName:     envName,
 		ServiceName: name,
 	})
 
