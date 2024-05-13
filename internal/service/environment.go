@@ -68,7 +68,7 @@ func (e *Environment) CreateEnvironment(ctx *context.Context, request *environme
 	return err
 }
 
-// DeleteEnvironment : Delete environment
+// DeleteEnvironment deletes environment
 func (e *Environment) DeleteEnvironment(ctx *context.Context, request *environment.DeleteEnvironmentRequest) error {
 	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {
