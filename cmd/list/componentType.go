@@ -22,7 +22,7 @@ var componentTypeCmd = &cobra.Command{
 	Args: func(cmd *cobra.Command, args []string) error {
 		return cobra.NoArgs(cmd, args)
 	},
-	Long: `List  of all componentTypes`,
+	Long: `List of all componentTypes`,
 	Run: func(cmd *cobra.Command, args []string) {
 		componentExecute(cmd)
 	},
