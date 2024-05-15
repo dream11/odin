@@ -36,11 +36,19 @@ func init() {
 
 func componentExecute(cmd *cobra.Command) {
 	ctx := cmd.Context()
+	params := make(map[string]string)
+
+	// Add non-empty parameters to the map
+	if componentTypeName != "" {
+		params["name"] = componentTypeName
+	}
+	if componentTypeVersion != "" {
+		params["version"] = componentTypeVersion
+	}
+
+	// Make the API call with the populated parameters
 	response, err := componentTypeClient.ListComponentType(&ctx, &component.ListComponentTypeRequest{
-		Params: map[string]string{
-			"name":             componentTypeName,
-			"version":          componentTypeVersion,
-		},
+		Params: params,
 	})
 
 	if err != nil {
