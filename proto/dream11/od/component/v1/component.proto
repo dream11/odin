@@ -5,7 +5,6 @@ import "dream11/od/dto/v1/component.proto";
 
 option go_package = "github.com/dream11/odin/proto/gen/go/dream11/od/component/v1";
 
-
 service ComponentService {
   rpc ListComponentType(ListComponentTypeRequest) returns (ListComponentTypeResponse) {}
 }
