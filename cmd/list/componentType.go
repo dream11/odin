@@ -1,4 +1,5 @@
 package list
+
 import (
 	"encoding/json"
 	"fmt"
@@ -13,7 +14,6 @@ import (
 
 var componentTypeName string
 var componentTypeVersion string
-
 
 var componentTypeClient = service.Component{}
 var componentTypeCmd = &cobra.Command{
@@ -89,10 +89,10 @@ func componentWriteAsText(response *component.ListComponentTypeResponse) {
 
 func componentWriteAsJSON(response *component.ListComponentTypeResponse) {
 	var componentTypes []map[string]interface{}
-	for _, compType := range response.Components{
+	for _, compType := range response.Components {
 		componentTypes = append(componentTypes, map[string]interface{}{
-			"name":      compType.ComponentType,
-			"version":   compType.ComponentType,
+			"name":    compType.ComponentType,
+			"version": compType.ComponentType,
 		})
 	}
 	output, _ := json.MarshalIndent(componentTypes, "", "  ")
