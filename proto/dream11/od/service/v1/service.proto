@@ -84,7 +84,7 @@ message DeployReleasedServiceResponse {
 }
 
 message DeployReleasedServiceRequest {
-  string service_definition_name = 1;
+  string service_name = 1;
   string service_version = 2;
   string env_name = 3;
 }

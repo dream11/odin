@@ -7,12 +7,13 @@
 package v1
 
 import (
+	reflect "reflect"
+	sync "sync"
+
 	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	structpb "google.golang.org/protobuf/types/known/structpb"
-	reflect "reflect"
-	sync "sync"
 )
 
 const (
@@ -744,7 +745,7 @@ type DeployReleasedServiceRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ServiceDefinitionName string `protobuf:"bytes,1,opt,name=service_definition_name,json=serviceDefinitionName,proto3" json:"service_definition_name,omitempty"`
+	ServiceDefinitionName string `protobuf:"bytes,1,opt,name=service_name,json=serviceDefinitionName,proto3" json:"service_name,omitempty"`
 	ServiceVersion        string `protobuf:"bytes,2,opt,name=service_version,json=serviceVersion,proto3" json:"service_version,omitempty"`
 	EnvName               string `protobuf:"bytes,3,opt,name=env_name,json=envName,proto3" json:"env_name,omitempty"`
 }
