@@ -60,6 +60,51 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 	return err
 }
 
+// DeployReleasedService deploys service
+func (e *Service) DeployReleasedService(ctx *context.Context, request *serviceProto.DeployReleasedServiceRequest) error {
+	conn, requestCtx, err := grpcClient(ctx)
+	if err != nil {
+		return err
+	}
+	client := serviceProto.NewServiceServiceClient(conn)
+	stream, err := client.DeployReleasedService(*requestCtx, request)
+	if err != nil {
+		return err
+	}
+
+	log.Info("Deploying Service...")
+	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
+	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
+	if err != nil {
+		return err
+	}
+
+	var message string
+	for {
+		response, err := stream.Recv()
+		spinnerInstance.Stop()
+		if err != nil {
+			if errors.Is(err, context.Canceled) || err == io.EOF {
+				break
+			}
+			return err
+		}
+
+		if response != nil {
+			message = response.Message
+			message += fmt.Sprintf("\n Service %s %s", response.ServiceStatus.ServiceAction, response.ServiceStatus.ServiceStatus)
+			for _, compMessage := range response.ComponentsStatus {
+				message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
+			}
+			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
+			spinnerInstance.Start()
+		}
+	}
+
+	log.Info(message)
+	return err
+}
+
 // UndeployService undeploys service
 func (e *Service) UndeployService(ctx *context.Context, request *serviceProto.UndeployServiceRequest) error {
 	conn, requestCtx, err := grpcClient(ctx)
