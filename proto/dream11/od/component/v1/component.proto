@@ -1,0 +1,18 @@
+syntax = "proto3";
+package dream11.od.component.v1;
+
+import "dream11/od/dto/v1/component.proto";
+
+option go_package = "github.com/dream11/odin/proto/gen/go/dream11/od/component/v1";
+
+service ComponentService {
+  rpc ListComponentType(ListComponentTypeRequest) returns (ListComponentTypeResponse) {}
+}
+
+message ListComponentTypeRequest {
+  map<string, string> params = 1;
+}
+
+message ListComponentTypeResponse {
+  repeated dream11.od.dto.v1.Component components = 1;
+}

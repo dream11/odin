@@ -8,6 +8,7 @@ import (
 
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
+	component "github.com/dream11/odin/proto/gen/go/dream11/od/component/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
 )
@@ -51,4 +52,19 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 	}
 	log.Info(message)
 	return err
+}
+
+// ListComponentType List component types
+func (e *Component) ListComponentType(ctx *context.Context, request *component.ListComponentTypeRequest) (*component.ListComponentTypeResponse, error) {
+	conn, requestCtx, err := grpcClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+	client := component.NewComponentServiceClient(conn)
+	response, err := client.ListComponentType(*requestCtx, request)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
 }
