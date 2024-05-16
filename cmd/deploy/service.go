@@ -79,6 +79,7 @@ func execute(cmd *cobra.Command) {
 			log.Fatal("Failed to deploy service ", err)
 		}
 	} else if (serviceName != "" && serviceVersion != "") && (definitionFile == "" && provisioningFile == "") {
+		log.Info("deploying service :", serviceName, ":", serviceVersion, " in env :", env)
 		err := serviceClient.DeployReleasedService(&ctx, &serviceProto.DeployReleasedServiceRequest{
 			EnvName:               env,
 			ServiceDefinitionName: serviceName,

@@ -12,7 +12,6 @@ service ServiceService {
   rpc OperateService(OperateServiceRequest) returns (stream OperateServiceResponse) {}
   rpc UndeployService(UndeployServiceRequest) returns (stream UndeployServiceResponse) {}
   rpc DeployReleasedService(DeployReleasedServiceRequest) returns (stream DeployReleasedServiceResponse) {}
-
 }
 
 message DeployServiceRequest {
