@@ -19,10 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	ServiceService_DeployService_FullMethodName   = "/dream11.od.service.v1.ServiceService/DeployService"
-	ServiceService_ReleaseService_FullMethodName  = "/dream11.od.service.v1.ServiceService/ReleaseService"
-	ServiceService_OperateService_FullMethodName  = "/dream11.od.service.v1.ServiceService/OperateService"
-	ServiceService_UndeployService_FullMethodName = "/dream11.od.service.v1.ServiceService/UndeployService"
+	ServiceService_DeployService_FullMethodName         = "/dream11.od.service.v1.ServiceService/DeployService"
+	ServiceService_ReleaseService_FullMethodName        = "/dream11.od.service.v1.ServiceService/ReleaseService"
+	ServiceService_OperateService_FullMethodName        = "/dream11.od.service.v1.ServiceService/OperateService"
+	ServiceService_UndeployService_FullMethodName       = "/dream11.od.service.v1.ServiceService/UndeployService"
+	ServiceService_DeployReleasedService_FullMethodName = "/dream11.od.service.v1.ServiceService/DeployReleasedService"
 )
 
 // ServiceServiceClient is the client API for ServiceService service.
@@ -33,6 +34,7 @@ type ServiceServiceClient interface {
 	ReleaseService(ctx context.Context, in *ReleaseServiceRequest, opts ...grpc.CallOption) (ServiceService_ReleaseServiceClient, error)
 	OperateService(ctx context.Context, in *OperateServiceRequest, opts ...grpc.CallOption) (ServiceService_OperateServiceClient, error)
 	UndeployService(ctx context.Context, in *UndeployServiceRequest, opts ...grpc.CallOption) (ServiceService_UndeployServiceClient, error)
+	DeployReleasedService(ctx context.Context, in *DeployReleasedServiceRequest, opts ...grpc.CallOption) (ServiceService_DeployReleasedServiceClient, error)
 }
 
 type serviceServiceClient struct {
@@ -171,6 +173,38 @@ func (x *serviceServiceUndeployServiceClient) Recv() (*UndeployServiceResponse, 
 	return m, nil
 }
 
+func (c *serviceServiceClient) DeployReleasedService(ctx context.Context, in *DeployReleasedServiceRequest, opts ...grpc.CallOption) (ServiceService_DeployReleasedServiceClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ServiceService_ServiceDesc.Streams[4], ServiceService_DeployReleasedService_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &serviceServiceDeployReleasedServiceClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type ServiceService_DeployReleasedServiceClient interface {
+	Recv() (*DeployReleasedServiceResponse, error)
+	grpc.ClientStream
+}
+
+type serviceServiceDeployReleasedServiceClient struct {
+	grpc.ClientStream
+}
+
+func (x *serviceServiceDeployReleasedServiceClient) Recv() (*DeployReleasedServiceResponse, error) {
+	m := new(DeployReleasedServiceResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ServiceServiceServer is the server API for ServiceService service.
 // All implementations must embed UnimplementedServiceServiceServer
 // for forward compatibility
@@ -179,6 +213,7 @@ type ServiceServiceServer interface {
 	ReleaseService(*ReleaseServiceRequest, ServiceService_ReleaseServiceServer) error
 	OperateService(*OperateServiceRequest, ServiceService_OperateServiceServer) error
 	UndeployService(*UndeployServiceRequest, ServiceService_UndeployServiceServer) error
+	DeployReleasedService(*DeployReleasedServiceRequest, ServiceService_DeployReleasedServiceServer) error
 	mustEmbedUnimplementedServiceServiceServer()
 }
 
@@ -197,6 +232,9 @@ func (UnimplementedServiceServiceServer) OperateService(*OperateServiceRequest, 
 }
 func (UnimplementedServiceServiceServer) UndeployService(*UndeployServiceRequest, ServiceService_UndeployServiceServer) error {
 	return status.Errorf(codes.Unimplemented, "method UndeployService not implemented")
+}
+func (UnimplementedServiceServiceServer) DeployReleasedService(*DeployReleasedServiceRequest, ServiceService_DeployReleasedServiceServer) error {
+	return status.Errorf(codes.Unimplemented, "method DeployReleasedService not implemented")
 }
 func (UnimplementedServiceServiceServer) mustEmbedUnimplementedServiceServiceServer() {}
 
@@ -295,6 +333,27 @@ func (x *serviceServiceUndeployServiceServer) Send(m *UndeployServiceResponse) e
 	return x.ServerStream.SendMsg(m)
 }
 
+func _ServiceService_DeployReleasedService_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(DeployReleasedServiceRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ServiceServiceServer).DeployReleasedService(m, &serviceServiceDeployReleasedServiceServer{stream})
+}
+
+type ServiceService_DeployReleasedServiceServer interface {
+	Send(*DeployReleasedServiceResponse) error
+	grpc.ServerStream
+}
+
+type serviceServiceDeployReleasedServiceServer struct {
+	grpc.ServerStream
+}
+
+func (x *serviceServiceDeployReleasedServiceServer) Send(m *DeployReleasedServiceResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // ServiceService_ServiceDesc is the grpc.ServiceDesc for ServiceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -321,6 +380,11 @@ var ServiceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "UndeployService",
 			Handler:       _ServiceService_UndeployService_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "DeployReleasedService",
+			Handler:       _ServiceService_DeployReleasedService_Handler,
 			ServerStreams: true,
 		},
 	},

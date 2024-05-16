@@ -11,6 +11,7 @@ service ServiceService {
   rpc ReleaseService(ReleaseServiceRequest) returns (stream ReleaseServiceResponse) {}
   rpc OperateService(OperateServiceRequest) returns (stream OperateServiceResponse) {}
   rpc UndeployService(UndeployServiceRequest) returns (stream UndeployServiceResponse) {}
+  rpc DeployReleasedService(DeployReleasedServiceRequest) returns (stream DeployReleasedServiceResponse) {}
 }
 
 message DeployServiceRequest {
@@ -74,4 +75,16 @@ message OperateServiceResponse {
   ServiceStatus service_status = 1;
   repeated ComponentStatus components_status = 2;
   string message = 3;
+}
+
+message DeployReleasedServiceResponse {
+  ServiceStatus service_status = 1;
+  repeated ComponentStatus components_status = 2;
+  string message = 3;
+}
+
+message DeployReleasedServiceRequest {
+  string service_name = 1;
+  string service_version = 2;
+  string env_name = 3;
 }
