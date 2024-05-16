@@ -26,7 +26,6 @@ var operateServiceCmd = &cobra.Command{
 
 func init() {
 	operateServiceCmd.Flags().StringVar(&name, "name", "", "name of the service")
-	operateServiceCmd.Flags().StringVar(&serviceName, "service", "", " name of the service in which the service is deployed")
 	operateServiceCmd.Flags().StringVar(&env, "env", "", "name of the environment in which the service is deployed")
 	operateServiceCmd.Flags().StringVar(&operation, "operation", "", "name of the operation to performed on the service")
 	operateServiceCmd.Flags().StringVar(&options, "options", "{}", "options of the operation in JSON format")
@@ -75,8 +74,7 @@ func executeOperateService(cmd *cobra.Command) {
 	//call operate service client
 	err = serviceClient.OperateService(&ctx, &serviceProto.OperateServiceRequest{
 		EnvName:              env,
-		ServiceName:          serviceName,
-		ComponentName:        []string{name},
+		ServiceName:          name,
 		IsComponentOperation: false,
 		Operation:            operation,
 		Config:               config,
