@@ -81,9 +81,9 @@ func execute(cmd *cobra.Command) {
 	} else if (serviceName != "" && serviceVersion != "") && (definitionFile == "" && provisioningFile == "") {
 		log.Info("deploying service :", serviceName, ":", serviceVersion, " in env :", env)
 		err := serviceClient.DeployReleasedService(&ctx, &serviceProto.DeployReleasedServiceRequest{
-			EnvName:               env,
-			ServiceDefinitionName: serviceName,
-			ServiceVersion:        serviceVersion,
+			EnvName:        env,
+			ServiceName:    serviceName,
+			ServiceVersion: serviceVersion,
 		})
 
 		if err != nil {
