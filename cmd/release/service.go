@@ -16,10 +16,10 @@ import (
 var path string
 var serviceClient service.Service
 
-// environmentCmd represents the environment command
-var environmentCmd = &cobra.Command{
-	Use:   "environment",
-	Short: "release environment",
+// releaseServiceCmd represents the release service command
+var releaseServiceCmd = &cobra.Command{
+	Use:   "service",
+	Short: "release service",
 	Args: func(cmd *cobra.Command, args []string) error {
 		return cobra.NoArgs(cmd, args)
 	},
@@ -29,11 +29,11 @@ var environmentCmd = &cobra.Command{
 }
 
 func init() {
-	environmentCmd.Flags().StringVar(&path, "path", "", "path for the service directory")
-	if err := releaseCmd.MarkFlagRequired("path"); err != nil {
+	releaseServiceCmd.Flags().StringVar(&path, "path", "", "path for the service directory")
+	if err := releaseServiceCmd.MarkFlagRequired("path"); err != nil {
 		log.Fatal("Error marking 'path' flag as required:", err)
 	}
-	releaseCmd.AddCommand(environmentCmd)
+	releaseCmd.AddCommand(releaseServiceCmd)
 }
 
 func execute(cmd *cobra.Command) {
@@ -44,7 +44,7 @@ func execute(cmd *cobra.Command) {
 	var serviceReleaseRequest serviceProto.ReleaseServiceRequest
 	// Check if the folder exists
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		log.Fatal("Folder does not exist")
+		log.Fatal("Folder does not exist:", path)
 		return
 	}
 
@@ -67,7 +67,7 @@ func execute(cmd *cobra.Command) {
 	if err != nil {
 		log.Fatal("Error while getting content of the directory :", path)
 	}
-	var provisioningConfigMap map[string]*serviceDto.ProvisioningConfig
+	var provisioningConfigMap = make(map[string]*serviceDto.ProvisioningConfig)
 	// Iterate through the files
 	for _, file := range files {
 		if !file.IsDir() && strings.HasPrefix(file.Name(), "provision") {
