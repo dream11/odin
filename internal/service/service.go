@@ -214,7 +214,7 @@ func (e *Service) ReleaseService(ctx *context.Context, request *serviceProto.Rel
 		return err
 	}
 
-	log.Info("Starting component operation...")
+	log.Info("Starting release service operation...")
 	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
 	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
 	if err != nil {
@@ -232,7 +232,11 @@ func (e *Service) ReleaseService(ctx *context.Context, request *serviceProto.Rel
 		}
 		if response != nil {
 			message = response.Message
-			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", response.Message)
+			message += fmt.Sprintf("\n Service %s %s", response.ServiceStatus.ServiceAction, response.ServiceStatus.ServiceStatus)
+			for _, compMessage := range response.ComponentsStatus {
+				message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
+			}
+			spinnerInstance.Prefix += fmt.Sprintf(" %s  ", response.Message)
 			spinnerInstance.Start()
 		}
 	}
