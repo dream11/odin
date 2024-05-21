@@ -47,6 +47,6 @@ func execute(cmd *cobra.Command) {
 	})
 
 	if err != nil {
-		log.Fatal("Failed to delete environment ", err)
+		log.Fatal("Failed to undeploy service ", err)
 	}
 }
