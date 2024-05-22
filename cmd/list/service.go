@@ -1,7 +1,11 @@
 package list
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"github.com/dream11/odin/internal/service"
+	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/table"
 	serviceproto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
@@ -20,7 +24,10 @@ var serviceCmd = &cobra.Command{
 		listService(cmd)
 	},
 }
+
 var version, team, label string
+var tableHeaders = []string{"Name", "Latest Version", "Label", "Description", "Team"}
+var tableData [][]interface{}
 
 func init() {
 	serviceCmd.Flags().StringVar(&name, "name", "", "name of the service")
@@ -42,8 +49,26 @@ func listService(cmd *cobra.Command) {
 	if err != nil {
 		log.Fatal("Failed to list services ", err)
 	}
-	var tableHeaders = []string{"Name", "Latest Version", "Label", "Description", "Team"}
-	var tableData [][]interface{}
+	outputFormat, err := cmd.Flags().GetString("output")
+	if err != nil {
+		log.Fatal(err)
+	}
+	WriteListService(response, outputFormat)
+}
+
+func WriteListService(response *serviceproto.ListServiceResponse, format string) {
+
+	switch format {
+	case constant.TEXT:
+		writeListServiceAsText(response)
+	case constant.JSON:
+		writeListServiceAsJSON(response)
+	default:
+		log.Fatal("Unknown output format: ", format)
+	}
+}
+
+func writeListServiceAsText(response *serviceproto.ListServiceResponse) {
 	for _, serviceEntity := range response.Services {
 		tableData = append(tableData, []interface{}{
 			serviceEntity.Name,
@@ -53,4 +78,18 @@ func listService(cmd *cobra.Command) {
 		})
 	}
 	table.Write(tableHeaders, tableData)
+}
+
+func writeListServiceAsJSON(response *serviceproto.ListServiceResponse) {
+	var services []map[string]interface{}
+	for _, serviceEntity := range response.Services {
+		tableData = append(tableData, []interface{}{
+			serviceEntity.Name,
+			serviceEntity.Version,
+			serviceEntity.Labels,
+			serviceEntity.Description,
+		})
+	}
+	output, _ := json.MarshalIndent(services, "", "  ")
+	fmt.Print(string(output))
 }
