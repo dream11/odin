@@ -30,3 +30,17 @@ message ComponentProvisioningConfig {
 message ProvisioningConfig {
   repeated ComponentProvisioningConfig component_provisioning_config = 1;
 }
+
+message Service{
+  int32 id = 1;
+  string name = 2;
+  string version = 3;
+  string description = 4;
+  string created_by = 5;
+  string updated_by = 6;
+  string created_at = 7;
+  string updated_at = 8;
+  bool active = 9;
+  string tags = 10; // JSON encoded string
+  string labels = 11; // JSON encoded string
+}
