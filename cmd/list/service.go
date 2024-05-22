@@ -19,16 +19,16 @@ var serviceCmd = &cobra.Command{
 	Args: func(cmd *cobra.Command, args []string) error {
 		return cobra.NoArgs(cmd, args)
 	},
-	Long: `List services all if no options provided, type odin list service --help for details`,
+	Long: `List all services if no options provided, type odin list service --help for details`,
 	Run: func(cmd *cobra.Command, args []string) {
 		listService(cmd)
 	},
 }
 
-var version, team, label string
+var serviceName, version, team, label string
 
 func init() {
-	serviceCmd.Flags().StringVar(&name, "name", "", "name of the service")
+	serviceCmd.Flags().StringVar(&serviceName, "name", "", "name of the service")
 	serviceCmd.Flags().StringVar(&version, "version", "", "version of services to be listed")
 	serviceCmd.Flags().StringVar(&team, "team", "", "name of team")
 	serviceCmd.Flags().StringVar(&label, "label", "", "name of label")
@@ -38,7 +38,7 @@ func init() {
 func listService(cmd *cobra.Command) {
 	ctx := cmd.Context()
 	response, err := serviceClient.ListService(&ctx, &serviceproto.ListServiceRequest{
-		Name:    name,
+		Name:    serviceName,
 		Version: version,
 		Team:    team,
 		Label:   label,
@@ -49,7 +49,7 @@ func listService(cmd *cobra.Command) {
 	}
 	outputFormat, err := cmd.Flags().GetString("output")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Failed to get --output global option :", err)
 	}
 	WriteListService(response, outputFormat)
 }

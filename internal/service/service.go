@@ -199,11 +199,5 @@ func (e *Service) ListService(ctx *context.Context, request *serviceProto.ListSe
 	}
 	client := serviceProto.NewServiceServiceClient(conn)
 	response, err := client.ListService(*requestCtx, request)
-	if err != nil {
-		return &serviceProto.ListServiceResponse{}, err
-	}
-	if response.ErrorMessage != "" {
-		return &serviceProto.ListServiceResponse{}, errors.New(response.ErrorMessage)
-	}
 	return response, err
 }

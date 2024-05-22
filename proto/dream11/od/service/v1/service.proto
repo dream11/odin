@@ -93,7 +93,6 @@ message DeployReleasedServiceRequest {
 
 message ListServiceResponse {
   repeated dto.v1.Service services = 1;
-  string error_message = 2;  // In case of errors
 }
 
 message ListServiceRequest {
