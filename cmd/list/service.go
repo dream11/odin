@@ -26,8 +26,6 @@ var serviceCmd = &cobra.Command{
 }
 
 var version, team, label string
-var tableHeaders = []string{"Name", "Latest Version", "Label", "Description", "Team"}
-var tableData [][]interface{}
 
 func init() {
 	serviceCmd.Flags().StringVar(&name, "name", "", "name of the service")
@@ -69,6 +67,8 @@ func WriteListService(response *serviceproto.ListServiceResponse, format string)
 }
 
 func writeListServiceAsText(response *serviceproto.ListServiceResponse) {
+	var tableHeaders = []string{"Name", "Latest Version", "Label", "Description", "Team"}
+	var tableData [][]interface{}
 	for _, serviceEntity := range response.Services {
 		tableData = append(tableData, []interface{}{
 			serviceEntity.Name,
@@ -83,11 +83,11 @@ func writeListServiceAsText(response *serviceproto.ListServiceResponse) {
 func writeListServiceAsJSON(response *serviceproto.ListServiceResponse) {
 	var services []map[string]interface{}
 	for _, serviceEntity := range response.Services {
-		tableData = append(tableData, []interface{}{
-			serviceEntity.Name,
-			serviceEntity.Version,
-			serviceEntity.Labels,
-			serviceEntity.Description,
+		services = append(services, map[string]interface{}{
+			"name":        serviceEntity.Name,
+			"version":     serviceEntity.Version,
+			"labels":      serviceEntity.Labels,
+			"description": serviceEntity.Description,
 		})
 	}
 	output, _ := json.MarshalIndent(services, "", "  ")
