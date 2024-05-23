@@ -49,12 +49,12 @@ func listService(cmd *cobra.Command) {
 	}
 	outputFormat, err := cmd.Flags().GetString("output")
 	if err != nil {
-		log.Fatal("Failed to get --output global option :", err)
+		log.Fatal("Failed to get --output global option : ", err)
 	}
-	WriteListService(response, outputFormat)
+	writeListService(response, outputFormat)
 }
 
-func WriteListService(response *serviceproto.ListServiceResponse, format string) {
+func writeListService(response *serviceproto.ListServiceResponse, format string) {
 
 	switch format {
 	case constant.TEXT:
