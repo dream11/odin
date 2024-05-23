@@ -40,7 +40,6 @@ message Service{
   string updated_by = 6;
   string created_at = 7;
   string updated_at = 8;
-  bool active = 9;
-  string tags = 10; // JSON encoded string
-  string labels = 11; // JSON encoded string
+  string tags = 9; // JSON encoded string
+  string labels = 10; // JSON encoded string
 }
