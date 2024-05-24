@@ -7,7 +7,7 @@ import (
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/table"
-	serviceproto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
+	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -37,7 +37,7 @@ func init() {
 
 func listService(cmd *cobra.Command) {
 	ctx := cmd.Context()
-	response, err := serviceClient.ListService(&ctx, &serviceproto.ListServiceRequest{
+	response, err := serviceClient.ListService(&ctx, &serviceProto.ListServiceRequest{
 		Name:    serviceName,
 		Version: version,
 		Team:    team,
@@ -54,7 +54,7 @@ func listService(cmd *cobra.Command) {
 	writeListService(response, outputFormat)
 }
 
-func writeListService(response *serviceproto.ListServiceResponse, format string) {
+func writeListService(response *serviceProto.ListServiceResponse, format string) {
 
 	switch format {
 	case constant.TEXT:
@@ -66,8 +66,8 @@ func writeListService(response *serviceproto.ListServiceResponse, format string)
 	}
 }
 
-func writeListServiceAsText(response *serviceproto.ListServiceResponse) {
-	var tableHeaders = []string{"Name", "Latest Version", "Label", "Description", "Team"}
+func writeListServiceAsText(response *serviceProto.ListServiceResponse) {
+	var tableHeaders = []string{"Name", "Latest Version", "Label", "Description"}
 	var tableData [][]interface{}
 	for _, serviceEntity := range response.Services {
 		tableData = append(tableData, []interface{}{
@@ -80,7 +80,7 @@ func writeListServiceAsText(response *serviceproto.ListServiceResponse) {
 	table.Write(tableHeaders, tableData)
 }
 
-func writeListServiceAsJSON(response *serviceproto.ListServiceResponse) {
+func writeListServiceAsJSON(response *serviceProto.ListServiceResponse) {
 	var services []map[string]interface{}
 	for _, serviceEntity := range response.Services {
 		services = append(services, map[string]interface{}{
