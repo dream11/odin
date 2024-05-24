@@ -4,12 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
-
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
+	"io"
 )
 
 // Service performs operation on service like deploy. undeploy
@@ -46,9 +45,9 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 		}
 
 		if response != nil {
-			message = response.Message
-			message += fmt.Sprintf("\n Service %s %s", response.ServiceStatus.ServiceAction, response.ServiceStatus.ServiceStatus)
-			for _, compMessage := range response.ComponentsStatus {
+			message = response.ServiceResponse.Message
+			message += fmt.Sprintf("\n Service %s %s", response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
+			for _, compMessage := range response.ServiceResponse.ComponentsStatus {
 				message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
 			}
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
@@ -136,8 +135,12 @@ func (e *Service) UndeployService(ctx *context.Context, request *serviceProto.Un
 			return err
 		}
 		if response != nil {
-			message = response.Message
-			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", response.Message)
+			message = response.ServiceResponse.Message
+			message += fmt.Sprintf("\n Service %s %s", response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
+			for _, compMessage := range response.ServiceResponse.ComponentsStatus {
+				message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
+			}
+			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 			spinnerInstance.Start()
 		}
 	}
@@ -157,7 +160,7 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 		return err
 	}
 
-	log.Info("Starting component operation...")
+	log.Info("Starting service operation...")
 	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
 	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
 	if err != nil {
@@ -174,8 +177,12 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 			return err
 		}
 		if response != nil {
-			message = response.Message
-			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", response.Message)
+			message = response.ServiceResponse.Message
+			message += fmt.Sprintf("\n Service %s %s", response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
+			for _, compMessage := range response.ServiceResponse.ComponentsStatus {
+				message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
+			}
+			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 			spinnerInstance.Start()
 		}
 	}
