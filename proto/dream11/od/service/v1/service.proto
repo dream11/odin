@@ -12,6 +12,7 @@ service ServiceService {
   rpc OperateService(OperateServiceRequest) returns (stream OperateServiceResponse) {}
   rpc UndeployService(UndeployServiceRequest) returns (stream UndeployServiceResponse) {}
   rpc DeployReleasedService(DeployReleasedServiceRequest) returns (stream DeployReleasedServiceResponse) {}
+  rpc ListService(ListServiceRequest) returns (ListServiceResponse) {}
 }
 
 message DeployServiceRequest {
@@ -87,4 +88,15 @@ message DeployReleasedServiceRequest {
   string service_name = 1;
   string service_version = 2;
   string env_name = 3;
+}
+
+message ListServiceResponse {
+  repeated dto.v1.Service services = 1;
+}
+
+message ListServiceRequest {
+  string name = 1;
+  string version = 2;
+  string team = 3;
+  string label = 4;
 }

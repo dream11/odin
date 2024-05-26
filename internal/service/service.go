@@ -190,3 +190,14 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 	log.Info(message)
 	return err
 }
+
+// ListService deploys service
+func (e *Service) ListService(ctx *context.Context, request *serviceProto.ListServiceRequest) (*serviceProto.ListServiceResponse, error) {
+	conn, requestCtx, err := grpcClient(ctx)
+	if err != nil {
+		return &serviceProto.ListServiceResponse{}, err
+	}
+	client := serviceProto.NewServiceServiceClient(conn)
+	response, err := client.ListService(*requestCtx, request)
+	return response, err
+}

@@ -24,6 +24,7 @@ const (
 	ServiceService_OperateService_FullMethodName        = "/dream11.od.service.v1.ServiceService/OperateService"
 	ServiceService_UndeployService_FullMethodName       = "/dream11.od.service.v1.ServiceService/UndeployService"
 	ServiceService_DeployReleasedService_FullMethodName = "/dream11.od.service.v1.ServiceService/DeployReleasedService"
+	ServiceService_ListService_FullMethodName           = "/dream11.od.service.v1.ServiceService/ListService"
 )
 
 // ServiceServiceClient is the client API for ServiceService service.
@@ -35,6 +36,7 @@ type ServiceServiceClient interface {
 	OperateService(ctx context.Context, in *OperateServiceRequest, opts ...grpc.CallOption) (ServiceService_OperateServiceClient, error)
 	UndeployService(ctx context.Context, in *UndeployServiceRequest, opts ...grpc.CallOption) (ServiceService_UndeployServiceClient, error)
 	DeployReleasedService(ctx context.Context, in *DeployReleasedServiceRequest, opts ...grpc.CallOption) (ServiceService_DeployReleasedServiceClient, error)
+	ListService(ctx context.Context, in *ListServiceRequest, opts ...grpc.CallOption) (*ListServiceResponse, error)
 }
 
 type serviceServiceClient struct {
@@ -205,6 +207,15 @@ func (x *serviceServiceDeployReleasedServiceClient) Recv() (*DeployReleasedServi
 	return m, nil
 }
 
+func (c *serviceServiceClient) ListService(ctx context.Context, in *ListServiceRequest, opts ...grpc.CallOption) (*ListServiceResponse, error) {
+	out := new(ListServiceResponse)
+	err := c.cc.Invoke(ctx, ServiceService_ListService_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ServiceServiceServer is the server API for ServiceService service.
 // All implementations must embed UnimplementedServiceServiceServer
 // for forward compatibility
@@ -214,6 +225,7 @@ type ServiceServiceServer interface {
 	OperateService(*OperateServiceRequest, ServiceService_OperateServiceServer) error
 	UndeployService(*UndeployServiceRequest, ServiceService_UndeployServiceServer) error
 	DeployReleasedService(*DeployReleasedServiceRequest, ServiceService_DeployReleasedServiceServer) error
+	ListService(context.Context, *ListServiceRequest) (*ListServiceResponse, error)
 	mustEmbedUnimplementedServiceServiceServer()
 }
 
@@ -235,6 +247,9 @@ func (UnimplementedServiceServiceServer) UndeployService(*UndeployServiceRequest
 }
 func (UnimplementedServiceServiceServer) DeployReleasedService(*DeployReleasedServiceRequest, ServiceService_DeployReleasedServiceServer) error {
 	return status.Errorf(codes.Unimplemented, "method DeployReleasedService not implemented")
+}
+func (UnimplementedServiceServiceServer) ListService(context.Context, *ListServiceRequest) (*ListServiceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListService not implemented")
 }
 func (UnimplementedServiceServiceServer) mustEmbedUnimplementedServiceServiceServer() {}
 
@@ -354,13 +369,36 @@ func (x *serviceServiceDeployReleasedServiceServer) Send(m *DeployReleasedServic
 	return x.ServerStream.SendMsg(m)
 }
 
+func _ServiceService_ListService_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListServiceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceServiceServer).ListService(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServiceService_ListService_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceServiceServer).ListService(ctx, req.(*ListServiceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ServiceService_ServiceDesc is the grpc.ServiceDesc for ServiceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var ServiceService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "dream11.od.service.v1.ServiceService",
 	HandlerType: (*ServiceServiceServer)(nil),
-	Methods:     []grpc.MethodDesc{},
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ListService",
+			Handler:    _ServiceService_ListService_Handler,
+		},
+	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "DeployService",
