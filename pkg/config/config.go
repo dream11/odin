@@ -15,28 +15,40 @@ var once sync.Once
 var appConfig *configuration.Configuration
 var err error
 
-func readConfig() (*configuration.Configuration, error) {
-	configuration := configuration.Configuration{}
+func readConfigFile() {
 	viper.SetConfigName("config")
 	viper.SetConfigType("toml")
 	viper.AddConfigPath("$HOME/." + app.App.Name)
 	viper.SetEnvPrefix("ODIN")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(`.`, `_`))
 	viper.AutomaticEnv()
+
 	if err := viper.ReadInConfig(); err != nil {
 		var configFileNotFoundError viper.ConfigFileNotFoundError
 		if errors.As(err, &configFileNotFoundError) {
-			log.Error("Not configured odin yet? Run `odin configure`")
+			log.Fatal("Not configured odin yet? Run `odin configure`")
 		}
-		return nil, err
+		log.Fatal("Error while reading config file: ", err)
 	}
-	profile := viper.GetString("profile")
-	err := viper.UnmarshalKey(profile, &configuration)
-	if err != nil {
+}
+
+func getConfigForProfile(profile string) (*configuration.Configuration, error) {
+	appConfig := configuration.Configuration{}
+
+	if err := viper.UnmarshalKey(profile, &appConfig); err != nil {
 		log.Fatal("Configuration can't be loaded: ", err)
-		return nil, err
 	}
-	return &configuration, nil
+	if appConfig == (configuration.Configuration{}) {
+		log.Fatal("Configuration for profile [", profile, "] not found!")
+	}
+
+	return &appConfig, nil
+}
+
+func readConfig() (*configuration.Configuration, error) {
+	readConfigFile()
+	profile := viper.GetString("profile")
+	return getConfigForProfile(profile)
 }
 
 // GetConfig returns the reference of viper config
@@ -54,6 +66,18 @@ func GetConfig() *configuration.Configuration {
 func WriteConfig(config *configuration.Configuration) {
 	profile := viper.GetString("profile")
 	viper.Set(profile, config)
+	if err := viper.WriteConfig(); err != nil {
+		log.Fatal("Unable to write configuration: ", err)
+	}
+}
+
+// SetProfile sets the profile in the config file
+func SetProfile(profileName string) {
+	readConfigFile()
+	if _, err := getConfigForProfile(profileName); err != nil {
+		log.Fatal("Error while reading config ", err)
+	}
+	viper.Set("profile", profileName)
 	if err := viper.WriteConfig(); err != nil {
 		log.Fatal("Unable to write configuration: ", err)
 	}
