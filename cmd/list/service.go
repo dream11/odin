@@ -67,7 +67,7 @@ func writeListService(response *serviceProto.ListServiceResponse, format string)
 }
 
 func writeListServiceAsText(response *serviceProto.ListServiceResponse) {
-	var tableHeaders = []string{"Name", "Latest Version", "Label", "Description"}
+	var tableHeaders = []string{"Name", "Version", "Label", "Description"}
 	var tableData [][]interface{}
 	for _, serviceEntity := range response.Services {
 		tableData = append(tableData, []interface{}{
