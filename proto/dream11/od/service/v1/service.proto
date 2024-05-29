@@ -91,7 +91,7 @@ message DeployReleasedServiceRequest {
 }
 
 message ListServiceResponse {
-  repeated dto.v1.Service services = 1;
+  repeated dto.v1.ServiceMetadata services = 1;
 }
 
 message ListServiceRequest {
