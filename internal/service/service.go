@@ -201,3 +201,45 @@ func (e *Service) ListService(ctx *context.Context, request *serviceProto.ListSe
 	response, err := client.ListService(*requestCtx, request)
 	return response, err
 }
+
+// ReleaseService :service operatioms
+func (e *Service) ReleaseService(ctx *context.Context, request *serviceProto.ReleaseServiceRequest) error {
+	conn, requestCtx, err := grpcClient(ctx)
+	if err != nil {
+		return err
+	}
+	client := serviceProto.NewServiceServiceClient(conn)
+	stream, err := client.ReleaseService(*requestCtx, request)
+	if err != nil {
+		return err
+	}
+
+	log.Info("Starting release service operation...")
+	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
+	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
+	if err != nil {
+		return err
+	}
+	var message string
+	for {
+		response, err := stream.Recv()
+		spinnerInstance.Stop()
+		if err != nil {
+			if errors.Is(err, context.Canceled) || err == io.EOF {
+				break
+			}
+			return err
+		}
+		if response != nil {
+			message = response.Message
+			message += fmt.Sprintf("\n Service %s %s", response.ServiceStatus.ServiceAction, response.ServiceStatus.ServiceStatus)
+			for _, compMessage := range response.ComponentsStatus {
+				message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
+			}
+			spinnerInstance.Prefix += fmt.Sprintf(" %s  ", response.Message)
+			spinnerInstance.Start()
+		}
+	}
+	log.Info(message)
+	return err
+}
