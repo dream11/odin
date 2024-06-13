@@ -21,9 +21,10 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	ServiceService_DeployService_FullMethodName         = "/dream11.od.service.v1.ServiceService/DeployService"
 	ServiceService_ReleaseService_FullMethodName        = "/dream11.od.service.v1.ServiceService/ReleaseService"
+	ServiceService_DeployReleasedService_FullMethodName = "/dream11.od.service.v1.ServiceService/DeployReleasedService"
+	ServiceService_DeployServiceSet_FullMethodName      = "/dream11.od.service.v1.ServiceService/DeployServiceSet"
 	ServiceService_OperateService_FullMethodName        = "/dream11.od.service.v1.ServiceService/OperateService"
 	ServiceService_UndeployService_FullMethodName       = "/dream11.od.service.v1.ServiceService/UndeployService"
-	ServiceService_DeployReleasedService_FullMethodName = "/dream11.od.service.v1.ServiceService/DeployReleasedService"
 	ServiceService_ListService_FullMethodName           = "/dream11.od.service.v1.ServiceService/ListService"
 )
 
@@ -33,9 +34,10 @@ const (
 type ServiceServiceClient interface {
 	DeployService(ctx context.Context, in *DeployServiceRequest, opts ...grpc.CallOption) (ServiceService_DeployServiceClient, error)
 	ReleaseService(ctx context.Context, in *ReleaseServiceRequest, opts ...grpc.CallOption) (ServiceService_ReleaseServiceClient, error)
+	DeployReleasedService(ctx context.Context, in *DeployReleasedServiceRequest, opts ...grpc.CallOption) (ServiceService_DeployReleasedServiceClient, error)
+	DeployServiceSet(ctx context.Context, in *DeployServiceSetRequest, opts ...grpc.CallOption) (ServiceService_DeployServiceSetClient, error)
 	OperateService(ctx context.Context, in *OperateServiceRequest, opts ...grpc.CallOption) (ServiceService_OperateServiceClient, error)
 	UndeployService(ctx context.Context, in *UndeployServiceRequest, opts ...grpc.CallOption) (ServiceService_UndeployServiceClient, error)
-	DeployReleasedService(ctx context.Context, in *DeployReleasedServiceRequest, opts ...grpc.CallOption) (ServiceService_DeployReleasedServiceClient, error)
 	ListService(ctx context.Context, in *ListServiceRequest, opts ...grpc.CallOption) (*ListServiceResponse, error)
 }
 
@@ -111,8 +113,72 @@ func (x *serviceServiceReleaseServiceClient) Recv() (*ReleaseServiceResponse, er
 	return m, nil
 }
 
+func (c *serviceServiceClient) DeployReleasedService(ctx context.Context, in *DeployReleasedServiceRequest, opts ...grpc.CallOption) (ServiceService_DeployReleasedServiceClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ServiceService_ServiceDesc.Streams[2], ServiceService_DeployReleasedService_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &serviceServiceDeployReleasedServiceClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type ServiceService_DeployReleasedServiceClient interface {
+	Recv() (*DeployReleasedServiceResponse, error)
+	grpc.ClientStream
+}
+
+type serviceServiceDeployReleasedServiceClient struct {
+	grpc.ClientStream
+}
+
+func (x *serviceServiceDeployReleasedServiceClient) Recv() (*DeployReleasedServiceResponse, error) {
+	m := new(DeployReleasedServiceResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *serviceServiceClient) DeployServiceSet(ctx context.Context, in *DeployServiceSetRequest, opts ...grpc.CallOption) (ServiceService_DeployServiceSetClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ServiceService_ServiceDesc.Streams[3], ServiceService_DeployServiceSet_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &serviceServiceDeployServiceSetClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type ServiceService_DeployServiceSetClient interface {
+	Recv() (*DeployServiceSetResponse, error)
+	grpc.ClientStream
+}
+
+type serviceServiceDeployServiceSetClient struct {
+	grpc.ClientStream
+}
+
+func (x *serviceServiceDeployServiceSetClient) Recv() (*DeployServiceSetResponse, error) {
+	m := new(DeployServiceSetResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *serviceServiceClient) OperateService(ctx context.Context, in *OperateServiceRequest, opts ...grpc.CallOption) (ServiceService_OperateServiceClient, error) {
-	stream, err := c.cc.NewStream(ctx, &ServiceService_ServiceDesc.Streams[2], ServiceService_OperateService_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &ServiceService_ServiceDesc.Streams[4], ServiceService_OperateService_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +210,7 @@ func (x *serviceServiceOperateServiceClient) Recv() (*OperateServiceResponse, er
 }
 
 func (c *serviceServiceClient) UndeployService(ctx context.Context, in *UndeployServiceRequest, opts ...grpc.CallOption) (ServiceService_UndeployServiceClient, error) {
-	stream, err := c.cc.NewStream(ctx, &ServiceService_ServiceDesc.Streams[3], ServiceService_UndeployService_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &ServiceService_ServiceDesc.Streams[5], ServiceService_UndeployService_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -175,38 +241,6 @@ func (x *serviceServiceUndeployServiceClient) Recv() (*UndeployServiceResponse, 
 	return m, nil
 }
 
-func (c *serviceServiceClient) DeployReleasedService(ctx context.Context, in *DeployReleasedServiceRequest, opts ...grpc.CallOption) (ServiceService_DeployReleasedServiceClient, error) {
-	stream, err := c.cc.NewStream(ctx, &ServiceService_ServiceDesc.Streams[4], ServiceService_DeployReleasedService_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &serviceServiceDeployReleasedServiceClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type ServiceService_DeployReleasedServiceClient interface {
-	Recv() (*DeployReleasedServiceResponse, error)
-	grpc.ClientStream
-}
-
-type serviceServiceDeployReleasedServiceClient struct {
-	grpc.ClientStream
-}
-
-func (x *serviceServiceDeployReleasedServiceClient) Recv() (*DeployReleasedServiceResponse, error) {
-	m := new(DeployReleasedServiceResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
 func (c *serviceServiceClient) ListService(ctx context.Context, in *ListServiceRequest, opts ...grpc.CallOption) (*ListServiceResponse, error) {
 	out := new(ListServiceResponse)
 	err := c.cc.Invoke(ctx, ServiceService_ListService_FullMethodName, in, out, opts...)
@@ -222,9 +256,10 @@ func (c *serviceServiceClient) ListService(ctx context.Context, in *ListServiceR
 type ServiceServiceServer interface {
 	DeployService(*DeployServiceRequest, ServiceService_DeployServiceServer) error
 	ReleaseService(*ReleaseServiceRequest, ServiceService_ReleaseServiceServer) error
+	DeployReleasedService(*DeployReleasedServiceRequest, ServiceService_DeployReleasedServiceServer) error
+	DeployServiceSet(*DeployServiceSetRequest, ServiceService_DeployServiceSetServer) error
 	OperateService(*OperateServiceRequest, ServiceService_OperateServiceServer) error
 	UndeployService(*UndeployServiceRequest, ServiceService_UndeployServiceServer) error
-	DeployReleasedService(*DeployReleasedServiceRequest, ServiceService_DeployReleasedServiceServer) error
 	ListService(context.Context, *ListServiceRequest) (*ListServiceResponse, error)
 	mustEmbedUnimplementedServiceServiceServer()
 }
@@ -239,14 +274,17 @@ func (UnimplementedServiceServiceServer) DeployService(*DeployServiceRequest, Se
 func (UnimplementedServiceServiceServer) ReleaseService(*ReleaseServiceRequest, ServiceService_ReleaseServiceServer) error {
 	return status.Errorf(codes.Unimplemented, "method ReleaseService not implemented")
 }
+func (UnimplementedServiceServiceServer) DeployReleasedService(*DeployReleasedServiceRequest, ServiceService_DeployReleasedServiceServer) error {
+	return status.Errorf(codes.Unimplemented, "method DeployReleasedService not implemented")
+}
+func (UnimplementedServiceServiceServer) DeployServiceSet(*DeployServiceSetRequest, ServiceService_DeployServiceSetServer) error {
+	return status.Errorf(codes.Unimplemented, "method DeployServiceSet not implemented")
+}
 func (UnimplementedServiceServiceServer) OperateService(*OperateServiceRequest, ServiceService_OperateServiceServer) error {
 	return status.Errorf(codes.Unimplemented, "method OperateService not implemented")
 }
 func (UnimplementedServiceServiceServer) UndeployService(*UndeployServiceRequest, ServiceService_UndeployServiceServer) error {
 	return status.Errorf(codes.Unimplemented, "method UndeployService not implemented")
-}
-func (UnimplementedServiceServiceServer) DeployReleasedService(*DeployReleasedServiceRequest, ServiceService_DeployReleasedServiceServer) error {
-	return status.Errorf(codes.Unimplemented, "method DeployReleasedService not implemented")
 }
 func (UnimplementedServiceServiceServer) ListService(context.Context, *ListServiceRequest) (*ListServiceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListService not implemented")
@@ -306,6 +344,48 @@ func (x *serviceServiceReleaseServiceServer) Send(m *ReleaseServiceResponse) err
 	return x.ServerStream.SendMsg(m)
 }
 
+func _ServiceService_DeployReleasedService_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(DeployReleasedServiceRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ServiceServiceServer).DeployReleasedService(m, &serviceServiceDeployReleasedServiceServer{stream})
+}
+
+type ServiceService_DeployReleasedServiceServer interface {
+	Send(*DeployReleasedServiceResponse) error
+	grpc.ServerStream
+}
+
+type serviceServiceDeployReleasedServiceServer struct {
+	grpc.ServerStream
+}
+
+func (x *serviceServiceDeployReleasedServiceServer) Send(m *DeployReleasedServiceResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _ServiceService_DeployServiceSet_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(DeployServiceSetRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ServiceServiceServer).DeployServiceSet(m, &serviceServiceDeployServiceSetServer{stream})
+}
+
+type ServiceService_DeployServiceSetServer interface {
+	Send(*DeployServiceSetResponse) error
+	grpc.ServerStream
+}
+
+type serviceServiceDeployServiceSetServer struct {
+	grpc.ServerStream
+}
+
+func (x *serviceServiceDeployServiceSetServer) Send(m *DeployServiceSetResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 func _ServiceService_OperateService_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(OperateServiceRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -345,27 +425,6 @@ type serviceServiceUndeployServiceServer struct {
 }
 
 func (x *serviceServiceUndeployServiceServer) Send(m *UndeployServiceResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _ServiceService_DeployReleasedService_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(DeployReleasedServiceRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(ServiceServiceServer).DeployReleasedService(m, &serviceServiceDeployReleasedServiceServer{stream})
-}
-
-type ServiceService_DeployReleasedServiceServer interface {
-	Send(*DeployReleasedServiceResponse) error
-	grpc.ServerStream
-}
-
-type serviceServiceDeployReleasedServiceServer struct {
-	grpc.ServerStream
-}
-
-func (x *serviceServiceDeployReleasedServiceServer) Send(m *DeployReleasedServiceResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -411,6 +470,16 @@ var ServiceService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 		{
+			StreamName:    "DeployReleasedService",
+			Handler:       _ServiceService_DeployReleasedService_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "DeployServiceSet",
+			Handler:       _ServiceService_DeployServiceSet_Handler,
+			ServerStreams: true,
+		},
+		{
 			StreamName:    "OperateService",
 			Handler:       _ServiceService_OperateService_Handler,
 			ServerStreams: true,
@@ -418,11 +487,6 @@ var ServiceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "UndeployService",
 			Handler:       _ServiceService_UndeployService_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "DeployReleasedService",
-			Handler:       _ServiceService_DeployReleasedService_Handler,
 			ServerStreams: true,
 		},
 	},

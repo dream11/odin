@@ -91,9 +91,9 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 		}
 
 		if response != nil {
-			message = response.Message
-			message += fmt.Sprintf("\n Service %s %s", response.ServiceStatus.ServiceAction, response.ServiceStatus.ServiceStatus)
-			for _, compMessage := range response.ComponentsStatus {
+			message = response.GetServiceResponse().Message
+			message += fmt.Sprintf("\n Service %s %s", response.GetServiceResponse().ServiceStatus.ServiceAction, response.GetServiceResponse().ServiceStatus.ServiceStatus)
+			for _, compMessage := range response.GetServiceResponse().ComponentsStatus {
 				message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
 			}
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)

@@ -31,7 +31,7 @@ message ProvisioningConfig {
   repeated ComponentProvisioningConfig component_provisioning_config = 1;
 }
 
-message Service {
+message ServiceMetadata {
   int32 id = 1;
   string name = 2;
   string version = 3;
@@ -41,5 +41,5 @@ message Service {
   string created_at = 7;
   string updated_at = 8;
   string tags = 9; // JSON encoded string
-  string labels = 10; // JSON encoded string
+  string labels = 10; // comma seperated string
 }
