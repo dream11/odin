@@ -18,6 +18,7 @@ bin
 # Editor files
 *.code-workspace
 *.idea/
+.DS_Store
 
 # Service definition files
 service.yaml

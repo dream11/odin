@@ -33,16 +33,11 @@ func readConfigFile() {
 }
 
 func getConfigForProfile(profile string) (*configuration.Configuration, error) {
-	appConfig := configuration.Configuration{}
-
-	if err := viper.UnmarshalKey(profile, &appConfig); err != nil {
+	config := configuration.Configuration{}
+	if err := viper.UnmarshalKey(profile, &config); err != nil {
 		log.Fatal("Configuration can't be loaded: ", err)
 	}
-	if appConfig == (configuration.Configuration{}) {
-		log.Fatal("Configuration for profile [", profile, "] not found!")
-	}
-
-	return &appConfig, nil
+	return &config, nil
 }
 
 func readConfig() (*configuration.Configuration, error) {
@@ -57,7 +52,7 @@ func GetConfig() *configuration.Configuration {
 		appConfig, err = readConfig()
 	})
 	if err != nil {
-		log.Fatal("Error while reading config ", err)
+		log.Fatal("Error while reading config: ", err)
 	}
 	return appConfig
 }
@@ -74,9 +69,15 @@ func WriteConfig(config *configuration.Configuration) {
 // SetProfile sets the profile in the config file
 func SetProfile(profileName string) {
 	readConfigFile()
-	if _, err := getConfigForProfile(profileName); err != nil {
-		log.Fatal("Error while reading config ", err)
+
+	config, err := getConfigForProfile(profileName)
+	if err != nil {
+		log.Fatal("Error while reading config: ", err)
 	}
+	if *config == (configuration.Configuration{}) {
+		log.Fatal("Configuration for profile [", profileName, "] not found!")
+	}
+
 	viper.Set("profile", profileName)
 	if err := viper.WriteConfig(); err != nil {
 		log.Fatal("Unable to write configuration: ", err)

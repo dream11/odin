@@ -8,6 +8,7 @@ import (
 
 	"github.com/dream11/odin/pkg/config"
 	"github.com/dream11/odin/pkg/util"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
@@ -16,6 +17,9 @@ import (
 
 func grpcClient(ctx *context.Context) (*grpc.ClientConn, *context.Context, error) {
 	appConfig := config.GetConfig()
+	if appConfig.BackendAddress == "" {
+		log.Fatal("Cannot create grpc client: Backend address is empty in config! Run `odin configure` to set backend address")
+	}
 	var opts []grpc.DialOption
 	if appConfig.Insecure {
 		if util.IsIPAddress(strings.Split(appConfig.BackendAddress, ":")[0]) {
