@@ -73,7 +73,7 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 		return err
 	}
 
-	log.Info("Deploying Service...")
+	log.Info("Deploying Service Set..")
 	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
 	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
 	if err != nil {
