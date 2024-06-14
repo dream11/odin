@@ -1470,7 +1470,6 @@ var file_dream11_od_service_v1_service_proto_depIdxs = []int32{
 	20, // [20:20] is the sub-list for extension type_name
 	20, // [20:20] is the sub-list for extension extendee
 	0,  // [0:20] is the sub-list for field type_name
-
 }
 
 func init() { file_dream11_od_service_v1_service_proto_init() }

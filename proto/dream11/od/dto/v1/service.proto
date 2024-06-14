@@ -21,6 +21,17 @@ message ServiceDefinition {
   repeated ComponentDefinition components = 4;
 }
 
+message ServiceIdentifier{
+  string name = 1;
+  string version = 2;
+}
+
+message ServiceSet {
+  string name = 1;
+  repeated ServiceIdentifier services = 2;
+}
+
+
 message ComponentProvisioningConfig {
   string component_name = 1;
   string deployment_type = 2;
