@@ -21,6 +21,16 @@ message ServiceDefinition {
   repeated ComponentDefinition components = 4;
 }
 
+message ServiceIdentifier {
+  string name = 1;
+  string version = 2;
+}
+
+message ServiceSet {
+  string name = 1;
+  repeated ServiceIdentifier services = 2;
+}
+
 message ComponentProvisioningConfig {
   string component_name = 1;
   string deployment_type = 2;
@@ -41,5 +51,5 @@ message ServiceMetadata {
   string created_at = 7;
   string updated_at = 8;
   string tags = 9; // JSON encoded string
-  string labels = 10; // JSON encoded string
+  string labels = 10; // comma seperated string
 }
