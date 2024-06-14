@@ -21,7 +21,7 @@ message ServiceDefinition {
   repeated ComponentDefinition components = 4;
 }
 
-message ServiceIdentifier{
+message ServiceIdentifier {
   string name = 1;
   string version = 2;
 }
