@@ -251,7 +251,6 @@ func (e *Service) ListService(ctx *context.Context, request *serviceProto.ListSe
 }
 
 // ConvertToDeployServiceSetRequest converts service set to deploy service set request
-
 func (e *Service) ConvertToDeployServiceSetRequest(serviceSet *serviceDto.ServiceSet, env string) serviceProto.DeployServiceSetRequest {
 	var services []*serviceProto.ServiceIdentifier
 	for _, service := range serviceSet.Services {
