@@ -17,9 +17,9 @@ var serviceSetDeployCmd = &cobra.Command{
 	Args: func(cmd *cobra.Command, args []string) error {
 		return cobra.NoArgs(cmd, args)
 	},
-	Long: "Deploy service-set using files or service name",
+	Long: "Deploy service-set using files or service set name",
 	Run: func(cmd *cobra.Command, args []string) {
-		execute_deploy_service_set(cmd)
+		executeDeployServiceSet(cmd)
 	},
 }
 
@@ -37,7 +37,7 @@ func init() {
 	deployCmd.AddCommand(serviceSetDeployCmd)
 }
 
-func execute_deploy_service_set(cmd *cobra.Command) {
+func executeDeployServiceSet(cmd *cobra.Command) {
 	ctx := cmd.Context()
 	if serviceSetName == "" && provisioningFile == "" {
 		log.Fatal("Please provide either --name or --file.")

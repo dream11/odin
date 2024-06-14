@@ -31,7 +31,6 @@ message ServiceSet {
   repeated ServiceIdentifier services = 2;
 }
 
-
 message ComponentProvisioningConfig {
   string component_name = 1;
   string deployment_type = 2;
