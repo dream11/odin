@@ -85,7 +85,7 @@ func execute(cmd *cobra.Command) {
 	err = componentClient.OperateComponent(&ctx, &serviceProto.OperateServiceRequest{
 		EnvName:              env,
 		ServiceName:          serviceName,
-		ComponentName:        []string{name},
+		ComponentName:        name,
 		IsComponentOperation: true,
 		Operation:            operation,
 		Config:               config,
