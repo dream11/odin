@@ -104,10 +104,11 @@ func (c *Component) Run(args []string) int {
 				for _, key := range keys {
 					oldValue := flatendOldComponentValues[key]
 					newValue := flatendNewComponentValues[key]
-					if fmt.Sprintf("%v", oldValue) != fmt.Sprintf("%v", newValue) {
-						var oldValueString string
-						var newValueString string
+					var oldValueString string
+					var newValueString string
 
+					if fmt.Sprintf("%v", oldValue) != fmt.Sprintf("%v", newValue) {
+						// Values are different, use red for old value and green for new value
 						switch oldValue := oldValue.(type) {
 						case []interface{}:
 							strSlice := make([]string, len(oldValue))
@@ -129,14 +130,18 @@ func (c *Component) Run(args []string) int {
 						default:
 							newValueString = color.GreenString(fmt.Sprintf("%v", flatendNewComponentValues[key]))
 						}
-
-						tableData = append(tableData, []interface{}{
-							componentName,
-							key,
-							oldValueString,
-							newValueString,
-						})
+					} else {
+						// Values are the same, use yellow for both old and new values
+						oldValueString = color.YellowString(fmt.Sprintf("%v", oldValue))
+						newValueString = color.YellowString(fmt.Sprintf("%v", newValue))
 					}
+
+					tableData = append(tableData, []interface{}{
+						componentName,
+						key,
+						oldValueString,
+						newValueString,
+					})
 				}
 				table.Write(tableHeaders, tableData)
 			}
