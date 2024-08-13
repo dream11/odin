@@ -36,6 +36,7 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 	}
 
 	var message string
+	var prevMessage string
 	for {
 		response, err := stream.Recv()
 		spinnerInstance.Stop()
@@ -50,14 +51,15 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 			message = response.ServiceResponse.Message
 			message += fmt.Sprintf("\n Service %s %s", response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
 			for _, compMessage := range response.ServiceResponse.ComponentsStatus {
-				message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
+				message += fmt.Sprintf("\n Component %s %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus,compMessage.Error)
 			}
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
+			prevMessage = message
 			spinnerInstance.Start()
 		}
 	}
 
-	log.Info(message)
+	log.Info(prevMessage)
 	return err
 }
 
@@ -81,6 +83,7 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 	}
 
 	var message string
+	var prevMessage string
 	for {
 		response, err := stream.Recv()
 		spinnerInstance.Stop()
@@ -93,18 +96,20 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 
 		if response != nil {
 
-			for _, serviceRespose := range response.GetServices() {
-				message = fmt.Sprintf("\n Service %s %s %s", serviceRespose.ServiceIdentifier, serviceRespose.ServiceResponse.ServiceStatus, serviceRespose.ServiceResponse.Message)
-				for _, compMessage := range serviceRespose.ServiceResponse.ComponentsStatus {
-					message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
+			for index, serviceRespose := range response.GetServices() {
+				message += fmt.Sprintf("\n Service:%d %s %s  %s",index+1 , serviceRespose.ServiceIdentifier, serviceRespose.ServiceResponse.ServiceStatus, serviceRespose.ServiceResponse.Message)
+				for cindex, compMessage := range serviceRespose.ServiceResponse.ComponentsStatus {
+					message += fmt.Sprintf("\n Component:%d %s %s %s \n",cindex+1, compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
 				}
 			}
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 			spinnerInstance.Start()
+			prevMessage = message
+			message=""
 		}
 	}
 
-	log.Info(message)
+	log.Info(prevMessage)
 	return err
 }
 
@@ -255,8 +260,8 @@ func (e *Service) ConvertToDeployServiceSetRequest(serviceSet *serviceDto.Servic
 	var services []*serviceProto.ServiceIdentifier
 	for _, service := range serviceSet.Services {
 		services = append(services, &serviceProto.ServiceIdentifier{
-			ServiceName:    service.Name,
-			ServiceVersion: service.Version,
+			ServiceName:    service.ServiceName,
+			ServiceVersion: service.ServiceVersion,
 		})
 	}
 
