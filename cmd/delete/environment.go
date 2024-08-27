@@ -12,7 +12,7 @@ var name string
 var environmentClient = service.Environment{}
 
 var environmentCmd = &cobra.Command{
-	Use:   "environment",
+	Use:   "env",
 	Short: "Delete environment",
 	Long:  `Delete environment`,
 	Args: func(cmd *cobra.Command, args []string) error {

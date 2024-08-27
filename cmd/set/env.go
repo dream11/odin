@@ -8,7 +8,7 @@ import (
 
 // profileCmd represents the profile command
 var setEnvCmd = &cobra.Command{
-	Use:   "environment",
+	Use:   "env",
 	Short: "odin set default environment",
 	Long:  `modify environment in config file`,
 	Run: func(cmd *cobra.Command, args []string) {

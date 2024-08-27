@@ -20,7 +20,7 @@ var displayAll bool
 
 var environmentClient = service.Environment{}
 var environmentCmd = &cobra.Command{
-	Use:   "environment",
+	Use:   "env",
 	Short: "List environments",
 	Args: func(cmd *cobra.Command, args []string) error {
 		return cobra.NoArgs(cmd, args)
