@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 
+	"github.com/dream11/odin/pkg/config"
 	serviceDto "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
@@ -28,16 +29,12 @@ func init() {
 	serviceSetDeployCmd.Flags().StringVar(&env, "env", "", "environment for deploying the service-set")
 	serviceSetDeployCmd.Flags().StringVar(&provisioningFile, "file", "", "path to the service set provisioning file")
 	serviceSetDeployCmd.Flags().StringVar(&serviceSetName, "name", "", "released service set name")
-
-	err := serviceSetDeployCmd.MarkFlagRequired("env")
-	if err != nil {
-		log.Fatal("Error marking 'env' flag as required:", err)
-	}
-
 	deployCmd.AddCommand(serviceSetDeployCmd)
 }
 
 func executeDeployServiceSet(cmd *cobra.Command) {
+	env = config.EnsureEnvPresent(env)
+
 	ctx := cmd.Context()
 	if serviceSetName == "" && provisioningFile == "" {
 		log.Fatal("Please provide either --name or --file.")

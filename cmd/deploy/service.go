@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/dream11/odin/internal/service"
+	"github.com/dream11/odin/pkg/config"
 	serviceDto "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
@@ -36,16 +37,11 @@ func init() {
 	serviceCmd.Flags().StringVar(&provisioningFile, "provisioning", "", "path to the provisioning file")
 	serviceCmd.Flags().StringVar(&serviceName, "name", "", "released service name")
 	serviceCmd.Flags().StringVar(&serviceVersion, "version", "", "released service version")
-
-	err := serviceCmd.MarkFlagRequired("env")
-	if err != nil {
-		log.Fatal("Error marking 'env' flag as required:", err)
-	}
-
 	deployCmd.AddCommand(serviceCmd)
 }
 
 func execute(cmd *cobra.Command) {
+	env = config.EnsureEnvPresent(env)
 	ctx := cmd.Context()
 	if (serviceName == "" && serviceVersion == "") && (definitionFile != "" && provisioningFile != "") {
 		definitionData, err := os.ReadFile(definitionFile)

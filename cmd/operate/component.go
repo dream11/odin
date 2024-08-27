@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/dream11/odin/internal/service"
+	"github.com/dream11/odin/pkg/config"
 	fileUtil "github.com/dream11/odin/pkg/util"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
@@ -43,9 +44,6 @@ func init() {
 	if err := operateComponentCmd.MarkFlagRequired("service"); err != nil {
 		log.Fatal("Error marking 'service' flag as required:", err)
 	}
-	if err := operateComponentCmd.MarkFlagRequired("env"); err != nil {
-		log.Fatal("Error marking 'env' flag as required:", err)
-	}
 	if err := operateComponentCmd.MarkFlagRequired("operation"); err != nil {
 		log.Fatal("Error marking 'operation' flag as required:", err)
 	}
@@ -53,6 +51,8 @@ func init() {
 }
 
 func execute(cmd *cobra.Command) {
+	env = config.EnsureEnvPresent(env)
+
 	ctx := cmd.Context()
 	//validate the variables
 	var optionsData map[string]interface{}
