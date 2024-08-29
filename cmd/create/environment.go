@@ -16,7 +16,7 @@ var environmentClient service.Environment
 
 // environmentCmd represents the environment command
 var environmentCmd = &cobra.Command{
-	Use:   "environment",
+	Use:   "env",
 	Short: "Create environment",
 	Args: func(cmd *cobra.Command, args []string) error {
 		return cobra.NoArgs(cmd, args)

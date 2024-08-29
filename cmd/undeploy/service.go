@@ -2,6 +2,7 @@ package undeploy
 
 import (
 	"github.com/dream11/odin/internal/service"
+	"github.com/dream11/odin/pkg/config"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -31,14 +32,12 @@ func init() {
 	if err != nil {
 		log.Fatal("Error marking 'name' flag as required:", err)
 	}
-	err = serviceCmd.MarkFlagRequired("env")
-	if err != nil {
-		log.Fatal("Error marking 'name' flag as required:", err)
-	}
 	undeployCmd.AddCommand(serviceCmd)
 }
 
 func execute(cmd *cobra.Command) {
+	envName = config.EnsureEnvPresent(envName)
+
 	ctx := cmd.Context()
 
 	err := serviceClient.UndeployService(&ctx, &serviceProto.UndeployServiceRequest{

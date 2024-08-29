@@ -50,7 +50,7 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 			message = response.ServiceResponse.Message
 			message += fmt.Sprintf("\n Service %s %s", response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
 			for _, compMessage := range response.ServiceResponse.ComponentsStatus {
-				message += fmt.Sprintf("\n Component %s %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus,compMessage.Error)
+				message += fmt.Sprintf("\n Component %s %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus, compMessage.Error)
 			}
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 			spinnerInstance.Start()
@@ -92,11 +92,11 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 		}
 
 		if response != nil {
-			message=""
+			message = ""
 			for index, serviceRespose := range response.GetServices() {
-				message += fmt.Sprintf("\n Service:%d %s %s  %s",index+1 , serviceRespose.ServiceIdentifier, serviceRespose.ServiceResponse.ServiceStatus, serviceRespose.ServiceResponse.Message)
+				message += fmt.Sprintf("\n Service:%d %s %s  %s", index+1, serviceRespose.ServiceIdentifier, serviceRespose.ServiceResponse.ServiceStatus, serviceRespose.ServiceResponse.Message)
 				for cindex, compMessage := range serviceRespose.ServiceResponse.ComponentsStatus {
-					message += fmt.Sprintf("\n Component:%d %s %s %s \n",cindex+1, compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
+					message += fmt.Sprintf("\n Component:%d %s %s %s \n", cindex+1, compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
 				}
 			}
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
@@ -248,6 +248,49 @@ func (e *Service) ListService(ctx *context.Context, request *serviceProto.ListSe
 	client := serviceProto.NewServiceServiceClient(conn)
 	response, err := client.ListService(*requestCtx, request)
 	return response, err
+}
+
+// ReleaseService :service operatioms
+func (e *Service) ReleaseService(ctx *context.Context, request *serviceProto.ReleaseServiceRequest) error {
+	conn, requestCtx, err := grpcClient(ctx)
+	if err != nil {
+		return err
+	}
+	client := serviceProto.NewServiceServiceClient(conn)
+	stream, err := client.ReleaseService(*requestCtx, request)
+	if err != nil {
+		return err
+	}
+
+	log.Info("Starting release service operation...")
+	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
+	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
+	if err != nil {
+		return err
+	}
+	var message string
+	for {
+		response, err := stream.Recv()
+		spinnerInstance.Stop()
+		if err != nil {
+			if errors.Is(err, context.Canceled) || err == io.EOF {
+				break
+			}
+			return err
+		}
+		if response != nil {
+			message = response.Message
+			message += fmt.Sprintf("\n Service %s %s", response.ServiceStatus.ServiceAction, response.ServiceStatus)
+			for _, compMessage := range response.ComponentsStatus {
+				message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
+			}
+			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
+			spinnerInstance.Start()
+		}
+	}
+	log.Info("Service released successfully !")
+
+	return err
 }
 
 // ConvertToDeployServiceSetRequest converts service set to deploy service set request
