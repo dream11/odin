@@ -53,7 +53,7 @@ func executeupdate(cmd *cobra.Command) {
 	if isOptionsPresent && isFilePresent {
 		log.Fatal("You can provide either --data or --file but not both")
 	}
-	if (!isOptionsPresent && !isFilePresent) {
+	if !isOptionsPresent && !isFilePresent {
 		log.Fatal("Either --data or --file is mandatory")
 	}
 

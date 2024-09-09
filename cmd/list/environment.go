@@ -90,9 +90,9 @@ func writeAsJSON(response *environment.ListEnvironmentResponse) {
 	var environments []map[string]interface{}
 	for _, env := range response.Environments {
 		environments = append(environments, map[string]interface{}{
-			"name":      env.Name,
-			"status":    env.State,
-			"account":   env.Account,
+			"name":    env.Name,
+			"status":  env.State,
+			"account": env.Account,
 		})
 	}
 	output, _ := json.MarshalIndent(environments, "", "  ")
