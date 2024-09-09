@@ -7,7 +7,6 @@ import (
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/constant"
 	environment "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
-	environmentProto "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -57,7 +56,7 @@ func executeOperate(cmd *cobra.Command) {
 		log.Fatal("error converting JSON to structpb.Struct: ", err)
 	}
 	//call operate env client
-	response, err := operateEnvClient.OperateEnvironment(&ctx, &environmentProto.UpdateEnvironmentRequest{
+	response, err := operateEnvClient.OperateEnvironment(&ctx, &environment.UpdateEnvironmentRequest{
 		EnvName: envName,
 		Data:    dataStruct,
 	})

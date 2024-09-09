@@ -125,5 +125,5 @@ func (e *Environment) UpdateEnvironment(ctx *context.Context, request *environme
 }
 
 func (e *Environment) OperateEnvironment(ctx *context.Context, request *environment.UpdateEnvironmentRequest) (*environment.UpdateEnvironmentResponse, error) {
-	return nil, errors.New("Invalid operation")
+	return nil, errors.New("invalid operation")
 }
