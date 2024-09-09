@@ -19,7 +19,7 @@ message ListEnvironmentRequest {
 }
 
 message ListEnvironmentResponse {
-  repeated dream11.od.dto.v1.Environment environments = 1;
+  repeated dream11.od.dto.v1.EnvironmentSummary environments = 1;
 }
 
 message DescribeEnvironmentRequest {

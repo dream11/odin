@@ -228,6 +228,69 @@ func (x *AccountInformation) GetStatus() string {
 	return ""
 }
 
+type EnvironmentSummary struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name    string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Account string `protobuf:"bytes,2,opt,name=account,proto3" json:"account,omitempty"`
+	State   string `protobuf:"bytes,3,opt,name=state,proto3" json:"state,omitempty"`
+}
+
+func (x *EnvironmentSummary) Reset() {
+	*x = EnvironmentSummary{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_dream11_od_dto_v1_environment_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EnvironmentSummary) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EnvironmentSummary) ProtoMessage() {}
+
+func (x *EnvironmentSummary) ProtoReflect() protoreflect.Message {
+	mi := &file_dream11_od_dto_v1_environment_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EnvironmentSummary.ProtoReflect.Descriptor instead.
+func (*EnvironmentSummary) Descriptor() ([]byte, []int) {
+	return file_dream11_od_dto_v1_environment_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *EnvironmentSummary) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *EnvironmentSummary) GetAccount() string {
+	if x != nil {
+		return x.Account
+	}
+	return ""
+}
+
+func (x *EnvironmentSummary) GetState() string {
+	if x != nil {
+		return x.State
+	}
+	return ""
+}
+
 var File_dream11_od_dto_v1_environment_proto protoreflect.FileDescriptor
 
 var file_dream11_od_dto_v1_environment_proto_rawDesc = []byte{
@@ -306,11 +369,16 @@ var file_dream11_od_dto_v1_environment_proto_rawDesc = []byte{
 	0x63, 0x74, 0x52, 0x17, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x41, 0x63, 0x63, 0x6f, 0x75,
 	0x6e, 0x74, 0x73, 0x53, 0x6e, 0x61, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x73,
 	0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x74, 0x61,
-	0x74, 0x75, 0x73, 0x42, 0x38, 0x5a, 0x36, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
-	0x6d, 0x2f, 0x64, 0x72, 0x65, 0x61, 0x6d, 0x31, 0x31, 0x2f, 0x6f, 0x64, 0x69, 0x6e, 0x2f, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x67, 0x6f, 0x2f, 0x64, 0x72, 0x65, 0x61,
-	0x6d, 0x31, 0x31, 0x2f, 0x6f, 0x64, 0x2f, 0x64, 0x74, 0x6f, 0x2f, 0x76, 0x31, 0x62, 0x06, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x74, 0x75, 0x73, 0x22, 0x58, 0x0a, 0x12, 0x45, 0x6e, 0x76, 0x69, 0x72, 0x6f, 0x6e, 0x6d, 0x65,
+	0x6e, 0x74, 0x53, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x79, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d,
+	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x18, 0x0a,
+	0x07, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07,
+	0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x73, 0x74, 0x61, 0x74, 0x65,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x73, 0x74, 0x61, 0x74, 0x65, 0x42, 0x38, 0x5a,
+	0x36, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x64, 0x72, 0x65, 0x61,
+	0x6d, 0x31, 0x31, 0x2f, 0x6f, 0x64, 0x69, 0x6e, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67,
+	0x65, 0x6e, 0x2f, 0x67, 0x6f, 0x2f, 0x64, 0x72, 0x65, 0x61, 0x6d, 0x31, 0x31, 0x2f, 0x6f, 0x64,
+	0x2f, 0x64, 0x74, 0x6f, 0x2f, 0x76, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -325,22 +393,23 @@ func file_dream11_od_dto_v1_environment_proto_rawDescGZIP() []byte {
 	return file_dream11_od_dto_v1_environment_proto_rawDescData
 }
 
-var file_dream11_od_dto_v1_environment_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_dream11_od_dto_v1_environment_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_dream11_od_dto_v1_environment_proto_goTypes = []interface{}{
 	(*Environment)(nil),           // 0: dream11.od.dto.v1.Environment
 	(*AccountInformation)(nil),    // 1: dream11.od.dto.v1.AccountInformation
-	(*timestamppb.Timestamp)(nil), // 2: google.protobuf.Timestamp
-	(*structpb.Struct)(nil),       // 3: google.protobuf.Struct
-	(*ServiceTask)(nil),           // 4: dream11.od.dto.v1.ServiceTask
+	(*EnvironmentSummary)(nil),    // 2: dream11.od.dto.v1.EnvironmentSummary
+	(*timestamppb.Timestamp)(nil), // 3: google.protobuf.Timestamp
+	(*structpb.Struct)(nil),       // 4: google.protobuf.Struct
+	(*ServiceTask)(nil),           // 5: dream11.od.dto.v1.ServiceTask
 }
 var file_dream11_od_dto_v1_environment_proto_depIdxs = []int32{
-	2, // 0: dream11.od.dto.v1.Environment.created_at:type_name -> google.protobuf.Timestamp
-	2, // 1: dream11.od.dto.v1.Environment.updated_at:type_name -> google.protobuf.Timestamp
-	3, // 2: dream11.od.dto.v1.Environment.service_accounts_snapshot:type_name -> google.protobuf.Struct
-	2, // 3: dream11.od.dto.v1.Environment.auto_deletion_time:type_name -> google.protobuf.Timestamp
-	4, // 4: dream11.od.dto.v1.Environment.services:type_name -> dream11.od.dto.v1.ServiceTask
+	3, // 0: dream11.od.dto.v1.Environment.created_at:type_name -> google.protobuf.Timestamp
+	3, // 1: dream11.od.dto.v1.Environment.updated_at:type_name -> google.protobuf.Timestamp
+	4, // 2: dream11.od.dto.v1.Environment.service_accounts_snapshot:type_name -> google.protobuf.Struct
+	3, // 3: dream11.od.dto.v1.Environment.auto_deletion_time:type_name -> google.protobuf.Timestamp
+	5, // 4: dream11.od.dto.v1.Environment.services:type_name -> dream11.od.dto.v1.ServiceTask
 	1, // 5: dream11.od.dto.v1.Environment.account_information:type_name -> dream11.od.dto.v1.AccountInformation
-	3, // 6: dream11.od.dto.v1.AccountInformation.service_accounts_snapshot:type_name -> google.protobuf.Struct
+	4, // 6: dream11.od.dto.v1.AccountInformation.service_accounts_snapshot:type_name -> google.protobuf.Struct
 	7, // [7:7] is the sub-list for method output_type
 	7, // [7:7] is the sub-list for method input_type
 	7, // [7:7] is the sub-list for extension type_name
@@ -379,6 +448,18 @@ func file_dream11_od_dto_v1_environment_proto_init() {
 				return nil
 			}
 		}
+		file_dream11_od_dto_v1_environment_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EnvironmentSummary); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	file_dream11_od_dto_v1_environment_proto_msgTypes[0].OneofWrappers = []interface{}{}
 	type x struct{}
@@ -387,7 +468,7 @@ func file_dream11_od_dto_v1_environment_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_dream11_od_dto_v1_environment_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

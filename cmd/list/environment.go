@@ -73,14 +73,13 @@ func writeOutput(response *environment.ListEnvironmentResponse, format string) {
 }
 
 func writeAsText(response *environment.ListEnvironmentResponse) {
-	tableHeaders := []string{"Name", "Created By", "State", "Account"}
+	tableHeaders := []string{"Name", "State", "Account"}
 	var tableData [][]interface{}
 	for _, env := range response.Environments {
 		tableData = append(tableData, []interface{}{
-			*env.Name,
-			*env.CreatedBy,
-			*env.Status,
-			*env.ProviderAccountName,
+			env.Name,
+			env.State,
+			env.Account,
 		})
 	}
 
@@ -91,10 +90,9 @@ func writeAsJSON(response *environment.ListEnvironmentResponse) {
 	var environments []map[string]interface{}
 	for _, env := range response.Environments {
 		environments = append(environments, map[string]interface{}{
-			"name":      *env.Name,
-			"createdBy": *env.CreatedBy,
-			"status":    *env.Status,
-			"account":   *env.ProviderAccountName,
+			"name":      env.Name,
+			"status":    env.State,
+			"account":   env.Account,
 		})
 	}
 	output, _ := json.MarshalIndent(environments, "", "  ")
