@@ -29,9 +29,8 @@ message AccountInformation {
   string status = 3;
 }
 
-
 message EnvironmentSummary {
   string name = 1;
-  string account =2;
+  string account = 2;
   string state = 3;
 }
