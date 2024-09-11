@@ -123,7 +123,3 @@ func (e *Environment) UpdateEnvironment(ctx *context.Context, request *environme
 
 	return response, nil
 }
-
-func (e *Environment) OperateEnvironment(ctx *context.Context, request *environment.UpdateEnvironmentRequest) (*environment.UpdateEnvironmentResponse, error) {
-	return nil, errors.New("invalid operation")
-}

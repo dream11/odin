@@ -104,7 +104,7 @@ func writeOutput(response *environment.UpdateEnvironmentResponse, format string)
 }
 
 func writeAsText(response *environment.UpdateEnvironmentResponse) {
-	fmt.Print(string("autoDeletionTime updated successfully"))
+	fmt.Print(string("Environment updated successfully"))
 }
 
 func writeAsJSON(response *environment.UpdateEnvironmentResponse) {
