@@ -28,3 +28,9 @@ message AccountInformation {
   google.protobuf.Struct service_accounts_snapshot = 2;
   string status = 3;
 }
+
+message EnvironmentSummary {
+  string name = 1;
+  string account = 2;
+  string state = 3;
+}
