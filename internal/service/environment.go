@@ -108,6 +108,7 @@ func (e *Environment) DeleteEnvironment(ctx *context.Context, request *environme
 	return err
 }
 
+// UpdateEnvironment updates environment
 func (e *Environment) UpdateEnvironment(ctx *context.Context, request *environment.UpdateEnvironmentRequest) (*environment.UpdateEnvironmentResponse, error) {
 	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {
@@ -116,6 +117,23 @@ func (e *Environment) UpdateEnvironment(ctx *context.Context, request *environme
 
 	client := environment.NewEnvironmentServiceClient(conn)
 	response, err := client.UpdateEnvironment(*requestCtx, request)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
+// DescribeEnvironment shows environment details including services and resources in it
+func (e *Environment) DescribeEnvironment(ctx *context.Context, request *environment.DescribeEnvironmentRequest) (*environment.DescribeEnvironmentResponse, error) {
+	conn, requestCtx, err := grpcClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	client := environment.NewEnvironmentServiceClient(conn)
+	response, err := client.DescribeEnvironment(*requestCtx, request)
 
 	if err != nil {
 		return nil, err

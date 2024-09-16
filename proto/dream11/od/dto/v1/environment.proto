@@ -2,9 +2,8 @@ syntax = "proto3";
 package dream11.od.dto.v1;
 
 import "dream11/od/dto/v1/service_task.proto";
-import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
-
+import "dream11/oam/provideraccount/v1/provider_account.proto";
 option go_package = "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1";
 
 message Environment {
@@ -14,18 +13,17 @@ message Environment {
   optional string created_by = 4;
   optional int32 version = 5;
   optional int64 org_id = 6;
-  optional string provider_account_name = 7;
   optional string name = 8;
-  optional google.protobuf.Struct service_accounts_snapshot = 9;
   optional string status = 10;
   optional google.protobuf.Timestamp auto_deletion_time = 11;
   repeated dream11.od.dto.v1.ServiceTask services = 12;
-  repeated AccountInformation account_information = 13;
+  repeated  AccountInformation account_information = 13;
+  optional string updated_by = 14;
 }
 
 message AccountInformation {
   string provider_account_name = 1;
-  google.protobuf.Struct service_accounts_snapshot = 2;
+  dream11.oam.provideraccount.v1.GetProviderAccountResponse service_accounts_snapshot = 2;
   string status = 3;
 }
 
