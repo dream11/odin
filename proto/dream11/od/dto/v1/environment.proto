@@ -1,9 +1,10 @@
 syntax = "proto3";
 package dream11.od.dto.v1;
 
+import "dream11/oam/provideraccount/v1/provider_account.proto";
 import "dream11/od/dto/v1/service_task.proto";
 import "google/protobuf/timestamp.proto";
-import "dream11/oam/provideraccount/v1/provider_account.proto";
+
 option go_package = "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1";
 
 message Environment {
@@ -17,7 +18,7 @@ message Environment {
   optional string status = 10;
   optional google.protobuf.Timestamp auto_deletion_time = 11;
   repeated dream11.od.dto.v1.ServiceTask services = 12;
-  repeated  AccountInformation account_information = 13;
+  repeated AccountInformation account_information = 13;
   optional string updated_by = 14;
 }
 

@@ -1,5 +1,6 @@
 syntax = "proto3";
 package dream11.oam.provideraccount.v1;
+
 import "dream11/oam/dto/v1/provider_account.proto";
 
 option go_package = "github.com/dream11/odin/proto/gen/go/dream11/oam/provideraccount/v1";
