@@ -88,7 +88,7 @@ func writeAsJSON(response *service.DescribeServiceResponse) {
 	if response.Service.ServiceDefinition != nil && len(response.Service.ServiceDefinition.GetFields()) > 0 {
 		serviceData.Set("definition", response.Service.ServiceDefinition)
 	}
-	if response.Service.ProvisioningConfigFiles != nil && len(response.Service.ProvisioningConfigFiles) > 0 {
+	if len(response.Service.ProvisioningConfigFiles) > 0 {
 		serviceData.Set("provision", response.Service.ProvisioningConfigFiles)
 	}
 
