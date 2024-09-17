@@ -14,8 +14,6 @@ import (
 
 var serviceName string
 var serviceVersion string
-var labelsJSON string
-var labels map[string]string
 var component string
 var verbose bool
 
