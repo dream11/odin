@@ -2,6 +2,7 @@ syntax = "proto3";
 package dream11.od.dto.v1;
 
 import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1";
 
@@ -62,4 +63,16 @@ message AddComponentRequestOptions {
 
 message RemoveComponentRequestOptions {
   string component_name = 1;
+}
+
+message Service {
+  optional string name = 1;
+  optional string version = 2;
+  optional google.protobuf.Timestamp created_at = 3;
+  optional google.protobuf.Timestamp updated_at = 4;
+  optional string created_by = 5;
+  optional string updated_by = 6;
+  optional google.protobuf.Struct labels = 7;
+  optional google.protobuf.Struct service_definition = 8;
+  repeated google.protobuf.Struct provisioning_config_files = 9;
 }

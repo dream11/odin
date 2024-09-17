@@ -15,6 +15,7 @@ import (
 	_ "github.com/dream11/odin/cmd/undeploy"
 	_ "github.com/dream11/odin/cmd/update"
 	_ "github.com/dream11/odin/internal/ui"
+	_ "github.com/dream11/odin/cmd/describe"
 )
 
 func main() {
