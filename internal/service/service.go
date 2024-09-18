@@ -11,6 +11,7 @@ import (
 	serviceDto "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
+
 )
 
 // Service performs operation on service like deploy. undeploy
@@ -265,4 +266,19 @@ func (e *Service) ConvertToDeployServiceSetRequest(serviceSet *serviceDto.Servic
 		Name:     serviceSet.Name,
 		Services: services,
 	}
+}
+
+// DescribeService describe service
+func (e *Service) DescribeService(ctx *context.Context, request *serviceProto.DescribeServiceRequest) (*serviceProto.DescribeServiceResponse, error) {
+	conn, requestCtx, err := grpcClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+	client := serviceProto.NewServiceServiceClient(conn)
+	response, err := client.DescribeService(*requestCtx, request)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
 }
