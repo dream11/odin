@@ -76,4 +76,3 @@ message Service {
   repeated google.protobuf.Struct provisioning_config_files = 8;
   repeated string versions = 9;
 }
-
