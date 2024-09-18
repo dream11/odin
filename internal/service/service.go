@@ -268,6 +268,7 @@ func (e *Service) ConvertToDeployServiceSetRequest(serviceSet *serviceDto.Servic
 	}
 }
 
+// DescribeService describe service
 func (e *Service) DescribeService(ctx *context.Context, request *serviceProto.DescribeServiceRequest) (*serviceProto.DescribeServiceResponse, error) {
 	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {
