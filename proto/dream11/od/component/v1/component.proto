@@ -7,6 +7,8 @@ option go_package = "github.com/dream11/odin/proto/gen/go/dream11/od/component/v
 
 service ComponentService {
   rpc ListComponentType(ListComponentTypeRequest) returns (ListComponentTypeResponse) {}
+  rpc DescribeComponentType(DescribeComponentTypeRequest) returns (DescribeComponentTypeResponse) {}
+
 }
 
 message ListComponentTypeRequest {
@@ -16,3 +18,13 @@ message ListComponentTypeRequest {
 message ListComponentTypeResponse {
   repeated dream11.od.dto.v1.Component components = 1;
 }
+
+message DescribeComponentTypeRequest {
+  string component_type = 1;
+  map<string, string> params = 2;
+}
+
+message DescribeComponentTypeResponse {
+  dream11.od.dto.v1.Component component = 1;
+}
+

@@ -34,12 +34,18 @@ func init() {
 	serviceCmd.Flags().StringVar(&serviceVersion, "version", "", "version of the service")
 	serviceCmd.Flags().StringVar(&component, "component", "", "Display the config of a specific component only")
 	serviceCmd.Flags().BoolVarP(&verbose, "verbose", "V", false, "display provisioning files data")
+	err := componentCmd.MarkFlagRequired("name")
+	if err != nil {
+		log.Fatal("Error marking 'name' flag as required:", err)
+	}
+	err = componentCmd.MarkFlagRequired("version")
+	if err != nil {
+		log.Fatal("Error marking 'version' flag as required:", err)
+	}
 	describeCmd.AddCommand(serviceCmd)
 }
 
 func execute(cmd *cobra.Command) {
-
-	validateFlags()
 
 	params := map[string]string{
 		"verbose": strconv.FormatBool(verbose),
@@ -61,17 +67,6 @@ func execute(cmd *cobra.Command) {
 	}
 
 	writeAsJSON(response)
-}
-
-func validateFlags() {
-
-	if serviceName == "" {
-		log.Fatal("Please pass the --name flag")
-	}
-
-	if serviceVersion == "" {
-		log.Fatal("Please pass  --version flag ")
-	}
 }
 
 func writeAsJSON(response *service.DescribeServiceResponse) {

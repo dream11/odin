@@ -68,3 +68,18 @@ func (e *Component) ListComponentType(ctx *context.Context, request *component.L
 
 	return response, nil
 }
+
+// DescribeComponentType List component types
+func (e *Component) DescribeComponentType(ctx *context.Context, request *component.DescribeComponentTypeRequest) (*component.DescribeComponentTypeResponse, error) {
+	conn, requestCtx, err := grpcClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+	client := component.NewComponentServiceClient(conn)
+	response, err := client.DescribeComponentType(*requestCtx, request)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
