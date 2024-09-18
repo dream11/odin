@@ -72,7 +72,8 @@ message Service {
   optional google.protobuf.Timestamp updated_at = 4;
   optional string created_by = 5;
   optional string updated_by = 6;
-  optional google.protobuf.Struct labels = 7;
-  optional google.protobuf.Struct service_definition = 8;
-  repeated google.protobuf.Struct provisioning_config_files = 9;
+  optional google.protobuf.Struct service_definition = 7;
+  repeated google.protobuf.Struct provisioning_config_files = 8;
+  repeated string versions = 9;
 }
+

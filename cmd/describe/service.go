@@ -3,13 +3,12 @@ package describe
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
-
 	serviceBackend "github.com/dream11/odin/internal/service"
 	service "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	"github.com/iancoleman/orderedmap"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"strconv"
 )
 
 var serviceName string
@@ -82,9 +81,7 @@ func writeAsJSON(response *service.DescribeServiceResponse) {
 	if response.Service.Version != nil && *response.Service.Version != "" {
 		serviceData.Set("version", *response.Service.Version)
 	}
-	if response.Service.Labels != nil {
-		serviceData.Set("labels", response.Service.Labels)
-	}
+
 	if response.Service.ServiceDefinition != nil && len(response.Service.ServiceDefinition.GetFields()) > 0 {
 		serviceData.Set("definition", response.Service.ServiceDefinition)
 	}
@@ -98,3 +95,4 @@ func writeAsJSON(response *service.DescribeServiceResponse) {
 	}
 	fmt.Println(string(output))
 }
+
