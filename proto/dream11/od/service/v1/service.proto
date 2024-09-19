@@ -115,6 +115,5 @@ message ListServiceResponse {
 message ListServiceRequest {
   string name = 1;
   string version = 2;
-  string team = 3;
-  string label = 4;
+  string tags = 3;
 }
