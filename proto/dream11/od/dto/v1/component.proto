@@ -1,14 +1,31 @@
 syntax = "proto3";
 package dream11.od.dto.v1;
 
+import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1";
 
 message Component {
-  int64 id = 1;
-  google.protobuf.Timestamp created_at = 2;
-  google.protobuf.Timestamp updated_at = 3;
-  string component_type = 4;
-  string component_version = 5;
+  optional int64 id = 1;
+  optional google.protobuf.Timestamp created_at = 2;
+  optional google.protobuf.Timestamp updated_at = 3;
+  optional string component_type = 6;
+  optional string component_version = 7;
+  optional google.protobuf.Struct common_schema = 8;
+  optional google.protobuf.Struct common_defaults = 9;
+  repeated Flavour flavours = 10;
+}
+
+message Flavour {
+  optional string name = 1;
+  optional google.protobuf.Struct schema = 2;
+  optional google.protobuf.Struct defaults = 3;
+  repeated Operation operations = 4;
+}
+
+message Operation {
+  optional string name = 1;
+  optional google.protobuf.Struct schema = 2;
+  optional google.protobuf.Struct defaults = 3;
 }

@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	ComponentService_ListComponentType_FullMethodName = "/dream11.od.component.v1.ComponentService/ListComponentType"
+	ComponentService_ListComponentType_FullMethodName     = "/dream11.od.component.v1.ComponentService/ListComponentType"
+	ComponentService_DescribeComponentType_FullMethodName = "/dream11.od.component.v1.ComponentService/DescribeComponentType"
 )
 
 // ComponentServiceClient is the client API for ComponentService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ComponentServiceClient interface {
 	ListComponentType(ctx context.Context, in *ListComponentTypeRequest, opts ...grpc.CallOption) (*ListComponentTypeResponse, error)
+	DescribeComponentType(ctx context.Context, in *DescribeComponentTypeRequest, opts ...grpc.CallOption) (*DescribeComponentTypeResponse, error)
 }
 
 type componentServiceClient struct {
@@ -46,11 +48,21 @@ func (c *componentServiceClient) ListComponentType(ctx context.Context, in *List
 	return out, nil
 }
 
+func (c *componentServiceClient) DescribeComponentType(ctx context.Context, in *DescribeComponentTypeRequest, opts ...grpc.CallOption) (*DescribeComponentTypeResponse, error) {
+	out := new(DescribeComponentTypeResponse)
+	err := c.cc.Invoke(ctx, ComponentService_DescribeComponentType_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ComponentServiceServer is the server API for ComponentService service.
 // All implementations must embed UnimplementedComponentServiceServer
 // for forward compatibility
 type ComponentServiceServer interface {
 	ListComponentType(context.Context, *ListComponentTypeRequest) (*ListComponentTypeResponse, error)
+	DescribeComponentType(context.Context, *DescribeComponentTypeRequest) (*DescribeComponentTypeResponse, error)
 	mustEmbedUnimplementedComponentServiceServer()
 }
 
@@ -60,6 +72,9 @@ type UnimplementedComponentServiceServer struct {
 
 func (UnimplementedComponentServiceServer) ListComponentType(context.Context, *ListComponentTypeRequest) (*ListComponentTypeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListComponentType not implemented")
+}
+func (UnimplementedComponentServiceServer) DescribeComponentType(context.Context, *DescribeComponentTypeRequest) (*DescribeComponentTypeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DescribeComponentType not implemented")
 }
 func (UnimplementedComponentServiceServer) mustEmbedUnimplementedComponentServiceServer() {}
 
@@ -92,6 +107,24 @@ func _ComponentService_ListComponentType_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ComponentService_DescribeComponentType_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DescribeComponentTypeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ComponentServiceServer).DescribeComponentType(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ComponentService_DescribeComponentType_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ComponentServiceServer).DescribeComponentType(ctx, req.(*DescribeComponentTypeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ComponentService_ServiceDesc is the grpc.ServiceDesc for ComponentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -102,6 +135,10 @@ var ComponentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListComponentType",
 			Handler:    _ComponentService_ListComponentType_Handler,
+		},
+		{
+			MethodName: "DescribeComponentType",
+			Handler:    _ComponentService_DescribeComponentType_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
