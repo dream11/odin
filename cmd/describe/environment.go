@@ -13,8 +13,7 @@ import (
 )
 
 var name string
-var serviceName string
-var component string
+
 
 var environmentClient = service.Environment{}
 var environmentCmd = &cobra.Command{
@@ -25,7 +24,7 @@ var environmentCmd = &cobra.Command{
 	},
 	Long: `Describe  environment details`,
 	Run: func(cmd *cobra.Command, args []string) {
-		execute(cmd)
+		executeEnv(cmd)
 	},
 }
 
@@ -36,7 +35,7 @@ func init() {
 	describeCmd.AddCommand(environmentCmd)
 }
 
-func execute(cmd *cobra.Command) {
+func executeEnv(cmd *cobra.Command) {
 	ctx := cmd.Context()
 	params := map[string]string{}
 
@@ -66,15 +65,15 @@ func writeOutput(response *environment.DescribeEnvironmentResponse, format strin
 
 	switch format {
 	case constant.TEXT:
-		writeAsText(response)
+		writeAsTextEnvResponse(response)
 	case constant.JSON:
-		writeAsJSON(response)
+		writeAsJSONEnvResponse(response)
 	default:
 		log.Fatal("Unknown output format: ", format)
 	}
 }
 
-func writeAsText(response *environment.DescribeEnvironmentResponse) {
+func writeAsTextEnvResponse(response *environment.DescribeEnvironmentResponse) {
 
 	tableHeaders := []string{"Name",
 		"team",
@@ -128,7 +127,7 @@ func writeAsText(response *environment.DescribeEnvironmentResponse) {
 	table.Write(tableHeaders, tableData)
 }
 
-func writeAsJSON(response *environment.DescribeEnvironmentResponse) {
+func writeAsJSONEnvResponse(response *environment.DescribeEnvironmentResponse) {
 	var environments []map[string]interface{}
 	env := response.Environment
 	var accountInfoList []string
