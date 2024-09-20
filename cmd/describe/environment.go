@@ -30,9 +30,9 @@ var environmentCmd = &cobra.Command{
 }
 
 func init() {
-	environmentCmd.Flags().StringVar(&name, "name", "", "name of the env")
-	environmentCmd.Flags().StringVar(&serviceName, "service", "", "provisioning type of the environment")
-	environmentCmd.Flags().StringVar(&component, "component", "", "cloud provider account name")
+	environmentCmd.Flags().StringVar(&name, "name", "", "name of the environment")
+	environmentCmd.Flags().StringVar(&serviceName, "service", "", "service deployed in this environment")
+	environmentCmd.Flags().StringVar(&component, "component", "", "component of the service")
 	describeCmd.AddCommand(environmentCmd)
 }
 
@@ -115,7 +115,6 @@ func writeAsText(response *environment.DescribeEnvironmentResponse) {
 
 	tableData = append(tableData, []interface{}{
 		*env.Name,
-		"TODO",
 		*env.Status,
 		env.AutoDeletionTime.AsTime().String(),
 		string(accountInfoListJSON),
@@ -151,7 +150,6 @@ func writeAsJSON(response *environment.DescribeEnvironmentResponse) {
 
 	environments = append(environments, map[string]interface{}{
 		"name":                  env.Name,
-		"team":                  "TODO",
 		"state":                 env.Status,
 		"autoDeletionTime":      env.AutoDeletionTime.AsTime().String(),
 		"cloudProviderAccounts": accountInfoList,
