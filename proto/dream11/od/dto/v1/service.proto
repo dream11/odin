@@ -44,9 +44,9 @@ message ProvisioningConfig {
 }
 
 message ServiceMetadata {
-  string name = 1;
-  string version = 2;
-  string tags = 3;
+  string name = 2;
+  string version = 3;
+  string tags = 11;
 }
 
 message AddComponentRequestOptions {
