@@ -25,13 +25,12 @@ var serviceCmd = &cobra.Command{
 	},
 }
 
-var serviceName, version, team, label string
+var serviceName, version, tags string
 
 func init() {
 	serviceCmd.Flags().StringVar(&serviceName, "name", "", "name of the service")
 	serviceCmd.Flags().StringVar(&version, "version", "", "version of services to be listed")
-	serviceCmd.Flags().StringVar(&team, "team", "", "name of team")
-	serviceCmd.Flags().StringVar(&label, "label", "", "name of label")
+	serviceCmd.Flags().StringVar(&tags, "tags", "", "comma separated tags eg. key1=value1,key2=value2")
 	listCmd.AddCommand(serviceCmd)
 }
 
@@ -40,8 +39,7 @@ func listService(cmd *cobra.Command) {
 	response, err := serviceClient.ListService(&ctx, &serviceProto.ListServiceRequest{
 		Name:    serviceName,
 		Version: version,
-		Team:    team,
-		Label:   label,
+		Tags:    tags,
 	})
 
 	if err != nil {
@@ -67,14 +65,13 @@ func writeListService(response *serviceProto.ListServiceResponse, format string)
 }
 
 func writeListServiceAsText(response *serviceProto.ListServiceResponse) {
-	var tableHeaders = []string{"Name", "Version", "Label", "Description"}
+	var tableHeaders = []string{"Name", "Version", "Tags"}
 	var tableData [][]interface{}
 	for _, serviceEntity := range response.Services {
 		tableData = append(tableData, []interface{}{
 			serviceEntity.Name,
 			serviceEntity.Version,
-			serviceEntity.Labels,
-			serviceEntity.Description,
+			serviceEntity.Tags,
 		})
 	}
 	table.Write(tableHeaders, tableData)
@@ -86,8 +83,7 @@ func writeListServiceAsJSON(response *serviceProto.ListServiceResponse) {
 		services = append(services, map[string]interface{}{
 			"name":        serviceEntity.Name,
 			"version":     serviceEntity.Version,
-			"labels":      serviceEntity.Labels,
-			"description": serviceEntity.Description,
+			"Tags":      serviceEntity.Tags,
 		})
 	}
 	output, _ := json.MarshalIndent(services, "", "  ")

@@ -107,3 +107,19 @@ func (e *Environment) DeleteEnvironment(ctx *context.Context, request *environme
 	log.Info(message)
 	return err
 }
+
+func (e *Environment) UpdateEnvironment(ctx *context.Context, request *environment.UpdateEnvironmentRequest) (*environment.UpdateEnvironmentResponse, error) {
+	conn, requestCtx, err := grpcClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	client := environment.NewEnvironmentServiceClient(conn)
+	response, err := client.UpdateEnvironment(*requestCtx, request)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}

@@ -14,6 +14,7 @@ service ServiceService {
   rpc OperateService(OperateServiceRequest) returns (stream OperateServiceResponse) {}
   rpc UndeployService(UndeployServiceRequest) returns (stream UndeployServiceResponse) {}
   rpc ListService(ListServiceRequest) returns (ListServiceResponse) {}
+  rpc DescribeService(DescribeServiceRequest) returns (DescribeServiceResponse) {}
 }
 
 message DeployServiceRequest {
@@ -115,6 +116,15 @@ message ListServiceResponse {
 message ListServiceRequest {
   string name = 1;
   string version = 2;
-  string team = 3;
-  string label = 4;
+  string tags = 3;
+}
+
+message DescribeServiceRequest {
+  string service_name = 1;
+  string version = 2;
+  map<string, string> params = 4;
+}
+
+message DescribeServiceResponse {
+  dream11.od.dto.v1.Service service = 1;
 }
