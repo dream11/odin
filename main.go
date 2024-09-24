@@ -12,6 +12,7 @@ import (
 	_ "github.com/dream11/odin/cmd/describe"
 	_ "github.com/dream11/odin/cmd/list"
 	_ "github.com/dream11/odin/cmd/operate"
+	_ "github.com/dream11/odin/cmd/release"
 	_ "github.com/dream11/odin/cmd/set"
 	_ "github.com/dream11/odin/cmd/undeploy"
 	_ "github.com/dream11/odin/cmd/update"
