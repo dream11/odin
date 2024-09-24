@@ -31,7 +31,7 @@ var environmentCmd = &cobra.Command{
 func init() {
 	environmentCmd.Flags().StringVar(&name, "name", "", "name of the environment")
 	environmentCmd.Flags().StringVar(&serviceName, "service", "", "service deployed in this environment")
-	environmentCmd.Flags().StringVar(&component, "component", "", "component of the service")
+	environmentCmd.Flags().StringVar(&component, "component", "", "component of the service deployed in this environment")
 	describeCmd.AddCommand(environmentCmd)
 }
 

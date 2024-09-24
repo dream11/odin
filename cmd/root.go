@@ -17,7 +17,7 @@ var RootCmd = &cobra.Command{
 
 func init() {
 	RootCmd.PersistentFlags().StringP("profile", "p", "default", "odin profile")
-	RootCmd.PersistentFlags().StringP("output", "o", "json", "odin profile")
+	RootCmd.PersistentFlags().StringP("output", "o", "text", "odin profile")
 	err := viper.BindPFlag("profile", RootCmd.PersistentFlags().Lookup("profile"))
 	if err != nil {
 		log.Fatal("Error while binding profile flag")
