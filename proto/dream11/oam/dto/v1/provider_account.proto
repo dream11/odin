@@ -1,0 +1,29 @@
+syntax = "proto3";
+package dream11.oam.dto.v1;
+
+import "google/protobuf/struct.proto";
+
+option go_package = "github.com/dream11/odin/proto/gen/go/dream11/oam/dto/v1";
+
+message ProviderAccount {
+  string name = 1;
+  string provider = 2;
+  string category = 3;
+  google.protobuf.Struct data = 4;
+  repeated ProviderServiceAccount services = 5;
+  bool default = 6;
+  int64 id = 7;
+  repeated int64 linked_provider_account_ids = 8;
+}
+
+message ProviderServiceAccountEnriched {
+  ProviderServiceAccount service = 1;
+  ProviderAccount account = 2;
+}
+
+message ProviderServiceAccount {
+  string name = 1;
+  string category = 2;
+  google.protobuf.Struct data = 3;
+  int64 id = 4;
+}

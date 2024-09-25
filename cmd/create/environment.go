@@ -29,10 +29,13 @@ var environmentCmd = &cobra.Command{
 func init() {
 	environmentCmd.Flags().StringVar(&envName, "name", "", "name of the environment to be created")
 	environmentCmd.Flags().StringVar(&accounts, "accounts", "", "list of comma separated cloud provider accounts")
-	environmentCmd.Flags().StringVar(&provisioningType, "provisioning-type", "dev", "provisioning type of the environment")
+	environmentCmd.Flags().StringVar(&provisioningType, "provisioning-type", "", "provisioning type of the environment")
 	err := environmentCmd.MarkFlagRequired("name")
 	if err != nil {
 		log.Fatal("Error marking 'name' flag as required:", err)
+	}
+	if err := environmentCmd.MarkFlagRequired("provisioning-type"); err != nil {
+		log.Fatal("Error marking 'provisioning-type' flag as required:", err)
 	}
 	createCmd.AddCommand(environmentCmd)
 }
