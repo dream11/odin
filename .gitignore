@@ -23,3 +23,6 @@ bin
 # Service definition files
 service.yaml
 service.json
+
+# Ignore proto generated files
+*.pb.go
