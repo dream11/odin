@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/dream11/odin/pkg/util"
 	"io"
+	"strings"
 
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
@@ -276,14 +277,21 @@ func (e *Service) ReleaseService(ctx *context.Context, request *serviceProto.Rel
 			message = response.Message
 			message += fmt.Sprintf("\n Service %s %s", response.ServiceStatus.ServiceAction, response.ServiceStatus)
 			for _, compMessage := range response.ComponentsStatus {
-				message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
+				message += fmt.Sprintf("\n Component %s %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus, compMessage.Error)
+				if compMessage.ComponentStatus == "FAILED" {
+					return errors.New(compMessage.Error)
+				}
 			}
+
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 			spinnerInstance.Start()
 		}
 	}
-	log.Info("Service released successfully !")
-
+	if strings.Contains(strings.ToLower(message), "fail") {
+		return errors.New(message)
+	} else {
+		log.Info("Service released successfully !")
+	}
 	return err
 }
 
