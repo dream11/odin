@@ -14,7 +14,6 @@ import (
 
 var name string
 
-
 var environmentClient = service.Environment{}
 var environmentCmd = &cobra.Command{
 	Use:   "env",
@@ -76,7 +75,6 @@ func writeOutput(response *environment.DescribeEnvironmentResponse, format strin
 func writeAsTextEnvResponse(response *environment.DescribeEnvironmentResponse) {
 
 	tableHeaders := []string{"Name",
-		"team",
 		"state",
 		"autoDeletionTime",
 		"cloudProviderAccounts",
@@ -113,12 +111,12 @@ func writeAsTextEnvResponse(response *environment.DescribeEnvironmentResponse) {
 	}
 
 	tableData = append(tableData, []interface{}{
-		*env.Name,
-		*env.Status,
+		env.GetName(),
+		env.GetStatus(),
 		env.AutoDeletionTime.AsTime().String(),
 		string(accountInfoListJSON),
-		*env.CreatedBy,
-		*env.UpdatedBy,
+		env.GetCreatedBy(),
+		env.GetUpdatedBy(),
 		env.CreatedAt.AsTime().String(),
 		env.UpdatedAt.AsTime().String(),
 		string(servicesSummaryJSON),
