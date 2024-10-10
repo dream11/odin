@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/dream11/odin/pkg/util"
 	"io"
 
 	"github.com/briandowns/spinner"
@@ -11,7 +12,6 @@ import (
 	serviceDto "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
-
 )
 
 // Service performs operation on service like deploy. undeploy
@@ -48,11 +48,7 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 		}
 
 		if response != nil {
-			message = response.ServiceResponse.Message
-			message += fmt.Sprintf("\n Service %s %s", response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
-			for _, compMessage := range response.ServiceResponse.ComponentsStatus {
-				message += fmt.Sprintf("\n Component %s %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus, compMessage.Error)
-			}
+			message = util.GenerateResponseMessage(response.GetServiceResponse())
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 			spinnerInstance.Start()
 		}
@@ -94,11 +90,8 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 
 		if response != nil {
 			message = ""
-			for index, serviceRespose := range response.GetServices() {
-				message += fmt.Sprintf("\n Service:%d %s %s  %s", index+1, serviceRespose.ServiceIdentifier, serviceRespose.ServiceResponse.ServiceStatus, serviceRespose.ServiceResponse.Message)
-				for cindex, compMessage := range serviceRespose.ServiceResponse.ComponentsStatus {
-					message += fmt.Sprintf("\n Component:%d %s %s %s \n", cindex+1, compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
-				}
+			for _, serviceResponse := range response.GetServices() {
+				message += util.GenerateResponseMessage(serviceResponse.GetServiceResponse())
 			}
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 			spinnerInstance.Start()
@@ -154,7 +147,7 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 	return err
 }
 
-// UndeployService undeploys service
+// UndeployService undeploy service
 func (e *Service) UndeployService(ctx *context.Context, request *serviceProto.UndeployServiceRequest) error {
 	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {

@@ -1,6 +1,8 @@
 package util
 
 import (
+	"fmt"
+	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	"net"
 	"strings"
 )
@@ -17,4 +19,13 @@ func SplitProviderAccount(providerAccounts string) []string {
 func IsIPAddress(address string) bool {
 	addr := net.ParseIP(address)
 	return addr != nil
+}
+
+// GenerateResponseMessage generate response message from ServiceResponse
+func GenerateResponseMessage(response *v1.ServiceResponse) string {
+	message := fmt.Sprintf("\n Service %s %s", response.ServiceStatus.ServiceAction, response.ServiceStatus)
+	for _, compMessage := range response.ComponentsStatus {
+		message += fmt.Sprintf("\n Component %s %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus, compMessage.Error)
+	}
+	return message
 }

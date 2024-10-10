@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/dream11/odin/pkg/util"
 	"io"
 
 	"github.com/briandowns/spinner"
@@ -45,8 +46,8 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 			return err
 		}
 		if response != nil {
-			message = response.ServiceResponse.Message
-			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", response.ServiceResponse.Message)
+			message = util.GenerateResponseMessage(response.GetServiceResponse())
+			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 			spinnerInstance.Start()
 		}
 	}
