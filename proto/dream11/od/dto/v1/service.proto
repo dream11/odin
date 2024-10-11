@@ -37,6 +37,7 @@ message ComponentProvisioningConfig {
   string deployment_type = 2;
   google.protobuf.Struct params = 3;
   google.protobuf.Struct plugins = 4;
+  google.protobuf.Struct env_variables = 5;
 }
 
 message ProvisioningConfig {

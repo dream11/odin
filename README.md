@@ -36,6 +36,17 @@ Or,
 
 3. Verify the cli: `odin --version`
 
+### Generating sources from proto files
+1. Install dependencies using following set of commands
+```shell
+go get -u google.golang.org/protobuf/cmd/protoc-gen-go
+go install google.golang.org/protobuf/cmd/protoc-gen-go
+
+go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
+```
+2. Run `protoc --proto_path=proto/ --go_out=. --go_opt=module=github.com/dream11/odin --go-grpc_out=. --go-grpc_opt=module=github.com/dream11/odin $(find proto -name '*.proto')`
+
 ## Contribution guide
 
 ### Code conventions
