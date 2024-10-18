@@ -3,16 +3,16 @@ package operate
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dream11/odin/pkg/table"
-	"github.com/fatih/color"
 	"sort"
 	"strings"
 
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/internal/ui"
 	"github.com/dream11/odin/pkg/config"
+	"github.com/dream11/odin/pkg/table"
 	fileUtil "github.com/dream11/odin/pkg/util"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
+	"github.com/fatih/color"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -89,8 +89,6 @@ func execute(cmd *cobra.Command) {
 	}
 	//call operate component client
 
-
-
 	diffValues, err := componentClient.CompareOperationChanges(&ctx, &serviceProto.CompareOperationChangesRequest{
 		EnvName:              env,
 		ServiceName:          serviceName,
@@ -160,7 +158,6 @@ func execute(cmd *cobra.Command) {
 		table.Write(tableHeaders, tableData)
 	}
 
-
 	var message string
 	if oldComponentValues == nil || len(oldComponentValues.Fields) == 0 {
 		message = "\nNo changes from previous deployment. Do you want to continue? [Y/n]:"
@@ -185,8 +182,6 @@ func execute(cmd *cobra.Command) {
 		return
 	}
 
-
-
 	err = componentClient.OperateComponent(&ctx, &serviceProto.OperateServiceRequest{
 		EnvName:              env,
 		ServiceName:          serviceName,
@@ -201,7 +196,6 @@ func execute(cmd *cobra.Command) {
 	}
 
 }
-
 
 func flattenMap(m map[string]interface{}, prefix string) map[string]interface{} {
 	flattened := make(map[string]interface{})
@@ -224,4 +218,3 @@ func flattenMap(m map[string]interface{}, prefix string) map[string]interface{} 
 	}
 	return flattened
 }
-
