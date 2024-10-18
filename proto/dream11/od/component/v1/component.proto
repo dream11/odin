@@ -3,7 +3,6 @@ package dream11.od.component.v1;
 
 import "dream11/od/dto/v1/component.proto";
 
-
 option go_package = "github.com/dream11/odin/proto/gen/go/dream11/od/component/v1";
 
 service ComponentService {
@@ -27,4 +26,3 @@ message DescribeComponentTypeRequest {
 message DescribeComponentTypeResponse {
   dream11.od.dto.v1.Component component = 1;
 }
-
