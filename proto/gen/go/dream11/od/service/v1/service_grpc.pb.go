@@ -19,14 +19,15 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	ServiceService_DeployService_FullMethodName         = "/dream11.od.service.v1.ServiceService/DeployService"
-	ServiceService_ReleaseService_FullMethodName        = "/dream11.od.service.v1.ServiceService/ReleaseService"
-	ServiceService_DeployReleasedService_FullMethodName = "/dream11.od.service.v1.ServiceService/DeployReleasedService"
-	ServiceService_DeployServiceSet_FullMethodName      = "/dream11.od.service.v1.ServiceService/DeployServiceSet"
-	ServiceService_OperateService_FullMethodName        = "/dream11.od.service.v1.ServiceService/OperateService"
-	ServiceService_UndeployService_FullMethodName       = "/dream11.od.service.v1.ServiceService/UndeployService"
-	ServiceService_ListService_FullMethodName           = "/dream11.od.service.v1.ServiceService/ListService"
-	ServiceService_DescribeService_FullMethodName       = "/dream11.od.service.v1.ServiceService/DescribeService"
+	ServiceService_DeployService_FullMethodName           = "/dream11.od.service.v1.ServiceService/DeployService"
+	ServiceService_ReleaseService_FullMethodName          = "/dream11.od.service.v1.ServiceService/ReleaseService"
+	ServiceService_DeployReleasedService_FullMethodName   = "/dream11.od.service.v1.ServiceService/DeployReleasedService"
+	ServiceService_DeployServiceSet_FullMethodName        = "/dream11.od.service.v1.ServiceService/DeployServiceSet"
+	ServiceService_OperateService_FullMethodName          = "/dream11.od.service.v1.ServiceService/OperateService"
+	ServiceService_UndeployService_FullMethodName         = "/dream11.od.service.v1.ServiceService/UndeployService"
+	ServiceService_ListService_FullMethodName             = "/dream11.od.service.v1.ServiceService/ListService"
+	ServiceService_DescribeService_FullMethodName         = "/dream11.od.service.v1.ServiceService/DescribeService"
+	ServiceService_CompareOperationChanges_FullMethodName = "/dream11.od.service.v1.ServiceService/CompareOperationChanges"
 )
 
 // ServiceServiceClient is the client API for ServiceService service.
@@ -41,6 +42,7 @@ type ServiceServiceClient interface {
 	UndeployService(ctx context.Context, in *UndeployServiceRequest, opts ...grpc.CallOption) (ServiceService_UndeployServiceClient, error)
 	ListService(ctx context.Context, in *ListServiceRequest, opts ...grpc.CallOption) (*ListServiceResponse, error)
 	DescribeService(ctx context.Context, in *DescribeServiceRequest, opts ...grpc.CallOption) (*DescribeServiceResponse, error)
+	CompareOperationChanges(ctx context.Context, in *OperateServiceRequest, opts ...grpc.CallOption) (*CompareOperationChangesResponse, error)
 }
 
 type serviceServiceClient struct {
@@ -261,6 +263,15 @@ func (c *serviceServiceClient) DescribeService(ctx context.Context, in *Describe
 	return out, nil
 }
 
+func (c *serviceServiceClient) CompareOperationChanges(ctx context.Context, in *OperateServiceRequest, opts ...grpc.CallOption) (*CompareOperationChangesResponse, error) {
+	out := new(CompareOperationChangesResponse)
+	err := c.cc.Invoke(ctx, ServiceService_CompareOperationChanges_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ServiceServiceServer is the server API for ServiceService service.
 // All implementations must embed UnimplementedServiceServiceServer
 // for forward compatibility
@@ -273,6 +284,7 @@ type ServiceServiceServer interface {
 	UndeployService(*UndeployServiceRequest, ServiceService_UndeployServiceServer) error
 	ListService(context.Context, *ListServiceRequest) (*ListServiceResponse, error)
 	DescribeService(context.Context, *DescribeServiceRequest) (*DescribeServiceResponse, error)
+	CompareOperationChanges(context.Context, *OperateServiceRequest) (*CompareOperationChangesResponse, error)
 	mustEmbedUnimplementedServiceServiceServer()
 }
 
@@ -303,6 +315,9 @@ func (UnimplementedServiceServiceServer) ListService(context.Context, *ListServi
 }
 func (UnimplementedServiceServiceServer) DescribeService(context.Context, *DescribeServiceRequest) (*DescribeServiceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DescribeService not implemented")
+}
+func (UnimplementedServiceServiceServer) CompareOperationChanges(context.Context, *OperateServiceRequest) (*CompareOperationChangesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CompareOperationChanges not implemented")
 }
 func (UnimplementedServiceServiceServer) mustEmbedUnimplementedServiceServiceServer() {}
 
@@ -479,6 +494,24 @@ func _ServiceService_DescribeService_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServiceService_CompareOperationChanges_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OperateServiceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceServiceServer).CompareOperationChanges(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServiceService_CompareOperationChanges_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceServiceServer).CompareOperationChanges(ctx, req.(*OperateServiceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ServiceService_ServiceDesc is the grpc.ServiceDesc for ServiceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -493,6 +526,10 @@ var ServiceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DescribeService",
 			Handler:    _ServiceService_DescribeService_Handler,
+		},
+		{
+			MethodName: "CompareOperationChanges",
+			Handler:    _ServiceService_CompareOperationChanges_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

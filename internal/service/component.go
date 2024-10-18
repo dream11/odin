@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/dream11/odin/pkg/util"
 	"io"
 
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
+	"github.com/dream11/odin/pkg/util"
 	component "github.com/dream11/odin/proto/gen/go/dream11/od/component/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
@@ -78,6 +78,21 @@ func (e *Component) DescribeComponentType(ctx *context.Context, request *compone
 	}
 	client := component.NewComponentServiceClient(conn)
 	response, err := client.DescribeComponentType(*requestCtx, request)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
+func (c *Component) CompareOperationChanges(ctx *context.Context, request *serviceProto.OperateServiceRequest) (*serviceProto.CompareOperationChangesResponse, error) {
+
+	conn, requestCtx, err := grpcClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+	client := serviceProto.NewServiceServiceClient(conn)
+	response, err := client.CompareOperationChanges(*requestCtx, request)
 	if err != nil {
 		return nil, err
 	}
