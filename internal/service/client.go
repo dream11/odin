@@ -37,7 +37,7 @@ func grpcClient(ctx *context.Context) (*grpc.ClientConn, *context.Context, error
 		opts = append(opts, grpc.WithTransportCredentials(cred))
 	}
 
-	conn, err := grpc.Dial(appConfig.BackendAddress, opts...)
+	conn, err := grpc.NewClient(appConfig.BackendAddress, opts...)
 
 	if err != nil {
 		return nil, nil, err

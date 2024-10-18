@@ -81,9 +81,9 @@ func writeListServiceAsJSON(response *serviceProto.ListServiceResponse) {
 	var services []map[string]interface{}
 	for _, serviceEntity := range response.Services {
 		services = append(services, map[string]interface{}{
-			"name":        serviceEntity.Name,
-			"version":     serviceEntity.Version,
-			"Tags":      serviceEntity.Tags,
+			"name":    serviceEntity.Name,
+			"version": serviceEntity.Version,
+			"Tags":    serviceEntity.Tags,
 		})
 	}
 	output, _ := json.MarshalIndent(services, "", "  ")

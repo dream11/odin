@@ -2,9 +2,10 @@ package util
 
 import (
 	"fmt"
-	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	"net"
 	"strings"
+
+	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 )
 
 // SplitProviderAccount splits string into list of cloud provider accounts
