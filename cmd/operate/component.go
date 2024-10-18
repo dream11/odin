@@ -91,7 +91,7 @@ func execute(cmd *cobra.Command) {
 
 
 
-	diffValues, err := componentClient.CompareOperationChanges(&ctx, &serviceProto.OperateServiceRequest{
+	diffValues, err := componentClient.CompareOperationChanges(&ctx, &serviceProto.CompareOperationChangesRequest{
 		EnvName:              env,
 		ServiceName:          serviceName,
 		ComponentName:        name,

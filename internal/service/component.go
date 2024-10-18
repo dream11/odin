@@ -85,7 +85,7 @@ func (e *Component) DescribeComponentType(ctx *context.Context, request *compone
 	return response, nil
 }
 
-func (c *Component) CompareOperationChanges(ctx *context.Context, request *serviceProto.OperateServiceRequest) (*serviceProto.CompareOperationChangesResponse, error) {
+func (c *Component) CompareOperationChanges(ctx *context.Context, request *serviceProto.CompareOperationChangesRequest) (*serviceProto.CompareOperationChangesResponse, error) {
 
 	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {

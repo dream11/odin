@@ -42,7 +42,7 @@ type ServiceServiceClient interface {
 	UndeployService(ctx context.Context, in *UndeployServiceRequest, opts ...grpc.CallOption) (ServiceService_UndeployServiceClient, error)
 	ListService(ctx context.Context, in *ListServiceRequest, opts ...grpc.CallOption) (*ListServiceResponse, error)
 	DescribeService(ctx context.Context, in *DescribeServiceRequest, opts ...grpc.CallOption) (*DescribeServiceResponse, error)
-	CompareOperationChanges(ctx context.Context, in *OperateServiceRequest, opts ...grpc.CallOption) (*CompareOperationChangesResponse, error)
+	CompareOperationChanges(ctx context.Context, in *CompareOperationChangesRequest, opts ...grpc.CallOption) (*CompareOperationChangesResponse, error)
 }
 
 type serviceServiceClient struct {
@@ -263,7 +263,7 @@ func (c *serviceServiceClient) DescribeService(ctx context.Context, in *Describe
 	return out, nil
 }
 
-func (c *serviceServiceClient) CompareOperationChanges(ctx context.Context, in *OperateServiceRequest, opts ...grpc.CallOption) (*CompareOperationChangesResponse, error) {
+func (c *serviceServiceClient) CompareOperationChanges(ctx context.Context, in *CompareOperationChangesRequest, opts ...grpc.CallOption) (*CompareOperationChangesResponse, error) {
 	out := new(CompareOperationChangesResponse)
 	err := c.cc.Invoke(ctx, ServiceService_CompareOperationChanges_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -284,7 +284,7 @@ type ServiceServiceServer interface {
 	UndeployService(*UndeployServiceRequest, ServiceService_UndeployServiceServer) error
 	ListService(context.Context, *ListServiceRequest) (*ListServiceResponse, error)
 	DescribeService(context.Context, *DescribeServiceRequest) (*DescribeServiceResponse, error)
-	CompareOperationChanges(context.Context, *OperateServiceRequest) (*CompareOperationChangesResponse, error)
+	CompareOperationChanges(context.Context, *CompareOperationChangesRequest) (*CompareOperationChangesResponse, error)
 	mustEmbedUnimplementedServiceServiceServer()
 }
 
@@ -316,7 +316,7 @@ func (UnimplementedServiceServiceServer) ListService(context.Context, *ListServi
 func (UnimplementedServiceServiceServer) DescribeService(context.Context, *DescribeServiceRequest) (*DescribeServiceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DescribeService not implemented")
 }
-func (UnimplementedServiceServiceServer) CompareOperationChanges(context.Context, *OperateServiceRequest) (*CompareOperationChangesResponse, error) {
+func (UnimplementedServiceServiceServer) CompareOperationChanges(context.Context, *CompareOperationChangesRequest) (*CompareOperationChangesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CompareOperationChanges not implemented")
 }
 func (UnimplementedServiceServiceServer) mustEmbedUnimplementedServiceServiceServer() {}
@@ -495,7 +495,7 @@ func _ServiceService_DescribeService_Handler(srv interface{}, ctx context.Contex
 }
 
 func _ServiceService_CompareOperationChanges_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(OperateServiceRequest)
+	in := new(CompareOperationChangesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -507,7 +507,7 @@ func _ServiceService_CompareOperationChanges_Handler(srv interface{}, ctx contex
 		FullMethod: ServiceService_CompareOperationChanges_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServiceServiceServer).CompareOperationChanges(ctx, req.(*OperateServiceRequest))
+		return srv.(ServiceServiceServer).CompareOperationChanges(ctx, req.(*CompareOperationChangesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

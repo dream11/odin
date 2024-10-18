@@ -15,7 +15,7 @@ service ServiceService {
   rpc UndeployService(UndeployServiceRequest) returns (stream UndeployServiceResponse) {}
   rpc ListService(ListServiceRequest) returns (ListServiceResponse) {}
   rpc DescribeService(DescribeServiceRequest) returns (DescribeServiceResponse) {}
-  rpc CompareOperationChanges(OperateServiceRequest) returns (CompareOperationChangesResponse) {}
+  rpc CompareOperationChanges(CompareOperationChangesRequest) returns (CompareOperationChangesResponse) {}
 }
 
 message DeployServiceRequest {
@@ -128,6 +128,15 @@ message DescribeServiceRequest {
 
 message DescribeServiceResponse {
   dream11.od.dto.v1.Service service = 1;
+}
+
+message CompareOperationChangesRequest {
+  string env_name = 1;
+  string service_name = 2;
+  string component_name = 3;
+  bool is_component_operation = 4;
+  string operation = 5;
+  optional google.protobuf.Struct config = 6;
 }
 
 message CompareOperationChangesResponse {
