@@ -3,12 +3,13 @@ package describe
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+
 	serviceBackend "github.com/dream11/odin/internal/service"
 	service "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	"github.com/iancoleman/orderedmap"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"strconv"
 )
 
 var serviceName string
@@ -58,8 +59,8 @@ func execute(cmd *cobra.Command) {
 	ctx := cmd.Context()
 	response, err := serviceClient.DescribeService(&ctx, &service.DescribeServiceRequest{
 		ServiceName: serviceName,
-		Version: serviceVersion,
-		Params: params,
+		Version:     serviceVersion,
+		Params:      params,
 	})
 
 	if err != nil {
@@ -90,4 +91,3 @@ func writeAsJSON(response *service.DescribeServiceResponse) {
 	}
 	fmt.Println(string(output))
 }
-

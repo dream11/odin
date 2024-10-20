@@ -141,3 +141,24 @@ func (e *Environment) DescribeEnvironment(ctx *context.Context, request *environ
 
 	return response, nil
 }
+
+// EnvironmentStatus shows environment status including services and components in it
+func (e *Environment) EnvironmentStatus(ctx *context.Context, request *environment.StatusEnvironmentRequest) (*environment.StatusEnvironmentResponse, error) {
+	conn, requestCtx, err := grpcClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	client := environment.NewEnvironmentServiceClient(conn)
+	log.Info("Getting environment status...")
+	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
+	_ = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
+	spinnerInstance.Start()
+	response, err := client.StatusEnvironment(*requestCtx, request)
+	spinnerInstance.Stop()
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
