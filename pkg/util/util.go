@@ -32,7 +32,6 @@ func GenerateResponseMessage(response *v1.ServiceResponse) string {
 	return message
 }
 
-// FormatToHumanReadableDuration takes a date-time string representing the last deployment time, and returns a human-readable string representing the duration since the last deployment
 func FormatToHumanReadableDuration(lastDeployed string) string {
 	// Parse the date-time string
 	layout := "02-01-2006 15:04:05:0000"
@@ -61,6 +60,8 @@ func FormatToHumanReadableDuration(lastDeployed string) string {
 		minutes := int(duration.Minutes()) % 60
 		return fmt.Sprintf("%d hours %d minutes ago", hours, minutes)
 	}
+}
+
 // contains checks if a string is present in an array of strings
 func contains(str string, arr []string) bool {
 	for _, item := range arr {
