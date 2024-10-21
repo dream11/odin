@@ -32,6 +32,7 @@ func GenerateResponseMessage(response *v1.ServiceResponse) string {
 	return message
 }
 
+// FormatToHumanReadableDuration takes a date-time string representing the last deployment time, and returns a human-readable string representing the duration since the last deployment
 func FormatToHumanReadableDuration(lastDeployed string) string {
 	// Parse the date-time string
 	layout := "02-01-2006 15:04:05:0000"
