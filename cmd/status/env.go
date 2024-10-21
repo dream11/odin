@@ -23,8 +23,8 @@ var setstatusCmd = &cobra.Command{
 	},
 }
 var environmentClient = service.Environment{}
-var ServiceName string
-var EnvName string
+var serviceName string
+var envName string
 
 func init() {
 	statusCmd.AddCommand(setstatusCmd)
@@ -34,14 +34,14 @@ func init() {
 
 func getStatus(cmd *cobra.Command) {
 	ctx := cmd.Context()
-	EnvName, _ = cmd.Flags().GetString("name")
-	ServiceName, _ = cmd.Flags().GetString("service")
-	if EnvName == "" {
+	envName, _ = cmd.Flags().GetString("name")
+	serviceName, _ = cmd.Flags().GetString("service")
+	if envName == "" {
 		log.Fatal("Error: --name is required")
 	}
 	response, err := environmentClient.EnvironmentStatus(&ctx, &environment.StatusEnvironmentRequest{
-		EnvName:     EnvName,
-		ServiceName: ServiceName,
+		EnvName:     envName,
+		ServiceName: serviceName,
 	})
 	if err != nil {
 		log.Fatal("Failed to get environment status: ", err)
@@ -75,7 +75,7 @@ func writeAsTextEnvResponse(response *environment.StatusEnvironmentResponse) {
 	}
 	var tableData [][]interface{}
 
-	if ServiceName == "" {
+	if serviceName == "" {
 		fmt.Println("\nServices:")
 		for _, svc := range response.GetServicesStatus() {
 			tableData = append(tableData, []interface{}{
@@ -89,9 +89,9 @@ func writeAsTextEnvResponse(response *environment.StatusEnvironmentResponse) {
 		tableHeaders = []string{"NAME",
 			"VERSION",
 			"STATUS"}
-		fmt.Printf("Fetching status for service: %s in environment: %s\n", ServiceName, EnvName)
+		fmt.Printf("Fetching status for service: %s in environment: %s\n", serviceName, envName)
 		for _, svc := range response.GetServicesStatus() {
-			if svc.GetServiceName() == ServiceName {
+			if svc.GetServiceName() == serviceName {
 				fmt.Printf("Service version: %s\n", svc.GetServiceVersion())
 				fmt.Printf("Service Status: %s\n", svc.GetServiceStatus())
 				fmt.Printf("Last deployed: %s\n", util.FormatToHumanReadableDuration(svc.GetLastDeployed()))
