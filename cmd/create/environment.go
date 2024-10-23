@@ -36,7 +36,7 @@ func validateAccounts(accounts string) error {
 	accountList := strings.Split(accounts, ",")
 	for _, account := range accountList {
 		if account == "" {
-			return fmt.Errorf("accounts parameter contains an empty account")
+			return fmt.Errorf("accounts parameter should not end with a comma")
 		}
 	}
 	return nil
