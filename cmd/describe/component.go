@@ -3,10 +3,10 @@ package describe
 import (
 	"encoding/json"
 	"fmt"
+
 	serviceBackend "github.com/dream11/odin/internal/service"
 	comp "github.com/dream11/odin/proto/gen/go/dream11/od/component/v1"
 	log "github.com/sirupsen/logrus"
-
 	"github.com/spf13/cobra"
 )
 
@@ -47,7 +47,7 @@ func executeDescribeComponentType(cmd *cobra.Command) {
 	ctx := cmd.Context()
 	response, err := componentClient.DescribeComponentType(&ctx, &comp.DescribeComponentTypeRequest{
 		ComponentType: componentName,
-		Params: params,
+		Params:        params,
 	})
 
 	if err != nil {
@@ -64,4 +64,3 @@ func writeAsJSONDescribeComponentType(response *comp.DescribeComponentTypeRespon
 	}
 	fmt.Println(string(output))
 }
-
