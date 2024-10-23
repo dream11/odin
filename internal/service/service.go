@@ -289,9 +289,8 @@ func (e *Service) ReleaseService(ctx *context.Context, request *serviceProto.Rel
 	}
 	if strings.Contains(strings.ToLower(message), "fail") {
 		return errors.New(message)
-	} else {
-		log.Info("Service released successfully !")
 	}
+	log.Info("Service released successfully !")
 	return err
 }
 
