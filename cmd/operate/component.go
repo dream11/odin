@@ -90,12 +90,11 @@ func execute(cmd *cobra.Command) {
 	//call operate component client
 
 	diffValues, err := componentClient.CompareOperationChanges(&ctx, &serviceProto.CompareOperationChangesRequest{
-		EnvName:              env,
-		ServiceName:          serviceName,
-		ComponentName:        name,
-		IsComponentOperation: true,
-		Operation:            operation,
-		Config:               config,
+		EnvName:       env,
+		ServiceName:   serviceName,
+		ComponentName: name,
+		Operation:     operation,
+		Config:        config,
 	})
 	if err != nil {
 		log.Fatal("Failed to compare operation changes\n", err)
