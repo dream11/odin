@@ -46,7 +46,7 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 			return err
 		}
 		if response != nil {
-			message = util.GenerateResponseMessage(response.GetServiceResponse())
+			message = util.GenerateResponseMessageComponentSpecific(response.GetServiceResponse(), []string{request.GetComponentName()})
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 			spinnerInstance.Start()
 		}

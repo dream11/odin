@@ -99,6 +99,7 @@ func writeAsTextEnvResponse(response *environment.DescribeEnvironmentResponse) {
 		serviceMap := map[string]interface{}{
 			"name":    svc.Name,
 			"version": svc.Version,
+			"status":  svc.Status,
 		}
 		if len(svc.Components) > 0 {
 			serviceMap["components"] = svc.Components
@@ -138,6 +139,7 @@ func writeAsJSONEnvResponse(response *environment.DescribeEnvironmentResponse) {
 		serviceMap := map[string]interface{}{
 			"name":    svc.Name,
 			"version": svc.Version,
+			"status":  svc.Status,
 		}
 		if len(svc.Components) > 0 {
 			serviceMap["components"] = svc.Components
