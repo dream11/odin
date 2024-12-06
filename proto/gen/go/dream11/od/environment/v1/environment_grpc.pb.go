@@ -36,7 +36,7 @@ type EnvironmentServiceClient interface {
 	UpdateEnvironment(ctx context.Context, in *UpdateEnvironmentRequest, opts ...grpc.CallOption) (*UpdateEnvironmentResponse, error)
 	CreateEnvironment(ctx context.Context, in *CreateEnvironmentRequest, opts ...grpc.CallOption) (EnvironmentService_CreateEnvironmentClient, error)
 	DeleteEnvironment(ctx context.Context, in *DeleteEnvironmentRequest, opts ...grpc.CallOption) (EnvironmentService_DeleteEnvironmentClient, error)
-	StatusEnvironment(ctx context.Context, in *StatusEnvironmentRequest, opts ...grpc.CallOption) (*StatusEnvironmentResponse, error)
+	StatusEnvironment(ctx context.Context, in *StatusEnvironmentRequest, opts ...grpc.CallOption) (EnvironmentService_StatusEnvironmentClient, error)
 }
 
 type environmentServiceClient struct {
@@ -138,13 +138,36 @@ func (x *environmentServiceDeleteEnvironmentClient) Recv() (*DeleteEnvironmentRe
 	return m, nil
 }
 
-func (c *environmentServiceClient) StatusEnvironment(ctx context.Context, in *StatusEnvironmentRequest, opts ...grpc.CallOption) (*StatusEnvironmentResponse, error) {
-	out := new(StatusEnvironmentResponse)
-	err := c.cc.Invoke(ctx, EnvironmentService_StatusEnvironment_FullMethodName, in, out, opts...)
+func (c *environmentServiceClient) StatusEnvironment(ctx context.Context, in *StatusEnvironmentRequest, opts ...grpc.CallOption) (EnvironmentService_StatusEnvironmentClient, error) {
+	stream, err := c.cc.NewStream(ctx, &EnvironmentService_ServiceDesc.Streams[2], EnvironmentService_StatusEnvironment_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &environmentServiceStatusEnvironmentClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type EnvironmentService_StatusEnvironmentClient interface {
+	Recv() (*StatusEnvironmentResponse, error)
+	grpc.ClientStream
+}
+
+type environmentServiceStatusEnvironmentClient struct {
+	grpc.ClientStream
+}
+
+func (x *environmentServiceStatusEnvironmentClient) Recv() (*StatusEnvironmentResponse, error) {
+	m := new(StatusEnvironmentResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 // EnvironmentServiceServer is the server API for EnvironmentService service.
@@ -156,7 +179,7 @@ type EnvironmentServiceServer interface {
 	UpdateEnvironment(context.Context, *UpdateEnvironmentRequest) (*UpdateEnvironmentResponse, error)
 	CreateEnvironment(*CreateEnvironmentRequest, EnvironmentService_CreateEnvironmentServer) error
 	DeleteEnvironment(*DeleteEnvironmentRequest, EnvironmentService_DeleteEnvironmentServer) error
-	StatusEnvironment(context.Context, *StatusEnvironmentRequest) (*StatusEnvironmentResponse, error)
+	StatusEnvironment(*StatusEnvironmentRequest, EnvironmentService_StatusEnvironmentServer) error
 	mustEmbedUnimplementedEnvironmentServiceServer()
 }
 
@@ -179,8 +202,8 @@ func (UnimplementedEnvironmentServiceServer) CreateEnvironment(*CreateEnvironmen
 func (UnimplementedEnvironmentServiceServer) DeleteEnvironment(*DeleteEnvironmentRequest, EnvironmentService_DeleteEnvironmentServer) error {
 	return status.Errorf(codes.Unimplemented, "method DeleteEnvironment not implemented")
 }
-func (UnimplementedEnvironmentServiceServer) StatusEnvironment(context.Context, *StatusEnvironmentRequest) (*StatusEnvironmentResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StatusEnvironment not implemented")
+func (UnimplementedEnvironmentServiceServer) StatusEnvironment(*StatusEnvironmentRequest, EnvironmentService_StatusEnvironmentServer) error {
+	return status.Errorf(codes.Unimplemented, "method StatusEnvironment not implemented")
 }
 func (UnimplementedEnvironmentServiceServer) mustEmbedUnimplementedEnvironmentServiceServer() {}
 
@@ -291,22 +314,25 @@ func (x *environmentServiceDeleteEnvironmentServer) Send(m *DeleteEnvironmentRes
 	return x.ServerStream.SendMsg(m)
 }
 
-func _EnvironmentService_StatusEnvironment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StatusEnvironmentRequest)
-	if err := dec(in); err != nil {
-		return nil, err
+func _EnvironmentService_StatusEnvironment_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(StatusEnvironmentRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	if interceptor == nil {
-		return srv.(EnvironmentServiceServer).StatusEnvironment(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: EnvironmentService_StatusEnvironment_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EnvironmentServiceServer).StatusEnvironment(ctx, req.(*StatusEnvironmentRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return srv.(EnvironmentServiceServer).StatusEnvironment(m, &environmentServiceStatusEnvironmentServer{stream})
+}
+
+type EnvironmentService_StatusEnvironmentServer interface {
+	Send(*StatusEnvironmentResponse) error
+	grpc.ServerStream
+}
+
+type environmentServiceStatusEnvironmentServer struct {
+	grpc.ServerStream
+}
+
+func (x *environmentServiceStatusEnvironmentServer) Send(m *StatusEnvironmentResponse) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 // EnvironmentService_ServiceDesc is the grpc.ServiceDesc for EnvironmentService service.
@@ -328,10 +354,6 @@ var EnvironmentService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "UpdateEnvironment",
 			Handler:    _EnvironmentService_UpdateEnvironment_Handler,
 		},
-		{
-			MethodName: "StatusEnvironment",
-			Handler:    _EnvironmentService_StatusEnvironment_Handler,
-		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -342,6 +364,11 @@ var EnvironmentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "DeleteEnvironment",
 			Handler:       _EnvironmentService_DeleteEnvironment_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "StatusEnvironment",
+			Handler:       _EnvironmentService_StatusEnvironment_Handler,
 			ServerStreams: true,
 		},
 	},

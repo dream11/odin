@@ -154,11 +154,27 @@ func (e *Environment) EnvironmentStatus(ctx *context.Context, request *environme
 	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
 	_ = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
 	spinnerInstance.Start()
-	response, err := client.StatusEnvironment(*requestCtx, request)
+	stream, err := client.StatusEnvironment(*requestCtx, request)
+	if err != nil {
+		return nil, err
+	}
+	var response *environment.StatusEnvironmentResponse
+	for {
+		response, err = stream.Recv()
+		spinnerInstance.Stop()
+		if err != nil {
+			if errors.Is(err, context.Canceled) || err == io.EOF {
+				break
+			}
+			return nil, err
+		}
+		if response != nil {
+			break
+		}
+	}
 	spinnerInstance.Stop()
 	if err != nil {
 		return nil, err
 	}
-
 	return response, nil
 }
