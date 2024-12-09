@@ -3,6 +3,7 @@ package describe
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dream11/odin/pkg/util"
 
 	serviceBackend "github.com/dream11/odin/internal/service"
 	comp "github.com/dream11/odin/proto/gen/go/dream11/od/component/v1"
@@ -45,12 +46,14 @@ func executeDescribeComponentType(cmd *cobra.Command) {
 		"version": componentVersion,
 	}
 	ctx := cmd.Context()
+	traceId := util.GenerateTraceId()
 	response, err := componentClient.DescribeComponentType(&ctx, &comp.DescribeComponentTypeRequest{
 		ComponentType: componentName,
 		Params:        params,
-	})
+	}, traceId)
 
 	if err != nil {
+		log.Info("TraceId: ", traceId)
 		log.Fatal("Failed to describe service: ", err)
 	}
 

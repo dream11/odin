@@ -3,6 +3,7 @@ package undeploy
 import (
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/config"
+	"github.com/dream11/odin/pkg/util"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -39,11 +40,12 @@ func execute(cmd *cobra.Command) {
 	envName = config.EnsureEnvPresent(envName)
 
 	ctx := cmd.Context()
+	traceId := util.GenerateTraceId()
 
 	err := serviceClient.UndeployService(&ctx, &serviceProto.UndeployServiceRequest{
 		EnvName:     envName,
 		ServiceName: name,
-	})
+	}, traceId)
 
 	if err != nil {
 		log.Fatal("Failed to undeploy service ", err)

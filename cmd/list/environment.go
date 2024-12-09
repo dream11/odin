@@ -3,6 +3,7 @@ package list
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dream11/odin/pkg/util"
 	"strconv"
 
 	"github.com/dream11/odin/internal/service"
@@ -41,13 +42,14 @@ func init() {
 
 func execute(cmd *cobra.Command) {
 	ctx := cmd.Context()
+	traceId := util.GenerateTraceId()
 	response, err := environmentClient.ListEnvironments(&ctx, &environment.ListEnvironmentRequest{
 		Params: map[string]string{
 			"name":             name,
 			"account":          account,
 			"provisioningType": provisioningType,
 			"displayAll":       strconv.FormatBool(displayAll)},
-	})
+	}, traceId)
 
 	if err != nil {
 		log.Fatal("Failed to list environments ", err)

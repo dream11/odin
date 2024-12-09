@@ -62,6 +62,7 @@ func init() {
 
 func execute(cmd *cobra.Command) {
 	ctx := cmd.Context()
+	traceId := util.GenerateTraceId()
 	// Validate accounts parameter
 	if err := validateAccounts(accounts); err != nil {
 		log.Fatal("Invalid accounts parameter: ", err)
@@ -70,9 +71,10 @@ func execute(cmd *cobra.Command) {
 		EnvName:          envName,
 		Accounts:         util.SplitProviderAccount(accounts),
 		ProvisioningType: provisioningType,
-	})
+	}, traceId)
 
 	if err != nil {
+		log.Info("TraceId: ", traceId)
 		log.Fatal("Failed to create environment ", err)
 	}
 }

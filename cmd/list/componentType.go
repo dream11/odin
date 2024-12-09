@@ -3,6 +3,7 @@ package list
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dream11/odin/pkg/util"
 
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/constant"
@@ -36,6 +37,7 @@ func init() {
 
 func componentExecute(cmd *cobra.Command) {
 	ctx := cmd.Context()
+	traceId := util.GenerateTraceId()
 	params := make(map[string]string)
 
 	// Add non-empty parameters to the map
@@ -49,7 +51,7 @@ func componentExecute(cmd *cobra.Command) {
 	// Make the API call with the populated parameters
 	response, err := componentTypeClient.ListComponentType(&ctx, &component.ListComponentTypeRequest{
 		Params: params,
-	})
+	}, traceId)
 
 	if err != nil {
 		log.Fatal("Failed to list component types ", err)

@@ -2,6 +2,7 @@ package operate
 
 import (
 	"encoding/json"
+	"github.com/dream11/odin/pkg/util"
 
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/config"
@@ -54,6 +55,7 @@ func execute(cmd *cobra.Command) {
 	env = config.EnsureEnvPresent(env)
 
 	ctx := cmd.Context()
+	traceId := util.GenerateTraceId()
 	//validate the variables
 	var optionsData map[string]interface{}
 
@@ -89,7 +91,7 @@ func execute(cmd *cobra.Command) {
 		IsComponentOperation: true,
 		Operation:            operation,
 		Config:               config,
-	})
+	}, traceId)
 
 	if err != nil {
 		log.Fatal("Failed to operate on component", err)
