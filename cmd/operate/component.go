@@ -6,7 +6,6 @@ import (
 
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/config"
-	fileUtil "github.com/dream11/odin/pkg/util"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -55,7 +54,7 @@ func execute(cmd *cobra.Command) {
 	env = config.EnsureEnvPresent(env)
 
 	ctx := cmd.Context()
-	traceId := util.GenerateTraceId()
+	traceID := util.GenerateTraceID()
 	//validate the variables
 	var optionsData map[string]interface{}
 
@@ -67,7 +66,7 @@ func execute(cmd *cobra.Command) {
 	}
 
 	if isFilePresent {
-		parsedConfig, err := fileUtil.ParseFile(file)
+		parsedConfig, err := util.ParseFile(file)
 		if err != nil {
 			log.Fatal("Error while parsing file " + file + " : " + err.Error())
 		}
@@ -91,7 +90,7 @@ func execute(cmd *cobra.Command) {
 		IsComponentOperation: true,
 		Operation:            operation,
 		Config:               config,
-	}, traceId)
+	}, traceID)
 
 	if err != nil {
 		log.Fatal("Failed to operate on component", err)

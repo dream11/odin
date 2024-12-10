@@ -46,14 +46,14 @@ func executeDescribeComponentType(cmd *cobra.Command) {
 		"version": componentVersion,
 	}
 	ctx := cmd.Context()
-	traceId := util.GenerateTraceId()
+	traceID := util.GenerateTraceID()
 	response, err := componentClient.DescribeComponentType(&ctx, &comp.DescribeComponentTypeRequest{
 		ComponentType: componentName,
 		Params:        params,
-	}, traceId)
+	}, traceID)
 
 	if err != nil {
-		log.Info("TraceId: ", traceId)
+		log.Info("TraceId: ", traceID)
 		log.Fatal("Failed to describe service: ", err)
 	}
 

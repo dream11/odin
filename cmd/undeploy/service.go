@@ -40,12 +40,12 @@ func execute(cmd *cobra.Command) {
 	envName = config.EnsureEnvPresent(envName)
 
 	ctx := cmd.Context()
-	traceId := util.GenerateTraceId()
+	traceID := util.GenerateTraceID()
 
 	err := serviceClient.UndeployService(&ctx, &serviceProto.UndeployServiceRequest{
 		EnvName:     envName,
 		ServiceName: name,
-	}, traceId)
+	}, traceID)
 
 	if err != nil {
 		log.Fatal("Failed to undeploy service ", err)

@@ -18,8 +18,8 @@ import (
 type Component struct{}
 
 // OperateComponent operate Component
-func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto.OperateServiceRequest, traceId string) error {
-	conn, requestCtx, err := grpcClient(ctx, traceId)
+func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto.OperateServiceRequest, traceID string) error {
+	conn, requestCtx, err := grpcClient(ctx, traceID)
 	if err != nil {
 		return err
 	}
@@ -56,8 +56,8 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 }
 
 // ListComponentType List component types
-func (e *Component) ListComponentType(ctx *context.Context, request *component.ListComponentTypeRequest, traceId string) (*component.ListComponentTypeResponse, error) {
-	conn, requestCtx, err := grpcClient(ctx, traceId)
+func (e *Component) ListComponentType(ctx *context.Context, request *component.ListComponentTypeRequest, traceID string) (*component.ListComponentTypeResponse, error) {
+	conn, requestCtx, err := grpcClient(ctx, traceID)
 	if err != nil {
 		return nil, err
 	}
@@ -71,8 +71,8 @@ func (e *Component) ListComponentType(ctx *context.Context, request *component.L
 }
 
 // DescribeComponentType List component types
-func (e *Component) DescribeComponentType(ctx *context.Context, request *component.DescribeComponentTypeRequest, traceId string) (*component.DescribeComponentTypeResponse, error) {
-	conn, requestCtx, err := grpcClient(ctx, traceId)
+func (e *Component) DescribeComponentType(ctx *context.Context, request *component.DescribeComponentTypeRequest, traceID string) (*component.DescribeComponentTypeResponse, error) {
+	conn, requestCtx, err := grpcClient(ctx, traceID)
 	if err != nil {
 		return nil, err
 	}
