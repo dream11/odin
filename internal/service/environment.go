@@ -159,22 +159,18 @@ func (e *Environment) EnvironmentStatus(ctx *context.Context, request *environme
 		return nil, err
 	}
 	var response *environment.StatusEnvironmentResponse
+	var prevResponse *environment.StatusEnvironmentResponse
+
 	for {
+		prevResponse = response
 		response, err = stream.Recv()
-		spinnerInstance.Stop()
 		if err != nil {
 			if errors.Is(err, context.Canceled) || err == io.EOF {
 				break
 			}
 			return nil, err
 		}
-		if response != nil {
-			break
-		}
 	}
 	spinnerInstance.Stop()
-	if err != nil {
-		return nil, err
-	}
-	return response, nil
+	return prevResponse, nil
 }
