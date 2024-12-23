@@ -49,6 +49,6 @@ func grpcClient(ctx *context.Context, traceIDOptional ...string) (*grpc.ClientCo
 		return nil, nil, err
 	}
 	// Enrich context with authorisation metadata
-	requestCtx := metadata.AppendToOutgoingContext(*ctx, "Authorization", fmt.Sprintf("Bearer %s", appConfig.AccessToken), "TraceId", traceID)
+	requestCtx := metadata.AppendToOutgoingContext(*ctx, "Authorization", fmt.Sprintf("Bearer %s", appConfig.AccessToken), "trace-id", traceID)
 	return conn, &requestCtx, nil
 }
