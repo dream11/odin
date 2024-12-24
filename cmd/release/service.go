@@ -2,7 +2,6 @@ package release
 
 import (
 	"encoding/json"
-	"github.com/dream11/odin/pkg/util"
 	"os"
 	"path/filepath"
 	"strings"
@@ -39,7 +38,6 @@ func init() {
 
 func execute(cmd *cobra.Command) {
 	ctx := cmd.Context()
-	traceId := util.GenerateTraceId()
 
 	var err error
 
@@ -104,7 +102,7 @@ func execute(cmd *cobra.Command) {
 	}
 	serviceReleaseRequest.ProvisioningConfigs = provisioningConfigMap
 	serviceReleaseRequest.ServiceDefinition = &definitionProto
-	err = serviceClient.ReleaseService(&ctx, &serviceReleaseRequest, traceId)
+	err = serviceClient.ReleaseService(&ctx, &serviceReleaseRequest)
 	if err != nil {
 		log.Fatal("Failed to release service ", err)
 	}

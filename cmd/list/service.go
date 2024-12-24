@@ -3,7 +3,6 @@ package list
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dream11/odin/pkg/util"
 
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/constant"
@@ -37,12 +36,11 @@ func init() {
 
 func listService(cmd *cobra.Command) {
 	ctx := cmd.Context()
-	traceId := util.GenerateTraceId()
 	response, err := serviceClient.ListService(&ctx, &serviceProto.ListServiceRequest{
 		Name:    serviceName,
 		Version: version,
 		Tags:    tags,
-	}, traceId)
+	})
 
 	if err != nil {
 		log.Fatal("Failed to list services ", err)

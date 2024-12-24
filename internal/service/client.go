@@ -15,14 +15,8 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func grpcClient(ctx *context.Context, traceIdOptional ...string) (*grpc.ClientConn, *context.Context, error) {
+func grpcClient(ctx *context.Context) (*grpc.ClientConn, *context.Context, error) {
 	appConfig := config.GetConfig()
-
-	traceId := ""
-	if len(traceIdOptional) > 0 {
-		traceId = traceIdOptional[0]
-	}
-
 	if appConfig.BackendAddress == "" {
 		log.Fatal("Cannot create grpc client: Backend address is empty in config! Run `odin configure` to set backend address")
 	}
@@ -49,6 +43,6 @@ func grpcClient(ctx *context.Context, traceIdOptional ...string) (*grpc.ClientCo
 		return nil, nil, err
 	}
 	// Enrich context with authorisation metadata
-	requestCtx := metadata.AppendToOutgoingContext(*ctx, "Authorization", fmt.Sprintf("Bearer %s", appConfig.AccessToken), "TraceId", traceId)
+	requestCtx := metadata.AppendToOutgoingContext(*ctx, "Authorization", fmt.Sprintf("Bearer %s", appConfig.AccessToken))
 	return conn, &requestCtx, nil
 }

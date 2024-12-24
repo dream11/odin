@@ -2,7 +2,6 @@ package deploy
 
 import (
 	"encoding/json"
-	"github.com/dream11/odin/pkg/util"
 	"os"
 
 	"github.com/dream11/odin/internal/service"
@@ -44,7 +43,6 @@ func init() {
 func execute(cmd *cobra.Command) {
 	env = config.EnsureEnvPresent(env)
 	ctx := cmd.Context()
-	traceId := util.GenerateTraceId()
 	if (serviceName == "" && serviceVersion == "") && (definitionFile != "" && provisioningFile != "") {
 		definitionData, err := os.ReadFile(definitionFile)
 		if err != nil {
@@ -71,10 +69,9 @@ func execute(cmd *cobra.Command) {
 			EnvName:            env,
 			ServiceDefinition:  &definitionProto,
 			ProvisioningConfig: provisioningProto,
-		}, traceId)
+		})
 
 		if err != nil {
-			log.Info("TraceId: ", traceId)
 			log.Fatal("Failed to deploy service ", err)
 		}
 	} else if (serviceName != "" && serviceVersion != "") && (definitionFile == "" && provisioningFile == "") {
@@ -85,10 +82,9 @@ func execute(cmd *cobra.Command) {
 				ServiceName:    serviceName,
 				ServiceVersion: serviceVersion,
 			},
-		}, traceId)
+		})
 
 		if err != nil {
-			log.Info("TraceId: ", traceId)
 			log.Fatal("Failed to deploy service ", err)
 		}
 	} else {

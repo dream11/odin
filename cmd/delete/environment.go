@@ -2,7 +2,6 @@ package delete
 
 import (
 	"github.com/dream11/odin/internal/service"
-	"github.com/dream11/odin/pkg/util"
 	environment "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -35,13 +34,11 @@ func init() {
 
 func execute(cmd *cobra.Command) {
 	ctx := cmd.Context()
-	traceId := util.GenerateTraceId()
 	err := environmentClient.DeleteEnvironment(&ctx, &environment.DeleteEnvironmentRequest{
 		EnvName: name,
-	}, traceId)
+	})
 
 	if err != nil {
-		log.Info("TraceId: ", traceId)
 		log.Fatal("Failed to delete environment ", err)
 	}
 }

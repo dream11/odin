@@ -2,7 +2,6 @@ package deploy
 
 import (
 	"encoding/json"
-	"github.com/dream11/odin/pkg/util"
 	"os"
 
 	"github.com/dream11/odin/pkg/config"
@@ -37,7 +36,6 @@ func executeDeployServiceSet(cmd *cobra.Command) {
 	env = config.EnsureEnvPresent(env)
 
 	ctx := cmd.Context()
-	traceId := util.GenerateTraceId()
 	if serviceSetName == "" && provisioningFile == "" {
 		log.Fatal("Please provide either --name or --file.")
 	}
@@ -63,7 +61,7 @@ func executeDeployServiceSet(cmd *cobra.Command) {
 		deployServiceSetRequest.Name = serviceSetName
 	}
 
-	err := serviceClient.DeployServiceSet(&ctx, &deployServiceSetRequest, traceId)
+	err := serviceClient.DeployServiceSet(&ctx, &deployServiceSetRequest)
 	if err != nil {
 		log.Fatal("Failed to deploy service ", err)
 	}

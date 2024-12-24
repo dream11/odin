@@ -4,7 +4,6 @@ go 1.17
 
 require (
 	github.com/briandowns/spinner v1.23.0
-	github.com/google/uuid v1.3.0
 	github.com/olekukonko/tablewriter v0.0.5
 	gopkg.in/yaml.v3 v3.0.1
 )

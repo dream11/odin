@@ -18,9 +18,8 @@ import (
 type Service struct{}
 
 // DeployService deploys service
-func (e *Service) DeployService(ctx *context.Context, request *serviceProto.DeployServiceRequest, traceId string) error {
-
-	conn, requestCtx, err := grpcClient(ctx, traceId)
+func (e *Service) DeployService(ctx *context.Context, request *serviceProto.DeployServiceRequest) error {
+	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -60,8 +59,8 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 }
 
 // DeployServiceSet deploys service-set
-func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.DeployServiceSetRequest, traceId string) error {
-	conn, requestCtx, err := grpcClient(ctx, traceId)
+func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.DeployServiceSetRequest) error {
+	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -104,8 +103,8 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 }
 
 // DeployReleasedService deploys service
-func (e *Service) DeployReleasedService(ctx *context.Context, request *serviceProto.DeployReleasedServiceRequest, traceId string) error {
-	conn, requestCtx, err := grpcClient(ctx, traceId)
+func (e *Service) DeployReleasedService(ctx *context.Context, request *serviceProto.DeployReleasedServiceRequest) error {
+	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -149,8 +148,8 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 }
 
 // UndeployService undeploy service
-func (e *Service) UndeployService(ctx *context.Context, request *serviceProto.UndeployServiceRequest, traceId string) error {
-	conn, requestCtx, err := grpcClient(ctx, traceId)
+func (e *Service) UndeployService(ctx *context.Context, request *serviceProto.UndeployServiceRequest) error {
+	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -192,9 +191,9 @@ func (e *Service) UndeployService(ctx *context.Context, request *serviceProto.Un
 	return err
 }
 
-// OperateService :service operations
-func (e *Service) OperateService(ctx *context.Context, request *serviceProto.OperateServiceRequest, traceId string) error {
-	conn, requestCtx, err := grpcClient(ctx, traceId)
+// OperateService :service operatioms
+func (e *Service) OperateService(ctx *context.Context, request *serviceProto.OperateServiceRequest) error {
+	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -235,8 +234,8 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 }
 
 // ListService deploys service
-func (e *Service) ListService(ctx *context.Context, request *serviceProto.ListServiceRequest, traceId string) (*serviceProto.ListServiceResponse, error) {
-	conn, requestCtx, err := grpcClient(ctx, traceId)
+func (e *Service) ListService(ctx *context.Context, request *serviceProto.ListServiceRequest) (*serviceProto.ListServiceResponse, error) {
+	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {
 		return &serviceProto.ListServiceResponse{}, err
 	}
@@ -246,8 +245,8 @@ func (e *Service) ListService(ctx *context.Context, request *serviceProto.ListSe
 }
 
 // ReleaseService :service operatioms
-func (e *Service) ReleaseService(ctx *context.Context, request *serviceProto.ReleaseServiceRequest, traceId string) error {
-	conn, requestCtx, err := grpcClient(ctx, traceId)
+func (e *Service) ReleaseService(ctx *context.Context, request *serviceProto.ReleaseServiceRequest) error {
+	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -309,8 +308,8 @@ func (e *Service) ConvertToDeployServiceSetRequest(serviceSet *serviceDto.Servic
 }
 
 // DescribeService describe service
-func (e *Service) DescribeService(ctx *context.Context, request *serviceProto.DescribeServiceRequest, traceId string) (*serviceProto.DescribeServiceResponse, error) {
-	conn, requestCtx, err := grpcClient(ctx, traceId)
+func (e *Service) DescribeService(ctx *context.Context, request *serviceProto.DescribeServiceRequest) (*serviceProto.DescribeServiceResponse, error) {
+	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {
 		return nil, err
 	}

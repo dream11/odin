@@ -3,7 +3,6 @@ package describe
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dream11/odin/pkg/util"
 	"strconv"
 
 	serviceBackend "github.com/dream11/odin/internal/service"
@@ -58,12 +57,11 @@ func execute(cmd *cobra.Command) {
 	}
 
 	ctx := cmd.Context()
-	traceId := util.GenerateTraceId()
 	response, err := serviceClient.DescribeService(&ctx, &service.DescribeServiceRequest{
 		ServiceName: serviceName,
 		Version:     serviceVersion,
 		Params:      params,
-	}, traceId)
+	})
 
 	if err != nil {
 		log.Fatal("Failed to describe service: ", err)

@@ -3,7 +3,6 @@ package describe
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dream11/odin/pkg/util"
 
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/constant"
@@ -37,7 +36,6 @@ func init() {
 
 func executeEnv(cmd *cobra.Command) {
 	ctx := cmd.Context()
-	traceId := util.GenerateTraceId()
 	params := map[string]string{}
 
 	if serviceName != "" {
@@ -49,10 +47,9 @@ func executeEnv(cmd *cobra.Command) {
 	response, err := environmentClient.DescribeEnvironment(&ctx, &environment.DescribeEnvironmentRequest{
 		Params:  params,
 		EnvName: name,
-	}, traceId)
+	})
 
 	if err != nil {
-		log.Info("TraceId: ", traceId)
 		log.Fatal("Failed to describe environment ", err)
 	}
 

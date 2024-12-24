@@ -2,10 +2,8 @@ package util
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"net"
 	"strings"
-	"time"
 
 	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 )
@@ -52,9 +50,4 @@ func GenerateResponseMessageComponentSpecific(response *v1.ServiceResponse, comp
 		}
 	}
 	return message
-}
-
-// GenerateTraceId generates a trace id
-func GenerateTraceId() string {
-	return fmt.Sprintf("%d-%s", time.Now().Unix(), strings.Split(uuid.New().String(), "-")[0])
 }
