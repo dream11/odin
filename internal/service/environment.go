@@ -24,6 +24,7 @@ func (e *Environment) ListEnvironments(ctx *context.Context, request *environmen
 	client := environment.NewEnvironmentServiceClient(conn)
 	response, err := client.ListEnvironment(*requestCtx, request)
 	if err != nil {
+		log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 		return nil, err
 	}
 
@@ -56,6 +57,7 @@ func (e *Environment) CreateEnvironment(ctx *context.Context, request *environme
 			if errors.Is(err, context.Canceled) || err == io.EOF {
 				break
 			}
+			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 			return err
 		}
 		if response != nil {
@@ -96,6 +98,7 @@ func (e *Environment) DeleteEnvironment(ctx *context.Context, request *environme
 			if errors.Is(err, context.Canceled) || err == io.EOF {
 				break
 			}
+			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 			return err
 		}
 		if response != nil {
@@ -119,6 +122,7 @@ func (e *Environment) UpdateEnvironment(ctx *context.Context, request *environme
 	response, err := client.UpdateEnvironment(*requestCtx, request)
 
 	if err != nil {
+		log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 		return nil, err
 	}
 
@@ -136,6 +140,7 @@ func (e *Environment) DescribeEnvironment(ctx *context.Context, request *environ
 	response, err := client.DescribeEnvironment(*requestCtx, request)
 
 	if err != nil {
+		log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 		return nil, err
 	}
 

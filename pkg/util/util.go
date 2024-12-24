@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"net"
 	"strings"
 
@@ -50,4 +51,9 @@ func GenerateResponseMessageComponentSpecific(response *v1.ServiceResponse, comp
 		}
 	}
 	return message
+}
+
+// GenerateTraceID generates a trace id
+func GenerateTraceID() string {
+	return uuid.New().String()
 }
