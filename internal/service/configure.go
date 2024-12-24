@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"github.com/dream11/odin/pkg/constant"
+	log "github.com/sirupsen/logrus"
 
 	auth "github.com/dream11/odin/proto/gen/go/dream11/od/auth/v1"
 )
@@ -18,6 +20,7 @@ func (c *Configure) GetUserToken(ctx *context.Context, request *auth.GetUserToke
 	client := auth.NewAuthServiceClient(conn)
 	response, err := client.GetUserToken(*requestCtx, request)
 	if err != nil {
+		log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 		return nil, err
 	}
 

@@ -17,8 +17,14 @@ import (
 	_ "github.com/dream11/odin/cmd/undeploy"
 	_ "github.com/dream11/odin/cmd/update"
 	_ "github.com/dream11/odin/internal/ui"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
+	// Configure Logger to fix timestamp format
+	logrus.SetFormatter(&logrus.TextFormatter{
+		TimestampFormat: "2006-01-02 15:04:05", // Custom format
+		FullTimestamp:   true,
+	})
 	cmd.Execute()
 }
