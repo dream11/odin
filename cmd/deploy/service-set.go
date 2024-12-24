@@ -37,7 +37,7 @@ func executeDeployServiceSet(cmd *cobra.Command) {
 	env = config.EnsureEnvPresent(env)
 
 	ctx := cmd.Context()
-	traceID := util.GenerateTraceID()
+	traceId := util.GenerateTraceId()
 	if serviceSetName == "" && provisioningFile == "" {
 		log.Fatal("Please provide either --name or --file.")
 	}
@@ -63,9 +63,8 @@ func executeDeployServiceSet(cmd *cobra.Command) {
 		deployServiceSetRequest.Name = serviceSetName
 	}
 
-	err := serviceClient.DeployServiceSet(&ctx, &deployServiceSetRequest, traceID)
+	err := serviceClient.DeployServiceSet(&ctx, &deployServiceSetRequest, traceId)
 	if err != nil {
-		log.Info("TraceId: ", traceID)
-		log.Fatal("Failed to deploy service set", err)
+		log.Fatal("Failed to deploy service ", err)
 	}
 }

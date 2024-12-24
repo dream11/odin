@@ -42,14 +42,14 @@ func init() {
 
 func execute(cmd *cobra.Command) {
 	ctx := cmd.Context()
-	traceID := util.GenerateTraceID()
+	traceId := util.GenerateTraceId()
 	response, err := environmentClient.ListEnvironments(&ctx, &environment.ListEnvironmentRequest{
 		Params: map[string]string{
 			"name":             name,
 			"account":          account,
 			"provisioningType": provisioningType,
 			"displayAll":       strconv.FormatBool(displayAll)},
-	}, traceID)
+	}, traceId)
 
 	if err != nil {
 		log.Fatal("Failed to list environments ", err)

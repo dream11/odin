@@ -37,12 +37,12 @@ func init() {
 
 func listService(cmd *cobra.Command) {
 	ctx := cmd.Context()
-	traceID := util.GenerateTraceID()
+	traceId := util.GenerateTraceId()
 	response, err := serviceClient.ListService(&ctx, &serviceProto.ListServiceRequest{
 		Name:    serviceName,
 		Version: version,
 		Tags:    tags,
-	}, traceID)
+	}, traceId)
 
 	if err != nil {
 		log.Fatal("Failed to list services ", err)

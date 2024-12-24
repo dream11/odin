@@ -35,13 +35,13 @@ func init() {
 
 func execute(cmd *cobra.Command) {
 	ctx := cmd.Context()
-	traceID := util.GenerateTraceID()
+	traceId := util.GenerateTraceId()
 	err := environmentClient.DeleteEnvironment(&ctx, &environment.DeleteEnvironmentRequest{
 		EnvName: name,
-	}, traceID)
+	}, traceId)
 
 	if err != nil {
-		log.Info("TraceId: ", traceID)
+		log.Info("TraceId: ", traceId)
 		log.Fatal("Failed to delete environment ", err)
 	}
 }

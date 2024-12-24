@@ -58,12 +58,12 @@ func execute(cmd *cobra.Command) {
 	}
 
 	ctx := cmd.Context()
-	traceID := util.GenerateTraceID()
+	traceId := util.GenerateTraceId()
 	response, err := serviceClient.DescribeService(&ctx, &service.DescribeServiceRequest{
 		ServiceName: serviceName,
 		Version:     serviceVersion,
 		Params:      params,
-	}, traceID)
+	}, traceId)
 
 	if err != nil {
 		log.Fatal("Failed to describe service: ", err)

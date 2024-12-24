@@ -44,7 +44,7 @@ func init() {
 func execute(cmd *cobra.Command) {
 	env = config.EnsureEnvPresent(env)
 	ctx := cmd.Context()
-	traceID := util.GenerateTraceID()
+	traceId := util.GenerateTraceId()
 	if (serviceName == "" && serviceVersion == "") && (definitionFile != "" && provisioningFile != "") {
 		definitionData, err := os.ReadFile(definitionFile)
 		if err != nil {
@@ -71,10 +71,10 @@ func execute(cmd *cobra.Command) {
 			EnvName:            env,
 			ServiceDefinition:  &definitionProto,
 			ProvisioningConfig: provisioningProto,
-		}, traceID)
+		}, traceId)
 
 		if err != nil {
-			log.Info("TraceId: ", traceID)
+			log.Info("TraceId: ", traceId)
 			log.Fatal("Failed to deploy service ", err)
 		}
 	} else if (serviceName != "" && serviceVersion != "") && (definitionFile == "" && provisioningFile == "") {
@@ -85,10 +85,10 @@ func execute(cmd *cobra.Command) {
 				ServiceName:    serviceName,
 				ServiceVersion: serviceVersion,
 			},
-		}, traceID)
+		}, traceId)
 
 		if err != nil {
-			log.Info("TraceId: ", traceID)
+			log.Info("TraceId: ", traceId)
 			log.Fatal("Failed to deploy service ", err)
 		}
 	} else {

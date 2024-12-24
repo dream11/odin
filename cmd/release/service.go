@@ -39,7 +39,7 @@ func init() {
 
 func execute(cmd *cobra.Command) {
 	ctx := cmd.Context()
-	traceID := util.GenerateTraceID()
+	traceId := util.GenerateTraceId()
 
 	var err error
 
@@ -104,7 +104,7 @@ func execute(cmd *cobra.Command) {
 	}
 	serviceReleaseRequest.ProvisioningConfigs = provisioningConfigMap
 	serviceReleaseRequest.ServiceDefinition = &definitionProto
-	err = serviceClient.ReleaseService(&ctx, &serviceReleaseRequest, traceID)
+	err = serviceClient.ReleaseService(&ctx, &serviceReleaseRequest, traceId)
 	if err != nil {
 		log.Fatal("Failed to release service ", err)
 	}

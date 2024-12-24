@@ -37,7 +37,7 @@ func init() {
 
 func executeEnv(cmd *cobra.Command) {
 	ctx := cmd.Context()
-	traceID := util.GenerateTraceID()
+	traceId := util.GenerateTraceId()
 	params := map[string]string{}
 
 	if serviceName != "" {
@@ -49,10 +49,10 @@ func executeEnv(cmd *cobra.Command) {
 	response, err := environmentClient.DescribeEnvironment(&ctx, &environment.DescribeEnvironmentRequest{
 		Params:  params,
 		EnvName: name,
-	}, traceID)
+	}, traceId)
 
 	if err != nil {
-		log.Info("TraceId: ", traceID)
+		log.Info("TraceId: ", traceId)
 		log.Fatal("Failed to describe environment ", err)
 	}
 

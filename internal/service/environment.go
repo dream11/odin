@@ -16,8 +16,8 @@ import (
 type Environment struct{}
 
 // ListEnvironments List environments
-func (e *Environment) ListEnvironments(ctx *context.Context, request *environment.ListEnvironmentRequest, traceID string) (*environment.ListEnvironmentResponse, error) {
-	conn, requestCtx, err := grpcClient(ctx, traceID)
+func (e *Environment) ListEnvironments(ctx *context.Context, request *environment.ListEnvironmentRequest, traceId string) (*environment.ListEnvironmentResponse, error) {
+	conn, requestCtx, err := grpcClient(ctx, traceId)
 	if err != nil {
 		return nil, err
 	}
@@ -31,8 +31,8 @@ func (e *Environment) ListEnvironments(ctx *context.Context, request *environmen
 }
 
 // CreateEnvironment creates environment
-func (e *Environment) CreateEnvironment(ctx *context.Context, request *environment.CreateEnvironmentRequest, traceID string) error {
-	conn, requestCtx, err := grpcClient(ctx, traceID)
+func (e *Environment) CreateEnvironment(ctx *context.Context, request *environment.CreateEnvironmentRequest, traceId string) error {
+	conn, requestCtx, err := grpcClient(ctx, traceId)
 	if err != nil {
 		return err
 	}
@@ -69,8 +69,8 @@ func (e *Environment) CreateEnvironment(ctx *context.Context, request *environme
 }
 
 // DeleteEnvironment deletes environment
-func (e *Environment) DeleteEnvironment(ctx *context.Context, request *environment.DeleteEnvironmentRequest, traceID string) error {
-	conn, requestCtx, err := grpcClient(ctx, traceID)
+func (e *Environment) DeleteEnvironment(ctx *context.Context, request *environment.DeleteEnvironmentRequest, traceId string) error {
+	conn, requestCtx, err := grpcClient(ctx, traceId)
 	if err != nil {
 		return err
 	}
@@ -126,8 +126,8 @@ func (e *Environment) UpdateEnvironment(ctx *context.Context, request *environme
 }
 
 // DescribeEnvironment shows environment details including services and resources in it
-func (e *Environment) DescribeEnvironment(ctx *context.Context, request *environment.DescribeEnvironmentRequest, traceID string) (*environment.DescribeEnvironmentResponse, error) {
-	conn, requestCtx, err := grpcClient(ctx, traceID)
+func (e *Environment) DescribeEnvironment(ctx *context.Context, request *environment.DescribeEnvironmentRequest, traceId string) (*environment.DescribeEnvironmentResponse, error) {
+	conn, requestCtx, err := grpcClient(ctx, traceId)
 	if err != nil {
 		return nil, err
 	}
