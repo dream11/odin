@@ -50,7 +50,6 @@ func componentExecute(cmd *cobra.Command) {
 	response, err := componentTypeClient.ListComponentType(&ctx, &component.ListComponentTypeRequest{
 		Params: params,
 	})
-
 	if err != nil {
 		log.Fatal("Failed to list component types ", err)
 	}
@@ -79,11 +78,10 @@ func componentWriteAsText(response *component.ListComponentTypeResponse) {
 	var tableData [][]interface{}
 	for _, compType := range response.Components {
 		tableData = append(tableData, []interface{}{
-			compType.ComponentType,
-			compType.ComponentVersion,
+			*compType.ComponentType,
+			*compType.ComponentVersion,
 		})
 	}
-
 	table.Write(tableHeaders, tableData)
 }
 
@@ -92,7 +90,7 @@ func componentWriteAsJSON(response *component.ListComponentTypeResponse) {
 	for _, compType := range response.Components {
 		componentTypes = append(componentTypes, map[string]interface{}{
 			"name":    compType.ComponentType,
-			"version": compType.ComponentType,
+			"version": compType.ComponentVersion,
 		})
 	}
 	output, _ := json.MarshalIndent(componentTypes, "", "  ")
