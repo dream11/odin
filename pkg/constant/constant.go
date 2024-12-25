@@ -26,5 +26,5 @@ const (
 	TraceIDKey TraceID = "trace-id"
 
 	// LogLevelKey is the key used to set log level
-	LogLevelKey = "ODIN_DEBUG"
+	LogLevelKey = "ODIN_LOG_LEVEL"
 )

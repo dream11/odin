@@ -14,9 +14,11 @@ func init() {
 		TimestampFormat: "2006-01-02 15:04:05", // Custom format
 		FullTimestamp:   true,
 	})
-	if os.Getenv(constant.LogLevelKey) == "yes" {
-		log.SetLevel(log.DebugLevel)
-	} else {
+	level, err := log.ParseLevel(os.Getenv(constant.LogLevelKey))
+	if err != nil {
+		log.Warning("Invalid log level. Allowed values are: panic, fatal, error, warn, info, debug, trace")
 		log.SetLevel(log.InfoLevel)
+	} else {
+		log.SetLevel(level)
 	}
 }
