@@ -148,7 +148,9 @@ func main() {
 }
 ```
 
-> To enable debug logs, set an environment variable `ODIN_DEBUG=yes` & unset to disable if already set.
+> To configure log levels, set an environment variable `ODIN_LOG_LEVEL` & unset to disable if already set.
+> 
+> Supported log levels are - `DEBUG`, `INFO`, `WARN`, `ERROR`
 
 ### Inputs
 
