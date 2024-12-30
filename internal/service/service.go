@@ -44,6 +44,7 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 			if errors.Is(err, context.Canceled) || err == io.EOF {
 				break
 			}
+			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 			return err
 		}
 
@@ -85,6 +86,7 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 			if errors.Is(err, context.Canceled) || err == io.EOF {
 				break
 			}
+			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 			return err
 		}
 
@@ -129,6 +131,7 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 			if errors.Is(err, context.Canceled) || err == io.EOF {
 				break
 			}
+			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 			return err
 		}
 
@@ -175,6 +178,7 @@ func (e *Service) UndeployService(ctx *context.Context, request *serviceProto.Un
 			if errors.Is(err, context.Canceled) || err == io.EOF {
 				break
 			}
+			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 			return err
 		}
 		if response != nil {
@@ -217,6 +221,7 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 			if errors.Is(err, context.Canceled) || err == io.EOF {
 				break
 			}
+			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 			return err
 		}
 		if response != nil {
@@ -270,6 +275,7 @@ func (e *Service) ReleaseService(ctx *context.Context, request *serviceProto.Rel
 			if errors.Is(err, context.Canceled) || err == io.EOF {
 				break
 			}
+			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 			return err
 		}
 		if response != nil {
@@ -316,6 +322,7 @@ func (e *Service) DescribeService(ctx *context.Context, request *serviceProto.De
 	client := serviceProto.NewServiceServiceClient(conn)
 	response, err := client.DescribeService(*requestCtx, request)
 	if err != nil {
+		log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 		return nil, err
 	}
 

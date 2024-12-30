@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"github.com/dream11/odin/pkg/constant"
 	"strings"
 
 	"github.com/dream11/odin/pkg/config"
@@ -17,6 +18,9 @@ import (
 
 func grpcClient(ctx *context.Context) (*grpc.ClientConn, *context.Context, error) {
 	appConfig := config.GetConfig()
+	traceID := util.GenerateTraceID()
+	log.Debugf("Generated trace ID: %s", traceID)
+
 	if appConfig.BackendAddress == "" {
 		log.Fatal("Cannot create grpc client: Backend address is empty in config! Run `odin configure` to set backend address")
 	}
@@ -37,12 +41,13 @@ func grpcClient(ctx *context.Context) (*grpc.ClientConn, *context.Context, error
 		opts = append(opts, grpc.WithTransportCredentials(cred))
 	}
 
+	contextWithTrace := context.WithValue(*ctx, constant.TraceIDKey, traceID)
 	conn, err := grpc.NewClient(appConfig.BackendAddress, opts...)
 
 	if err != nil {
 		return nil, nil, err
 	}
 	// Enrich context with authorisation metadata
-	requestCtx := metadata.AppendToOutgoingContext(*ctx, "Authorization", fmt.Sprintf("Bearer %s", appConfig.AccessToken))
+	requestCtx := metadata.AppendToOutgoingContext(contextWithTrace, "Authorization", fmt.Sprintf("Bearer %s", appConfig.AccessToken), string(constant.TraceIDKey), traceID)
 	return conn, &requestCtx, nil
 }

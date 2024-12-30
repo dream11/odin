@@ -5,8 +5,10 @@ go 1.22.0
 toolchain go1.22.3
 
 require (
+
 	github.com/briandowns/spinner v1.23.1
 	github.com/mitchellh/cli v1.1.5
+	github.com/google/uuid v1.3.0
 	github.com/olekukonko/tablewriter v0.0.5
 	gopkg.in/yaml.v3 v3.0.1
 )

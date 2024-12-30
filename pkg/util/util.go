@@ -2,7 +2,9 @@ package util
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"net"
+	"os"
 	"strings"
 
 	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
@@ -50,4 +52,17 @@ func GenerateResponseMessageComponentSpecific(response *v1.ServiceResponse, comp
 		}
 	}
 	return message
+}
+
+// GenerateTraceID generates a trace id
+func GenerateTraceID() string {
+	return uuid.New().String()
+}
+
+// GetEnvOrDefault returns the value of an environment variable or a fallback value
+func GetEnvOrDefault(key, defaultValue string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return defaultValue
 }
