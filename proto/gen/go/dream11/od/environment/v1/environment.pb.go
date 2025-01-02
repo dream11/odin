@@ -149,7 +149,7 @@ type ServiceComponentStatus struct {
 	ServiceVersion   string                 `protobuf:"bytes,2,opt,name=service_version,json=serviceVersion,proto3" json:"service_version,omitempty"`
 	ServiceStatus    string                 `protobuf:"bytes,3,opt,name=service_status,json=serviceStatus,proto3" json:"service_status,omitempty"`
 	LastDeployed     string                 `protobuf:"bytes,4,opt,name=last_deployed,json=lastDeployed,proto3" json:"last_deployed,omitempty"`
-	ComponentsStatus []*ComponentStatusLive `protobuf:"bytes,5,rep,name=components_status,json=componentsStatus,proto3" json:"components_status,omitempty"`
+	ComponentsStatus []*StatusEnvComponentStatus `protobuf:"bytes,5,rep,name=components_status,json=componentsStatus,proto3" json:"components_status,omitempty"`
 }
 
 func (x *ServiceComponentStatus) Reset() {
@@ -212,14 +212,14 @@ func (x *ServiceComponentStatus) GetLastDeployed() string {
 	return ""
 }
 
-func (x *ServiceComponentStatus) GetComponentsStatus() []*ComponentStatusLive {
+func (x *ServiceComponentStatus) GetComponentsStatus() []*StatusEnvComponentStatus {
 	if x != nil {
 		return x.ComponentsStatus
 	}
 	return nil
 }
 
-type ComponentStatusLive struct {
+type StatusEnvComponentStatus struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -229,8 +229,8 @@ type ComponentStatusLive struct {
 	ComponentStatus  string `protobuf:"bytes,3,opt,name=component_status,json=componentStatus,proto3" json:"component_status,omitempty"`
 }
 
-func (x *ComponentStatusLive) Reset() {
-	*x = ComponentStatusLive{}
+func (x *StatusEnvComponentStatus) Reset() {
+	*x = StatusEnvComponentStatus{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -238,13 +238,13 @@ func (x *ComponentStatusLive) Reset() {
 	}
 }
 
-func (x *ComponentStatusLive) String() string {
+func (x *StatusEnvComponentStatus) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ComponentStatusLive) ProtoMessage() {}
+func (*StatusEnvComponentStatus) ProtoMessage() {}
 
-func (x *ComponentStatusLive) ProtoReflect() protoreflect.Message {
+func (x *StatusEnvComponentStatus) ProtoReflect() protoreflect.Message {
 	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -256,26 +256,26 @@ func (x *ComponentStatusLive) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ComponentStatusLive.ProtoReflect.Descriptor instead.
-func (*ComponentStatusLive) Descriptor() ([]byte, []int) {
+// Deprecated: Use StatusEnvComponentStatus.ProtoReflect.Descriptor instead.
+func (*StatusEnvComponentStatus) Descriptor() ([]byte, []int) {
 	return file_dream11_od_environment_v1_environment_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *ComponentStatusLive) GetComponentName() string {
+func (x *StatusEnvComponentStatus) GetComponentName() string {
 	if x != nil {
 		return x.ComponentName
 	}
 	return ""
 }
 
-func (x *ComponentStatusLive) GetComponentVersion() string {
+func (x *StatusEnvComponentStatus) GetComponentVersion() string {
 	if x != nil {
 		return x.ComponentVersion
 	}
 	return ""
 }
 
-func (x *ComponentStatusLive) GetComponentStatus() string {
+func (x *StatusEnvComponentStatus) GetComponentStatus() string {
 	if x != nil {
 		return x.ComponentStatus
 	}
@@ -968,7 +968,7 @@ var file_dream11_od_environment_v1_environment_proto_goTypes = []interface{}{
 	(*StatusEnvironmentRequest)(nil),    // 0: dream11.od.environment.v1.StatusEnvironmentRequest
 	(*StatusEnvironmentResponse)(nil),   // 1: dream11.od.environment.v1.StatusEnvironmentResponse
 	(*ServiceComponentStatus)(nil),      // 2: dream11.od.environment.v1.ServiceComponentStatus
-	(*ComponentStatusLive)(nil),         // 3: dream11.od.environment.v1.ComponentStatusLive
+	(*StatusEnvComponentStatus)(nil),         // 3: dream11.od.environment.v1.StatusEnvComponentStatus
 	(*ListEnvironmentRequest)(nil),      // 4: dream11.od.environment.v1.ListEnvironmentRequest
 	(*ListEnvironmentResponse)(nil),     // 5: dream11.od.environment.v1.ListEnvironmentResponse
 	(*DescribeEnvironmentRequest)(nil),  // 6: dream11.od.environment.v1.DescribeEnvironmentRequest
@@ -987,7 +987,7 @@ var file_dream11_od_environment_v1_environment_proto_goTypes = []interface{}{
 }
 var file_dream11_od_environment_v1_environment_proto_depIdxs = []int32{
 	2,  // 0: dream11.od.environment.v1.StatusEnvironmentResponse.services_status:type_name -> dream11.od.environment.v1.ServiceComponentStatus
-	3,  // 1: dream11.od.environment.v1.ServiceComponentStatus.components_status:type_name -> dream11.od.environment.v1.ComponentStatusLive
+	3,  // 1: dream11.od.environment.v1.ServiceComponentStatus.components_status:type_name -> dream11.od.environment.v1.StatusEnvComponentStatus
 	14, // 2: dream11.od.environment.v1.ListEnvironmentRequest.params:type_name -> dream11.od.environment.v1.ListEnvironmentRequest.ParamsEntry
 	16, // 3: dream11.od.environment.v1.ListEnvironmentResponse.environments:type_name -> dream11.od.dto.v1.EnvironmentSummary
 	15, // 4: dream11.od.environment.v1.DescribeEnvironmentRequest.params:type_name -> dream11.od.environment.v1.DescribeEnvironmentRequest.ParamsEntry
@@ -1055,7 +1055,7 @@ func file_dream11_od_environment_v1_environment_proto_init() {
 			}
 		}
 		file_dream11_od_environment_v1_environment_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ComponentStatusLive); i {
+			switch v := v.(*StatusEnvComponentStatus); i {
 			case 0:
 				return &v.state
 			case 1:

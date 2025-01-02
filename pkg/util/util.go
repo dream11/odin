@@ -35,12 +35,12 @@ func GenerateResponseMessage(response *v1.ServiceResponse) string {
 }
 
 // FormatToHumanReadableDuration takes a date-time string representing the last deployment time, and returns a human-readable string representing the duration since the last deployment
-func FormatToHumanReadableDuration(lastDeployed string) string {
+func FormatToHumanReadableDuration(inputDateTime string) string {
 	// Parse the date-time string
 	layout := "02-01-2006 15:04:05:0000"
-	parsedTime, err := time.Parse(layout, lastDeployed)
+	parsedTime, err := time.Parse(layout, inputDateTime)
 	if err != nil {
-		return fmt.Sprintf("Failed to parse last deployed time: %v", err)
+		return fmt.Sprintf("Failed to parse input time: %v", err)
 	}
 
 	// Calculate the duration

@@ -16,8 +16,8 @@ import (
 // setstatusCmd represents the env command
 var setstatusCmd = &cobra.Command{
 	Use:   "env",
-	Short: "Fetch deployment status of the environment",
-	Long:  `Fetch deployment status of the environment`,
+	Short: "Fetch status of the environment",
+	Long:  `Fetch status of the environment`,
 	Run: func(cmd *cobra.Command, args []string) {
 		getStatus(cmd)
 	},
