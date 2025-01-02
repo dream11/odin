@@ -5,10 +5,9 @@ go 1.22.0
 toolchain go1.22.3
 
 require (
-
 	github.com/briandowns/spinner v1.23.1
+	github.com/google/uuid v1.6.0
 	github.com/mitchellh/cli v1.1.5
-	github.com/google/uuid v1.3.0
 	github.com/olekukonko/tablewriter v0.0.5
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -19,7 +18,6 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.1 // indirect
 	github.com/armon/go-radix v0.0.0-20180808171621-7fddfc383310 // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
