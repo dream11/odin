@@ -161,9 +161,9 @@ func execute(cmd *cobra.Command) {
 	if oldComponentValues == nil || len(oldComponentValues.Fields) == 0 {
 		message = "\nNo changes from previous deployment. Do you want to continue? [Y/n]:"
 	} else {
-		message = "\nDo you want to proceed with the above command? [Y/n]:"
+		message = "\nDo you want to proceed with the above command? [y/n]:"
 	}
-	allowedInputsSlice := []string{"Y", "n"}
+	allowedInputsSlice := []string{"y", "n"}
 	allowedInputs := make(map[string]struct{}, len(allowedInputsSlice))
 	for _, input := range allowedInputsSlice {
 		allowedInputs[input] = struct{}{}
