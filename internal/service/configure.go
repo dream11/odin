@@ -2,10 +2,10 @@ package service
 
 import (
 	"context"
-	"github.com/dream11/odin/pkg/constant"
-	log "github.com/sirupsen/logrus"
 
+	"github.com/dream11/odin/pkg/constant"
 	auth "github.com/dream11/odin/proto/gen/go/dream11/od/auth/v1"
+	log "github.com/sirupsen/logrus"
 )
 
 // Configure used to perform odin congigure

@@ -2,12 +2,12 @@ package util
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"net"
 	"os"
 	"strings"
 
 	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
+	"github.com/google/uuid"
 )
 
 // SplitProviderAccount splits string into list of cloud provider accounts

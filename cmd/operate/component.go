@@ -159,7 +159,7 @@ func execute(cmd *cobra.Command) {
 
 	var message string
 	if oldComponentValues == nil || len(oldComponentValues.Fields) == 0 {
-		message = "\nNo changes from previous deployment. Do you want to continue? [Y/n]:"
+		message = "\nNo changes from previous deployment. Do you want to continue? [y/n]:"
 	} else {
 		message = "\nDo you want to proceed with the above command? [y/n]:"
 	}
@@ -176,7 +176,7 @@ func execute(cmd *cobra.Command) {
 		log.Fatal(err.Error())
 	}
 
-	if val != "Y" {
+	if val != "y" {
 		log.Info("Aborting the operation")
 		return
 	}
