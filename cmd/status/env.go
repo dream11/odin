@@ -95,7 +95,7 @@ func writeAsTextEnvResponse(response *environment.StatusEnvironmentResponse) {
 				fmt.Printf("Service Status: %s\n", svc.GetServiceStatus())
 				fmt.Printf("Last deployed: %s\n", util.FormatToHumanReadableDuration(svc.GetLastDeployed()))
 				fmt.Println("Component details:")
-				for _, component := range svc.GetComponentsStatus() {
+				for _, component := range svc.GetComponentStatus() {
 					tableData = append(tableData, []interface{}{
 						component.GetComponentName(),
 						component.GetComponentStatus(),
