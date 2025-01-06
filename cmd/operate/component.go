@@ -93,7 +93,7 @@ func execute(cmd *cobra.Command) {
 		EnvName:       env,
 		ServiceName:   serviceName,
 		ComponentName: name,
-		Operation:     operation,
+		OperationName: operation,
 		Config:        config,
 	})
 	if err != nil {

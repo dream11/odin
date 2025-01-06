@@ -134,7 +134,7 @@ message CompareOperationChangesRequest {
   string env_name = 1;
   string service_name = 2;
   string component_name = 3;
-  string operation = 4;
+  string operation_name = 4;
   optional google.protobuf.Struct config = 5;
 }
 
