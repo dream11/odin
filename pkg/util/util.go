@@ -2,13 +2,13 @@ package util
 
 import (
 	"fmt"
+	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	"github.com/google/uuid"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 	"time"
-
-	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 )
 
 // SplitProviderAccount splits string into list of cloud provider accounts
@@ -36,11 +36,25 @@ func GenerateResponseMessage(response *v1.ServiceResponse) string {
 
 // FormatToHumanReadableDuration takes a date-time string representing the last deployment time, and returns a human-readable string representing the duration since the last deployment
 func FormatToHumanReadableDuration(inputDateTime string) string {
-	// Layout specifies the format of the input date-time string.
-	// Go uses a specific reference date "Mon Jan 2 15:04:05 MST 2006" to define time formats.
-	// Here, "02-01-2006 15:04:05:0000" expects the input to be in "DD-MM-YYYY HH:MM:SS:MS" format.
+	// Check if the input is a Unix timestamp prefixed by "seconds:"
+	if strings.HasPrefix(inputDateTime, "seconds: ") {
+		timestampStr := strings.TrimPrefix(inputDateTime, "seconds: ")
+		timestampStr = strings.TrimSpace(timestampStr)
+
+		// Parse the timestamp as an integer
+		timestamp, err := strconv.ParseInt(timestampStr, 10, 64)
+		if err != nil {
+			return fmt.Sprintf("Failed to parse timestamp: %v", err)
+		}
+
+		// Convert the Unix timestamp to a time.Time object
+		parsedTime := time.Unix(timestamp, 0)
+		return calculateDuration(parsedTime)
+	}
+
+	// Handle the default case where input is in "DD-MM-YYYY HH:MM:SS:MS" format
 	layout := "02-01-2006 15:04:05:0000"
-	location, err := time.LoadLocation("Asia/Kolkata") // Adjust this if your time is in a different time zone
+	location, err := time.LoadLocation("Asia/Kolkata") // Adjust time zone as needed
 	if err != nil {
 		return fmt.Sprintf("Failed to load location: %v", err)
 	}
@@ -49,6 +63,11 @@ func FormatToHumanReadableDuration(inputDateTime string) string {
 	if err != nil {
 		return fmt.Sprintf("Failed to parse input time: %v", err)
 	}
+
+	return calculateDuration(parsedTime)
+}
+
+func calculateDuration(parsedTime time.Time) string {
 	// Calculate the duration
 	duration := time.Since(parsedTime)
 	// Handle negative durations
