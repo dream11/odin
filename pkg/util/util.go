@@ -36,7 +36,9 @@ func GenerateResponseMessage(response *v1.ServiceResponse) string {
 
 // FormatToHumanReadableDuration takes a date-time string representing the last deployment time, and returns a human-readable string representing the duration since the last deployment
 func FormatToHumanReadableDuration(inputDateTime string) string {
-	// Parse the date-time string
+	// Layout specifies the format of the input date-time string.
+	// Go uses a specific reference date "Mon Jan 2 15:04:05 MST 2006" to define time formats.
+	// Here, "02-01-2006 15:04:05:0000" expects the input to be in "DD-MM-YYYY HH:MM:SS:MS" format.
 	layout := "02-01-2006 15:04:05:0000"
 	parsedTime, err := time.Parse(layout, inputDateTime)
 	if err != nil {
