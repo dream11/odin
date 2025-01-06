@@ -40,14 +40,17 @@ func FormatToHumanReadableDuration(inputDateTime string) string {
 	// Go uses a specific reference date "Mon Jan 2 15:04:05 MST 2006" to define time formats.
 	// Here, "02-01-2006 15:04:05:0000" expects the input to be in "DD-MM-YYYY HH:MM:SS:MS" format.
 	layout := "02-01-2006 15:04:05:0000"
-	parsedTime, err := time.Parse(layout, inputDateTime)
+	location, err := time.LoadLocation("Asia/Kolkata") // Adjust this if your time is in a different time zone
+	if err != nil {
+		return fmt.Sprintf("Failed to load location: %v", err)
+	}
+
+	parsedTime, err := time.ParseInLocation(layout, inputDateTime, location)
 	if err != nil {
 		return fmt.Sprintf("Failed to parse input time: %v", err)
 	}
-
 	// Calculate the duration
 	duration := time.Since(parsedTime)
-
 	// Handle negative durations
 	if duration < 0 {
 		duration = -duration

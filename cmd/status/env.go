@@ -87,7 +87,6 @@ func writeAsTextEnvResponse(response *environment.StatusEnvironmentResponse) {
 		}
 	} else {
 		tableHeaders = []string{"NAME",
-			"VERSION",
 			"STATUS"}
 		fmt.Printf("Fetching status for service: %s in environment: %s\n", serviceName, envName)
 		for _, svc := range response.GetServicesStatus() {
@@ -99,7 +98,6 @@ func writeAsTextEnvResponse(response *environment.StatusEnvironmentResponse) {
 				for _, component := range svc.GetComponentsStatus() {
 					tableData = append(tableData, []interface{}{
 						component.GetComponentName(),
-						component.GetComponentVersion(),
 						component.GetComponentStatus(),
 					})
 				}

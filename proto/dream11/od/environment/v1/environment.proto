@@ -31,7 +31,7 @@ message ServiceComponentStatus {
   string service_version = 2;
   string service_status = 3;
   string last_deployed = 4;
-  repeated StatusEnvComponentStatus components_status = 5;
+  repeated StatusEnvComponentStatus component_status = 5;
 }
 
 message StatusEnvComponentStatus {
