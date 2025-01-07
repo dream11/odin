@@ -12,6 +12,32 @@ service EnvironmentService {
   rpc UpdateEnvironment(UpdateEnvironmentRequest) returns (UpdateEnvironmentResponse) {}
   rpc CreateEnvironment(CreateEnvironmentRequest) returns (stream CreateEnvironmentResponse) {}
   rpc DeleteEnvironment(DeleteEnvironmentRequest) returns (stream DeleteEnvironmentResponse) {}
+  rpc StatusEnvironment(StatusEnvironmentRequest) returns (stream StatusEnvironmentResponse) {}
+}
+
+message StatusEnvironmentRequest {
+  string env_name = 1;
+  string service_name = 2;
+}
+
+message StatusEnvironmentResponse {
+  string env_name = 1;
+  string env_status = 2;
+  repeated DeployedServiceStatus services_status = 3;
+}
+
+message DeployedServiceStatus {
+  string service_name = 1;
+  string service_version = 2;
+  string service_status = 3;
+  string last_deployed = 4;
+  repeated StatusEnvComponentStatus component_status = 5;
+}
+
+message StatusEnvComponentStatus {
+  string component_name = 1;
+  string component_version = 2;
+  string component_status = 3;
 }
 
 message ListEnvironmentRequest {
