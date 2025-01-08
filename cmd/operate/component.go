@@ -110,78 +110,78 @@ func execute(cmd *cobra.Command) {
 		log.Fatal("error converting JSON to structpb.Struct: ", err)
 	}
 	//call operate component client
-
-	diffValues, err := componentClient.CompareOperationChanges(&ctx, &serviceProto.OperateComponentDiffRequest{
-		EnvName:       env,
-		ServiceName:   serviceName,
-		ComponentName: name,
-		OperationName: operation,
-		Config:        config,
-	})
-	if err != nil {
-		log.Fatal("Failed to compare operation changes\n", err)
-	}
-	oldComponentValues := diffValues.OldValues
-	newComponentValues := diffValues.NewValues
-
-	if oldComponentValues != nil && len(oldComponentValues.Fields) > 0 {
-		log.Info("\nBelow changes will happen after this operation:")
-		tableHeaders := []string{"Component Name", "Config", "Old Value", "New Value"}
-		var tableData [][]interface{}
-
-		componentName := name
-		flatendOldComponentValues := flattenMap(oldComponentValues.AsMap(), "")
-		flatendNewComponentValues := flattenMap(newComponentValues.AsMap(), "")
-
-		keys := make([]string, 0, len(flatendNewComponentValues))
-		for k := range flatendOldComponentValues {
-			keys = append(keys, k)
+	if operation == "redeploy" {
+		diffValues, err := componentClient.CompareOperationChanges(&ctx, &serviceProto.OperateComponentDiffRequest{
+			EnvName:       env,
+			ServiceName:   serviceName,
+			ComponentName: name,
+			OperationName: operation,
+			Config:        config,
+		})
+		if err != nil {
+			log.Fatal("Failed to compare operation changes\n", err)
 		}
-		sort.Strings(keys)
+		oldComponentValues := diffValues.OldValues
+		newComponentValues := diffValues.NewValues
 
-		for _, key := range keys {
-			oldValue := flatendOldComponentValues[key]
-			newValue := flatendNewComponentValues[key]
-			if fmt.Sprintf("%v", oldValue) != fmt.Sprintf("%v", newValue) {
-				var oldValueString string
-				var newValueString string
-				oldValueString = strings.Join(applyColorToLines(formatValue(oldValue), color.RedString), "\n")
-				newValueString = strings.Join(applyColorToLines(formatValue(newValue), color.GreenString), "\n")
-				tableData = append(tableData, []interface{}{
-					componentName,
-					key,
-					oldValueString,
-					newValueString,
-				})
+		if oldComponentValues != nil && len(oldComponentValues.Fields) > 0 {
+			log.Info("\nBelow changes will happen after this operation:")
+			tableHeaders := []string{"Component Name", "Config", "Old Value", "New Value"}
+			var tableData [][]interface{}
+
+			componentName := name
+			flatendOldComponentValues := flattenMap(oldComponentValues.AsMap(), "")
+			flatendNewComponentValues := flattenMap(newComponentValues.AsMap(), "")
+
+			keys := make([]string, 0, len(flatendNewComponentValues))
+			for k := range flatendOldComponentValues {
+				keys = append(keys, k)
 			}
+			sort.Strings(keys)
+
+			for _, key := range keys {
+				oldValue := flatendOldComponentValues[key]
+				newValue := flatendNewComponentValues[key]
+				if fmt.Sprintf("%v", oldValue) != fmt.Sprintf("%v", newValue) {
+					var oldValueString string
+					var newValueString string
+					oldValueString = strings.Join(applyColorToLines(formatValue(oldValue), color.RedString), "\n")
+					newValueString = strings.Join(applyColorToLines(formatValue(newValue), color.GreenString), "\n")
+					tableData = append(tableData, []interface{}{
+						componentName,
+						key,
+						oldValueString,
+						newValueString,
+					})
+				}
+			}
+			table.Write(tableHeaders, tableData)
 		}
-		table.Write(tableHeaders, tableData)
-	}
 
-	var message string
-	if oldComponentValues == nil || len(oldComponentValues.Fields) == 0 {
-		message = "\nNo changes from previous deployment. Do you want to continue? [y/n]:"
-	} else {
-		message = "\nDo you want to proceed with the above command? [y/n]:"
-	}
-	allowedInputsSlice := []string{"y", "n"}
-	allowedInputs := make(map[string]struct{}, len(allowedInputsSlice))
-	for _, input := range allowedInputsSlice {
-		allowedInputs[input] = struct{}{}
-	}
+		var message string
+		if oldComponentValues == nil || len(oldComponentValues.Fields) == 0 {
+			message = "\nNo changes from previous deployment. Do you want to continue? [y/n]:"
+		} else {
+			message = "\nDo you want to proceed with the above command? [y/n]:"
+		}
+		allowedInputsSlice := []string{"y", "n"}
+		allowedInputs := make(map[string]struct{}, len(allowedInputsSlice))
+		for _, input := range allowedInputsSlice {
+			allowedInputs[input] = struct{}{}
+		}
 
-	inputHandler := ui.Input{}
-	val, err := inputHandler.AskWithConstraints(message, allowedInputs)
+		inputHandler := ui.Input{}
+		val, err := inputHandler.AskWithConstraints(message, allowedInputs)
 
-	if err != nil {
-		log.Fatal(err.Error())
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+
+		if val != "y" {
+			log.Info("Aborting the operation")
+			return
+		}
 	}
-
-	if val != "y" {
-		log.Info("Aborting the operation")
-		return
-	}
-
 	err = componentClient.OperateComponent(&ctx, &serviceProto.OperateServiceRequest{
 		EnvName:              env,
 		ServiceName:          serviceName,
