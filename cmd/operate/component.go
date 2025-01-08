@@ -56,6 +56,28 @@ func init() {
 	operateCmd.AddCommand(operateComponentCmd)
 }
 
+func formatValue(value interface{}) string {
+	switch v := value.(type) {
+	case []interface{}:
+		strSlice := make([]string, len(v))
+		for i, elem := range v {
+			strSlice[i] = formatValue(elem)
+		}
+		if len(strSlice) == 1 {
+			return strSlice[0]
+		}
+		return "[" + strings.Join(strSlice, ", ") + "]"
+	case map[string]interface{}, struct{}:
+		jsonBytes, err := json.MarshalIndent(v, "", "  ")
+		if err != nil {
+			return fmt.Sprintf("error: %v", err)
+		}
+		return string(jsonBytes)
+	default:
+		return fmt.Sprintf("%v", v)
+	}
+}
+
 func execute(cmd *cobra.Command) {
 	env = config.EnsureEnvPresent(env)
 
@@ -104,7 +126,7 @@ func execute(cmd *cobra.Command) {
 
 	if oldComponentValues != nil && len(oldComponentValues.Fields) > 0 {
 		log.Info("\nBelow changes will happen after this operation:")
-		tableHeaders := []string{"Component Name", "Key", "Old Value", "New Value"}
+		tableHeaders := []string{"Component Name", "Config", "Old Value", "New Value"}
 		var tableData [][]interface{}
 
 		componentName := name
@@ -123,29 +145,8 @@ func execute(cmd *cobra.Command) {
 			if fmt.Sprintf("%v", oldValue) != fmt.Sprintf("%v", newValue) {
 				var oldValueString string
 				var newValueString string
-
-				switch oldValue := oldValue.(type) {
-				case []interface{}:
-					strSlice := make([]string, len(oldValue))
-					for i, v := range oldValue {
-						strSlice[i] = fmt.Sprintf("%v", v)
-					}
-					oldValueString = color.RedString("[" + strings.Join(strSlice, ", ") + "]")
-				default:
-					oldValueString = color.RedString(fmt.Sprintf("%v", oldValue))
-				}
-
-				switch newValue := newValue.(type) {
-				case []interface{}:
-					strSlice := make([]string, len(newValue))
-					for i, v := range newValue {
-						strSlice[i] = fmt.Sprintf("%v", v)
-					}
-					newValueString = color.GreenString("[" + strings.Join(strSlice, ", ") + "]")
-				default:
-					newValueString = color.GreenString(fmt.Sprintf("%v", flatendNewComponentValues[key]))
-				}
-
+				oldValueString = strings.Join(applyColorToLines(formatValue(oldValue), color.RedString), "\n")
+				newValueString = strings.Join(applyColorToLines(formatValue(newValue), color.GreenString), "\n")
 				tableData = append(tableData, []interface{}{
 					componentName,
 					key,
@@ -216,4 +217,12 @@ func flattenMap(m map[string]interface{}, prefix string) map[string]interface{} 
 		}
 	}
 	return flattened
+}
+
+func applyColorToLines(value string, colorFunc func(format string, a ...interface{}) string) []string {
+	lines := strings.Split(value, "\n")
+	for i, line := range lines {
+		lines[i] = colorFunc(line)
+	}
+	return lines
 }
