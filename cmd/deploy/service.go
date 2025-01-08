@@ -1,8 +1,11 @@
 package deploy
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"os"
+	"regexp"
 
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/config"
@@ -18,7 +21,7 @@ var provisioningFile string
 var serviceName string
 var serviceVersion string
 var serviceClient = service.Service{}
-
+var labels string
 var serviceCmd = &cobra.Command{
 	Use:   "service",
 	Short: "Deploy service",
@@ -37,62 +40,100 @@ func init() {
 	serviceCmd.Flags().StringVar(&provisioningFile, "provisioning", "", "path to the provisioning file")
 	serviceCmd.Flags().StringVar(&serviceName, "name", "", "released service name")
 	serviceCmd.Flags().StringVar(&serviceVersion, "version", "", "released service version")
+	serviceCmd.Flags().StringVar(&labels, "labels", "", "comma separated labels for the service version ex key1=value1,key2=value2")
+
 	deployCmd.AddCommand(serviceCmd)
 }
 
 func execute(cmd *cobra.Command) {
 	env = config.EnsureEnvPresent(env)
 	ctx := cmd.Context()
-	if (serviceName == "" && serviceVersion == "") && (definitionFile != "" && provisioningFile != "") {
-		definitionData, err := os.ReadFile(definitionFile)
-		if err != nil {
-			log.Fatal("Error while reading definition file ", err)
-		}
-		var definitionProto serviceDto.ServiceDefinition
-		if err := json.Unmarshal(definitionData, &definitionProto); err != nil {
-			log.Fatalf("Error unmarshalling definition file: %v", err)
-		}
 
-		provisioningData, err := os.ReadFile(provisioningFile)
-		if err != nil {
-			log.Fatal("Error while reading provisioning file ", err)
+	if (serviceName == "" && serviceVersion == "" && labels == "") && (definitionFile != "" && provisioningFile != "") {
+		deployUsingFiles(ctx)
+	} else if (serviceName != "" && serviceVersion != "" && labels == "") && (definitionFile == "" && provisioningFile == "") {
+		deployUsingServiceNameAndVersion(ctx)
+	} else if (serviceName != "" && labels != "" && serviceVersion == "") && (definitionFile == "" && provisioningFile == "") {
+		if err := validateLabels(labels); err != nil {
+			log.Fatal("Invalid labels format: ", err)
 		}
-		var compProvConfigs []*serviceDto.ComponentProvisioningConfig
-		if err := json.Unmarshal(provisioningData, &compProvConfigs); err != nil {
-			log.Fatalf("Error unmarshalling provisioning file: %v", err)
-		}
-		provisioningProto := &serviceDto.ProvisioningConfig{
-			ComponentProvisioningConfig: compProvConfigs,
-		}
-
-		err = serviceClient.DeployService(&ctx, &serviceProto.DeployServiceRequest{
-			EnvName:            env,
-			ServiceDefinition:  &definitionProto,
-			ProvisioningConfig: provisioningProto,
-		})
-
-		if err != nil {
-			log.Fatal("Failed to deploy service ", err)
-		}
-	} else if (serviceName != "" && serviceVersion != "") && (definitionFile == "" && provisioningFile == "") {
-		log.Info("deploying service :", serviceName, ":", serviceVersion, " in env :", env)
-		err := serviceClient.DeployReleasedService(&ctx, &serviceProto.DeployReleasedServiceRequest{
-			EnvName: env,
-			ServiceIdentifier: &serviceProto.ServiceIdentifier{
-				ServiceName:    serviceName,
-				ServiceVersion: serviceVersion,
-			},
-		})
-
-		if err != nil {
-			log.Fatal("Failed to deploy service ", err)
-		}
+		deployUsingServiceNameAndLabels(ctx)
 	} else {
-		if definitionFile != "" && serviceName != "" {
-			log.Fatal("-name and --version should not be provided when --file is provided.")
-		} else {
-			log.Fatal("--name and --version must be provided")
-		}
+		log.Fatal("Invalid combination of flags. Use either (service name and version) or (service name and labels) or (definitionFile and provisioningFile).")
+	}
+}
+
+func deployUsingFiles(ctx context.Context) {
+	definitionData, err := os.ReadFile(definitionFile)
+	if err != nil {
+		log.Fatal("Error while reading definition file ", err)
+	}
+	var definitionProto serviceDto.ServiceDefinition
+	if err := json.Unmarshal(definitionData, &definitionProto); err != nil {
+		log.Fatalf("Error unmarshalling definition file: %v", err)
 	}
 
+	provisioningData, err := os.ReadFile(provisioningFile)
+	if err != nil {
+		log.Fatal("Error while reading provisioning file ", err)
+	}
+	var compProvConfigs []*serviceDto.ComponentProvisioningConfig
+	if err := json.Unmarshal(provisioningData, &compProvConfigs); err != nil {
+		log.Fatalf("Error unmarshalling provisioning file: %v", err)
+	}
+	provisioningProto := &serviceDto.ProvisioningConfig{
+		ComponentProvisioningConfig: compProvConfigs,
+	}
+
+	err = serviceClient.DeployService(&ctx, &serviceProto.DeployServiceRequest{
+		EnvName:            env,
+		ServiceDefinition:  &definitionProto,
+		ProvisioningConfig: provisioningProto,
+	})
+
+	if err != nil {
+		log.Fatal("Failed to deploy service ", err)
+	}
+}
+
+func deployUsingServiceNameAndVersion(ctx context.Context) {
+	log.Info("deploying service :", serviceName, ":", serviceVersion, " in env :", env)
+	err := serviceClient.DeployReleasedService(&ctx, &serviceProto.DeployReleasedServiceRequest{
+		EnvName: env,
+		ServiceIdentifier: &serviceProto.ServiceIdentifier{
+			ServiceName:    serviceName,
+			ServiceVersion: serviceVersion,
+		},
+	})
+
+	if err != nil {
+		log.Fatal("Failed to deploy service ", err)
+	}
+}
+
+func deployUsingServiceNameAndLabels(ctx context.Context) {
+	log.Info("deploying service :", serviceName, " with labels: ", labels, " in env :", env)
+	err := serviceClient.DeployReleasedService(&ctx, &serviceProto.DeployReleasedServiceRequest{
+		EnvName: env,
+		ServiceIdentifier: &serviceProto.ServiceIdentifier{
+			ServiceName: serviceName,
+			Tags:        labels,
+		},
+	})
+
+	if err != nil {
+		log.Fatal("Failed to deploy service ", err)
+	}
+}
+
+func validateLabels(labels string) error {
+	labelPattern := `^(\w+=\w+)(,\w+=\w+)*$`
+	matched, err := regexp.MatchString(labelPattern, labels)
+	if err != nil {
+		return err
+	}
+	if !matched {
+		return errors.New("labels must be in format key1=value1,key2=value2")
+	}
+	return nil
 }
