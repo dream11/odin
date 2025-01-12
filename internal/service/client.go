@@ -4,10 +4,10 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"github.com/dream11/odin/pkg/constant"
 	"strings"
 
 	"github.com/dream11/odin/pkg/config"
+	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/util"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -42,7 +42,7 @@ func grpcClient(ctx *context.Context) (*grpc.ClientConn, *context.Context, error
 	}
 
 	contextWithTrace := context.WithValue(*ctx, constant.TraceIDKey, traceID)
-	conn, err := grpc.Dial(appConfig.BackendAddress, opts...)
+	conn, err := grpc.NewClient(appConfig.BackendAddress, opts...)
 
 	if err != nil {
 		return nil, nil, err

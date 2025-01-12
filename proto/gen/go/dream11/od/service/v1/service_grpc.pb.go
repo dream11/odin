@@ -27,6 +27,7 @@ const (
 	ServiceService_UndeployService_FullMethodName       = "/dream11.od.service.v1.ServiceService/UndeployService"
 	ServiceService_ListService_FullMethodName           = "/dream11.od.service.v1.ServiceService/ListService"
 	ServiceService_DescribeService_FullMethodName       = "/dream11.od.service.v1.ServiceService/DescribeService"
+	ServiceService_OperateComponentDiff_FullMethodName  = "/dream11.od.service.v1.ServiceService/OperateComponentDiff"
 )
 
 // ServiceServiceClient is the client API for ServiceService service.
@@ -41,6 +42,7 @@ type ServiceServiceClient interface {
 	UndeployService(ctx context.Context, in *UndeployServiceRequest, opts ...grpc.CallOption) (ServiceService_UndeployServiceClient, error)
 	ListService(ctx context.Context, in *ListServiceRequest, opts ...grpc.CallOption) (*ListServiceResponse, error)
 	DescribeService(ctx context.Context, in *DescribeServiceRequest, opts ...grpc.CallOption) (*DescribeServiceResponse, error)
+	OperateComponentDiff(ctx context.Context, in *OperateComponentDiffRequest, opts ...grpc.CallOption) (*OperateComponentDiffResponse, error)
 }
 
 type serviceServiceClient struct {
@@ -261,6 +263,15 @@ func (c *serviceServiceClient) DescribeService(ctx context.Context, in *Describe
 	return out, nil
 }
 
+func (c *serviceServiceClient) OperateComponentDiff(ctx context.Context, in *OperateComponentDiffRequest, opts ...grpc.CallOption) (*OperateComponentDiffResponse, error) {
+	out := new(OperateComponentDiffResponse)
+	err := c.cc.Invoke(ctx, ServiceService_OperateComponentDiff_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ServiceServiceServer is the server API for ServiceService service.
 // All implementations must embed UnimplementedServiceServiceServer
 // for forward compatibility
@@ -273,6 +284,7 @@ type ServiceServiceServer interface {
 	UndeployService(*UndeployServiceRequest, ServiceService_UndeployServiceServer) error
 	ListService(context.Context, *ListServiceRequest) (*ListServiceResponse, error)
 	DescribeService(context.Context, *DescribeServiceRequest) (*DescribeServiceResponse, error)
+	OperateComponentDiff(context.Context, *OperateComponentDiffRequest) (*OperateComponentDiffResponse, error)
 	mustEmbedUnimplementedServiceServiceServer()
 }
 
@@ -303,6 +315,9 @@ func (UnimplementedServiceServiceServer) ListService(context.Context, *ListServi
 }
 func (UnimplementedServiceServiceServer) DescribeService(context.Context, *DescribeServiceRequest) (*DescribeServiceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DescribeService not implemented")
+}
+func (UnimplementedServiceServiceServer) OperateComponentDiff(context.Context, *OperateComponentDiffRequest) (*OperateComponentDiffResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method OperateComponentDiff not implemented")
 }
 func (UnimplementedServiceServiceServer) mustEmbedUnimplementedServiceServiceServer() {}
 
@@ -479,6 +494,24 @@ func _ServiceService_DescribeService_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServiceService_OperateComponentDiff_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OperateComponentDiffRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceServiceServer).OperateComponentDiff(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServiceService_OperateComponentDiff_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceServiceServer).OperateComponentDiff(ctx, req.(*OperateComponentDiffRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ServiceService_ServiceDesc is the grpc.ServiceDesc for ServiceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -493,6 +526,10 @@ var ServiceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DescribeService",
 			Handler:    _ServiceService_DescribeService_Handler,
+		},
+		{
+			MethodName: "OperateComponentDiff",
+			Handler:    _ServiceService_OperateComponentDiff_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

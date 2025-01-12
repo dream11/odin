@@ -2,11 +2,17 @@ package operate
 
 import (
 	"encoding/json"
+	"fmt"
+	"sort"
+	"strings"
 
 	"github.com/dream11/odin/internal/service"
+	"github.com/dream11/odin/internal/ui"
 	"github.com/dream11/odin/pkg/config"
+	"github.com/dream11/odin/pkg/table"
 	fileUtil "github.com/dream11/odin/pkg/util"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
+	"github.com/fatih/color"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -50,6 +56,28 @@ func init() {
 	operateCmd.AddCommand(operateComponentCmd)
 }
 
+func formatValue(value interface{}) string {
+	switch v := value.(type) {
+	case []interface{}:
+		strSlice := make([]string, len(v))
+		for i, elem := range v {
+			strSlice[i] = formatValue(elem)
+		}
+		if len(strSlice) == 1 {
+			return strSlice[0]
+		}
+		return "[" + strings.Join(strSlice, ", ") + "]"
+	case map[string]interface{}, struct{}:
+		jsonBytes, err := json.MarshalIndent(v, "", "  ")
+		if err != nil {
+			return fmt.Sprintf("error: %v", err)
+		}
+		return string(jsonBytes)
+	default:
+		return fmt.Sprintf("%v", v)
+	}
+}
+
 func execute(cmd *cobra.Command) {
 	env = config.EnsureEnvPresent(env)
 
@@ -82,6 +110,78 @@ func execute(cmd *cobra.Command) {
 		log.Fatal("error converting JSON to structpb.Struct: ", err)
 	}
 	//call operate component client
+	if operation == "redeploy" {
+		diffValues, err := componentClient.CompareOperationChanges(&ctx, &serviceProto.OperateComponentDiffRequest{
+			EnvName:       env,
+			ServiceName:   serviceName,
+			ComponentName: name,
+			OperationName: operation,
+			Config:        config,
+		})
+		if err != nil {
+			log.Fatal("Failed to compare operation changes\n", err)
+		}
+		oldComponentValues := diffValues.OldValues
+		newComponentValues := diffValues.NewValues
+
+		if oldComponentValues != nil && len(oldComponentValues.Fields) > 0 {
+			log.Info("\nBelow changes will happen after this operation:")
+			tableHeaders := []string{"Component Name", "Config", "Old Value", "New Value"}
+			var tableData [][]interface{}
+
+			componentName := name
+			flatendOldComponentValues := flattenMap(oldComponentValues.AsMap(), "")
+			flatendNewComponentValues := flattenMap(newComponentValues.AsMap(), "")
+
+			keys := make([]string, 0, len(flatendNewComponentValues))
+			for k := range flatendOldComponentValues {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+
+			for _, key := range keys {
+				oldValue := flatendOldComponentValues[key]
+				newValue := flatendNewComponentValues[key]
+				if fmt.Sprintf("%v", oldValue) != fmt.Sprintf("%v", newValue) {
+					var oldValueString string
+					var newValueString string
+					oldValueString = strings.Join(applyColorToLines(formatValue(oldValue), color.RedString), "\n")
+					newValueString = strings.Join(applyColorToLines(formatValue(newValue), color.GreenString), "\n")
+					tableData = append(tableData, []interface{}{
+						componentName,
+						key,
+						oldValueString,
+						newValueString,
+					})
+				}
+			}
+			table.Write(tableHeaders, tableData)
+		}
+
+		var message string
+		if oldComponentValues == nil || len(oldComponentValues.Fields) == 0 {
+			message = "\nNo changes from previous deployment. Do you want to continue? [y/n]:"
+		} else {
+			message = "\nDo you want to proceed with the above command? [y/n]:"
+		}
+		allowedInputsSlice := []string{"y", "n"}
+		allowedInputs := make(map[string]struct{}, len(allowedInputsSlice))
+		for _, input := range allowedInputsSlice {
+			allowedInputs[input] = struct{}{}
+		}
+
+		inputHandler := ui.Input{}
+		val, err := inputHandler.AskWithConstraints(message, allowedInputs)
+
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+
+		if val != "y" {
+			log.Info("Aborting the operation")
+			return
+		}
+	}
 	err = componentClient.OperateComponent(&ctx, &serviceProto.OperateServiceRequest{
 		EnvName:              env,
 		ServiceName:          serviceName,
@@ -95,4 +195,34 @@ func execute(cmd *cobra.Command) {
 		log.Fatal("Failed to operate on component", err)
 	}
 
+}
+
+func flattenMap(m map[string]interface{}, prefix string) map[string]interface{} {
+	flattened := make(map[string]interface{})
+	for k, v := range m {
+		key := prefix + k
+		if prefix != "" {
+			key = prefix + "." + k
+		}
+		if vm, ok := v.(map[string]interface{}); ok {
+			flattenedMap := flattenMap(vm, key)
+			if len(flattenedMap) == 0 {
+				flattened[key] = make(map[string]interface{})
+			}
+			for fk, fv := range flattenedMap {
+				flattened[fk] = fv
+			}
+		} else {
+			flattened[key] = v
+		}
+	}
+	return flattened
+}
+
+func applyColorToLines(value string, colorFunc func(format string, a ...interface{}) string) []string {
+	lines := strings.Split(value, "\n")
+	for i, line := range lines {
+		lines[i] = colorFunc(line)
+	}
+	return lines
 }
