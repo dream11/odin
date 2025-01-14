@@ -10,6 +10,7 @@ import (
 
 	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	"github.com/google/uuid"
+	"github.com/olekukonko/tablewriter"
 )
 
 // SplitProviderAccount splits string into list of cloud provider accounts
@@ -33,6 +34,43 @@ func GenerateResponseMessage(response *v1.ServiceResponse) string {
 		message += fmt.Sprintf("\n Component %s %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus, compMessage.Error)
 	}
 	return message
+}
+
+// GenerateResponseMessage generate response message from ServiceSetResponse
+func GenerateServiceSetResponseMessage(response *v1.DeployServiceSetServiceResponse) string {
+
+	/*message := fmt.Sprintf("\n Service %s %s %s %s", response.ServiceIdentifier.ServiceName, response.ServiceIdentifier.ServiceVersion, response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
+	for _, compMessage := range response.ServiceResponse.ComponentsStatus {
+		message += fmt.Sprintf("\n Component %s %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus, compMessage.Error)
+	}
+	return message*/
+
+	message := fmt.Sprintf("\n Service %s %s %s %s", response.ServiceIdentifier.ServiceName, response.ServiceIdentifier.ServiceVersion, response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
+	var tableData [][]string
+
+	/*for _, compMessage := range response.ServiceIdentifier {
+		row := []string{
+			compMessage.ComponentName,
+			compMessage.ComponentAction,
+			compMessage.ComponentStatus,
+			compMessage.Error,
+		}
+		tableData = append(tableData, row)
+	}*/
+	row := []string{
+		response.ServiceIdentifier.ServiceName,
+		response.ServiceIdentifier.ServiceVersion,
+		response.ServiceResponse.ServiceStatus.ServiceAction,
+		response.ServiceResponse.ServiceStatus.ServiceStatus,
+	}
+	tableData = append(tableData, row)
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Service Name", "Service Version", "Service Action", "Service Status", "Error"})
+	table.AppendBulk(tableData)
+	table.Render()
+	return message
+
 }
 
 // FormatToHumanReadableDuration takes a date-time string representing the last deployment time, and returns a human-readable string representing the duration since the last deployment

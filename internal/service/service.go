@@ -5,12 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/util"
 	serviceDto "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
+	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -49,7 +51,7 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 		}
 
 		if response != nil {
-			message = util.GenerateResponseMessage(response.GetServiceResponse())
+			message = util.GenerateResponseMessage(response.ServiceResponse)
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 			spinnerInstance.Start()
 		}
@@ -79,6 +81,9 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 	}
 
 	var message string
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Service Name", "Service Version", "Service Action", "Service Status", "Error"})
+
 	for {
 		response, err := stream.Recv()
 		spinnerInstance.Stop()
@@ -92,9 +97,21 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 
 		if response != nil {
 			message = ""
+			table.ClearRows() // Clear previous rows
+
+			// Clear the console
+			fmt.Fprint(os.Stdout, "\033[H\033[2J")
+
 			for _, serviceResponse := range response.GetServices() {
-				message += util.GenerateResponseMessage(serviceResponse.GetServiceResponse())
+				row := []string{
+					serviceResponse.ServiceIdentifier.ServiceName,
+					serviceResponse.ServiceIdentifier.ServiceVersion,
+					serviceResponse.ServiceResponse.ServiceStatus.ServiceAction,
+					serviceResponse.ServiceResponse.ServiceStatus.ServiceStatus,
+				}
+				table.Append(row)
 			}
+			table.Render()
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 			spinnerInstance.Start()
 		}
@@ -301,8 +318,8 @@ func (e *Service) ConvertToDeployServiceSetRequest(serviceSet *serviceDto.Servic
 	var services []*serviceProto.ServiceIdentifier
 	for _, service := range serviceSet.Services {
 		services = append(services, &serviceProto.ServiceIdentifier{
-			ServiceName:    service.ServiceName,
-			ServiceVersion: service.ServiceVersion,
+			ServiceName:    service.Name,
+			ServiceVersion: service.Version,
 		})
 	}
 

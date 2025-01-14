@@ -63,6 +63,6 @@ func executeDeployServiceSet(cmd *cobra.Command) {
 
 	err := serviceClient.DeployServiceSet(&ctx, &deployServiceSetRequest)
 	if err != nil {
-		log.Fatal("Failed to deploy service ", err)
+		log.Fatal("Failed to deploy service set. ", err)
 	}
 }
