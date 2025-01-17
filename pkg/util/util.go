@@ -36,7 +36,7 @@ func GenerateResponseMessage(response *v1.ServiceResponse) string {
 	return message
 }
 
-// GenerateResponseMessage generate response message from ServiceSetResponse
+// GenerateServiceSetResponseMessage generate response message from ServiceSetResponse
 func GenerateServiceSetResponseMessage(response *v1.DeployServiceSetServiceResponse) string {
 
 	message := fmt.Sprintf("\n Service %s %s %s %s", response.ServiceIdentifier.ServiceName, response.ServiceIdentifier.ServiceVersion, response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
