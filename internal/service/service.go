@@ -81,7 +81,6 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 		return err
 	}
 
-	var tableString string
 	var message string
 	for {
 		response, err := stream.Recv()
@@ -96,7 +95,6 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 
 		if response != nil {
 			spinnerInstance.Stop()
-			tableString = ""
 			var buf bytes.Buffer
 			table := tablewriter.NewWriter(&buf)
 			table.SetHeader([]string{"Service Name", "Service Version", "Service Tags", "Service Action", "Service Status", "Error"})
@@ -118,14 +116,12 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 			}
 
 			table.Render()
-			tableString := buf.String()
-			message = tableString
-			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", tableString)
+			message = buf.String()
+			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 			spinnerInstance.Start()
 		}
 	}
 	fmt.Println(message)
-	log.Info(tableString)
 	return err
 }
 
