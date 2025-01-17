@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 
+	"github.com/dream11/odin/internal/ui"
 	"github.com/dream11/odin/pkg/config"
 	serviceDto "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
@@ -59,6 +60,57 @@ func executeDeployServiceSet(cmd *cobra.Command) {
 	}
 	if serviceSetName != "" {
 		deployServiceSetRequest.Name = serviceSetName
+	}
+
+	conflictingServicesRequest := &serviceProto.GetConflictingServicesRequest{
+		EnvName: env,
+		Name:    deployServiceSetRequest.Name,
+		// Add other necessary fields from deployServiceSetRequest if needed
+	}
+
+	services, errs := serviceClient.GetConflictingServices(&ctx, conflictingServicesRequest)
+	if errs != nil {
+		log.Fatal("Failed to list services with conflicting versions. ", errs)
+		return
+	}
+	//create empty array of strings
+	var serviceNames []string
+	for _, service := range services.Services {
+		//ask for confirmation if service is not in service set
+
+		allowedInputsSlice := []string{"y", "n"}
+		allowedInputs := make(map[string]struct{}, len(allowedInputsSlice))
+		for _, input := range allowedInputsSlice {
+			allowedInputs[input] = struct{}{}
+		}
+		message := "Service already deployed with different version.Do you want to deploy service " + service.Name + " ? (y/n)"
+		inputHandler := ui.Input{}
+		val, err := inputHandler.AskWithConstraints(message, allowedInputs)
+
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+
+		if val != "y" {
+			log.Info("Skipping service ", service.Name, " from deploy")
+			serviceNames = append(serviceNames, service.Name)
+		}
+		// Remove services from deployServiceSetRequest
+		var updatedServices []*serviceProto.ServiceIdentifier
+		for _, svc := range deployServiceSetRequest.Services {
+			shouldRemove := false
+			for _, name := range serviceNames {
+				if svc.ServiceName == name {
+					shouldRemove = true
+					break
+				}
+			}
+			if !shouldRemove {
+				updatedServices = append(updatedServices, svc)
+			}
+		}
+		deployServiceSetRequest.Services = updatedServices
+
 	}
 
 	err := serviceClient.DeployServiceSet(&ctx, &deployServiceSetRequest)

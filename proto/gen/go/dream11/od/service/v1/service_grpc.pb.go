@@ -19,15 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	ServiceService_DeployService_FullMethodName         = "/dream11.od.service.v1.ServiceService/DeployService"
-	ServiceService_ReleaseService_FullMethodName        = "/dream11.od.service.v1.ServiceService/ReleaseService"
-	ServiceService_DeployReleasedService_FullMethodName = "/dream11.od.service.v1.ServiceService/DeployReleasedService"
-	ServiceService_DeployServiceSet_FullMethodName      = "/dream11.od.service.v1.ServiceService/DeployServiceSet"
-	ServiceService_OperateService_FullMethodName        = "/dream11.od.service.v1.ServiceService/OperateService"
-	ServiceService_UndeployService_FullMethodName       = "/dream11.od.service.v1.ServiceService/UndeployService"
-	ServiceService_ListService_FullMethodName           = "/dream11.od.service.v1.ServiceService/ListService"
-	ServiceService_DescribeService_FullMethodName       = "/dream11.od.service.v1.ServiceService/DescribeService"
-	ServiceService_OperateComponentDiff_FullMethodName  = "/dream11.od.service.v1.ServiceService/OperateComponentDiff"
+	ServiceService_DeployService_FullMethodName          = "/dream11.od.service.v1.ServiceService/DeployService"
+	ServiceService_ReleaseService_FullMethodName         = "/dream11.od.service.v1.ServiceService/ReleaseService"
+	ServiceService_DeployReleasedService_FullMethodName  = "/dream11.od.service.v1.ServiceService/DeployReleasedService"
+	ServiceService_DeployServiceSet_FullMethodName       = "/dream11.od.service.v1.ServiceService/DeployServiceSet"
+	ServiceService_OperateService_FullMethodName         = "/dream11.od.service.v1.ServiceService/OperateService"
+	ServiceService_UndeployService_FullMethodName        = "/dream11.od.service.v1.ServiceService/UndeployService"
+	ServiceService_ListService_FullMethodName            = "/dream11.od.service.v1.ServiceService/ListService"
+	ServiceService_DescribeService_FullMethodName        = "/dream11.od.service.v1.ServiceService/DescribeService"
+	ServiceService_OperateComponentDiff_FullMethodName   = "/dream11.od.service.v1.ServiceService/OperateComponentDiff"
+	ServiceService_GetConflictingServices_FullMethodName = "/dream11.od.service.v1.ServiceService/GetConflictingServices"
 )
 
 // ServiceServiceClient is the client API for ServiceService service.
@@ -43,6 +44,7 @@ type ServiceServiceClient interface {
 	ListService(ctx context.Context, in *ListServiceRequest, opts ...grpc.CallOption) (*ListServiceResponse, error)
 	DescribeService(ctx context.Context, in *DescribeServiceRequest, opts ...grpc.CallOption) (*DescribeServiceResponse, error)
 	OperateComponentDiff(ctx context.Context, in *OperateComponentDiffRequest, opts ...grpc.CallOption) (*OperateComponentDiffResponse, error)
+	GetConflictingServices(ctx context.Context, in *GetConflictingServicesRequest, opts ...grpc.CallOption) (*GetConflictingServicesResponse, error)
 }
 
 type serviceServiceClient struct {
@@ -272,6 +274,15 @@ func (c *serviceServiceClient) OperateComponentDiff(ctx context.Context, in *Ope
 	return out, nil
 }
 
+func (c *serviceServiceClient) GetConflictingServices(ctx context.Context, in *GetConflictingServicesRequest, opts ...grpc.CallOption) (*GetConflictingServicesResponse, error) {
+	out := new(GetConflictingServicesResponse)
+	err := c.cc.Invoke(ctx, ServiceService_GetConflictingServices_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ServiceServiceServer is the server API for ServiceService service.
 // All implementations must embed UnimplementedServiceServiceServer
 // for forward compatibility
@@ -285,6 +296,7 @@ type ServiceServiceServer interface {
 	ListService(context.Context, *ListServiceRequest) (*ListServiceResponse, error)
 	DescribeService(context.Context, *DescribeServiceRequest) (*DescribeServiceResponse, error)
 	OperateComponentDiff(context.Context, *OperateComponentDiffRequest) (*OperateComponentDiffResponse, error)
+	GetConflictingServices(context.Context, *GetConflictingServicesRequest) (*GetConflictingServicesResponse, error)
 	mustEmbedUnimplementedServiceServiceServer()
 }
 
@@ -318,6 +330,9 @@ func (UnimplementedServiceServiceServer) DescribeService(context.Context, *Descr
 }
 func (UnimplementedServiceServiceServer) OperateComponentDiff(context.Context, *OperateComponentDiffRequest) (*OperateComponentDiffResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OperateComponentDiff not implemented")
+}
+func (UnimplementedServiceServiceServer) GetConflictingServices(context.Context, *GetConflictingServicesRequest) (*GetConflictingServicesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetConflictingServices not implemented")
 }
 func (UnimplementedServiceServiceServer) mustEmbedUnimplementedServiceServiceServer() {}
 
@@ -512,6 +527,24 @@ func _ServiceService_OperateComponentDiff_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServiceService_GetConflictingServices_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetConflictingServicesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceServiceServer).GetConflictingServices(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServiceService_GetConflictingServices_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceServiceServer).GetConflictingServices(ctx, req.(*GetConflictingServicesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ServiceService_ServiceDesc is the grpc.ServiceDesc for ServiceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -530,6 +563,10 @@ var ServiceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "OperateComponentDiff",
 			Handler:    _ServiceService_OperateComponentDiff_Handler,
+		},
+		{
+			MethodName: "GetConflictingServices",
+			Handler:    _ServiceService_GetConflictingServices_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
