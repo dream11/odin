@@ -153,4 +153,3 @@ message GetConflictingServicesRequest {
 message GetConflictingServicesResponse {
   repeated dto.v1.ServiceMetadata services = 1;
 }
-
