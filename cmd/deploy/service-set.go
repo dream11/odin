@@ -65,7 +65,6 @@ func executeDeployServiceSet(cmd *cobra.Command) {
 	conflictingServicesRequest := &serviceProto.GetConflictingServicesRequest{
 		EnvName: env,
 		Name:    deployServiceSetRequest.Name,
-		// Add other necessary fields from deployServiceSetRequest if needed
 	}
 
 	services, errs := serviceClient.GetConflictingServices(&ctx, conflictingServicesRequest)
@@ -73,10 +72,8 @@ func executeDeployServiceSet(cmd *cobra.Command) {
 		log.Fatal("Failed to list services with conflicting versions. ", errs)
 		return
 	}
-	//create empty array of strings
 	var serviceNames []string
 	for _, service := range services.Services {
-		//ask for confirmation if service is not in service set
 
 		allowedInputsSlice := []string{"y", "n"}
 		allowedInputs := make(map[string]struct{}, len(allowedInputsSlice))

@@ -39,24 +39,8 @@ func GenerateResponseMessage(response *v1.ServiceResponse) string {
 // GenerateResponseMessage generate response message from ServiceSetResponse
 func GenerateServiceSetResponseMessage(response *v1.DeployServiceSetServiceResponse) string {
 
-	/*message := fmt.Sprintf("\n Service %s %s %s %s", response.ServiceIdentifier.ServiceName, response.ServiceIdentifier.ServiceVersion, response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
-	for _, compMessage := range response.ServiceResponse.ComponentsStatus {
-		message += fmt.Sprintf("\n Component %s %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus, compMessage.Error)
-	}
-	return message*/
-
 	message := fmt.Sprintf("\n Service %s %s %s %s", response.ServiceIdentifier.ServiceName, response.ServiceIdentifier.ServiceVersion, response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
 	var tableData [][]string
-
-	/*for _, compMessage := range response.ServiceIdentifier {
-		row := []string{
-			compMessage.ComponentName,
-			compMessage.ComponentAction,
-			compMessage.ComponentStatus,
-			compMessage.Error,
-		}
-		tableData = append(tableData, row)
-	}*/
 	row := []string{
 		response.ServiceIdentifier.ServiceName,
 		response.ServiceIdentifier.ServiceVersion,

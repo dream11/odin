@@ -5,6 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
+
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/util"
@@ -12,7 +14,6 @@ import (
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
-	"io"
 )
 
 // Service performs operation on service like deploy. undeploy
