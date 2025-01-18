@@ -79,8 +79,7 @@ func printEnvInfo(response *environment.DescribeEnvironmentResponse) {
 
 	// Extracting necessary fields
 	name := env.GetName()
-	team := "infrastructure engineering" // Assuming static value as it's not in the response
-	envType := "load"                    // Assuming static value as it's not in the response
+	envType := env.GetProvisioningType()
 	state := env.GetStatus()
 	autoDeletionTime := env.AutoDeletionTime.AsTime().String()
 	cloudProviderAccounts := []string{}
@@ -126,7 +125,6 @@ func printEnvInfo(response *environment.DescribeEnvironmentResponse) {
 	// Formatting and printing the information
 	fmt.Printf("Describing Env: %s\n\n", name)
 	fmt.Printf("name: %s\n", name)
-	fmt.Printf("team: %s\n", team)
 	fmt.Printf("envType: %s\n", envType)
 	fmt.Printf("state: %s\n", state)
 	fmt.Printf("autoDeletionTime: \"%s\"\n", autoDeletionTime)
