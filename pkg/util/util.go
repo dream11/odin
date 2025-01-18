@@ -30,7 +30,7 @@ func IsIPAddress(address string) bool {
 func GenerateResponseMessage(response *v1.ServiceResponse) string {
 	message := fmt.Sprintf("\n Service %s %s", response.ServiceStatus.ServiceAction, response.ServiceStatus)
 	for _, compMessage := range response.ComponentsStatus {
-		message += fmt.Sprintf("\n Component %s %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus, compMessage.Error)
+		message += fmt.Sprintf("\n Component %s %s %s ", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
 	}
 	return message
 }

@@ -17,6 +17,8 @@ import (
 // Service performs operation on service like deploy. undeploy
 type Service struct{}
 
+var responseMap = make(map[string]string)
+
 // DeployService deploys service
 func (e *Service) DeployService(ctx *context.Context, request *serviceProto.DeployServiceRequest) error {
 	conn, requestCtx, err := grpcClient(ctx)
@@ -50,6 +52,7 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 
 		if response != nil {
 			message = util.GenerateResponseMessage(response.GetServiceResponse())
+			printFailedComponentMsgOnce(response.GetServiceResponse())
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 			spinnerInstance.Start()
 		}
@@ -57,6 +60,19 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 
 	log.Info(message)
 	return err
+}
+
+func printFailedComponentMsgOnce(response *serviceProto.ServiceResponse) {
+	for _, compMessage := range response.ComponentsStatus {
+		componentActionKey := compMessage.GetComponentName() + compMessage.GetComponentAction() + compMessage.GetComponentStatus()
+		//code to not print the same message for component action again
+		if responseMap[componentActionKey] == "" {
+			if compMessage.GetComponentStatus() == "FAILED" {
+				log.Error(fmt.Sprintf("Component %s %s %s %s", compMessage.GetComponentName(), compMessage.GetComponentAction(), compMessage.GetComponentStatus(), compMessage.GetError()))
+			}
+			responseMap[componentActionKey] = componentActionKey
+		}
+	}
 }
 
 // DeployServiceSet deploys service-set
@@ -93,6 +109,7 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 		if response != nil {
 			message = ""
 			for _, serviceResponse := range response.GetServices() {
+				printFailedComponentMsgOnce(serviceResponse.GetServiceResponse())
 				message += util.GenerateResponseMessage(serviceResponse.GetServiceResponse())
 			}
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
