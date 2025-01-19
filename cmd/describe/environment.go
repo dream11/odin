@@ -95,11 +95,11 @@ func printEnvInfo(response *environment.DescribeEnvironmentResponse) {
 	services := []string{}
 	for _, svc := range env.Services {
 		if serviceName == "" {
-			services = append(services, fmt.Sprintf("    - name: %s\n      version: %s", *svc.Name, *svc.Version))
+			services = append(services, fmt.Sprintf("    - name: %s\n      version: %s\n      status: %s", *svc.Name, *svc.Version, svc.GetStatus()))
 		} else {
 			if serviceName == *svc.Name {
 				var customServicesOp = []string{}
-				customServicesOp = append(customServicesOp, fmt.Sprintf("    - name: %s\n      version: %s\n", *svc.Name, *svc.Version))
+				customServicesOp = append(customServicesOp, fmt.Sprintf("    - name: %s\n      version: %s\n      status: %s\n", *svc.Name, *svc.Version, svc.GetStatus()))
 				customServicesOp = append(customServicesOp, "      components: \n")
 				componentBytes, err := json.MarshalIndent(svc.Components, "", "  ")
 				if err != nil {
