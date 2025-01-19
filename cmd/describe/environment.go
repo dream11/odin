@@ -3,6 +3,7 @@ package describe
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dream11/odin/pkg/util"
 	"strings"
 
 	"github.com/dream11/odin/internal/service"
@@ -11,7 +12,6 @@ import (
 	environment "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
 )
 
 var name string
@@ -106,7 +106,7 @@ func printEnvInfo(response *environment.DescribeEnvironmentResponse) {
 					log.Fatal("Failed to marshal services summary: ", err)
 				}
 				var formatedComponentData = string(componentBytes)
-				formatedComponentData, _ = ConvertJSONToYAML(formatedComponentData)
+				formatedComponentData, _ = util.ConvertJSONToYAML(formatedComponentData)
 				lines := strings.Split(formatedComponentData, "\n")
 
 				for i, line := range lines {
@@ -145,25 +145,6 @@ func printEnvInfo(response *environment.DescribeEnvironmentResponse) {
 	fmt.Printf("createdAt: \"%s\"\n", createdAt)
 	fmt.Printf("updatedAt: \"%s\"\n", updatedAt)
 	fmt.Printf("services:\n%s\n", strings.Join(services, "\n"))
-}
-
-// ConvertJSONToYAML takes a JSON string as input and returns a formatted YAML string
-func ConvertJSONToYAML(jsonStr string) (string, error) {
-	// Unmarshal the JSON into a generic structure
-	var jsonData interface{}
-	err := json.Unmarshal([]byte(jsonStr), &jsonData)
-	if err != nil {
-		return "", fmt.Errorf("failed to parse JSON: %v", err)
-	}
-
-	// Marshal the structure into YAML
-	yamlData, err := yaml.Marshal(jsonData)
-	if err != nil {
-		return "", fmt.Errorf("failed to convert to YAML: %v", err)
-	}
-
-	// Return the YAML string
-	return string(yamlData), nil
 }
 
 func findValueByKey(val interface{}, key string) string {

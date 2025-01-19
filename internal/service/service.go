@@ -52,7 +52,7 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 
 		if response != nil {
 			message = util.GenerateResponseMessage(response.GetServiceResponse())
-			printFailedComponentMsgOnce(response.GetServiceResponse())
+			logFailedComponentMessagesOnce(response.GetServiceResponse())
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 			spinnerInstance.Start()
 		}
@@ -62,7 +62,7 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 	return err
 }
 
-func printFailedComponentMsgOnce(response *serviceProto.ServiceResponse) {
+func logFailedComponentMessagesOnce(response *serviceProto.ServiceResponse) {
 	for _, compMessage := range response.ComponentsStatus {
 		componentActionKey := compMessage.GetComponentName() + compMessage.GetComponentAction() + compMessage.GetComponentStatus()
 		//code to not print the same message for component action again
@@ -109,7 +109,7 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 		if response != nil {
 			message = ""
 			for _, serviceResponse := range response.GetServices() {
-				printFailedComponentMsgOnce(serviceResponse.GetServiceResponse())
+				logFailedComponentMessagesOnce(serviceResponse.GetServiceResponse())
 				message += util.GenerateResponseMessage(serviceResponse.GetServiceResponse())
 			}
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
