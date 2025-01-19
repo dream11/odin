@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"os"
@@ -10,6 +11,7 @@ import (
 
 	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	"github.com/google/uuid"
+	"gopkg.in/yaml.v2"
 )
 
 // SplitProviderAccount splits string into list of cloud provider accounts
@@ -30,7 +32,7 @@ func IsIPAddress(address string) bool {
 func GenerateResponseMessage(response *v1.ServiceResponse) string {
 	message := fmt.Sprintf("\n Service %s %s", response.ServiceStatus.ServiceAction, response.ServiceStatus)
 	for _, compMessage := range response.ComponentsStatus {
-		message += fmt.Sprintf("\n Component %s %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus, compMessage.Error)
+		message += fmt.Sprintf("\n Component %s %s %s ", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
 	}
 	return message
 }
@@ -122,4 +124,23 @@ func GetEnvOrDefault(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
+}
+
+// ConvertJSONToYAML takes a JSON string as input and returns a formatted YAML string
+func ConvertJSONToYAML(jsonStr string) (string, error) {
+	// Unmarshal the JSON into a generic structure
+	var jsonData interface{}
+	err := json.Unmarshal([]byte(jsonStr), &jsonData)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse JSON: %v", err)
+	}
+
+	// Marshal the structure into YAML
+	yamlData, err := yaml.Marshal(jsonData)
+	if err != nil {
+		return "", fmt.Errorf("failed to convert to YAML: %v", err)
+	}
+
+	// Return the YAML string
+	return string(yamlData), nil
 }
