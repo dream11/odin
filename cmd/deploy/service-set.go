@@ -65,6 +65,7 @@ func executeDeployServiceSet(cmd *cobra.Command) {
 	conflictingServicesRequest := &serviceProto.GetConflictingServicesRequest{
 		EnvName: env,
 		Name:    deployServiceSetRequest.Name,
+		Services: deployServiceSetRequest.Services,
 	}
 
 	services, errs := serviceClient.GetConflictingServices(&ctx, conflictingServicesRequest)
