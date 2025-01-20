@@ -2,6 +2,7 @@ package deploy
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 
 	"github.com/dream11/odin/internal/ui"
@@ -24,6 +25,10 @@ var serviceSetDeployCmd = &cobra.Command{
 		executeDeployServiceSet(cmd)
 	},
 }
+const (
+	Yes = "y"
+	No  = "n"
+)
 
 func init() {
 
@@ -70,13 +75,13 @@ func executeDeployServiceSet(cmd *cobra.Command) {
 
 	services, errs := serviceClient.GetConflictingServices(&ctx, conflictingServicesRequest)
 	if errs != nil {
-		log.Fatal("Failed to list services with conflicting versions. ", errs)
+		log.Fatal(fmt.Sprintf("Failed to list services with conflicting versions: %s", errs.Error()))
 		return
 	}
 	var serviceNames []string
 	for _, service := range services.Services {
 
-		allowedInputsSlice := []string{"y", "n"}
+		allowedInputsSlice := []string{Yes, No}
 		allowedInputs := make(map[string]struct{}, len(allowedInputsSlice))
 		for _, input := range allowedInputsSlice {
 			allowedInputs[input] = struct{}{}
@@ -86,11 +91,11 @@ func executeDeployServiceSet(cmd *cobra.Command) {
 		val, err := inputHandler.AskWithConstraints(message, allowedInputs)
 
 		if err != nil {
-			log.Fatal(err.Error())
+			log.Fatal(fmt.Sprintf("An error occurred while processing input: %s", err.Error()))
 		}
 
-		if val != "y" {
-			log.Info("Skipping service ", service.Name, " from deploy")
+		if val != Yes {
+			log.Info(fmt.Sprintf("Skipping service %s from deploy", service.Name))
 			serviceNames = append(serviceNames, service.Name)
 		}
 		// Remove services from deployServiceSetRequest
