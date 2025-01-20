@@ -97,7 +97,7 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 			spinnerInstance.Stop()
 			var buf bytes.Buffer
 			table := tablewriter.NewWriter(&buf)
-			table.SetHeader([]string{"Service Name", "Service Version", "Service Tags", "Service Action", "Service Status", "Error"})
+			table.SetHeader([]string{"Service Name", "Version", "Tags", "Action", "Status", "Error"})
 			for _, serviceResponse := range response.GetServices() {
 				var errorMessage string
 				if serviceResponse.ServiceResponse.ServiceStatus.ServiceStatus == "FAILED" {
