@@ -50,7 +50,7 @@ func GenerateServiceSetResponseMessage(response *v1.DeployServiceSetServiceRespo
 	tableData = append(tableData, row)
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Service Name", "Service Version", "Service Action", "Service Status", "Error"})
+	table.SetHeader([]string{"Service Name", "Version", "Action", "Status", "Error"})
 	table.AppendBulk(tableData)
 	table.Render()
 	return message
