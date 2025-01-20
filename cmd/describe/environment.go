@@ -3,10 +3,12 @@ package describe
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dream11/odin/pkg/util"
+	"strings"
 
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/constant"
-	"github.com/dream11/odin/pkg/table"
+	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1"
 	environment "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -64,7 +66,7 @@ func writeOutput(response *environment.DescribeEnvironmentResponse, format strin
 
 	switch format {
 	case constant.TEXT:
-		writeAsTextEnvResponse(response)
+		printEnvInfo(response)
 	case constant.JSON:
 		writeAsJSONEnvResponse(response)
 	default:
@@ -72,58 +74,109 @@ func writeOutput(response *environment.DescribeEnvironmentResponse, format strin
 	}
 }
 
-func writeAsTextEnvResponse(response *environment.DescribeEnvironmentResponse) {
-
-	tableHeaders := []string{"Name",
-		"state",
-		"autoDeletionTime",
-		"cloudProviderAccounts",
-		"createdBy",
-		"updatedBy",
-		"createdAt",
-		"updatedAt",
-		"services"}
-	var tableData [][]interface{}
+func printEnvInfo(response *environment.DescribeEnvironmentResponse) {
 	env := response.Environment
-	var accountInfoList []string
+
+	// Extracting necessary fields
+	name := env.GetName()
+	envType := env.GetProvisioningType()
+	state := env.GetStatus()
+	autoDeletionTime := env.AutoDeletionTime.AsTime().String()
+	cloudProviderAccounts := []string{}
+	providerAccountCluster := map[string][]string{}
 	for _, accountInfo := range env.AccountInformation {
-		accountInfoList = append(accountInfoList, accountInfo.ProviderAccountName)
+		cloudProviderAccounts = append(cloudProviderAccounts, accountInfo.ProviderAccountName)
+		providerAccountCluster[accountInfo.ProviderAccountName] = getClusterNames(accountInfo)
 	}
-	accountInfoListJSON, err := json.Marshal(accountInfoList)
-	if err != nil {
-		log.Fatal("Failed to marshal account info list: ", err)
-	}
-
-	var servicesSummary []map[string]interface{}
+	createdBy := env.GetCreatedBy()
+	updatedBy := env.GetUpdatedBy()
+	createdAt := env.CreatedAt.AsTime().String()
+	updatedAt := env.UpdatedAt.AsTime().String()
+	services := []string{}
 	for _, svc := range env.Services {
-		serviceMap := map[string]interface{}{
-			"name":    svc.Name,
-			"version": svc.Version,
-			"status":  svc.Status,
+		if serviceName == "" {
+			services = append(services, fmt.Sprintf("    - name: %s\n      version: %s\n      status: %s", *svc.Name, *svc.Version, svc.GetStatus()))
+		} else {
+			if serviceName == *svc.Name {
+				var customServicesOp = []string{}
+				customServicesOp = append(customServicesOp, fmt.Sprintf("    - name: %s\n      version: %s\n      status: %s\n", *svc.Name, *svc.Version, svc.GetStatus()))
+				customServicesOp = append(customServicesOp, "      components: \n")
+				componentBytes, err := json.MarshalIndent(svc.Components, "", "  ")
+				if err != nil {
+					log.Fatal("Failed to marshal services summary: ", err)
+				}
+				var formatedComponentData = string(componentBytes)
+				formatedComponentData, _ = util.ConvertJSONToYAML(formatedComponentData)
+				lines := strings.Split(formatedComponentData, "\n")
+
+				for i, line := range lines {
+					lines[i] = "\t" + line
+				}
+				formatedComponentData = strings.Join(lines, "\n")
+				// Add two tabs before each line in the string
+				customServicesOp = append(customServicesOp, formatedComponentData)
+
+				services = append(services, strings.Join(customServicesOp, ""))
+			}
+
 		}
-		if len(svc.Components) > 0 {
-			serviceMap["components"] = svc.Components
-		}
-		servicesSummary = append(servicesSummary, serviceMap)
-	}
-	servicesSummaryJSON, err := json.Marshal(servicesSummary)
-	if err != nil {
-		log.Fatal("Failed to marshal services summary: ", err)
 	}
 
-	tableData = append(tableData, []interface{}{
-		env.GetName(),
-		env.GetStatus(),
-		env.AutoDeletionTime.AsTime().String(),
-		string(accountInfoListJSON),
-		env.GetCreatedBy(),
-		env.GetUpdatedBy(),
-		env.CreatedAt.AsTime().String(),
-		env.UpdatedAt.AsTime().String(),
-		string(servicesSummaryJSON),
-	})
+	// Formatting and printing the information
+	fmt.Printf("Describing Env: %s\n\n", name)
+	fmt.Printf("name: %s\n", name)
+	fmt.Printf("envType: %s\n", envType)
+	fmt.Printf("state: %s\n", state)
+	fmt.Printf("autoDeletionTime: \"%s\"\n", autoDeletionTime)
+	fmt.Printf("cloudProviderAccounts:\n")
+	for _, account := range cloudProviderAccounts {
+		fmt.Printf("    - %s\n", account)
+	}
+	fmt.Printf("cluster:\n")
+	for account, clusters := range providerAccountCluster {
+		fmt.Printf("    - %s\n", account)
+		for _, cluster := range clusters {
+			fmt.Printf("        - %s\n", cluster)
+		}
 
-	table.Write(tableHeaders, tableData)
+	}
+	fmt.Printf("createdBy: %s\n", createdBy)
+	fmt.Printf("updatedBy: %s\n", updatedBy)
+	fmt.Printf("createdAt: \"%s\"\n", createdAt)
+	fmt.Printf("updatedAt: \"%s\"\n", updatedAt)
+	fmt.Printf("services:\n%s\n", strings.Join(services, "\n"))
+}
+
+func findValueByKey(val interface{}, key string) string {
+	switch v := val.(type) {
+	case map[string]interface{}: // If it's a map, check for the key
+		if value, ok := v[key]; ok {
+			return fmt.Sprintf("%v", value)
+		}
+		// Recurse through nested maps or slices
+		for _, subVal := range v {
+			return findValueByKey(subVal, key)
+		}
+	case []interface{}: // If it's a slice, recurse for each element
+		for _, item := range v {
+			return findValueByKey(item, key)
+		}
+	}
+	return "" // Key not found
+}
+
+func getClusterNames(information *v1.AccountInformation) []string {
+	clusterNames := []string{}
+	for _, service := range information.ServiceAccountsSnapshot.Account.Services {
+		if service.Category == "KUBERNETES" {
+			for key, val := range service.GetData().AsMap() {
+				if key == "clusters" {
+					clusterNames = append(clusterNames, findValueByKey(val, "name"))
+				}
+			}
+		}
+	}
+	return clusterNames
 }
 
 func writeAsJSONEnvResponse(response *environment.DescribeEnvironmentResponse) {

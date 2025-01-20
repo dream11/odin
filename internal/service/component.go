@@ -89,7 +89,7 @@ func (e *Component) DescribeComponentType(ctx *context.Context, request *compone
 }
 
 // CompareOperationChanges compares the operation changes
-func (c *Component) CompareOperationChanges(ctx *context.Context, request *serviceProto.OperateComponentDiffRequest) (*serviceProto.OperateComponentDiffResponse, error) {
+func (e *Component) CompareOperationChanges(ctx *context.Context, request *serviceProto.OperateComponentDiffRequest) (*serviceProto.OperateComponentDiffResponse, error) {
 
 	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {
