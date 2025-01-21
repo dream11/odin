@@ -25,6 +25,7 @@ var serviceSetDeployCmd = &cobra.Command{
 		executeDeployServiceSet(cmd)
 	},
 }
+
 const (
 	Yes = "y"
 	No  = "n"
@@ -68,8 +69,8 @@ func executeDeployServiceSet(cmd *cobra.Command) {
 	}
 
 	conflictingServicesRequest := &serviceProto.GetConflictingServicesRequest{
-		EnvName: env,
-		Name:    deployServiceSetRequest.Name,
+		EnvName:  env,
+		Name:     deployServiceSetRequest.Name,
 		Services: deployServiceSetRequest.Services,
 	}
 
@@ -86,7 +87,7 @@ func executeDeployServiceSet(cmd *cobra.Command) {
 		for _, input := range allowedInputsSlice {
 			allowedInputs[input] = struct{}{}
 		}
-		message := fmt.Sprintf("Service: %s already deployed with different version : %s \n Do you want to deploy service with new version : %s ? (y/n)", service.Name,service.ExistingVersion,service.NewVersion)
+		message := fmt.Sprintf("Service: %s already deployed with different version : %s \n Do you want to deploy service with new version : %s ? (y/n)", service.Name, service.ExistingVersion, service.NewVersion)
 		inputHandler := ui.Input{}
 		val, err := inputHandler.AskWithConstraints(message, allowedInputs)
 

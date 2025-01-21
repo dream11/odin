@@ -13,7 +13,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/olekukonko/tablewriter"
 	"gopkg.in/yaml.v2"
-
 )
 
 // SplitProviderAccount splits string into list of cloud provider accounts
