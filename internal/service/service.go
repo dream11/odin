@@ -114,7 +114,7 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 			spinnerInstance.Stop()
 			var buf bytes.Buffer
 			table := tablewriter.NewWriter(&buf)
-			table.SetHeader([]string{"Service Name", "Version", "Tags", "Action", "Status", "Error"})
+			table.SetHeader([]string{"Service Name", "Version", "Action", "Status", "Error"})
 			for _, serviceResponse := range response.GetServices() {
 				var errorMessage string
 				if serviceResponse.ServiceResponse.ServiceStatus.ServiceStatus == "FAILED" {
@@ -124,7 +124,6 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 				row := []string{
 					serviceResponse.ServiceIdentifier.ServiceName,
 					serviceResponse.ServiceIdentifier.ServiceVersion,
-					serviceResponse.ServiceIdentifier.Tags,
 					serviceResponse.ServiceResponse.ServiceStatus.ServiceAction,
 					serviceResponse.ServiceResponse.ServiceStatus.ServiceStatus,
 					errorMessage,
@@ -342,6 +341,7 @@ func (e *Service) ConvertToDeployServiceSetRequest(serviceSet *serviceDto.Servic
 			ServiceName:    service.Name,
 			ServiceVersion: service.Version,
 			Tags:           service.Tags,
+			ForceFlag:      true,
 		})
 	}
 

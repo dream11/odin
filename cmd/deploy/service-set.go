@@ -79,7 +79,6 @@ func executeDeployServiceSet(cmd *cobra.Command) {
 		log.Fatal(fmt.Sprintf("Failed to list services with conflicting versions: %s", errs.Error()))
 		return
 	}
-	var serviceNames []string
 	for _, service := range services.Services {
 
 		allowedInputsSlice := []string{Yes, No}
@@ -97,23 +96,12 @@ func executeDeployServiceSet(cmd *cobra.Command) {
 
 		if val != Yes {
 			log.Info(fmt.Sprintf("Skipping service %s from deploy", service.Name))
-			serviceNames = append(serviceNames, service.Name)
-		}
-		// Remove services from deployServiceSetRequest
-		var updatedServices []*serviceProto.ServiceIdentifier
-		for _, svc := range deployServiceSetRequest.Services {
-			shouldRemove := false
-			for _, name := range serviceNames {
-				if svc.ServiceName == name {
-					shouldRemove = true
-					break
+			for _, svc := range deployServiceSetRequest.Services {
+				if svc.ServiceName == service.Name {
+					svc.ForceFlag = false
 				}
 			}
-			if !shouldRemove {
-				updatedServices = append(updatedServices, svc)
-			}
 		}
-		deployServiceSetRequest.Services = updatedServices
 
 	}
 
