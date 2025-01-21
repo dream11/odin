@@ -19,7 +19,7 @@ import (
 func grpcClient(ctx *context.Context) (*grpc.ClientConn, *context.Context, error) {
 	appConfig := config.GetConfig()
 	traceID := util.GenerateTraceID()
-	log.Debugf("Generated trace ID: %s", traceID)
+	log.Infof("Generated trace ID: %s", traceID)
 
 	if appConfig.BackendAddress == "" {
 		log.Fatal("Cannot create grpc client: Backend address is empty in config! Run `odin configure` to set backend address")
