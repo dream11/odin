@@ -692,6 +692,77 @@ func (x *Service) GetVersions() []string {
 	return nil
 }
 
+type ServiceVersionComparisonMetadata struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name            string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	ExistingVersion string `protobuf:"bytes,2,opt,name=existing_version,json=existingVersion,proto3" json:"existing_version,omitempty"`
+	NewVersion      string `protobuf:"bytes,3,opt,name=new_version,json=newVersion,proto3" json:"new_version,omitempty"`
+	VersionConflict bool   `protobuf:"varint,4,opt,name=version_conflict,json=versionConflict,proto3" json:"version_conflict,omitempty"`
+}
+
+func (x *ServiceVersionComparisonMetadata) Reset() {
+	*x = ServiceVersionComparisonMetadata{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_dream11_od_dto_v1_service_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ServiceVersionComparisonMetadata) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ServiceVersionComparisonMetadata) ProtoMessage() {}
+
+func (x *ServiceVersionComparisonMetadata) ProtoReflect() protoreflect.Message {
+	mi := &file_dream11_od_dto_v1_service_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ServiceVersionComparisonMetadata.ProtoReflect.Descriptor instead.
+func (*ServiceVersionComparisonMetadata) Descriptor() ([]byte, []int) {
+	return file_dream11_od_dto_v1_service_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *ServiceVersionComparisonMetadata) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *ServiceVersionComparisonMetadata) GetExistingVersion() string {
+	if x != nil {
+		return x.ExistingVersion
+	}
+	return ""
+}
+
+func (x *ServiceVersionComparisonMetadata) GetNewVersion() string {
+	if x != nil {
+		return x.NewVersion
+	}
+	return ""
+}
+
+func (x *ServiceVersionComparisonMetadata) GetVersionConflict() bool {
+	if x != nil {
+		return x.VersionConflict
+	}
+	return false
+}
+
 var File_dream11_od_dto_v1_service_proto protoreflect.FileDescriptor
 
 var file_dream11_od_dto_v1_service_proto_rawDesc = []byte{
@@ -821,7 +892,18 @@ var file_dream11_od_dto_v1_service_proto_rawDesc = []byte{
 	0x65, 0x64, 0x5f, 0x61, 0x74, 0x42, 0x0d, 0x0a, 0x0b, 0x5f, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65,
 	0x64, 0x5f, 0x62, 0x79, 0x42, 0x0d, 0x0a, 0x0b, 0x5f, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64,
 	0x5f, 0x62, 0x79, 0x42, 0x15, 0x0a, 0x13, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x5f,
-	0x64, 0x65, 0x66, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x42, 0x38, 0x5a, 0x36, 0x67, 0x69,
+	0x64, 0x65, 0x66, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0xad, 0x01, 0x0a, 0x20, 0x53,
+	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x43, 0x6f, 0x6d,
+	0x70, 0x61, 0x72, 0x69, 0x73, 0x6f, 0x6e, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0x12,
+	0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e,
+	0x61, 0x6d, 0x65, 0x12, 0x29, 0x0a, 0x10, 0x65, 0x78, 0x69, 0x73, 0x74, 0x69, 0x6e, 0x67, 0x5f,
+	0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x65,
+	0x78, 0x69, 0x73, 0x74, 0x69, 0x6e, 0x67, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x1f,
+	0x0a, 0x0b, 0x6e, 0x65, 0x77, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x03, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x0a, 0x6e, 0x65, 0x77, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12,
+	0x29, 0x0a, 0x10, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x63, 0x6f, 0x6e, 0x66, 0x6c,
+	0x69, 0x63, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0f, 0x76, 0x65, 0x72, 0x73, 0x69,
+	0x6f, 0x6e, 0x43, 0x6f, 0x6e, 0x66, 0x6c, 0x69, 0x63, 0x74, 0x42, 0x38, 0x5a, 0x36, 0x67, 0x69,
 	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x64, 0x72, 0x65, 0x61, 0x6d, 0x31, 0x31,
 	0x2f, 0x6f, 0x64, 0x69, 0x6e, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x65, 0x6e, 0x2f,
 	0x67, 0x6f, 0x2f, 0x64, 0x72, 0x65, 0x61, 0x6d, 0x31, 0x31, 0x2f, 0x6f, 0x64, 0x2f, 0x64, 0x74,
@@ -840,35 +922,36 @@ func file_dream11_od_dto_v1_service_proto_rawDescGZIP() []byte {
 	return file_dream11_od_dto_v1_service_proto_rawDescData
 }
 
-var file_dream11_od_dto_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_dream11_od_dto_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_dream11_od_dto_v1_service_proto_goTypes = []interface{}{
-	(*ComponentDefinition)(nil),           // 0: dream11.od.dto.v1.ComponentDefinition
-	(*ServiceDefinition)(nil),             // 1: dream11.od.dto.v1.ServiceDefinition
-	(*ServiceIdentifier)(nil),             // 2: dream11.od.dto.v1.ServiceIdentifier
-	(*ServiceSet)(nil),                    // 3: dream11.od.dto.v1.ServiceSet
-	(*ComponentProvisioningConfig)(nil),   // 4: dream11.od.dto.v1.ComponentProvisioningConfig
-	(*ProvisioningConfig)(nil),            // 5: dream11.od.dto.v1.ProvisioningConfig
-	(*ServiceMetadata)(nil),               // 6: dream11.od.dto.v1.ServiceMetadata
-	(*AddComponentRequestOptions)(nil),    // 7: dream11.od.dto.v1.AddComponentRequestOptions
-	(*RemoveComponentRequestOptions)(nil), // 8: dream11.od.dto.v1.RemoveComponentRequestOptions
-	(*Service)(nil),                       // 9: dream11.od.dto.v1.Service
-	(*structpb.Struct)(nil),               // 10: google.protobuf.Struct
-	(*timestamppb.Timestamp)(nil),         // 11: google.protobuf.Timestamp
+	(*ComponentDefinition)(nil),              // 0: dream11.od.dto.v1.ComponentDefinition
+	(*ServiceDefinition)(nil),                // 1: dream11.od.dto.v1.ServiceDefinition
+	(*ServiceIdentifier)(nil),                // 2: dream11.od.dto.v1.ServiceIdentifier
+	(*ServiceSet)(nil),                       // 3: dream11.od.dto.v1.ServiceSet
+	(*ComponentProvisioningConfig)(nil),      // 4: dream11.od.dto.v1.ComponentProvisioningConfig
+	(*ProvisioningConfig)(nil),               // 5: dream11.od.dto.v1.ProvisioningConfig
+	(*ServiceMetadata)(nil),                  // 6: dream11.od.dto.v1.ServiceMetadata
+	(*AddComponentRequestOptions)(nil),       // 7: dream11.od.dto.v1.AddComponentRequestOptions
+	(*RemoveComponentRequestOptions)(nil),    // 8: dream11.od.dto.v1.RemoveComponentRequestOptions
+	(*Service)(nil),                          // 9: dream11.od.dto.v1.Service
+	(*ServiceVersionComparisonMetadata)(nil), // 10: dream11.od.dto.v1.ServiceVersionComparisonMetadata
+	(*structpb.Struct)(nil),                  // 11: google.protobuf.Struct
+	(*timestamppb.Timestamp)(nil),            // 12: google.protobuf.Timestamp
 }
 var file_dream11_od_dto_v1_service_proto_depIdxs = []int32{
-	10, // 0: dream11.od.dto.v1.ComponentDefinition.config:type_name -> google.protobuf.Struct
-	10, // 1: dream11.od.dto.v1.ComponentDefinition.metadata:type_name -> google.protobuf.Struct
+	11, // 0: dream11.od.dto.v1.ComponentDefinition.config:type_name -> google.protobuf.Struct
+	11, // 1: dream11.od.dto.v1.ComponentDefinition.metadata:type_name -> google.protobuf.Struct
 	0,  // 2: dream11.od.dto.v1.ServiceDefinition.components:type_name -> dream11.od.dto.v1.ComponentDefinition
 	2,  // 3: dream11.od.dto.v1.ServiceSet.services:type_name -> dream11.od.dto.v1.ServiceIdentifier
-	10, // 4: dream11.od.dto.v1.ComponentProvisioningConfig.params:type_name -> google.protobuf.Struct
-	10, // 5: dream11.od.dto.v1.ComponentProvisioningConfig.env_variables:type_name -> google.protobuf.Struct
+	11, // 4: dream11.od.dto.v1.ComponentProvisioningConfig.params:type_name -> google.protobuf.Struct
+	11, // 5: dream11.od.dto.v1.ComponentProvisioningConfig.env_variables:type_name -> google.protobuf.Struct
 	4,  // 6: dream11.od.dto.v1.ProvisioningConfig.component_provisioning_config:type_name -> dream11.od.dto.v1.ComponentProvisioningConfig
 	0,  // 7: dream11.od.dto.v1.AddComponentRequestOptions.component_definition:type_name -> dream11.od.dto.v1.ComponentDefinition
 	4,  // 8: dream11.od.dto.v1.AddComponentRequestOptions.provisioning_config:type_name -> dream11.od.dto.v1.ComponentProvisioningConfig
-	11, // 9: dream11.od.dto.v1.Service.created_at:type_name -> google.protobuf.Timestamp
-	11, // 10: dream11.od.dto.v1.Service.updated_at:type_name -> google.protobuf.Timestamp
-	10, // 11: dream11.od.dto.v1.Service.service_definition:type_name -> google.protobuf.Struct
-	10, // 12: dream11.od.dto.v1.Service.provisioning_config_files:type_name -> google.protobuf.Struct
+	12, // 9: dream11.od.dto.v1.Service.created_at:type_name -> google.protobuf.Timestamp
+	12, // 10: dream11.od.dto.v1.Service.updated_at:type_name -> google.protobuf.Timestamp
+	11, // 11: dream11.od.dto.v1.Service.service_definition:type_name -> google.protobuf.Struct
+	11, // 12: dream11.od.dto.v1.Service.provisioning_config_files:type_name -> google.protobuf.Struct
 	13, // [13:13] is the sub-list for method output_type
 	13, // [13:13] is the sub-list for method input_type
 	13, // [13:13] is the sub-list for extension type_name
@@ -1002,6 +1085,18 @@ func file_dream11_od_dto_v1_service_proto_init() {
 				return nil
 			}
 		}
+		file_dream11_od_dto_v1_service_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ServiceVersionComparisonMetadata); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	file_dream11_od_dto_v1_service_proto_msgTypes[0].OneofWrappers = []interface{}{}
 	file_dream11_od_dto_v1_service_proto_msgTypes[4].OneofWrappers = []interface{}{}
@@ -1012,7 +1107,7 @@ func file_dream11_od_dto_v1_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_dream11_od_dto_v1_service_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

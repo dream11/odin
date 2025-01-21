@@ -70,3 +70,11 @@ message Service {
   repeated google.protobuf.Struct provisioning_config_files = 8;
   repeated string versions = 9;
 }
+
+message ServiceVersionComparisonMetadata {
+  string name = 1;
+  string existing_version = 2;
+  string new_version = 3;
+  bool version_conflict = 4;
+}
+

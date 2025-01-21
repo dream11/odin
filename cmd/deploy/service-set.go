@@ -86,7 +86,7 @@ func executeDeployServiceSet(cmd *cobra.Command) {
 		for _, input := range allowedInputsSlice {
 			allowedInputs[input] = struct{}{}
 		}
-		message := "Service already deployed with different version.Do you want to deploy service " + service.Name + " ? (y/n)"
+		message := fmt.Sprintf("Service: %s already deployed with different version : %s \n Do you want to deploy service with new version : %s ? (y/n)", service.Name,service.ExistingVersion,service.NewVersion)
 		inputHandler := ui.Input{}
 		val, err := inputHandler.AskWithConstraints(message, allowedInputs)
 

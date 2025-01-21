@@ -151,5 +151,5 @@ message GetConflictingServicesRequest {
 }
 
 message GetConflictingServicesResponse {
-  repeated dto.v1.ServiceMetadata services = 1;
+  repeated dto.v1.ServiceVersionComparisonMetadata services = 1;
 }
