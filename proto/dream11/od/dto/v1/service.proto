@@ -77,4 +77,3 @@ message ServiceVersionComparisonMetadata {
   string new_version = 3;
   bool version_conflict = 4;
 }
-
