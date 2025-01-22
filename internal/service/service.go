@@ -1,6 +1,7 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"github.com/dream11/odin/pkg/util"
 	serviceDto "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
+	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -51,6 +53,7 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 		}
 
 		if response != nil {
+
 			message = util.GenerateResponseMessage(response.GetServiceResponse())
 			logFailedComponentMessagesOnce(response.GetServiceResponse())
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
@@ -79,6 +82,7 @@ func logFailedComponentMessagesOnce(response *serviceProto.ServiceResponse) {
 func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.DeployServiceSetRequest) error {
 	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {
+		log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 		return err
 	}
 	client := serviceProto.NewServiceServiceClient(conn)
@@ -97,7 +101,7 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 	var message string
 	for {
 		response, err := stream.Recv()
-		spinnerInstance.Stop()
+
 		if err != nil {
 			if errors.Is(err, context.Canceled) || err == io.EOF {
 				break
@@ -107,17 +111,33 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 		}
 
 		if response != nil {
-			message = ""
+			spinnerInstance.Stop()
+			var buf bytes.Buffer
+			table := tablewriter.NewWriter(&buf)
+			table.SetHeader([]string{"Service Name", "Version", "Action", "Status", "Error"})
 			for _, serviceResponse := range response.GetServices() {
-				logFailedComponentMessagesOnce(serviceResponse.GetServiceResponse())
-				message += util.GenerateResponseMessage(serviceResponse.GetServiceResponse())
+				var errorMessage string
+				if serviceResponse.ServiceResponse.ServiceStatus.ServiceStatus == "FAILED" {
+					traceID := (*requestCtx).Value(constant.TraceIDKey)
+					errorMessage += fmt.Sprintf("[%s] TraceID: %s \n", serviceResponse.ServiceResponse.ServiceStatus.Error, traceID)
+				}
+				row := []string{
+					serviceResponse.ServiceIdentifier.ServiceName,
+					serviceResponse.ServiceIdentifier.ServiceVersion,
+					serviceResponse.ServiceResponse.ServiceStatus.ServiceAction,
+					serviceResponse.ServiceResponse.ServiceStatus.ServiceStatus,
+					errorMessage,
+				}
+				table.Append(row)
 			}
+
+			table.Render()
+			message = buf.String()
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 			spinnerInstance.Start()
 		}
 	}
-
-	log.Info(message)
+	fmt.Println(message)
 	return err
 }
 
@@ -318,8 +338,10 @@ func (e *Service) ConvertToDeployServiceSetRequest(serviceSet *serviceDto.Servic
 	var services []*serviceProto.ServiceIdentifier
 	for _, service := range serviceSet.Services {
 		services = append(services, &serviceProto.ServiceIdentifier{
-			ServiceName:    service.ServiceName,
-			ServiceVersion: service.ServiceVersion,
+			ServiceName:    service.Name,
+			ServiceVersion: service.Version,
+			Tags:           service.Tags,
+			ForceFlag:      true,
 		})
 	}
 
@@ -344,4 +366,18 @@ func (e *Service) DescribeService(ctx *context.Context, request *serviceProto.De
 	}
 
 	return response, nil
+}
+
+// GetConflictingServices deploys service
+func (e *Service) GetConflictingServices(ctx *context.Context, request *serviceProto.GetConflictingServicesRequest) (*serviceProto.GetConflictingServicesResponse, error) {
+	conn, requestCtx, err := grpcClient(ctx)
+	if err != nil {
+		return &serviceProto.GetConflictingServicesResponse{}, err
+	}
+	client := serviceProto.NewServiceServiceClient(conn)
+	response, err := client.GetConflictingServices(*requestCtx, request)
+	if err != nil {
+		log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
+	}
+	return response, err
 }
