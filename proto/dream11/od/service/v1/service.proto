@@ -16,6 +16,7 @@ service ServiceService {
   rpc ListService(ListServiceRequest) returns (ListServiceResponse) {}
   rpc DescribeService(DescribeServiceRequest) returns (DescribeServiceResponse) {}
   rpc OperateComponentDiff(OperateComponentDiffRequest) returns (OperateComponentDiffResponse) {}
+  rpc GetConflictingServices(GetConflictingServicesRequest) returns (GetConflictingServicesResponse) {}
 }
 
 message DeployServiceRequest {
@@ -38,6 +39,7 @@ message ServiceIdentifier {
   string service_name = 1;
   string service_version = 2;
   string tags = 3;
+  bool force_flag = 4;
 }
 
 message DeployReleasedServiceRequest {
@@ -142,4 +144,13 @@ message OperateComponentDiffRequest {
 message OperateComponentDiffResponse {
   google.protobuf.Struct old_values = 1;
   google.protobuf.Struct new_values = 2;
+}
+message GetConflictingServicesRequest {
+  string env_name = 1;
+  string name = 2;
+  repeated ServiceIdentifier services = 3;
+}
+
+message GetConflictingServicesResponse {
+  repeated dto.v1.ServiceVersionComparisonMetadata services = 1;
 }

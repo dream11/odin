@@ -11,6 +11,7 @@ import (
 
 	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	"github.com/google/uuid"
+	"github.com/olekukonko/tablewriter"
 	"gopkg.in/yaml.v2"
 )
 
@@ -35,6 +36,27 @@ func GenerateResponseMessage(response *v1.ServiceResponse) string {
 		message += fmt.Sprintf("\n Component %s %s %s ", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
 	}
 	return message
+}
+
+// GenerateServiceSetResponseMessage generate response message from ServiceSetResponse
+func GenerateServiceSetResponseMessage(response *v1.DeployServiceSetServiceResponse) string {
+
+	message := fmt.Sprintf("\n Service %s %s %s %s", response.ServiceIdentifier.ServiceName, response.ServiceIdentifier.ServiceVersion, response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
+	var tableData [][]string
+	row := []string{
+		response.ServiceIdentifier.ServiceName,
+		response.ServiceIdentifier.ServiceVersion,
+		response.ServiceResponse.ServiceStatus.ServiceAction,
+		response.ServiceResponse.ServiceStatus.ServiceStatus,
+	}
+	tableData = append(tableData, row)
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Service Name", "Version", "Action", "Status", "Error"})
+	table.AppendBulk(tableData)
+	table.Render()
+	return message
+
 }
 
 // FormatToHumanReadableDuration takes a date-time string representing the last deployment time, and returns a human-readable string representing the duration since the last deployment

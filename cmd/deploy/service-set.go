@@ -2,8 +2,10 @@ package deploy
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 
+	"github.com/dream11/odin/internal/ui"
 	"github.com/dream11/odin/pkg/config"
 	serviceDto "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
@@ -23,6 +25,11 @@ var serviceSetDeployCmd = &cobra.Command{
 		executeDeployServiceSet(cmd)
 	},
 }
+
+const (
+	Yes = "y"
+	No  = "n"
+)
 
 func init() {
 
@@ -61,8 +68,45 @@ func executeDeployServiceSet(cmd *cobra.Command) {
 		deployServiceSetRequest.Name = serviceSetName
 	}
 
+	conflictingServicesRequest := &serviceProto.GetConflictingServicesRequest{
+		EnvName:  env,
+		Name:     deployServiceSetRequest.Name,
+		Services: deployServiceSetRequest.Services,
+	}
+
+	services, errs := serviceClient.GetConflictingServices(&ctx, conflictingServicesRequest)
+	if errs != nil {
+		log.Fatal(fmt.Sprintf("Failed to list services with conflicting versions: %s", errs.Error()))
+		return
+	}
+	for _, service := range services.Services {
+
+		allowedInputsSlice := []string{Yes, No}
+		allowedInputs := make(map[string]struct{}, len(allowedInputsSlice))
+		for _, input := range allowedInputsSlice {
+			allowedInputs[input] = struct{}{}
+		}
+		message := fmt.Sprintf("Service: %s already deployed with different version : %s \n Do you want to deploy service with new version : %s ? (y/n)", service.Name, service.ExistingVersion, service.NewVersion)
+		inputHandler := ui.Input{}
+		val, err := inputHandler.AskWithConstraints(message, allowedInputs)
+
+		if err != nil {
+			log.Fatal(fmt.Sprintf("An error occurred while processing input: %s", err.Error()))
+		}
+
+		if val != Yes {
+			log.Info(fmt.Sprintf("Skipping service %s from deploy", service.Name))
+			for _, svc := range deployServiceSetRequest.Services {
+				if svc.ServiceName == service.Name {
+					svc.ForceFlag = false
+				}
+			}
+		}
+
+	}
+
 	err := serviceClient.DeployServiceSet(&ctx, &deployServiceSetRequest)
 	if err != nil {
-		log.Fatal("Failed to deploy service ", err)
+		log.Fatal("Failed to deploy service set. ", err)
 	}
 }
