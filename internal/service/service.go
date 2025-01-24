@@ -78,6 +78,21 @@ func logFailedComponentMessagesOnce(response *serviceProto.ServiceResponse) {
 	}
 }
 
+func logFailedComponentMessagesOnceForComponents(response *serviceProto.ServiceResponse, components []string) {
+	for _, compMessage := range response.ComponentsStatus {
+		componentActionKey := compMessage.GetComponentName() + compMessage.GetComponentAction() + compMessage.GetComponentStatus()
+		//code to not print the same message for component action again
+		if responseMap[componentActionKey] == "" {
+			if util.Contains(compMessage.ComponentName, components) {
+				if compMessage.GetComponentStatus() == "FAILED" {
+					log.Error(fmt.Sprintf("Component %s %s %s %s", compMessage.GetComponentName(), compMessage.GetComponentAction(), compMessage.GetComponentStatus(), compMessage.GetError()))
+				}
+				responseMap[componentActionKey] = componentActionKey
+			}
+		}
+	}
+}
+
 // DeployServiceSet deploys service-set
 func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.DeployServiceSetRequest) error {
 	conn, requestCtx, err := grpcClient(ctx)
@@ -178,6 +193,7 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 			for _, compMessage := range response.GetServiceResponse().ComponentsStatus {
 				message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
 			}
+			logFailedComponentMessagesOnce(response.GetServiceResponse())
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 			spinnerInstance.Start()
 		}
@@ -224,6 +240,7 @@ func (e *Service) UndeployService(ctx *context.Context, request *serviceProto.Un
 			for _, compMessage := range response.ServiceResponse.ComponentsStatus {
 				message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
 			}
+			logFailedComponentMessagesOnce(response.GetServiceResponse())
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 			spinnerInstance.Start()
 		}
@@ -267,6 +284,7 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 			for _, compMessage := range response.ServiceResponse.ComponentsStatus {
 				message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
 			}
+			logFailedComponentMessagesOnce(response.GetServiceResponse())
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 			spinnerInstance.Start()
 		}

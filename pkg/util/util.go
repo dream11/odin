@@ -114,8 +114,8 @@ func calculateDuration(parsedTime time.Time) string {
 	}
 }
 
-// contains checks if a string is present in an array of strings
-func contains(str string, arr []string) bool {
+// Contains checks if a string is present in a slice of strings.
+func Contains(str string, arr []string) bool {
 	for _, item := range arr {
 		if item == str {
 			return true
@@ -128,8 +128,8 @@ func contains(str string, arr []string) bool {
 func GenerateResponseMessageComponentSpecific(response *v1.ServiceResponse, components []string) string {
 	message := fmt.Sprintf("\n Service %s %s", response.ServiceStatus.ServiceAction, response.ServiceStatus)
 	for _, compMessage := range response.ComponentsStatus {
-		if contains(compMessage.ComponentName, components) {
-			message += fmt.Sprintf("\n Component %s %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus, compMessage.Error)
+		if Contains(compMessage.ComponentName, components) {
+			message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
 		}
 	}
 	return message
