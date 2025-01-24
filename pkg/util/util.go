@@ -114,7 +114,7 @@ func calculateDuration(parsedTime time.Time) string {
 	}
 }
 
-// contains checks if a string is present in an array of strings
+// Contains checks if a string is present in a slice of strings.
 func Contains(str string, arr []string) bool {
 	for _, item := range arr {
 		if item == str {
