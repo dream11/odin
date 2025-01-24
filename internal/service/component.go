@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 
 	"github.com/briandowns/spinner"
@@ -48,7 +49,7 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 		if response != nil {
 			message = util.GenerateResponseMessageComponentSpecific(response.GetServiceResponse(), []string{request.GetComponentName()})
 			logFailedComponentMessagesOnceForComponents(response.GetServiceResponse(), []string{request.GetComponentName()})
-			spinnerInstance.Prefix = message
+			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 			spinnerInstance.Start()
 		}
 	}
