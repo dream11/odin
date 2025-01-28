@@ -31,7 +31,7 @@ func IsIPAddress(address string) bool {
 
 // GenerateResponseMessage generate response message from ServiceResponse
 func GenerateResponseMessage(response *v1.ServiceResponse) string {
-	message := fmt.Sprintf("\n Service %s %s", response.ServiceStatus.ServiceAction, response.ServiceStatus)
+	message := fmt.Sprintf("\n Service  %s ", response.ServiceStatus)
 	for _, compMessage := range response.ComponentsStatus {
 		message += fmt.Sprintf("\n Component %s %s %s ", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
 	}
