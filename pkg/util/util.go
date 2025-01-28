@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"os"
@@ -10,6 +11,8 @@ import (
 
 	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	"github.com/google/uuid"
+	"github.com/olekukonko/tablewriter"
+	"gopkg.in/yaml.v2"
 )
 
 // SplitProviderAccount splits string into list of cloud provider accounts
@@ -30,9 +33,30 @@ func IsIPAddress(address string) bool {
 func GenerateResponseMessage(response *v1.ServiceResponse) string {
 	message := fmt.Sprintf("\n Service %s %s", response.ServiceStatus.ServiceAction, response.ServiceStatus)
 	for _, compMessage := range response.ComponentsStatus {
-		message += fmt.Sprintf("\n Component %s %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus, compMessage.Error)
+		message += fmt.Sprintf("\n Component %s %s %s ", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
 	}
 	return message
+}
+
+// GenerateServiceSetResponseMessage generate response message from ServiceSetResponse
+func GenerateServiceSetResponseMessage(response *v1.DeployServiceSetServiceResponse) string {
+
+	message := fmt.Sprintf("\n Service %s %s %s %s", response.ServiceIdentifier.ServiceName, response.ServiceIdentifier.ServiceVersion, response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
+	var tableData [][]string
+	row := []string{
+		response.ServiceIdentifier.ServiceName,
+		response.ServiceIdentifier.ServiceVersion,
+		response.ServiceResponse.ServiceStatus.ServiceAction,
+		response.ServiceResponse.ServiceStatus.ServiceStatus,
+	}
+	tableData = append(tableData, row)
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Service Name", "Version", "Action", "Status", "Error"})
+	table.AppendBulk(tableData)
+	table.Render()
+	return message
+
 }
 
 // FormatToHumanReadableDuration takes a date-time string representing the last deployment time, and returns a human-readable string representing the duration since the last deployment
@@ -90,8 +114,8 @@ func calculateDuration(parsedTime time.Time) string {
 	}
 }
 
-// contains checks if a string is present in an array of strings
-func contains(str string, arr []string) bool {
+// Contains checks if a string is present in a slice of strings.
+func Contains(str string, arr []string) bool {
 	for _, item := range arr {
 		if item == str {
 			return true
@@ -104,8 +128,8 @@ func contains(str string, arr []string) bool {
 func GenerateResponseMessageComponentSpecific(response *v1.ServiceResponse, components []string) string {
 	message := fmt.Sprintf("\n Service %s %s", response.ServiceStatus.ServiceAction, response.ServiceStatus)
 	for _, compMessage := range response.ComponentsStatus {
-		if contains(compMessage.ComponentName, components) {
-			message += fmt.Sprintf("\n Component %s %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus, compMessage.Error)
+		if Contains(compMessage.ComponentName, components) {
+			message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
 		}
 	}
 	return message
@@ -122,4 +146,23 @@ func GetEnvOrDefault(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
+}
+
+// ConvertJSONToYAML takes a JSON string as input and returns a formatted YAML string
+func ConvertJSONToYAML(jsonStr string) (string, error) {
+	// Unmarshal the JSON into a generic structure
+	var jsonData interface{}
+	err := json.Unmarshal([]byte(jsonStr), &jsonData)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse JSON: %v", err)
+	}
+
+	// Marshal the structure into YAML
+	yamlData, err := yaml.Marshal(jsonData)
+	if err != nil {
+		return "", fmt.Errorf("failed to convert to YAML: %v", err)
+	}
+
+	// Return the YAML string
+	return string(yamlData), nil
 }
