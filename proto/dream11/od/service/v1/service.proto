@@ -29,6 +29,8 @@ message ServiceResponse {
   ServiceStatus service_status = 1;
   repeated ComponentStatus components_status = 2;
   string message = 3;
+  string name=4;
+  string version=5;
 }
 
 message DeployReleasedServiceResponse {
@@ -70,8 +72,6 @@ message ServiceStatus {
   string service_status = 1;
   string service_action = 2;
   string error = 3;
-  string name = 4;
-  string version = 5;
 }
 
 message ComponentStatus {
