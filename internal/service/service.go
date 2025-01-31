@@ -22,47 +22,13 @@ type Service struct{}
 var responseMap = make(map[string]string)
 
 // DeployService deploys service
-func (e *Service) DeployService(ctx *context.Context, request *serviceProto.DeployServiceRequest) error {
+func (e *Service) DeployService(ctx *context.Context, request *serviceProto.DeployServiceRequest) (serviceProto.ServiceService_DeployServiceClient, error) {
 	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	client := serviceProto.NewServiceServiceClient(conn)
-	stream, err := client.DeployService(*requestCtx, request)
-	if err != nil {
-		return err
-	}
-
-	log.Info("Deploying Service...")
-	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
-	if err != nil {
-		return err
-	}
-
-	var message string
-	for {
-		response, err := stream.Recv()
-		spinnerInstance.Stop()
-		if err != nil {
-			if errors.Is(err, context.Canceled) || err == io.EOF {
-				break
-			}
-			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
-			return err
-		}
-
-		if response != nil {
-
-			message = util.GenerateResponseMessage(response.GetServiceResponse())
-			logFailedComponentMessagesOnce(response.GetServiceResponse())
-			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
-			spinnerInstance.Start()
-		}
-	}
-
-	log.Info(message)
-	return err
+	return client.DeployService(*requestCtx, request)
 }
 
 func logFailedComponentMessagesOnce(response *serviceProto.ServiceResponse) {
