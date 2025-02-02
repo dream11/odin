@@ -5,15 +5,9 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 )
 
-type ServiceSetView struct {
-	Ready       bool
-	Cursor      int
-	Header      Header
-	Status      string
-	ServiceView []ServiceView
-}
-
 type ServiceView struct {
+	Height         int
+	Width          int
 	Ready          bool
 	Cursor         int
 	Header         Header

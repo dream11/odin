@@ -9,6 +9,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/dream11/odin/pkg/constant"
+	"github.com/dream11/odin/pkg/ui"
 	"io"
 	"os"
 	"regexp"
@@ -57,15 +58,7 @@ func execute(cmd *cobra.Command) {
 	// Add program in context
 	ctx := cmd.Context()
 	program := tea.NewProgram(
-		&ServiceView{
-			ComponentsView: append(
-				[]ComponentView{
-					{
-						Toggle: false,
-					},
-				},
-			),
-		},
+		&ServiceView{},
 		tea.WithAltScreen(),       // use the full size of the terminal in its "alternate screen buffer"
 		tea.WithMouseCellMotion(), // turn on mouse support, so we can track the mouse wheel
 	)
@@ -100,7 +93,6 @@ func (s *ServiceView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ServiceView:
 		s.Header = msg.Header
 		s.Status = msg.Status
-		s.Cursor = msg.Cursor
 		prevCollapsed := make([]bool, len(s.ComponentsView))
 		for i := range s.ComponentsView {
 			if i < len(prevCollapsed) {
@@ -108,12 +100,26 @@ func (s *ServiceView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-		for i := range s.ComponentsView {
+		for i := range msg.ComponentsView {
 			if i < len(prevCollapsed) {
 				s.ComponentsView[i].Toggle = prevCollapsed[i]
 				s.ComponentsView[i].Header = msg.ComponentsView[i].Header
 				s.ComponentsView[i].Status = msg.ComponentsView[i].Status
 				s.ComponentsView[i].LogView.Content = msg.ComponentsView[i].LogView.Content
+				//s.ComponentsView[i].LogView.LogViewPort.SetContent(s.ComponentsView[i].LogView.Content)
+			} else {
+				s.ComponentsView = append(s.ComponentsView, ComponentView{
+					Toggle: msg.ComponentsView[i].Toggle,
+					Header: msg.ComponentsView[i].Header,
+					Status: msg.ComponentsView[i].Status,
+					LogView: LogView{
+						Content:     msg.ComponentsView[i].LogView.Content,
+						LogViewPort: viewport.New(s.Width, 10),
+					},
+				})
+				//s.ComponentsView[i].LogView.LogViewPort.SetContent(s.ComponentsView[i].LogView.Content)
+				s.ComponentsView[i].LogView.LogViewPort.MouseWheelDelta = 1
+				s.ComponentsView[i].LogView.LogViewPort.YPosition = s.Height + len(s.ComponentsView)*s.Height
 			}
 		}
 	// Handle key presses
@@ -132,7 +138,9 @@ func (s *ServiceView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			break
 
 		case "enter", " ":
-			s.ComponentsView[s.Cursor].Toggle = !s.ComponentsView[s.Cursor].Toggle
+			if s.Cursor < len(s.ComponentsView) {
+				s.ComponentsView[s.Cursor].Toggle = !s.ComponentsView[s.Cursor].Toggle
+			}
 			break
 
 		case "q":
@@ -143,18 +151,20 @@ func (s *ServiceView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		headerHeight := lipgloss.Height(s.Header.Text)
 		if !s.Ready {
-			s.ComponentsView[s.Cursor].LogView.LogViewPort = viewport.New(msg.Width, msg.Height-headerHeight)
-			s.ComponentsView[s.Cursor].LogView.LogViewPort.MouseWheelDelta = 1
-			s.ComponentsView[s.Cursor].LogView.LogViewPort.YPosition = headerHeight
+			s.Height = msg.Height
+			s.Width = msg.Width
 			s.Ready = true
 		} else {
-			s.ComponentsView[s.Cursor].LogView.LogViewPort.Width = msg.Width - 20
-			s.ComponentsView[s.Cursor].LogView.LogViewPort.Height = msg.Height - headerHeight - 20
+			s.Height = msg.Height
+			s.Width = msg.Width - headerHeight
+			for i := range s.ComponentsView {
+				s.ComponentsView[i].LogView.LogViewPort.Width = msg.Width
+				s.ComponentsView[i].LogView.LogViewPort.Height = 10
+			}
 		}
 	}
 
 	// Handle keyboard and mouse events in the viewport
-	s.ComponentsView[s.Cursor].LogView.LogViewPort.SetContent(s.ComponentsView[s.Cursor].LogView.Content)
 	vpcmd := s.updateViewPort(msg)
 
 	return s, tea.Batch(vpcmd...)
@@ -175,22 +185,25 @@ func (s *ServiceView) View() string {
 		return "\n  Initializing..."
 	}
 	var builder strings.Builder
-	builder.WriteString(fmt.Sprintf("%s\n", s.Header.Text))
+	builder.WriteString(fmt.Sprintf("%s\n", ui.H1Style.Render(s.Header.Text)))
 
 	for i, componentView := range s.ComponentsView {
-		cursor := " "
+		var componentHeaderText string
+
 		if i == s.Cursor {
-			if componentView.Toggle {
-				cursor = ">"
-			} else {
-				cursor = "V"
-			}
+			componentHeaderText = ui.SelectedStyle(ui.H2Style).Render(componentView.Header.Text)
+		} else {
+			componentHeaderText = ui.H2Style.Render(componentView.Header.Text)
 		}
 
 		if !componentView.Toggle {
-			builder.WriteString(fmt.Sprintf("%s %s \n", cursor, componentView.Header.Text))
+			builder.WriteString(fmt.Sprintf("%s \n", componentHeaderText))
 		} else {
-			builder.WriteString(fmt.Sprintf("%s\n%s\n%s\n", cursor, componentView.Header.Text, componentView.LogView.LogViewPort.View()))
+			builder.WriteString(fmt.Sprintf("%s \n", componentHeaderText))
+			// Render logs
+			logsText := strings.Split(s.ComponentsView[i].LogView.Content, "\\n")
+			componentView.LogView.LogViewPort.SetContent(ui.InfoStyle.Render(strings.Join(logsText, "\n")))
+			builder.WriteString(fmt.Sprintf("%s \n", componentView.LogView.LogViewPort.View()))
 		}
 	}
 
@@ -235,6 +248,8 @@ func deployUsingFiles(ctx context.Context, program *tea.Program) {
 				break
 			}
 			log.Errorf("TraceID: %s", ctx.Value(constant.TraceIDKey))
+			log.Fatal("Failed to deploy service ", err)
+			program.Quit()
 		}
 		program.Send(GetServiceView(response))
 	}

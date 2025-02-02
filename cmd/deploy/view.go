@@ -2,7 +2,6 @@ package deploy
 
 import (
 	"fmt"
-	"github.com/dream11/odin/pkg/ui"
 	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 )
 
@@ -18,7 +17,7 @@ func GetServiceView(response *v1.DeployServiceResponse) ServiceView {
 
 	serviceView := ServiceView{
 		Header: Header{
-			Text: ui.TitleStyle.Render(serviceHeaderText),
+			Text: serviceHeaderText,
 		},
 		Status:         response.GetServiceResponse().ServiceStatus.GetServiceStatus(),
 		ComponentsView: make([]ComponentView, 0),
@@ -36,10 +35,10 @@ func GetServiceView(response *v1.DeployServiceResponse) ServiceView {
 			errorMessage = component.GetError()
 		}
 		componentView := ComponentView{
-			Header: Header{Text: ui.TitleStyle.Render(componentHeaderText)},
+			Header: Header{Text: componentHeaderText},
 			Status: component.GetComponentStatus(),
 			LogView: LogView{
-				Content: ui.InfoStyle.Render(errorMessage),
+				Content: errorMessage,
 			},
 		}
 		serviceView.ComponentsView = append(serviceView.ComponentsView, componentView)
