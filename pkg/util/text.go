@@ -2,28 +2,27 @@ package util
 
 import (
 	"fmt"
-	"github.com/dream11/odin/cmd/deploy"
 	"strings"
 )
 
-func GetServiceHeader(s deploy.ServiceView) string {
+func GetHeaderText(name string, action string, status string, element string) string {
 	var header strings.Builder
-	var action string
-	switch s.Action {
+	var actionText string
+	switch action {
 	case "VALIDATE":
-		action = "validating"
+		actionText = "validating"
 	case "DEPLOY":
-		action = "deployment"
+		actionText = "deployment"
 	case "UNDEPLOY":
-		action = "un-deployment"
+		actionText = "un-deployment"
 	}
-	switch s.Status {
+	switch status {
 	case "IN_PROGRESS":
-		header.WriteString(fmt.Sprintf("Service: %s  %s in progress", s.Name, action))
+		header.WriteString(fmt.Sprintf("%s: %s  %s in progress", element, name, actionText))
 	case "SUCCESSFUL":
-		header.WriteString(fmt.Sprintf("Service: %s  %s successful", s.Name, action))
+		header.WriteString(fmt.Sprintf("%s: %s  %s successful", element, name, actionText))
 	case "FAILED":
-		header.WriteString(fmt.Sprintf("Service: %s  %s failed", s.Name, action))
+		header.WriteString(fmt.Sprintf("%s: %s  %s failed", element, name, actionText))
 	}
 	return header.String()
 }

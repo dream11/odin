@@ -1,35 +1,46 @@
 package deploy
 
 import (
-	"github.com/charmbracelet/bubbles/spinner"
+	"github.com/charmbracelet/bubbles/progress"
 	"github.com/charmbracelet/bubbles/viewport"
 )
 
+type Model struct {
+	ServiceDisplayMeta ServiceDisplayMeta
+	ServiceView        ServiceView
+}
+
+type ServiceDisplayMeta struct {
+	Height               int
+	Width                int
+	Ready                bool
+	Cursor               int
+	ElapsedTime          int
+	TotalCompletionTime  int
+	Progress             progress.Model
+	ComponentDisplayMeta []ComponentDisplayMeta
+}
+
+type ComponentDisplayMeta struct {
+	Height              int
+	Width               int
+	Toggle              bool
+	ElapsedTime         int
+	TotalCompletionTime int
+	Progress            progress.Model
+	LogViewPort         viewport.Model
+}
+
 type ServiceView struct {
-	Height         int
-	Width          int
-	Ready          bool
-	Cursor         int
-	Header         Header
+	Name           string
 	Status         string
+	Action         string
 	ComponentsView []ComponentView
 }
 
 type ComponentView struct {
-	Toggle  bool
-	Header  Header
+	Name    string
 	Status  string
-	LogView LogView
-}
-
-type Header struct {
-	Toggle  bool
-	Text    string
-	Spinner spinner.Model
-}
-
-type LogView struct {
-	Toggle      bool
-	Content     string
-	LogViewPort viewport.Model
+	Action  string
+	Content string
 }
