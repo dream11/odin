@@ -16,6 +16,22 @@ var H2Style = func() lipgloss.Style {
 		Align(lipgloss.Left)
 }()
 
+var TextStyle = func() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#E8D2F2")).
+		Italic(true).
+		Align(lipgloss.Left)
+}()
+
+var FooterStyle = func() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#E8D2F2")).
+		Bold(false).
+		Italic(true).
+		Faint(true).
+		Align(lipgloss.Left)
+}()
+
 var InfoStyle = func() lipgloss.Style {
 	return lipgloss.NewStyle().
 		Foreground(lipgloss.Color("#E8D2F2")).

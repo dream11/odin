@@ -188,3 +188,8 @@ func GetHeaderText(name string, action string, status string, element string) st
 	}
 	return header.String()
 }
+
+func GetAvailableViewPortHeight(totalHeight int, headerHeight int, numberOfComponents int) int {
+	bottomPadding := 12
+	return totalHeight - ((headerHeight + 2) + numberOfComponents*(headerHeight+1)) - bottomPadding
+}

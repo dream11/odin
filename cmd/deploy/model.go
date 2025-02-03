@@ -34,6 +34,7 @@ type ServiceView struct {
 	Name           string
 	Status         string
 	Action         string
+	TraceId        string
 	ComponentsView []ComponentView
 }
 

@@ -11,6 +11,7 @@ func GetServiceDeployModel(response *v1.DeployServiceResponse) Model {
 		Name:           serviceName,
 		Action:         response.GetServiceResponse().ServiceStatus.GetServiceAction(),
 		Status:         response.GetServiceResponse().ServiceStatus.GetServiceStatus(),
+		TraceId:        "random-trace-id",
 		ComponentsView: make([]ComponentView, 0),
 	}
 	for _, component := range response.GetServiceResponse().GetComponentsStatus() {

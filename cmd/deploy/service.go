@@ -10,7 +10,6 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/ui"
 	"github.com/dream11/odin/pkg/util"
 	"io"
@@ -103,6 +102,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	// Handle updates
 	case Model:
+		m.ServiceDisplayMeta.Ready = true
 		m.ServiceView = msg.ServiceView
 		if len(m.ServiceView.ComponentsView) > len(m.ServiceDisplayMeta.ComponentDisplayMeta) {
 			for i := len(m.ServiceDisplayMeta.ComponentDisplayMeta); i < len(m.ServiceView.ComponentsView); i++ {
@@ -154,14 +154,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.ServiceDisplayMeta.Height = msg.Height
 		m.ServiceDisplayMeta.Width = msg.Width
-		if !m.ServiceDisplayMeta.Ready {
-			m.ServiceDisplayMeta.Ready = true
-		} else {
+		if m.ServiceDisplayMeta.Ready {
 			for i := range m.ServiceDisplayMeta.ComponentDisplayMeta {
 				m.ServiceDisplayMeta.ComponentDisplayMeta[i].LogViewPort.Width = msg.Width
 				m.ServiceDisplayMeta.ComponentDisplayMeta[i].LogViewPort.Height =
-					min(msg.Height-len(m.ServiceDisplayMeta.ComponentDisplayMeta)*(lipgloss.Height(m.ServiceView.ComponentsView[i].Name)),
-						10)
+					max(util.GetAvailableViewPortHeight(msg.Height, lipgloss.Height("text"), len(m.ServiceDisplayMeta.ComponentDisplayMeta)), 10)
 			}
 		}
 	case spinner.TickMsg:
@@ -208,15 +205,16 @@ func (m *Model) tickSpinners() []tea.Cmd {
 
 func (m *Model) View() string {
 	if !m.ServiceDisplayMeta.Ready {
-		return "\n  Initializing..."
+		return ui.H1Style.Render("Initializing service deployment...")
 	}
 	var builder strings.Builder
 
 	// Build Service View
 	serviceHeader := util.GetHeaderText(m.ServiceView.Name, m.ServiceView.Action, m.ServiceView.Status, "Service")
 	builder.WriteString(fmt.Sprintf("%s\n", ui.H1Style.Render(serviceHeader)))
-	m.ServiceDisplayMeta.Progress.Width = lipgloss.Width(serviceHeader)
+	m.ServiceDisplayMeta.Progress.Width = lipgloss.Width(serviceHeader) + 6 // to accommodate the percentage text
 	builder.WriteString(fmt.Sprintf("%s\n", m.ServiceDisplayMeta.Progress.ViewAs(100.0)))
+	builder.WriteString(fmt.Sprintf("Trace Id: %s\n", ui.TextStyle.Render(m.ServiceView.TraceId)))
 
 	for i, componentView := range m.ServiceView.ComponentsView {
 		componentHeader := util.GetHeaderText(componentView.Name, componentView.Action, componentView.Status, "Component")
@@ -237,6 +235,10 @@ func (m *Model) View() string {
 			builder.WriteString(fmt.Sprintf("%s \n", m.ServiceDisplayMeta.ComponentDisplayMeta[i].LogViewPort.View()))
 		}
 	}
+
+	// Add Footer with operating instructions
+	builder.WriteString("\n\n")
+	builder.WriteString(ui.FooterStyle.Render("Use ↑ and ↓ to navigate components, Enter to toggle logs, q to quit"))
 
 	return builder.String()
 }
@@ -278,8 +280,6 @@ func deployUsingFiles(ctx context.Context, program *tea.Program) {
 			if errors.Is(err, context.Canceled) || err == io.EOF {
 				break
 			}
-			log.Errorf("TraceID: %s", ctx.Value(constant.TraceIDKey))
-			log.Fatal("Failed to deploy service ", err)
 			program.Quit()
 		}
 		program.Send(GetServiceDeployModel(response))
