@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/charmbracelet/bubbles/progress"
+	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -64,8 +66,8 @@ func execute(cmd *cobra.Command) {
 				Name: "Initiating service deployment",
 			},
 		},
-		tea.WithAltScreen(),       // use the full size of the terminal in its "alternate screen buffer"
-		tea.WithMouseCellMotion(), // turn on mouse support, so we can track the mouse wheel
+		tea.WithAltScreen(), // use the full size of the terminal in its "alternate screen buffer"
+		//tea.WithMouseCellMotion(), // turn on mouse support, so we can track the mouse wheel
 	)
 
 	go func() {
@@ -89,11 +91,15 @@ func execute(cmd *cobra.Command) {
 }
 
 func (m *Model) Init() tea.Cmd {
+	m.ServiceDisplayMeta.Progress = progress.New(progress.WithDefaultScaledGradient())
+	m.ServiceDisplayMeta.Progress.PercentageStyle = ui.ProgressBarStyle
+	m.ServiceDisplayMeta.Progress.SetPercent(100)
 	m.ServiceDisplayMeta.Cursor = 0
 	return nil
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var updateCmds []tea.Cmd
 	switch msg := msg.(type) {
 	// Handle updates
 	case Model:
@@ -106,19 +112,29 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						Height: 10,
 					},
 				})
+				m.ServiceDisplayMeta.ComponentDisplayMeta[i].Spinner = spinner.New()
+				m.ServiceDisplayMeta.ComponentDisplayMeta[i].Spinner.Style = ui.SpinnerStyle
+				m.ServiceDisplayMeta.ComponentDisplayMeta[i].Spinner.Spinner = spinner.Points
 			}
 		}
 	// Handle key presses
 	case tea.KeyMsg:
+		anyToggled := false
+		for _, component := range m.ServiceDisplayMeta.ComponentDisplayMeta {
+			if component.Toggle {
+				anyToggled = true
+				break
+			}
+		}
 		switch msg.String() {
 		case "up":
-			if m.ServiceDisplayMeta.Cursor > 0 {
+			if m.ServiceDisplayMeta.Cursor > 0 && !anyToggled {
 				m.ServiceDisplayMeta.Cursor--
 			}
 			break
 
 		case "down":
-			if m.ServiceDisplayMeta.Cursor < len(m.ServiceDisplayMeta.ComponentDisplayMeta)-1 {
+			if m.ServiceDisplayMeta.Cursor < len(m.ServiceDisplayMeta.ComponentDisplayMeta)-1 && !anyToggled {
 				m.ServiceDisplayMeta.Cursor++
 			}
 			break
@@ -148,11 +164,16 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						10)
 			}
 		}
+	case spinner.TickMsg:
+		spinnerUpdateCmds := m.updateSpinners(msg)
+		return m, tea.Batch(spinnerUpdateCmds...)
 	}
-	// Handle keyboard and mouse events in the viewport
-	viewPortCmd := m.updateViewPort(msg)
 
-	return m, tea.Batch(viewPortCmd...)
+	// Handle keyboard and mouse events in the viewport
+	updateCmds = append(updateCmds, m.tickSpinners()...)
+	updateCmds = append(updateCmds, m.updateViewPort(msg)...)
+
+	return m, tea.Batch(updateCmds...)
 }
 
 func (m *Model) updateViewPort(msg tea.Msg) []tea.Cmd {
@@ -166,6 +187,25 @@ func (m *Model) updateViewPort(msg tea.Msg) []tea.Cmd {
 	return cmds
 }
 
+func (m *Model) updateSpinners(msg tea.Msg) []tea.Cmd {
+	var cmds []tea.Cmd
+	var cmd tea.Cmd
+	for i := range m.ServiceDisplayMeta.ComponentDisplayMeta {
+		m.ServiceDisplayMeta.ComponentDisplayMeta[i].Spinner, cmd =
+			m.ServiceDisplayMeta.ComponentDisplayMeta[i].Spinner.Update(msg)
+		cmds = append(cmds, cmd)
+	}
+	return cmds
+}
+
+func (m *Model) tickSpinners() []tea.Cmd {
+	var cmds []tea.Cmd
+	for i := range m.ServiceDisplayMeta.ComponentDisplayMeta {
+		cmds = append(cmds, m.ServiceDisplayMeta.ComponentDisplayMeta[i].Spinner.Tick)
+	}
+	return cmds
+}
+
 func (m *Model) View() string {
 	if !m.ServiceDisplayMeta.Ready {
 		return "\n  Initializing..."
@@ -174,7 +214,9 @@ func (m *Model) View() string {
 
 	// Build Service View
 	serviceHeader := util.GetHeaderText(m.ServiceView.Name, m.ServiceView.Action, m.ServiceView.Status, "Service")
-	builder.WriteString(ui.H1Style.Render(serviceHeader))
+	builder.WriteString(fmt.Sprintf("%s\n", ui.H1Style.Render(serviceHeader)))
+	m.ServiceDisplayMeta.Progress.Width = lipgloss.Width(serviceHeader)
+	builder.WriteString(fmt.Sprintf("%s\n", m.ServiceDisplayMeta.Progress.ViewAs(100.0)))
 
 	for i, componentView := range m.ServiceView.ComponentsView {
 		componentHeader := util.GetHeaderText(componentView.Name, componentView.Action, componentView.Status, "Component")
@@ -184,11 +226,11 @@ func (m *Model) View() string {
 		} else {
 			componentHeaderText = ui.H2Style.Render(componentHeader)
 		}
-
-		if !m.ServiceDisplayMeta.ComponentDisplayMeta[i].Toggle {
-			builder.WriteString(fmt.Sprintf("%s \n", componentHeaderText))
-		} else {
-			builder.WriteString(fmt.Sprintf("%s \n", componentHeaderText))
+		if m.ServiceView.ComponentsView[i].Status != "IN_PROGRESS" {
+			m.ServiceDisplayMeta.ComponentDisplayMeta[i].Spinner.Spinner = spinner.Pulse
+		}
+		builder.WriteString(fmt.Sprintf("%s %s\n", componentHeaderText, m.ServiceDisplayMeta.ComponentDisplayMeta[i].Spinner.View()))
+		if m.ServiceDisplayMeta.ComponentDisplayMeta[i].Toggle {
 			// Render logs
 			logsText := strings.Split(componentView.Content, "\\n")
 			m.ServiceDisplayMeta.ComponentDisplayMeta[i].LogViewPort.SetContent(ui.InfoStyle.Render(strings.Join(logsText, "\n")))

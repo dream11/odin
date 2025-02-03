@@ -4,37 +4,41 @@ import "github.com/charmbracelet/lipgloss"
 
 var H1Style = func() lipgloss.Style {
 	return lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#a556f4")).
-		Border(lipgloss.RoundedBorder(), true, false).
-		Padding(1, 2).
-		Align(lipgloss.Center)
+		Foreground(lipgloss.Color("#BC88D3")).
+		Margin(1).
+		Align(lipgloss.Left)
 }()
 
 var H2Style = func() lipgloss.Style {
 	return lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#7d56f4")).
-		MarginLeft(5).
-		Border(lipgloss.NormalBorder(), true, false).
-		Align(lipgloss.Center)
+		Foreground(lipgloss.Color("#E8D2F2")).
+		Margin(1, 1, 0, 5).
+		Align(lipgloss.Left)
 }()
 
 var InfoStyle = func() lipgloss.Style {
 	return lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#fafafa")).
-		MarginLeft(10).
-		Padding(1, 2).
+		Foreground(lipgloss.Color("#E8D2F2")).
+		MarginLeft(5).
+		BorderLeft(true).
+		BorderStyle(lipgloss.RoundedBorder()).
+		PaddingLeft(2).
 		Align(lipgloss.Left)
 }()
 
 var SelectedStyle = func(style lipgloss.Style) lipgloss.Style {
 	return style.
-		Background(style.GetForeground()).
-		Foreground(lipgloss.Color("#fafafa")).
+		Underline(true).
 		Bold(true)
 }
 
-//var GreenBorder = func(style lipgloss.Style) lipgloss.Style {
-//	return style.
-//		Border(lipgloss.DoubleBorder()).
-//		BorderForeground(lipgloss.Color("#00ff00"))
-//}
+var SpinnerStyle = func() lipgloss.Style {
+	return lipgloss.NewStyle().
+		PaddingBottom(1).
+		Foreground(lipgloss.Color("#D9D9D9"))
+}()
+
+var ProgressBarStyle = func() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#E88D4C"))
+}()

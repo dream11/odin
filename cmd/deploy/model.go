@@ -2,6 +2,7 @@ package deploy
 
 import (
 	"github.com/charmbracelet/bubbles/progress"
+	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/viewport"
 )
 
@@ -22,13 +23,11 @@ type ServiceDisplayMeta struct {
 }
 
 type ComponentDisplayMeta struct {
-	Height              int
-	Width               int
-	Toggle              bool
-	ElapsedTime         int
-	TotalCompletionTime int
-	Progress            progress.Model
-	LogViewPort         viewport.Model
+	Height      int
+	Width       int
+	Toggle      bool
+	Spinner     spinner.Model
+	LogViewPort viewport.Model
 }
 
 type ServiceView struct {
