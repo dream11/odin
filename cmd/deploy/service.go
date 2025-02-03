@@ -65,8 +65,7 @@ func execute(cmd *cobra.Command) {
 				Name: "Initiating service deployment",
 			},
 		},
-		tea.WithAltScreen(), // use the full size of the terminal in its "alternate screen buffer"
-		//tea.WithMouseCellMotion(), // turn on mouse support, so we can track the mouse wheel
+		tea.WithAltScreen(),
 	)
 
 	go func() {
