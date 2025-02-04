@@ -56,7 +56,7 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 				program.Quit()
 			}
 			if response != nil {
-				program.Send(ui.GetServiceDeployModel(response))
+				program.Send(ui.GetServiceDeployModel(response, (*requestCtx).Value(constant.TraceIDKey).(string)))
 			}
 		}
 	}()

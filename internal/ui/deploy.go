@@ -53,20 +53,17 @@ func (s *ServiceDeployModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if s.ServiceDisplayMeta.Cursor > 0 && !anyToggled {
 				s.ServiceDisplayMeta.Cursor--
 			}
-			break
 
 		case "down":
 			if s.ServiceDisplayMeta.Cursor < len(s.ServiceDisplayMeta.ComponentDisplayMeta)-1 && !anyToggled {
 				s.ServiceDisplayMeta.Cursor++
 			}
-			break
 
 		case "enter", " ":
 			if s.ServiceDisplayMeta.Cursor < len(s.ServiceDisplayMeta.ComponentDisplayMeta) {
 				s.ServiceDisplayMeta.ComponentDisplayMeta[s.ServiceDisplayMeta.Cursor].Toggle =
 					!s.ServiceDisplayMeta.ComponentDisplayMeta[s.ServiceDisplayMeta.Cursor].Toggle
 			}
-			break
 
 		case "q":
 			return s, tea.Quit
@@ -106,7 +103,7 @@ func (s *ServiceDeployModel) View() string {
 	builder.WriteString(fmt.Sprintf("%s\n", H1Style.Render(serviceHeader)))
 	s.ServiceDisplayMeta.Progress.Width = lipgloss.Width(serviceHeader) + 6 // to accommodate the percentage text
 	builder.WriteString(fmt.Sprintf("%s\n", s.ServiceDisplayMeta.Progress.ViewAs(100.0)))
-	builder.WriteString(fmt.Sprintf("Trace Id: %s\n", TextStyle.Render(s.ServiceView.TraceId)))
+	builder.WriteString(fmt.Sprintf("Trace Id: %s\n", TextStyle.Render(s.ServiceView.TraceID)))
 
 	for i, componentView := range s.ServiceView.ComponentsView {
 		componentHeader := util.GetHeaderText(componentView.Name, componentView.Action, componentView.Status, "Component")

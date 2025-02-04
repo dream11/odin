@@ -35,7 +35,7 @@ type ServiceView struct {
 	Name           string
 	Status         string
 	Action         string
-	TraceId        string
+	TraceID        string
 	ComponentsView []ComponentView
 }
 
@@ -46,14 +46,14 @@ type ComponentView struct {
 	Content string
 }
 
-func GetServiceDeployModel(response *v1.DeployServiceResponse) ServiceDeployModel {
+func GetServiceDeployModel(response *v1.DeployServiceResponse, traceID string) ServiceDeployModel {
 	serviceName := response.GetServiceResponse().Name
 
 	serviceView := ServiceView{
 		Name:           serviceName,
 		Action:         response.GetServiceResponse().ServiceStatus.GetServiceAction(),
 		Status:         response.GetServiceResponse().ServiceStatus.GetServiceStatus(),
-		TraceId:        "random-trace-id",
+		TraceID:        traceID,
 		ComponentsView: make([]ComponentView, 0),
 	}
 	for _, component := range response.GetServiceResponse().GetComponentsStatus() {
