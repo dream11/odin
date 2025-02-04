@@ -5,7 +5,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/dream11/odin/internal/ui"
 	"io"
+	"os"
 
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
@@ -21,14 +24,47 @@ type Service struct{}
 
 var responseMap = make(map[string]string)
 
+var program = tea.NewProgram(
+	&ui.ServiceDeployModel{
+		ServiceView: ui.ServiceView{
+			Name: "Initiating service deployment",
+		},
+	},
+	tea.WithAltScreen(),
+)
+
 // DeployService deploys service
-func (e *Service) DeployService(ctx *context.Context, request *serviceProto.DeployServiceRequest) (serviceProto.ServiceService_DeployServiceClient, error) {
+func (e *Service) DeployService(ctx *context.Context, request *serviceProto.DeployServiceRequest) error {
 	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	client := serviceProto.NewServiceServiceClient(conn)
-	return client.DeployService(*requestCtx, request)
+	stream, err := client.DeployService(*requestCtx, request)
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		for {
+			response, err := stream.Recv()
+			if err != nil {
+				if errors.Is(err, context.Canceled) || err == io.EOF {
+					break
+				}
+				log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
+				program.Quit()
+			}
+			if response != nil {
+				program.Send(ui.GetServiceDeployModel(response))
+			}
+		}
+	}()
+
+	if _, err := program.Run(); err != nil {
+		os.Exit(1)
+	}
+	return err
 }
 
 func logFailedComponentMessagesOnce(response *serviceProto.ServiceResponse) {
