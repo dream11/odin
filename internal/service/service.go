@@ -5,7 +5,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/dream11/odin/internal/ui"
 	"io"
+	"os"
 
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
@@ -21,6 +24,15 @@ type Service struct{}
 
 var responseMap = make(map[string]string)
 
+var program = tea.NewProgram(
+	&ui.ServiceDeployModel{
+		ServiceView: ui.ServiceView{
+			Name: "Initiating service deployment",
+		},
+	},
+	tea.WithAltScreen(),
+)
+
 // DeployService deploys service
 func (e *Service) DeployService(ctx *context.Context, request *serviceProto.DeployServiceRequest) error {
 	conn, requestCtx, err := grpcClient(ctx)
@@ -33,35 +45,25 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 		return err
 	}
 
-	log.Info("Deploying Service...")
-	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
-	if err != nil {
-		return err
-	}
-
-	var message string
-	for {
-		response, err := stream.Recv()
-		spinnerInstance.Stop()
-		if err != nil {
-			if errors.Is(err, context.Canceled) || err == io.EOF {
-				break
+	go func() {
+		for {
+			response, err := stream.Recv()
+			if err != nil {
+				if errors.Is(err, context.Canceled) || err == io.EOF {
+					break
+				}
+				log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
+				program.Quit()
 			}
-			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
-			return err
+			if response != nil {
+				program.Send(ui.GetServiceDeployModel(response, (*requestCtx).Value(constant.TraceIDKey).(string)))
+			}
 		}
+	}()
 
-		if response != nil {
-
-			message = util.GenerateResponseMessage(response.GetServiceResponse())
-			logFailedComponentMessagesOnce(response.GetServiceResponse())
-			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
-			spinnerInstance.Start()
-		}
+	if _, err := program.Run(); err != nil {
+		os.Exit(1)
 	}
-
-	log.Info(message)
 	return err
 }
 
