@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"google.golang.org/grpc/status"
 	"os"
 	"regexp"
 
@@ -13,6 +14,11 @@ import (
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+)
+
+const (
+	Red   = "\033[31m" // Red color for errors
+	Reset = "\033[0m"  // Reset to default
 )
 
 var env string
@@ -92,13 +98,13 @@ func deployUsingFiles(ctx context.Context) {
 	})
 
 	if err != nil {
-		log.Fatal("Failed to deploy service ", err)
+		handleDeployServiceError(err)
 	}
 }
 
 func deployUsingServiceNameAndVersion(ctx context.Context) {
 	log.Info("deploying service :", serviceName, ":", serviceVersion, " in env :", env)
-	err := serviceClient.DeployReleasedService(&ctx, &serviceProto.DeployReleasedServiceRequest{
+	_ = serviceClient.DeployReleasedService(&ctx, &serviceProto.DeployReleasedServiceRequest{
 		EnvName: env,
 		ServiceIdentifier: &serviceProto.ServiceIdentifier{
 			ServiceName:    serviceName,
@@ -106,9 +112,6 @@ func deployUsingServiceNameAndVersion(ctx context.Context) {
 		},
 	})
 
-	if err != nil {
-		log.Fatal("Failed to deploy service ", err)
-	}
 }
 
 func deployUsingServiceNameAndLabels(ctx context.Context) {
@@ -122,7 +125,7 @@ func deployUsingServiceNameAndLabels(ctx context.Context) {
 	})
 
 	if err != nil {
-		log.Fatal("Failed to deploy service ", err)
+		handleDeployServiceError(err)
 	}
 }
 
@@ -136,4 +139,12 @@ func validateLabels(labels string) error {
 		return errors.New("labels must be in format key1=value1,key2=value2")
 	}
 	return nil
+}
+
+func handleDeployServiceError(err error) {
+	if st, ok := status.FromError(err); ok {
+		log.Fatalf("%s %s: %s %s", Red, st.Message(), Reset)
+	} else {
+		log.Fatalf("%s %s: %s %v", Red, err, Reset)
+	}
 }

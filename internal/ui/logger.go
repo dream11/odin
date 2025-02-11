@@ -1,20 +1,27 @@
 package ui
 
-import (
-	"github.com/dream11/odin/pkg/constant"
-	"github.com/dream11/odin/pkg/util"
-	log "github.com/sirupsen/logrus"
-)
+import log "github.com/sirupsen/logrus"
+
+type CustomTextFormatter struct {
+	BaseFormatter *log.TextFormatter
+}
+
+func (f *CustomTextFormatter) Format(entry *log.Entry) ([]byte, error) {
+	// Return only the log message, ignoring the log level and timestamp
+	return []byte(entry.Message + "\n"), nil
+}
 
 func init() {
-
-	log.SetFormatter(&log.TextFormatter{
-		ForceColors:     true,
-		DisableColors:   false,
-		TimestampFormat: "2006-01-02 15:04:05", // Custom format
-		FullTimestamp:   true,
+	log.SetFormatter(&CustomTextFormatter{
+		BaseFormatter: &log.TextFormatter{
+			ForceColors:            true,
+			DisableColors:          false,
+			DisableTimestamp:       true,
+			DisableLevelTruncation: true,
+		},
 	})
-	level, err := log.ParseLevel(util.GetEnvOrDefault(constant.LogLevelKey, "info"))
+
+	level, err := log.ParseLevel("info")
 	if err != nil {
 		log.Warning("Invalid log level. Allowed values are: panic, fatal, error, warn, info, debug, trace")
 		log.SetLevel(log.InfoLevel)
