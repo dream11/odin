@@ -98,15 +98,15 @@ if [ -f "$CONFIG_FILE" ]; then
   ODIN_SECRET_ACCESS_KEY=$(awk '/secret_access_key:/ {print $2}' $CONFIG_FILE)
 else
   echo "Config file not found. Prompting user for keys."
-  read -p "Enter ODIN_ACCESS_KEY: " ODIN_ACCESS_KEY
-  read -p "Enter ODIN_SECRET_ACCESS_KEY: " ODIN_SECRET_ACCESS_KEY
+  read -p "Enter ODIN_ACCESS_KEY: " ODIN_ACCESS_KEY </dev/tty
+  read -p "Enter ODIN_SECRET_ACCESS_KEY: " ODIN_SECRET_ACCESS_KEY </dev/tty
 fi
 
 # If keys are empty or file doesn't exist, prompt user for input
 if [ -z "${ODIN_ACCESS_KEY:-}" ] || [ -z "${ODIN_SECRET_ACCESS_KEY:-}" ]; then
   echo "Access keys are missing"
-  read -p "Enter ODIN_ACCESS_KEY: " ODIN_ACCESS_KEY
-  read -p "Enter ODIN_SECRET_ACCESS_KEY: " ODIN_SECRET_ACCESS_KEY
+  read -p "Enter ODIN_ACCESS_KEY: " ODIN_ACCESS_KEY </dev/tty
+  read -p "Enter ODIN_SECRET_ACCESS_KEY: " ODIN_SECRET_ACCESS_KEY </dev/tty
 fi
 
 # Backup existing configuration if it exists
