@@ -1,130 +1,70 @@
 #!/bin/bash
 set -e
 
-# Revert function to restore old odin binary
-revert_odin() {
-  echo "Reverting to old odin binary..."
+# Check if Python is installed
+if ! command -v python &>/dev/null; then
 
-  # Check if there is a backup (old-odin) somewhere
-  if [ -f /usr/local/bin/old-odin ]; then
-    # If backup exists, remove any current odin binary
-    if [ -f /usr/local/bin/odin ]; then
-      sudo rm -f /usr/local/bin/odin
-      echo "Removed existing odin binary from /usr/local/bin"
+    if command -v python3 &>/dev/null; then
+      path=$(command -v python3)
+      sudo ln -s "$path" /usr/local/bin/python
+    else
+      echo "Python is not installed. Installing via Homebrew..."
+
+      # Check if Homebrew is installed
+      if ! command -v brew &>/dev/null; then
+          echo "Homebrew is not installed. Please install Homebrew first."
+          exit 1
+      fi
+      # Install Python using Homebrew
+      brew install python
     fi
-
-    if [ -f /opt/homebrew/bin/odin ]; then
-      sudo rm -f /opt/homebrew/bin/odin
-      echo "Removed existing odin binary from /opt/homebrew/bin"
+    # Verify installation
+    if command -v python &>/dev/null; then
+        echo "Python successfully installed!"
+    else
+        echo "Python installation failed."
+        exit 1
     fi
-
-    # Restore the old-odin backup
-    sudo mv /usr/local/bin/old-odin /usr/local/bin/odin
-    chmod 755 /usr/local/bin/odin
-    echo "Reverted to the old odin binary successfully from /usr/local/bin, configure again to start using odin"
-  
-  elif [ -f /opt/homebrew/bin/old-odin ]; then
-    # If backup exists, remove any current odin binary
-    if [ -f /opt/homebrew/bin/odin ]; then
-      sudo rm -f /opt/homebrew/bin/odin
-      echo "Removed existing odin binary from /opt/homebrew/bin"
-    fi
-
-    if [ -f /usr/local/bin/odin ]; then
-      sudo rm -f /usr/local/bin/odin
-      echo "Removed existing odin binary from /usr/local/bin"
-    fi
-
-    # Restore the old-odin backup
-    sudo mv /opt/homebrew/bin/old-odin /opt/homebrew/bin/odin
-    chmod 755 /opt/homebrew/bin/odin
-    echo "Reverted to the old odin binary successfully from /opt/homebrew/bin, configure again to start using odin"
-  
-  else
-    echo "No backup odin binary found to revert to."
-    exit 1
-  fi
-}
-
-
-
-# Check for revert flag
-if [ "$1" == "revert" ]; then
-  revert_odin
-  exit 0
 fi
 
-
 # Fetching the odin binary from GitHub
-curl -L -o ./odin https://raw.githubusercontent.com/dream11/odin/chore/add-binary/odin
+curl -L -o ./odin https://raw.githubusercontent.com/dream11/odin/update/mig-script/odin
 if [ $? -ne 0 ]; then
   echo "Failed to download the odin binary. Exiting."
   exit 1
 fi
 chmod +x ./odin
+sudo mv ./odin /usr/local/bin/odin-new
+touch ~/.odin/config.toml
 
-echo "Downloaded the odin binary successfully."
+# Define the function block
+ODIN_FUNCTION='
+#####ODIN_SWITCH_BEGIN#####
+odin() {
+    curl --silent -o ~/.odin/switch.py https://raw.githubusercontent.com/dream11/odin/update/mig-script/switch.py
+    if [ $? -ne 0 ]; then
+      echo "Failed to download the switch script. Exiting."
+      exit 1
+    fi
+    python ~/.odin/switch.py "$@"
+}
+#####ODIN_SWITCH_END#####
+'
 
+add_odin_to_shell_config() {
+    local shell_config="$1"
 
-if [ -f /usr/local/bin/odin ] && [ ! -f /usr/local/bin/old-odin ] && [ ! -f /opt/homebrew/bin/old-odin ]; then
-  echo "Existing odin binary found, moving it to backup."
-  sudo mv /usr/local/bin/odin /usr/local/bin/old-odin
-fi
+    if [[ -f "$shell_config" ]]; then
+        cp "$shell_config" "$shell_config".bak && sed '/#####ODIN_SWITCH_BEGIN#####/,/#####ODIN_SWITCH_END#####/d' "$shell_config".bak > "$shell_config"
+        echo "$ODIN_FUNCTION" >> "$shell_config"
+    fi
+}
 
-# Handle /opt/homebrew/bin case if it exists
-if [ -f /opt/homebrew/bin/odin ] && [ ! -f /opt/homebrew/bin/old-odin ] && [ ! -f /usr/local/bin/old-odin ]; then
-  echo "Homebrew odin binary found, moving it to backup."
-  sudo mv /opt/homebrew/bin/odin /opt/homebrew/bin/old-odin
-fi
-
-sudo mv ./odin /usr/local/bin/
-chmod 755 /usr/local/bin/odin
-
+# Add to both ~/.zshrc and ~/.bashrc
+add_odin_to_shell_config "$HOME/.zshrc"
+add_odin_to_shell_config "$HOME/.bashrc"
+add_odin_to_shell_config "$HOME/.bash_profile"
 
 # Enable app verification and remove quarantine attributes
 sudo spctl --master-enable
-xattr -dr com.apple.quarantine /usr/local/bin/odin
-
-# Verify the new odin installation
-echo "New odin installed, running odin version to verify [Should output 2.0.0]"
-odin version || { echo "Odin version verification failed."; exit 1; }
-
-
-# Read access and secret keys from ~/.odin/config if they exist
-CONFIG_FILE=~/.odin/config
-if [ -f "$CONFIG_FILE" ]; then
-  echo "Reading access and secret keys from config."
-  ODIN_ACCESS_KEY=$(awk '/access_key:/ && !/secret_access_key:/ {print $2}' $CONFIG_FILE)
-  ODIN_SECRET_ACCESS_KEY=$(awk '/secret_access_key:/ {print $2}' $CONFIG_FILE)
-else
-  echo "Config file not found. Prompting user for keys."
-  read -p "Enter ODIN_ACCESS_KEY: " ODIN_ACCESS_KEY </dev/tty
-  read -p "Enter ODIN_SECRET_ACCESS_KEY: " ODIN_SECRET_ACCESS_KEY </dev/tty
-fi
-
-# If keys are empty or file doesn't exist, prompt user for input
-if [ -z "${ODIN_ACCESS_KEY:-}" ] || [ -z "${ODIN_SECRET_ACCESS_KEY:-}" ]; then
-  echo "Access keys are missing"
-  read -p "Enter ODIN_ACCESS_KEY: " ODIN_ACCESS_KEY </dev/tty
-  read -p "Enter ODIN_SECRET_ACCESS_KEY: " ODIN_SECRET_ACCESS_KEY </dev/tty
-fi
-
-# Backup existing configuration if it exists
-if [ -f ~/.odin/config ]; then
-  echo "Existing odin config found, creating a backup."
-  mv ~/.odin/config ~/.odin/old-config
-fi
-
-# Set environment variables
-export ODIN_ACCESS_KEY=${ODIN_ACCESS_KEY}
-export ODIN_SECRET_ACCESS_KEY=${ODIN_SECRET_ACCESS_KEY}
-export ODIN_BACKEND_ADDRESS="odin-deployer.dss-platform.private:80"
-
-# Configure odin
-odin configure
-if [ $? -eq 0 ]; then
-  echo "Odin configured successfully."
-else
-  echo "Failed to configure odin."
-  exit 1
-fi
+xattr -dr com.apple.quarantine /usr/local/bin/odin-new
