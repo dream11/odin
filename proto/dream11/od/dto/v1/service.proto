@@ -25,7 +25,7 @@ message ServiceDefinition {
 message ServiceIdentifier {
   string name = 1;
   string version = 2;
-  string tags = 3;
+  string labels = 3;
 }
 
 message ServiceSet {

@@ -117,7 +117,7 @@ func deployUsingServiceNameAndLabels(ctx context.Context) {
 		EnvName: env,
 		ServiceIdentifier: &serviceProto.ServiceIdentifier{
 			ServiceName: serviceName,
-			Tags:        labels,
+			Labels:      labels,
 		},
 	})
 

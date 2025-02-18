@@ -40,7 +40,7 @@ message DeployReleasedServiceResponse {
 message ServiceIdentifier {
   string service_name = 1;
   string service_version = 2;
-  string tags = 3;
+  string labels = 3;
   bool force_flag = 4;
 }
 

@@ -358,7 +358,7 @@ func (e *Service) ConvertToDeployServiceSetRequest(serviceSet *serviceDto.Servic
 		services = append(services, &serviceProto.ServiceIdentifier{
 			ServiceName:    service.Name,
 			ServiceVersion: service.Version,
-			Tags:           service.Tags,
+			Labels:         service.Labels,
 			ForceFlag:      true,
 		})
 	}
