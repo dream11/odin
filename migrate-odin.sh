@@ -57,6 +57,3 @@ add_odin_to_shell_config "$HOME/.zshrc"
 add_odin_to_shell_config "$HOME/.bashrc"
 #add_odin_to_shell_config "$HOME/.bash_profile"
 
-# Enable app verification and remove quarantine attributes
-sudo spctl --master-enable
-xattr -dr com.apple.quarantine /usr/local/bin/odin-new

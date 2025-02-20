@@ -14,7 +14,8 @@ except ImportError:
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
-INSTALL_DIR = "/usr/local/bin"
+INSTALL_DIR = os.path.expanduser("~/.odin")
+OLD_ODIN = "/usr/local/bin/odin"
 
 
 def find_odin_file(directory=INSTALL_DIR, prefix="odin-"):
@@ -22,10 +23,9 @@ def find_odin_file(directory=INSTALL_DIR, prefix="odin-"):
     files = glob.glob(pattern)
     if files:
         return files[0]
-    return INSTALL_DIR + "/odin"
+    return OLD_ODIN
 
 
-OLD_ODIN = INSTALL_DIR + "/odin"
 NEW_ODIN = find_odin_file()
 
 branch = "update/mig-script"
@@ -72,9 +72,8 @@ def set_tokens(config_file):
 
 
 def get_current_bin_version():
-    directory = '/usr/local/bin'
     try:
-        files = os.listdir(directory)
+        files = os.listdir(INSTALL_DIR)
         for file in files:
             if file.startswith('odin-'):
                 return file.split("-")[1]
@@ -98,7 +97,6 @@ def update_binary():
             latest_version = filtered_files[0].split("-")[1]
 
             current_version = get_current_bin_version()
-            NEW_ODIN = find_odin_file(INSTALL_DIR)
 
             if current_version is None or current_version < latest_version:
                 print(f"Updating odin binary to version {latest_version}")
@@ -106,11 +104,14 @@ def update_binary():
                 filepath = os.path.join(INSTALL_DIR, f"odin-{latest_version}")
                 urlretrieve(url, filename=filepath)
                 os.chmod(filepath, 0o755)
+                # Enable app verification and remove quarantine attributes
+                subprocess.call(["sudo", "spctl", "--master-enable"])
+                subprocess.call(["xattr", "-dr", "com.apple.quarantine", filepath])
         else:
             print(f"Error: Unable to fetch files (Status Code: {response.status_code})")
             return []
     except Exception as e:
-        print("Error: Unable to fetch files")
+        print(f"Error: Unable to fetch files: {e}")
 
 
 def execute_new_odin():
@@ -279,7 +280,7 @@ def main():
     if is_dreampay():
         execute_old_odin()
 
-    if "env" not in sys.argv:
+    if "env" not in sys.argv and "--env" not in sys.argv:
         if "list" in sys.argv:
             if "service" in sys.argv:
                 execute_new_odin()
@@ -294,25 +295,26 @@ def main():
 
         if "release" in sys.argv:
             execute_new_odin()
-
-    # If env is present        
+    # If env or --env is present
     else:
-        if "--name" not in sys.argv and "list" in sys.argv:
-            # TODO: handle list env
+        if "list" in sys.argv and "env" in sys.argv:
             old_env_list = subprocess.check_output([OLD_ODIN] + sys.argv[1:])
             new_env_list = subprocess.check_output([NEW_ODIN] + sys.argv[1:])
             display_all_envs(old_env_list, new_env_list)
             return
 
-        env_name = sys.argv[sys.argv.index("--name") + 1]
-        if "--service" in sys.argv:
+        if "--env" in sys.argv:
+            env_name = sys.argv[sys.argv.index("--env") + 1]
+            service_name = sys.argv[sys.argv.index("--name") + 1]
+        else:
+            env_name = sys.argv[sys.argv.index("--name") + 1]
             service_name = sys.argv[sys.argv.index("--service") + 1]
+
+        if check_env_exists(env_name):
             if check_service_migrated(service_name, env_name):
                 execute_new_odin()
             else:
                 execute_old_odin()
-        if check_env_exists(env_name):
-            execute_old_odin()
         else:
             execute_new_odin()
 
