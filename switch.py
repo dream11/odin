@@ -308,7 +308,8 @@ def main():
             service_name = sys.argv[sys.argv.index("--name") + 1]
         else:
             env_name = sys.argv[sys.argv.index("--name") + 1]
-            service_name = sys.argv[sys.argv.index("--service") + 1]
+            if "--service" in sys.argv:
+                service_name = sys.argv[sys.argv.index("--service") + 1]
 
         if check_env_exists(env_name):
             if check_service_migrated(service_name, env_name):
