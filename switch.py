@@ -1,18 +1,34 @@
+import glob
 import os
 import re
+import ssl
 import subprocess
 import sys
 import json
 from collections import defaultdict
 
 try:
-    from urllib.request import Request, urlopen  # Python 3
+    from urllib.request import Request, urlopen, urlretrieve  # Python 3
 except ImportError:
-    from urllib2 import Request, urlopen  # Python 2
+    from urllib2 import Request, urlopen, urlretrieve  # Python 2
 
-OLD_ODIN = "/usr/local/bin/odin"
-NEW_ODIN = "/usr/local/bin/odin-new"
+ssl._create_default_https_context = ssl._create_unverified_context
 
+INSTALL_DIR = "/usr/local/bin"
+
+
+def find_odin_file(directory=INSTALL_DIR, prefix="odin-"):
+    pattern = os.path.join(directory, f"{prefix}*")  # Match files like 'odin-*'
+    files = glob.glob(pattern)
+    if files:
+        return files[0]
+    return INSTALL_DIR + "/odin"
+
+
+OLD_ODIN = INSTALL_DIR + "/odin"
+NEW_ODIN = find_odin_file()
+
+branch = "update/mig-script"
 odin_backend_address = "http://odin-backend.d11dev.com"
 odin_access_key = ''
 odin_secret_access_key = ''
@@ -53,6 +69,48 @@ def set_tokens(config_file):
         # Call configure for both old and new odin
         configure()
         exit(0)
+
+
+def get_current_bin_version():
+    directory = '/usr/local/bin'
+    try:
+        files = os.listdir(directory)
+        for file in files:
+            if file.startswith('odin-'):
+                return file.split("-")[1]
+    except FileNotFoundError:
+        return None
+
+
+def update_binary():
+    url = f"https://api.github.com/repos/dream11/odin/git/trees/{branch}?recursive=1"
+
+    req = Request(url)
+    req.add_header('Accept', 'application/json')
+    try:
+        response = urlopen(req).read()
+        if response:
+            data = json.loads(response)
+            files = [item["path"] for item in data.get("tree", []) if item["type"] == "blob"]
+
+            # Filter files that start with "odin"
+            filtered_files = [file for file in files if file.startswith('odin-')]
+            latest_version = filtered_files[0].split("-")[1]
+
+            current_version = get_current_bin_version()
+            NEW_ODIN = find_odin_file(INSTALL_DIR)
+
+            if current_version is None or current_version < latest_version:
+                print(f"Updating odin binary to version {latest_version}")
+                url = f"https://raw.githubusercontent.com/dream11/odin/{branch}/odin-{latest_version}"
+                filepath = os.path.join(INSTALL_DIR, f"odin-{latest_version}")
+                urlretrieve(url, filename=filepath)
+                os.chmod(filepath, 0o755)
+        else:
+            print(f"Error: Unable to fetch files (Status Code: {response.status_code})")
+            return []
+    except Exception as e:
+        print("Error: Unable to fetch files")
 
 
 def execute_new_odin():
@@ -260,5 +318,6 @@ def main():
 
 
 if __name__ == '__main__':
+    update_binary()
     set_tokens(os.path.expanduser("~/.odin/config"))
     main()

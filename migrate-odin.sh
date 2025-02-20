@@ -27,14 +27,6 @@ if ! command -v python &>/dev/null; then
     fi
 fi
 
-# Fetching the odin binary from GitHub
-curl -L -o ./odin https://raw.githubusercontent.com/dream11/odin/update/mig-script/odin
-if [ $? -ne 0 ]; then
-  echo "Failed to download the odin binary. Exiting."
-  exit 1
-fi
-chmod +x ./odin
-sudo mv ./odin /usr/local/bin/odin-new
 touch ~/.odin/config.toml
 
 # Define the function block
@@ -63,7 +55,7 @@ add_odin_to_shell_config() {
 # Add to both ~/.zshrc and ~/.bashrc
 add_odin_to_shell_config "$HOME/.zshrc"
 add_odin_to_shell_config "$HOME/.bashrc"
-add_odin_to_shell_config "$HOME/.bash_profile"
+#add_odin_to_shell_config "$HOME/.bash_profile"
 
 # Enable app verification and remove quarantine attributes
 sudo spctl --master-enable
