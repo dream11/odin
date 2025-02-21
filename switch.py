@@ -173,6 +173,14 @@ def check_service_migrated(service_name, env_name):
     except Exception:
         return False
 
+def get_service_name_from_file(file_path):
+    try:
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+            return data.get("name")
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"Error reading file {file_path}: {e}")
+        sys.exit(1)
 
 def display_all_envs(old_env_list, new_env_list):
     envs = []
@@ -305,7 +313,13 @@ def main():
 
         if "--env" in sys.argv:
             env_name = sys.argv[sys.argv.index("--env") + 1]
-            service_name = sys.argv[sys.argv.index("--name") + 1]
+            if "--file" in sys.argv:
+                file_index = sys.argv.index("--file") + 1
+                file_path = sys.argv[file_index]
+                service_name = get_service_name_from_file(file_path)
+            else:
+                if "--name" in sys.argv:
+                    service_name = sys.argv[sys.argv.index("--name") + 1]
         else:
             env_name = sys.argv[sys.argv.index("--name") + 1]
             if "--service" in sys.argv:
