@@ -5,6 +5,7 @@ import ssl
 import subprocess
 import sys
 import json
+import zipfile
 
 from collections import defaultdict
 
