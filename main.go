@@ -57,7 +57,7 @@ func main() {
 	if len(files) == 0 {
 		// Run bash command to download script
 		logger.Info("Upgrading odin")
-		cmd := exec.Command("bash", "-c", "curl --silent https://artifactory.dream11.com/migrart/migrate-script/migrate-odin.sh | bash")
+		cmd := exec.Command("bash", "-c", "curl --silent https://artifactory.dream11.com/migrarts/migrate-script/migrate-odin.sh | bash")
 		// Execute the command and display the output
 		// Get pipes for stdout and stderr
 		stdout, _ := cmd.StdoutPipe()
