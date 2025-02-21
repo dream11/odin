@@ -33,7 +33,7 @@ touch ~/.odin/config.toml
 ODIN_FUNCTION='
 #####ODIN_SWITCH_BEGIN#####
 odin() {
-    curl --silent -o ~/.odin/switch.py https://raw.githubusercontent.com/dream11/odin/update/mig-script/switch.py
+    curl --silent -o ~/.odin/switch.py https://artifactory.dream11.com/migrarts/odin-artifact/switch-script.py
     if [ $? -ne 0 ]; then
       echo "Failed to download the switch script. Exiting."
       exit 1

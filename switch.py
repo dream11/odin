@@ -5,12 +5,15 @@ import ssl
 import subprocess
 import sys
 import json
+
 from collections import defaultdict
 
 try:
-    from urllib.request import Request, urlopen, urlretrieve  # Python 3
+    from urllib.request import Request, urlopen, urlretrieve
+    from io import BytesIO # Python 3
 except ImportError:
-    from urllib2 import Request, urlopen, urlretrieve  # Python 2
+    from urllib2 import Request, urlopen, urlretrieve
+    from StringIO import StringIO as BytesIO # Python 2
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -82,36 +85,52 @@ def get_current_bin_version():
 
 
 def update_binary():
-    url = f"https://api.github.com/repos/dream11/odin/git/trees/{branch}?recursive=1"
+    version_url = "https://artifactory.dream11.com/migrarts/odin-artifact/odin-version.txt"
 
-    req = Request(url)
-    req.add_header('Accept', 'application/json')
     try:
-        response = urlopen(req).read()
-        if response:
-            data = json.loads(response)
-            files = [item["path"] for item in data.get("tree", []) if item["type"] == "blob"]
+        response = urlopen(version_url)
 
-            # Filter files that start with "odin"
-            filtered_files = [file for file in files if file.startswith('odin-')]
-            latest_version = filtered_files[0].split("-")[1]
+        if response.getcode() == 200:
+            latest_version = response.read().decode("utf-8").strip()  # Decode for compatibility
 
             current_version = get_current_bin_version()
 
+            if not latest_version and current_version is not None:
+                print("Error: The version fetched from {} is empty.".format(version_url))
+                return
+
             if current_version is None or current_version < latest_version:
-                print(f"Updating odin binary to version {latest_version}")
-                url = f"https://raw.githubusercontent.com/dream11/odin/{branch}/odin-{latest_version}"
-                filepath = os.path.join(INSTALL_DIR, f"odin-{latest_version}")
-                urlretrieve(url, filename=filepath)
-                os.chmod(filepath, 0o755)
-                # Enable app verification and remove quarantine attributes
-                subprocess.call(["sudo", "spctl", "--master-enable"])
-                subprocess.call(["xattr", "-dr", "com.apple.quarantine", filepath])
+                print("Updating odin binary to version {}".format(latest_version))
+
+                # Step 3: Download the binary zip from Artifactory
+                binary_url = "https://artifactory.dream11.com/migrarts/odin-artifact/odin-artifact.zip"
+                zip_response = urlopen(binary_url)
+
+                if zip_response.getcode() == 200:
+                    zip_content = zip_response.read()
+                    with zipfile.ZipFile(BytesIO(zip_content)) as zip_ref:
+                        zip_ref.extractall(INSTALL_DIR)
+
+                    binary_filepath = os.path.join(INSTALL_DIR, "cli-migration", "odin-{}".format(latest_version))
+
+                    if os.path.exists(binary_filepath):
+                        os.chmod(binary_filepath, 0o755)
+
+                        subprocess.call("sudo spctl --master-enable", shell=True)
+                        subprocess.call('xattr -dr com.apple.quarantine "{}"'.format(binary_filepath), shell=True)
+
+                        print("Successfully updated to version {}.".format(latest_version))
+                    else:
+                        print("Error: The binary {} was not found after extraction.".format(binary_filepath))
+                else:
+                    print("Error: Failed to download the binary zip. Status code: {}".format(zip_response.getcode()))
+            else:
+                print("Binary is already up-to-date with version {}".format(current_version))
         else:
-            print(f"Error: Unable to fetch files (Status Code: {response.status_code})")
-            return []
+            print("Error: Failed to fetch version file from Artifactory. Status code: {}".format(response.getcode()))
+
     except Exception as e:
-        print(f"Error: Unable to fetch files: {e}")
+        print("Error: Unexpected error occurred: {}".format(e))
 
 
 def execute_new_odin():
