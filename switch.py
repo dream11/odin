@@ -6,6 +6,7 @@ import subprocess
 import sys
 import json
 import zipfile
+import shutil
 
 from collections import defaultdict
 
@@ -112,13 +113,18 @@ def update_binary():
                     with zipfile.ZipFile(BytesIO(zip_content)) as zip_ref:
                         zip_ref.extractall(INSTALL_DIR)
 
-                    binary_filepath = os.path.join(INSTALL_DIR, "cli-migration", "odin-{}".format(latest_version))
+                    extracted_folder = os.path.join(INSTALL_DIR, "cli-migration")
+                    binary_filepath = os.path.join(extracted_folder, "odin-{}".format(latest_version))
+                    final_binary_path = os.path.join(INSTALL_DIR, "odin-{}".format(latest_version))
 
                     if os.path.exists(binary_filepath):
-                        os.chmod(binary_filepath, 0o755)
+                        os.rename(binary_filepath, final_binary_path)
+                        os.chmod(final_binary_path, 0o755)
+
+                        shutil.rmtree(extracted_folder, ignore_errors=True)
 
                         subprocess.call("sudo spctl --master-enable", shell=True)
-                        subprocess.call('xattr -dr com.apple.quarantine "{}"'.format(binary_filepath), shell=True)
+                        subprocess.call('xattr -dr com.apple.quarantine "{}"'.format(final_binary_path), shell=True)
 
                         print("Successfully updated to version {}.".format(latest_version))
                     else:
@@ -126,7 +132,7 @@ def update_binary():
                 else:
                     print("Error: Failed to download the binary zip. Status code: {}".format(zip_response.getcode()))
             else:
-                print("Binary is already up-to-date with version {}".format(current_version))
+                print("Binary up-to-date with version {}".format(current_version))
         else:
             print("Error: Failed to fetch version file from Artifactory. Status code: {}".format(response.getcode()))
 
