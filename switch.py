@@ -7,6 +7,7 @@ import sys
 import json
 import zipfile
 import shutil
+import shlex
 
 from collections import defaultdict
 
@@ -144,6 +145,9 @@ def execute_new_odin():
     subprocess.call([NEW_ODIN] + sys.argv[1:])
     exit(0)
 
+def execute_new_odin_with_custom_cmd(custom_cmd):
+    arg_list = shlex.split(custom_cmd)
+    subprocess.call([NEW_ODIN] + arg_list)
 
 def execute_old_odin():
     subprocess.call([OLD_ODIN] + sys.argv[1:])
@@ -331,11 +335,30 @@ def main():
             execute_new_odin()
     # If env or --env is present
     else:
+        if "set" in sys.argv and "env" in sys.argv:
+            env_name = sys.argv[sys.argv.index("--name") + 1]
+            custom_cmd = "set env " + env_name
+            execute_new_odin_with_custom_cmd(custom_cmd)
+            execute_old_odin()
+            return
+
         if "list" in sys.argv and "env" in sys.argv:
             old_env_list = subprocess.check_output([OLD_ODIN] + sys.argv[1:])
             new_env_list = subprocess.check_output([NEW_ODIN] + sys.argv[1:])
             display_all_envs(old_env_list, new_env_list)
             return
+
+        if "describe" in sys.argv and "env" in sys.argv:
+            if "--env" in sys.argv:
+                env_name = sys.argv[sys.argv.index("--env") + 1]
+            else:
+                env_name = sys.argv[sys.argv.index("--name") + 1]
+
+            # Check if env exists in old Odin first
+            if check_env_exists(env_name):
+                execute_old_odin()
+            else:
+                execute_new_odin()
 
         if "--env" in sys.argv:
             env_name = sys.argv[sys.argv.index("--env") + 1]
