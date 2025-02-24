@@ -148,6 +148,7 @@ def execute_new_odin():
 def execute_new_odin_with_custom_cmd(custom_cmd):
     arg_list = shlex.split(custom_cmd)
     subprocess.call([NEW_ODIN] + arg_list)
+    exit(0)
 
 def execute_old_odin():
     subprocess.call([OLD_ODIN] + sys.argv[1:])
@@ -344,8 +345,10 @@ def main():
         if "set" in sys.argv and "env" in sys.argv:
             env_name = sys.argv[sys.argv.index("--name") + 1]
             custom_cmd = "set env " + env_name
-            execute_new_odin_with_custom_cmd(custom_cmd)
-            execute_old_odin()
+            if check_env_exists_in_old_odin(env_name):
+                execute_old_odin()
+            else:
+                execute_new_odin_with_custom_cmd(custom_cmd)
             return
 
         if "list" in sys.argv and "env" in sys.argv:
@@ -370,21 +373,6 @@ def main():
                 execute_old_odin()
             else:
                 execute_new_odin()
-
-        if "delete" in sys.argv:
-            env_name=""
-            if "--env" in sys.argv:
-                env_name = sys.argv[sys.argv.index("--env") + 1]
-            elif "--name" in sys.argv:
-                env_name = sys.argv[sys.argv.index("--name") + 1]
-            else:
-                execute_new_odin()
-
-            if check_env_exists_in_old_odin(env_name):
-                execute_old_odin()
-            else:
-                execute_new_odin()
-
 
         service_name = None
         if "--env" in sys.argv:
