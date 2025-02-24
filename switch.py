@@ -174,7 +174,7 @@ def configure():
         subprocess.call([NEW_ODIN, "configure"], env=new_odin_env)
 
 
-def check_env_exists(env_name):
+def check_env_exists_in_old_odin(env_name):
     global odin_access_token, odin_backend_address, envCheckUri
     url = odin_backend_address + envCheckUri + "/?env_name=" + env_name
     req = Request(url)
@@ -189,7 +189,7 @@ def check_env_exists(env_name):
         return False
 
 
-def check_service_migrated(service_name, env_name):
+def is_service_migrated_to_new_odin(service_name, env_name):
     global odin_access_token, odin_backend_address, checkMigrationStatusUri
     url = odin_backend_address + checkMigrationStatusUri + "/" + env_name + "/" + service_name
     req = Request(url)
@@ -199,7 +199,7 @@ def check_service_migrated(service_name, env_name):
     try:
         content = urlopen(req).read()
         content_json = json.loads(content)
-        return content_json.get("status") == 200
+        return content_json.get("migrationStatus") == "SUCCESS"
     except Exception:
         return False
 
@@ -355,7 +355,7 @@ def main():
                 env_name = sys.argv[sys.argv.index("--name") + 1]
 
             # Check if env exists in old Odin first
-            if check_env_exists(env_name):
+            if check_env_exists_in_old_odin(env_name):
                 execute_old_odin()
             else:
                 execute_new_odin()
@@ -366,16 +366,18 @@ def main():
                 file_index = sys.argv.index("--file") + 1
                 file_path = sys.argv[file_index]
                 service_name = get_service_name_from_file(file_path)
-            else:
-                if "--name" in sys.argv:
-                    service_name = sys.argv[sys.argv.index("--name") + 1]
+            elif "--service" in sys.argv:
+                # need to check for --service strictly before --name for operate
+                service_name = sys.argv[sys.argv.index("--service") + 1]
+            elif "--name" in sys.argv:
+                service_name = sys.argv[sys.argv.index("--name") + 1]
         else:
             env_name = sys.argv[sys.argv.index("--name") + 1]
             if "--service" in sys.argv:
                 service_name = sys.argv[sys.argv.index("--service") + 1]
 
-        if check_env_exists(env_name):
-            if check_service_migrated(service_name, env_name):
+        if check_env_exists_in_old_odin(env_name):
+            if is_service_migrated_to_new_odin(service_name, env_name):
                 execute_new_odin()
             else:
                 execute_old_odin()
