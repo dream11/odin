@@ -383,6 +383,7 @@ def main():
                 execute_new_odin()
 
 
+        service_name = None
         if "--env" in sys.argv:
             env_name = sys.argv[sys.argv.index("--env") + 1]
             if "--file" in sys.argv:
@@ -400,7 +401,7 @@ def main():
                 service_name = sys.argv[sys.argv.index("--service") + 1]
 
         if check_env_exists_in_old_odin(env_name):
-            if is_service_migrated_to_new_odin(service_name, env_name):
+            if service_name is not None and is_service_migrated_to_new_odin(service_name, env_name):
                 execute_new_odin()
             else:
                 execute_old_odin()
