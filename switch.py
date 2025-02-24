@@ -333,6 +333,10 @@ def main():
 
         if "release" in sys.argv:
             execute_new_odin()
+
+        else:
+            # if user has forgotten to provide env or --env in a legitimate command
+            execute_new_odin()
     # If env or --env is present
     else:
         if "set" in sys.argv and "env" in sys.argv:
