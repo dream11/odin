@@ -317,6 +317,9 @@ def main():
     if is_dreampay():
         execute_old_odin()
 
+    if "service-set" in sys.argv:
+        execute_old_odin()
+
     if "env" not in sys.argv and "--env" not in sys.argv:
         if "list" in sys.argv:
             if "service" in sys.argv:
