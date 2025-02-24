@@ -368,6 +368,21 @@ def main():
             else:
                 execute_new_odin()
 
+        if "delete" in sys.argv:
+            env_name=""
+            if "--env" in sys.argv:
+                env_name = sys.argv[sys.argv.index("--env") + 1]
+            elif "--name" in sys.argv:
+                env_name = sys.argv[sys.argv.index("--name") + 1]
+            else:
+                execute_new_odin()
+
+            if check_env_exists_in_old_odin(env_name):
+                execute_old_odin()
+            else:
+                execute_new_odin()
+
+
         if "--env" in sys.argv:
             env_name = sys.argv[sys.argv.index("--env") + 1]
             if "--file" in sys.argv:
