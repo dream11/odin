@@ -294,8 +294,7 @@ def main():
         OLD_ODIN = "/opt/homebrew/bin/odin"
 
     if len(sys.argv) == 1:
-        print("No arguments provided")
-        sys.exit(1)
+        execute_new_odin()
 
     if len(sys.argv) == 2 and "--version" in sys.argv:
         execute_old_odin()
@@ -347,16 +346,21 @@ def main():
             return
 
         if "list" in sys.argv and "env" in sys.argv:
-            old_env_list = subprocess.check_output([OLD_ODIN] + sys.argv[1:])
-            new_env_list = subprocess.check_output([NEW_ODIN] + sys.argv[1:])
-            display_all_envs(old_env_list, new_env_list)
-            return
+            if "--help" in sys.argv:
+                execute_new_odin()
+            else:
+                old_env_list = subprocess.check_output([OLD_ODIN] + sys.argv[1:])
+                new_env_list = subprocess.check_output([NEW_ODIN] + sys.argv[1:])
+                display_all_envs(old_env_list, new_env_list)
+                return
 
         if "describe" in sys.argv and "env" in sys.argv:
             if "--env" in sys.argv:
                 env_name = sys.argv[sys.argv.index("--env") + 1]
-            else:
+            elif "--name" in sys.argv:
                 env_name = sys.argv[sys.argv.index("--name") + 1]
+            else:
+                execute_new_odin()
 
             # Check if env exists in old Odin first
             if check_env_exists_in_old_odin(env_name):
