@@ -12,6 +12,7 @@ import (
 	"github.com/dream11/odin/pkg/table"
 	fileUtil "github.com/dream11/odin/pkg/util"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
+	envProto "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
 	"github.com/fatih/color"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -25,6 +26,7 @@ var operation string
 var options string
 var file string
 var componentClient = service.Component{}
+var envTypeClient = service.Environment{}
 var operateComponentCmd = &cobra.Command{
 	Use:   "component",
 	Short: "operate component",
@@ -159,27 +161,51 @@ func execute(cmd *cobra.Command) {
 		}
 
 		var message string
-		if oldComponentValues == nil || len(oldComponentValues.Fields) == 0 {
-			message = "\nNo changes from previous deployment. Do you want to continue? [y/n]:"
-		} else {
-			message = "\nDo you want to proceed with the above command? [y/n]:"
-		}
-		allowedInputsSlice := []string{"y", "n"}
-		allowedInputs := make(map[string]struct{}, len(allowedInputsSlice))
-		for _, input := range allowedInputsSlice {
-			allowedInputs[input] = struct{}{}
-		}
-
-		inputHandler := ui.Input{}
-		val, err := inputHandler.AskWithConstraints(message, allowedInputs)
-
+		envTypeResp, err := envTypeClient.StrictEnvironment(&ctx, &envProto.StrictEnvironmentRequest{
+			EnvName: env,
+		})
 		if err != nil {
 			log.Fatal(err.Error())
-		}
-
-		if val != "y" {
-			log.Info("Aborting the operation")
 			return
+		}
+		if envTypeResp.IsEnvStrict {
+			consentMessage := fmt.Sprintf("\nYou are executing the above command on a restricted environment. Are you sure? Enter \033[1m%s\033[0m to continue:", env)
+			inputHandler := ui.Input{}
+			val, err := inputHandler.Ask(consentMessage)
+
+			if err != nil {
+				log.Fatal(err.Error())
+				return
+			}
+
+			if val != env {
+				log.Fatal("Aborting the operation")
+				return
+			}
+		} else {
+
+			if oldComponentValues == nil || len(oldComponentValues.Fields) == 0 {
+				message = "\nNo changes from previous deployment. Do you want to continue? [y/n]:"
+			} else {
+				message = "\nDo you want to proceed with the above command? [y/n]:"
+			}
+			allowedInputsSlice := []string{"y", "n"}
+			allowedInputs := make(map[string]struct{}, len(allowedInputsSlice))
+			for _, input := range allowedInputsSlice {
+				allowedInputs[input] = struct{}{}
+			}
+
+			inputHandler := ui.Input{}
+			val, err := inputHandler.AskWithConstraints(message, allowedInputs)
+
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
+			if val != "y" {
+				log.Info("Aborting the operation")
+				return
+			}
 		}
 	}
 	err = componentClient.OperateComponent(&ctx, &serviceProto.OperateServiceRequest{

@@ -13,6 +13,7 @@ service EnvironmentService {
   rpc CreateEnvironment(CreateEnvironmentRequest) returns (stream CreateEnvironmentResponse) {}
   rpc DeleteEnvironment(DeleteEnvironmentRequest) returns (stream DeleteEnvironmentResponse) {}
   rpc StatusEnvironment(StatusEnvironmentRequest) returns (stream StatusEnvironmentResponse) {}
+  rpc StrictEnvironment(StrictEnvironmentRequest) returns (StrictEnvironmentResponse) {}
 }
 
 message StatusEnvironmentRequest {
@@ -80,4 +81,12 @@ message DeleteEnvironmentRequest {
 
 message DeleteEnvironmentResponse {
   string message = 1;
+}
+
+message StrictEnvironmentRequest {
+  string env_name = 1;
+}
+
+message StrictEnvironmentResponse {
+  bool is_env_strict = 1;
 }
