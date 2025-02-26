@@ -41,7 +41,9 @@ func executeDeployServiceSet(cmd *cobra.Command) {
 	env = config.EnsureEnvPresent(env)
 
 	ctx := cmd.Context()
-
+	if provisioningFile == "" {
+		log.Fatal("Please provide --file.")
+	}
 	var deployServiceSetRequestDTO serviceDto.ServiceSet
 	var deployServiceSetRequest serviceProto.DeployServiceSetRequest
 
