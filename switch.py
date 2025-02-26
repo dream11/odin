@@ -145,8 +145,8 @@ def execute_new_odin():
     subprocess.call([NEW_ODIN] + sys.argv[1:])
     exit(0)
 
-def execute_new_odin_with_custom_cmd(custom_cmd):
-    arg_list = shlex.split(custom_cmd)
+
+def execute_new_odin_with_custom_cmd(arg_list):
     subprocess.call([NEW_ODIN] + arg_list)
     exit(0)
 
@@ -288,6 +288,54 @@ def display_all_envs(old_env_list, new_env_list):
         print(header_format.format(name, details["team"], details["created_by"], details["env_type"], details["state"], details["accounts"]))
 
 
+def transform_service_set_file(content):
+    try:
+        data = json.loads(content)
+    except ValueError:
+        print("Error: Not a valid JSON file")
+        sys.exit(1)
+
+    if not isinstance(data, dict) or 'services' not in data or not isinstance(data['services'], list):
+        print("Error: JSON file must contain a 'services' array")
+        sys.exit(1)
+
+    # Transform each service in the array
+    for service in data['services']:
+        if isinstance(service, dict) and 'version' in service:
+            version = service['version']
+
+            if version == 'stable':
+                del service['version']
+                service['labels'] = 'isStable=true'
+
+            elif version == 'dev-stable':
+                del service['version']
+                service['labels'] = 'isDevStable=true'
+
+            elif version == 'load-stable':
+                del service['version']
+                service['labels'] = 'isLoadStable=true'
+
+    return json.dumps(data, indent=2)
+
+def create_new_service_set_and_trigger_odin(original_file):
+    if os.path.exists(original_file):
+        with open(original_file, "r") as f:
+            content = f.read()
+
+        transformed_content = transform_service_set_file(content)
+        new_directory = os.path.expanduser("~/.odin/tmp/service-sets")
+        os.makedirs(new_directory, exist_ok=True)
+        base_file = os.path.basename(original_file)
+        new_filename = os.path.join(new_directory, base_file.replace(".json", "-new-odin.json"))
+        with open(new_filename, "w") as f:
+            f.write(transformed_content)
+
+        updated_args = sys.argv[1:]
+        file_index = updated_args.index("--file") + 1
+        updated_args[file_index] = new_filename
+        execute_new_odin_with_custom_cmd(updated_args)
+
 def main():
     global odin_access_key, odin_secret_access_key, odin_access_token, odin_backend_address, OLD_ODIN
     # If /opt/homebrew/bin/odin exists, use this as old_odin
@@ -319,7 +367,21 @@ def main():
         execute_old_odin()
 
     if "service-set" in sys.argv:
-        execute_old_odin()
+        if "list" in sys.argv or "describe" in sys.argv:
+            print("Command deprecated, refer to the service set file on https://github.com/dream11/service-sets to learn more about it")
+            exit(0)
+        elif "create" in sys.argv or "delete" in sys.argv:
+            print("Command deprecated, use file to deploy")
+            exit(0)
+        elif "--env" in sys.argv:
+            env_name = sys.argv[sys.argv.index("--env") + 1]
+            if check_env_exists_in_old_odin(env_name):
+                execute_old_odin()
+            else:
+                if "--file" in sys.argv:
+                    create_new_service_set_and_trigger_odin(sys.argv[sys.argv.index("--file") + 1])
+        else:
+            execute_new_odin()
 
     if "env" not in sys.argv and "--env" not in sys.argv:
         if "list" in sys.argv:
@@ -348,7 +410,8 @@ def main():
             if check_env_exists_in_old_odin(env_name):
                 execute_old_odin()
             else:
-                execute_new_odin_with_custom_cmd(custom_cmd)
+                arg_list = shlex.split(custom_cmd)
+                execute_new_odin_with_custom_cmd(arg_list)
             return
 
         if "list" in sys.argv and "env" in sys.argv:
