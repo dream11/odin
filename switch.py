@@ -8,7 +8,7 @@ import json
 import zipfile
 import shutil
 import shlex
-
+import yaml
 from collections import defaultdict
 
 try:
@@ -86,6 +86,32 @@ def get_current_bin_version():
     except FileNotFoundError:
         return None
 
+def get_env_from_config(config_path):
+    try:
+        print("inside get env from config")
+        with open(config_path, "r") as file:
+            config_data = yaml.safe_load(file)
+            return config_data.get("envName")
+    except (FileNotFoundError, yaml.YAMLError) as e:
+        print(f"Error reading config file {config_path}: {e}")
+        return None
+
+def process_env_argument():
+    print("inside process_env_argument")
+    excluded_verbs = {"configure", "list", "create", "list", "set", "version"}
+    if any(verb in sys.argv for verb in excluded_verbs):
+        print("chalo bye")
+        return
+
+    if "--env" or "--name" not in sys.argv:
+        # if no --env or --name provided, read from config
+        config_file = os.path.expanduser("~/.odin/config")
+        env_name = get_env_from_config(config_file)
+        if env_name:
+           if check_env_exists_in_old_odin(env_name):
+               execute_old_odin()
+           else:
+               execute_new_odin()
 
 def update_binary():
     version_url = "https://artifactory.dream11.com/migrarts/odin-artifact/odin-version.txt"
@@ -148,7 +174,6 @@ def execute_new_odin():
 def execute_new_odin_with_custom_cmd(custom_cmd):
     arg_list = shlex.split(custom_cmd)
     subprocess.call([NEW_ODIN] + arg_list)
-    exit(0)
 
 def execute_old_odin():
     subprocess.call([OLD_ODIN] + sys.argv[1:])
@@ -321,6 +346,8 @@ def main():
     if "service-set" in sys.argv:
         execute_old_odin()
 
+    process_env_argument()
+
     if "env" not in sys.argv and "--env" not in sys.argv:
         if "list" in sys.argv:
             if "service" in sys.argv:
@@ -345,10 +372,8 @@ def main():
         if "set" in sys.argv and "env" in sys.argv:
             env_name = sys.argv[sys.argv.index("--name") + 1]
             custom_cmd = "set env " + env_name
-            if check_env_exists_in_old_odin(env_name):
-                execute_old_odin()
-            else:
-                execute_new_odin_with_custom_cmd(custom_cmd)
+            execute_new_odin_with_custom_cmd(custom_cmd)
+            execute_old_odin()
             return
 
         if "list" in sys.argv and "env" in sys.argv:
