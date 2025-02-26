@@ -1,6 +1,7 @@
 package operate
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"sort"
@@ -11,8 +12,8 @@ import (
 	"github.com/dream11/odin/pkg/config"
 	"github.com/dream11/odin/pkg/table"
 	fileUtil "github.com/dream11/odin/pkg/util"
-	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	envProto "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
+	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	"github.com/fatih/color"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -161,29 +162,9 @@ func execute(cmd *cobra.Command) {
 		}
 
 		var message string
-		envTypeResp, err := envTypeClient.StrictEnvironment(&ctx, &envProto.StrictEnvironmentRequest{
-			EnvName: env,
-		})
-		if err != nil {
-			log.Fatal(err.Error())
-			return
-		}
-		if envTypeResp.IsEnvStrict {
-			consentMessage := fmt.Sprintf("\nYou are executing the above command on a restricted environment. Are you sure? Enter \033[1m%s\033[0m to continue:", env)
-			inputHandler := ui.Input{}
-			val, err := inputHandler.Ask(consentMessage)
-
-			if err != nil {
-				log.Fatal(err.Error())
-				return
-			}
-
-			if val != env {
-				log.Fatal("Aborting the operation")
-				return
-			}
+		if isStrictEnvironment(ctx, env) {
+			askForConfirmation(env)
 		} else {
-
 			if oldComponentValues == nil || len(oldComponentValues.Fields) == 0 {
 				message = "\nNo changes from previous deployment. Do you want to continue? [y/n]:"
 			} else {
@@ -206,6 +187,14 @@ func execute(cmd *cobra.Command) {
 				log.Info("Aborting the operation")
 				return
 			}
+		}
+
+
+
+
+	} else {
+		if isStrictEnvironment(ctx, env) {
+			askForConfirmation(env)
 		}
 	}
 	err = componentClient.OperateComponent(&ctx, &serviceProto.OperateServiceRequest{
@@ -251,4 +240,26 @@ func applyColorToLines(value string, colorFunc func(format string, a ...interfac
 		lines[i] = colorFunc(line)
 	}
 	return lines
+}
+
+func isStrictEnvironment(ctx context.Context, env string) bool {
+	envTypeResp, err := envTypeClient.StrictEnvironment(&ctx, &envProto.StrictEnvironmentRequest{
+		EnvName: env,
+	})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	return envTypeResp.IsEnvStrict
+}
+
+func askForConfirmation(env string)  {
+	consentMessage := fmt.Sprintf("\nYou are executing the above command on a restricted environment. Are you sure? Enter \033[1m%s\033[0m to continue:", env)
+	inputHandler := ui.Input{}
+	val, err := inputHandler.Ask(consentMessage)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	if val != env {
+		log.Fatal(fmt.Errorf("aborting the operation"))
+	}
 }

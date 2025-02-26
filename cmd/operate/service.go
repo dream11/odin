@@ -3,12 +3,12 @@ package operate
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dream11/odin/internal/ui"
-	envProto "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
 
 	"github.com/dream11/odin/internal/service"
+	"github.com/dream11/odin/internal/ui"
 	"github.com/dream11/odin/pkg/config"
 	fileUtil "github.com/dream11/odin/pkg/util"
+	envProto "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
