@@ -53,27 +53,8 @@ func execute(cmd *cobra.Command) {
 	env = config.EnsureEnvPresent(env)
 	ctx := cmd.Context()
 
-	envTypeResp, err := envTypeClient.StrictEnvironment(&ctx, &envProto.StrictEnvironmentRequest{
-		EnvName: env,
-	})
-	if err != nil {
-		log.Fatal(err.Error())
-		return
-	}
-	if envTypeResp.IsEnvStrict {
-		consentMessage := fmt.Sprintf("\nYou are executing the above command on a restricted environment. Are you sure? Enter \033[1m%s\033[0m to continue:", env)
-		inputHandler := ui.Input{}
-		val, err := inputHandler.Ask(consentMessage)
-
-		if err != nil {
-			log.Fatal(err.Error())
-			return
-		}
-
-		if val != env {
-			log.Fatal("Aborting the operation")
-			return
-		}
+	if isStrictEnvironment(ctx, env) {
+		askForConfirmation(env)
 	}
 
 	if (serviceName == "" && serviceVersion == "" && labels == "") && (definitionFile != "" && provisioningFile != "") {
@@ -163,4 +144,25 @@ func validateLabels(labels string) error {
 		return errors.New("labels must be in format key1=value1,key2=value2")
 	}
 	return nil
+}
+func isStrictEnvironment(ctx context.Context, env string) bool {
+	envTypeResp, err := envTypeClient.StrictEnvironment(&ctx, &envProto.StrictEnvironmentRequest{
+		EnvName: env,
+	})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	return envTypeResp.IsEnvStrict
+}
+
+func askForConfirmation(env string) {
+	consentMessage := fmt.Sprintf("\nYou are executing the above command on a restricted environment. Are you sure? Enter \033[1m%s\033[0m to continue:", env)
+	inputHandler := ui.Input{}
+	val, err := inputHandler.Ask(consentMessage)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	if val != env {
+		log.Fatal(fmt.Errorf("aborting the operation"))
+	}
 }

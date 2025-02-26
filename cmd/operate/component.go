@@ -189,9 +189,6 @@ func execute(cmd *cobra.Command) {
 			}
 		}
 
-
-
-
 	} else {
 		if isStrictEnvironment(ctx, env) {
 			askForConfirmation(env)
@@ -252,7 +249,7 @@ func isStrictEnvironment(ctx context.Context, env string) bool {
 	return envTypeResp.IsEnvStrict
 }
 
-func askForConfirmation(env string)  {
+func askForConfirmation(env string) {
 	consentMessage := fmt.Sprintf("\nYou are executing the above command on a restricted environment. Are you sure? Enter \033[1m%s\033[0m to continue:", env)
 	inputHandler := ui.Input{}
 	val, err := inputHandler.Ask(consentMessage)

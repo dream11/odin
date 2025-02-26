@@ -2,13 +2,10 @@ package operate
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/dream11/odin/internal/service"
-	"github.com/dream11/odin/internal/ui"
 	"github.com/dream11/odin/pkg/config"
 	fileUtil "github.com/dream11/odin/pkg/util"
-	envProto "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -75,28 +72,10 @@ func executeOperateService(cmd *cobra.Command) {
 		log.Fatal("error converting JSON to structpb.Struct: ", err)
 	}
 
-	envTypeResp, err := envTypeClient.StrictEnvironment(&ctx, &envProto.StrictEnvironmentRequest{
-		EnvName: env,
-	})
-	if err != nil {
-		log.Fatal(err.Error())
-		return
+	if isStrictEnvironment(ctx, env) {
+		askForConfirmation(env)
 	}
-	if envTypeResp.IsEnvStrict {
-		consentMessage := fmt.Sprintf("\nYou are executing the above command on a restricted environment. Are you sure? Enter \033[1m%s\033[0m to continue:", env)
-		inputHandler := ui.Input{}
-		val, err := inputHandler.Ask(consentMessage)
 
-		if err != nil {
-			log.Fatal(err.Error())
-			return
-		}
-
-		if val != env {
-			log.Fatal("Aborting the operation")
-			return
-		}
-	}
 	//call operate service client
 	err = serviceClient.OperateService(&ctx, &serviceProto.OperateServiceRequest{
 		EnvName:              env,
