@@ -345,13 +345,13 @@ def main():
     if len(sys.argv) == 1:
         execute_new_odin()
 
-    if len(sys.argv) == 2 and "--version" in sys.argv:
+    elif len(sys.argv) == 2 and "--version" in sys.argv:
         execute_old_odin()
 
-    if len(sys.argv) == 2 and "version" in sys.argv:
+    elif len(sys.argv) == 2 and "version" in sys.argv:
         execute_new_odin()
 
-    if "configure" in sys.argv:
+    elif "configure" in sys.argv:
         config_file = os.path.expanduser("~/.odin/config")
 
         # Delete ~/.odin/config
@@ -363,10 +363,18 @@ def main():
 
         exit(0)
 
-    if is_dreampay():
+    elif is_dreampay():
         execute_old_odin()
 
-    if "service-set" in sys.argv:
+    elif "environment" in sys.argv and "operate" in sys.argv:
+        print("Command not available")
+        exit(0)
+
+    elif "label" in sys.argv:
+        print("Label commands have been deprecated")
+        execute_new_odin()
+
+    elif "service-set" in sys.argv:
         if "list" in sys.argv or "describe" in sys.argv:
             print("Command deprecated, refer to the service set file on https://github.com/dream11/service-sets to learn more about it")
             exit(0)
@@ -383,7 +391,7 @@ def main():
         else:
             execute_new_odin()
 
-    if "env" not in sys.argv and "--env" not in sys.argv:
+    elif "env" not in sys.argv and "--env" not in sys.argv:
         if "list" in sys.argv:
             if "service" in sys.argv:
                 execute_new_odin()
@@ -403,16 +411,20 @@ def main():
             # if user has forgotten to provide env or --env in a legitimate command
             execute_new_odin()
     # If env or --env is present
-    else:
+    elif "env" in sys.argv or "--env" in sys.argv:
         if "set" in sys.argv and "env" in sys.argv:
-            env_name = sys.argv[sys.argv.index("--name") + 1]
-            custom_cmd = "set env " + env_name
-            if check_env_exists_in_old_odin(env_name):
-                execute_old_odin()
+            if "--name" in sys.argv:
+                env_name = sys.argv[sys.argv.index("--name") + 1]
+                custom_cmd = "set env " + env_name
+                if check_env_exists_in_old_odin(env_name):
+                    execute_old_odin()
+                else:
+                    arg_list = shlex.split(custom_cmd)
+                    execute_new_odin_with_custom_cmd(arg_list)
+                return
             else:
-                arg_list = shlex.split(custom_cmd)
-                execute_new_odin_with_custom_cmd(arg_list)
-            return
+                print("name not provided in set env command")
+                exit(0)
 
         if "list" in sys.argv and "env" in sys.argv:
             if "--help" in sys.argv:
@@ -438,6 +450,7 @@ def main():
                 execute_new_odin()
 
         service_name = None
+        env_name = None
         if "--env" in sys.argv:
             env_name = sys.argv[sys.argv.index("--env") + 1]
             if "--file" in sys.argv:
@@ -449,18 +462,20 @@ def main():
                 service_name = sys.argv[sys.argv.index("--service") + 1]
             elif "--name" in sys.argv:
                 service_name = sys.argv[sys.argv.index("--name") + 1]
-        else:
+        elif "--name" in sys.argv:
             env_name = sys.argv[sys.argv.index("--name") + 1]
             if "--service" in sys.argv:
                 service_name = sys.argv[sys.argv.index("--service") + 1]
 
-        if check_env_exists_in_old_odin(env_name):
+        if env_name is not None and check_env_exists_in_old_odin(env_name):
             if service_name is not None and is_service_migrated_to_new_odin(service_name, env_name):
                 execute_new_odin()
             else:
                 execute_old_odin()
         else:
             execute_new_odin()
+    else:
+        execute_new_odin()
 
 
 if __name__ == '__main__':
