@@ -8,7 +8,6 @@ import json
 import zipfile
 import shutil
 import shlex
-import yaml
 from collections import defaultdict
 
 try:
@@ -88,19 +87,17 @@ def get_current_bin_version():
 
 def get_env_from_config(config_path):
     try:
-        print("inside get env from config")
         with open(config_path, "r") as file:
-            config_data = yaml.safe_load(file)
-            return config_data.get("envName")
-    except (FileNotFoundError, yaml.YAMLError) as e:
+            for line in file:
+                if line.strip().startswith("envName:"):
+                    return line.split(":", 1)[1].strip()
+    except FileNotFoundError as e:
         print(f"Error reading config file {config_path}: {e}")
         return None
 
 def process_env_argument():
-    print("inside process_env_argument")
-    excluded_verbs = {"configure", "list", "create", "list", "set", "version"}
+    excluded_verbs = {"configure", "list", "create", "set", "version", "update"}
     if any(verb in sys.argv for verb in excluded_verbs):
-        print("chalo bye")
         return
 
     if "--env" or "--name" not in sys.argv:
@@ -108,10 +105,7 @@ def process_env_argument():
         config_file = os.path.expanduser("~/.odin/config")
         env_name = get_env_from_config(config_file)
         if env_name:
-           if check_env_exists_in_old_odin(env_name):
-               execute_old_odin()
-           else:
-               execute_new_odin()
+            return env_name
 
 def update_binary():
     version_url = "https://artifactory.dream11.com/migrarts/odin-artifact/odin-version.txt"
@@ -315,6 +309,7 @@ def display_all_envs(old_env_list, new_env_list):
 
 def main():
     global odin_access_key, odin_secret_access_key, odin_access_token, odin_backend_address, OLD_ODIN
+    env_name = None
     # If /opt/homebrew/bin/odin exists, use this as old_odin
     if os.path.isfile("/opt/homebrew/bin/odin"):
         OLD_ODIN = "/opt/homebrew/bin/odin"
@@ -346,7 +341,7 @@ def main():
     if "service-set" in sys.argv:
         execute_old_odin()
 
-    process_env_argument()
+    env_name = process_env_argument()
 
     if "env" not in sys.argv and "--env" not in sys.argv:
         if "list" in sys.argv:
