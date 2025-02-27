@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/dream11/odin/cmd/util"
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/internal/ui"
 	"github.com/dream11/odin/pkg/config"
@@ -163,7 +164,7 @@ func execute(cmd *cobra.Command) {
 
 		var message string
 		if isStrictEnvironment(ctx, env) {
-			askForConfirmation(env)
+			util.AskForConfirmation(env)
 		} else {
 			if oldComponentValues == nil || len(oldComponentValues.Fields) == 0 {
 				message = "\nNo changes from previous deployment. Do you want to continue? [y/n]:"
@@ -191,7 +192,7 @@ func execute(cmd *cobra.Command) {
 
 	} else {
 		if isStrictEnvironment(ctx, env) {
-			askForConfirmation(env)
+			util.AskForConfirmation(env)
 		}
 	}
 	err = componentClient.OperateComponent(&ctx, &serviceProto.OperateServiceRequest{
@@ -247,16 +248,4 @@ func isStrictEnvironment(ctx context.Context, env string) bool {
 		log.Fatal(err.Error())
 	}
 	return envTypeResp.IsEnvStrict
-}
-
-func askForConfirmation(env string) {
-	consentMessage := fmt.Sprintf("\nYou are executing the above command on a restricted environment. Are you sure? Enter \033[1m%s\033[0m to continue:", env)
-	inputHandler := ui.Input{}
-	val, err := inputHandler.Ask(consentMessage)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	if val != env {
-		log.Fatal(fmt.Errorf("aborting the operation"))
-	}
 }
