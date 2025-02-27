@@ -146,7 +146,7 @@ func validateLabels(labels string) error {
 	return nil
 }
 func isStrictEnvironment(ctx context.Context, env string) bool {
-	envTypeResp, err := envTypeClient.StrictEnvironment(&ctx, &envProto.StrictEnvironmentRequest{
+	envTypeResp, err := envTypeClient.StrictEnvironment(&ctx, &envProto.IsStrictEnvironmentRequest{
 		EnvName: env,
 	})
 	if err != nil {
