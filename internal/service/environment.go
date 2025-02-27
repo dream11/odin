@@ -187,7 +187,7 @@ func (e *Environment) StrictEnvironment(ctx *context.Context, request *environme
 	}
 
 	client := environment.NewEnvironmentServiceClient(conn)
-	response, err := client.StrictEnvironment(*requestCtx, request)
+	response, err := client.IsStrictEnvironment(*requestCtx, request)
 
 	if err != nil {
 		log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))

@@ -25,7 +25,7 @@ const (
 	EnvironmentService_CreateEnvironment_FullMethodName   = "/dream11.od.environment.v1.EnvironmentService/CreateEnvironment"
 	EnvironmentService_DeleteEnvironment_FullMethodName   = "/dream11.od.environment.v1.EnvironmentService/DeleteEnvironment"
 	EnvironmentService_StatusEnvironment_FullMethodName   = "/dream11.od.environment.v1.EnvironmentService/StatusEnvironment"
-	EnvironmentService_StrictEnvironment_FullMethodName   = "/dream11.od.environment.v1.EnvironmentService/StrictEnvironment"
+	EnvironmentService_IsStrictEnvironment_FullMethodName = "/dream11.od.environment.v1.EnvironmentService/IsStrictEnvironment"
 )
 
 // EnvironmentServiceClient is the client API for EnvironmentService service.
@@ -38,7 +38,7 @@ type EnvironmentServiceClient interface {
 	CreateEnvironment(ctx context.Context, in *CreateEnvironmentRequest, opts ...grpc.CallOption) (EnvironmentService_CreateEnvironmentClient, error)
 	DeleteEnvironment(ctx context.Context, in *DeleteEnvironmentRequest, opts ...grpc.CallOption) (EnvironmentService_DeleteEnvironmentClient, error)
 	StatusEnvironment(ctx context.Context, in *StatusEnvironmentRequest, opts ...grpc.CallOption) (EnvironmentService_StatusEnvironmentClient, error)
-	StrictEnvironment(ctx context.Context, in *StrictEnvironmentRequest, opts ...grpc.CallOption) (*StrictEnvironmentResponse, error)
+	IsStrictEnvironment(ctx context.Context, in *StrictEnvironmentRequest, opts ...grpc.CallOption) (*StrictEnvironmentResponse, error)
 }
 
 type environmentServiceClient struct {
@@ -172,9 +172,9 @@ func (x *environmentServiceStatusEnvironmentClient) Recv() (*StatusEnvironmentRe
 	return m, nil
 }
 
-func (c *environmentServiceClient) StrictEnvironment(ctx context.Context, in *StrictEnvironmentRequest, opts ...grpc.CallOption) (*StrictEnvironmentResponse, error) {
+func (c *environmentServiceClient) IsStrictEnvironment(ctx context.Context, in *StrictEnvironmentRequest, opts ...grpc.CallOption) (*StrictEnvironmentResponse, error) {
 	out := new(StrictEnvironmentResponse)
-	err := c.cc.Invoke(ctx, EnvironmentService_StrictEnvironment_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, EnvironmentService_IsStrictEnvironment_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -191,7 +191,7 @@ type EnvironmentServiceServer interface {
 	CreateEnvironment(*CreateEnvironmentRequest, EnvironmentService_CreateEnvironmentServer) error
 	DeleteEnvironment(*DeleteEnvironmentRequest, EnvironmentService_DeleteEnvironmentServer) error
 	StatusEnvironment(*StatusEnvironmentRequest, EnvironmentService_StatusEnvironmentServer) error
-	StrictEnvironment(context.Context, *StrictEnvironmentRequest) (*StrictEnvironmentResponse, error)
+	IsStrictEnvironment(context.Context, *StrictEnvironmentRequest) (*StrictEnvironmentResponse, error)
 	mustEmbedUnimplementedEnvironmentServiceServer()
 }
 
@@ -217,8 +217,8 @@ func (UnimplementedEnvironmentServiceServer) DeleteEnvironment(*DeleteEnvironmen
 func (UnimplementedEnvironmentServiceServer) StatusEnvironment(*StatusEnvironmentRequest, EnvironmentService_StatusEnvironmentServer) error {
 	return status.Errorf(codes.Unimplemented, "method StatusEnvironment not implemented")
 }
-func (UnimplementedEnvironmentServiceServer) StrictEnvironment(context.Context, *StrictEnvironmentRequest) (*StrictEnvironmentResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StrictEnvironment not implemented")
+func (UnimplementedEnvironmentServiceServer) IsStrictEnvironment(context.Context, *StrictEnvironmentRequest) (*StrictEnvironmentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IsStrictEnvironment not implemented")
 }
 func (UnimplementedEnvironmentServiceServer) mustEmbedUnimplementedEnvironmentServiceServer() {}
 
@@ -350,20 +350,20 @@ func (x *environmentServiceStatusEnvironmentServer) Send(m *StatusEnvironmentRes
 	return x.ServerStream.SendMsg(m)
 }
 
-func _EnvironmentService_StrictEnvironment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _EnvironmentService_IsStrictEnvironment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(StrictEnvironmentRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(EnvironmentServiceServer).StrictEnvironment(ctx, in)
+		return srv.(EnvironmentServiceServer).IsStrictEnvironment(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: EnvironmentService_StrictEnvironment_FullMethodName,
+		FullMethod: EnvironmentService_IsStrictEnvironment_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EnvironmentServiceServer).StrictEnvironment(ctx, req.(*StrictEnvironmentRequest))
+		return srv.(EnvironmentServiceServer).IsStrictEnvironment(ctx, req.(*StrictEnvironmentRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -388,8 +388,8 @@ var EnvironmentService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _EnvironmentService_UpdateEnvironment_Handler,
 		},
 		{
-			MethodName: "StrictEnvironment",
-			Handler:    _EnvironmentService_StrictEnvironment_Handler,
+			MethodName: "IsStrictEnvironment",
+			Handler:    _EnvironmentService_IsStrictEnvironment_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
