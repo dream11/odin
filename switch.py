@@ -106,6 +106,14 @@ def process_env_argument():
         env_name = get_env_from_config(config_file)
         if env_name:
             return env_name
+        else:
+            return None
+    else:
+        if "--env" in sys.argv:
+            return sys.argv[sys.argv.index("--env") + 1]
+        elif "--name" in sys.argv:
+            return sys.argv[sys.argv.index("--name") + 1]
+
 
 def update_binary():
     version_url = "https://artifactory.dream11.com/migrarts/odin-artifact/odin-version.txt"
@@ -361,7 +369,7 @@ def main():
     # If /opt/homebrew/bin/odin exists, use this as old_odin
     if os.path.isfile("/opt/homebrew/bin/odin"):
         OLD_ODIN = "/opt/homebrew/bin/odin"
-
+    env_name = process_env_argument()
     if len(sys.argv) == 1:
         execute_new_odin()
 
@@ -410,7 +418,6 @@ def main():
                     create_new_service_set_and_trigger_odin(sys.argv[sys.argv.index("--file") + 1])
         else:
             execute_new_odin()
-    env_name = process_env_argument()
 
     elif "env" not in sys.argv and "--env" not in sys.argv:
         if "list" in sys.argv:
@@ -459,8 +466,6 @@ def main():
                 env_name = sys.argv[sys.argv.index("--env") + 1]
             elif "--name" in sys.argv:
                 env_name = sys.argv[sys.argv.index("--name") + 1]
-            else:
-                execute_new_odin()
 
             # Check if env exists in old Odin first
             if check_env_exists_in_old_odin(env_name):
@@ -469,7 +474,7 @@ def main():
                 execute_new_odin()
 
         service_name = None
-        env_name = None
+        # env_name = None
         if "--env" in sys.argv:
             env_name = sys.argv[sys.argv.index("--env") + 1]
             if "--file" in sys.argv:
