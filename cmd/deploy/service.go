@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"regexp"
 
-	"github.com/dream11/odin/cmd/util"
+	util "github.com/dream11/odin/cmd/util"
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/config"
+	"github.com/dream11/odin/pkg/constant"
 	serviceDto "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1"
 	envProto "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
@@ -53,8 +55,8 @@ func execute(cmd *cobra.Command) {
 	ctx := cmd.Context()
 
 	if isStrictEnvironment(ctx, env) {
-
-		util.AskForConfirmation(env)
+		consentMessage := fmt.Sprintf(constant.ConsentMessageTemplate, env)
+		util.AskForConfirmation(env, consentMessage)
 	}
 
 	if (serviceName == "" && serviceVersion == "" && labels == "") && (definitionFile != "" && provisioningFile != "") {

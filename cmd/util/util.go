@@ -7,8 +7,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func AskForConfirmation(env string) {
-	consentMessage := fmt.Sprintf("\nYou are executing the above command on a restricted environment. Are you sure? Enter \033[1m%s\033[0m to continue:", env)
+// AskForConfirmation asks for confirmation before proceeding with the operation
+func AskForConfirmation(env, consentMessage string) {
 	inputHandler := ui.Input{}
 	val, err := inputHandler.Ask(consentMessage)
 	if err != nil {

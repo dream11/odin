@@ -2,10 +2,12 @@ package operate
 
 import (
 	"encoding/json"
+	"fmt"
 
-	"github.com/dream11/odin/cmd/util"
+	util "github.com/dream11/odin/cmd/util"
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/config"
+	"github.com/dream11/odin/pkg/constant"
 	fileUtil "github.com/dream11/odin/pkg/util"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
@@ -74,7 +76,8 @@ func executeOperateService(cmd *cobra.Command) {
 	}
 
 	if isStrictEnvironment(ctx, env) {
-		util.AskForConfirmation(env)
+		consentMessage := fmt.Sprintf(constant.ConsentMessageTemplate, env)
+		util.AskForConfirmation(env, consentMessage)
 	}
 
 	//call operate service client
