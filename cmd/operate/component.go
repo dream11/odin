@@ -1,16 +1,20 @@
 package operate
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
 
+	util "github.com/dream11/odin/cmd/util"
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/internal/ui"
 	"github.com/dream11/odin/pkg/config"
+	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/table"
 	fileUtil "github.com/dream11/odin/pkg/util"
+	envProto "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	"github.com/fatih/color"
 	log "github.com/sirupsen/logrus"
@@ -25,6 +29,7 @@ var operation string
 var options string
 var file string
 var componentClient = service.Component{}
+var envClient = service.Environment{}
 var operateComponentCmd = &cobra.Command{
 	Use:   "component",
 	Short: "operate component",
@@ -159,27 +164,38 @@ func execute(cmd *cobra.Command) {
 		}
 
 		var message string
-		if oldComponentValues == nil || len(oldComponentValues.Fields) == 0 {
-			message = "\nNo changes from previous deployment. Do you want to continue? [y/n]:"
+		if isStrictEnvironment(ctx, env) {
+			consentMessage := fmt.Sprintf(constant.ConsentMessageTemplate, env)
+			util.AskForConfirmation(env, consentMessage)
 		} else {
-			message = "\nDo you want to proceed with the above command? [y/n]:"
-		}
-		allowedInputsSlice := []string{"y", "n"}
-		allowedInputs := make(map[string]struct{}, len(allowedInputsSlice))
-		for _, input := range allowedInputsSlice {
-			allowedInputs[input] = struct{}{}
+			if oldComponentValues == nil || len(oldComponentValues.Fields) == 0 {
+				message = "\nNo changes from previous deployment. Do you want to continue? [y/n]:"
+			} else {
+				message = "\nDo you want to proceed with the above command? [y/n]:"
+			}
+			allowedInputsSlice := []string{"y", "n"}
+			allowedInputs := make(map[string]struct{}, len(allowedInputsSlice))
+			for _, input := range allowedInputsSlice {
+				allowedInputs[input] = struct{}{}
+			}
+
+			inputHandler := ui.Input{}
+			val, err := inputHandler.AskWithConstraints(message, allowedInputs)
+
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
+			if val != "y" {
+				log.Info("Aborting the operation")
+				return
+			}
 		}
 
-		inputHandler := ui.Input{}
-		val, err := inputHandler.AskWithConstraints(message, allowedInputs)
-
-		if err != nil {
-			log.Fatal(err.Error())
-		}
-
-		if val != "y" {
-			log.Info("Aborting the operation")
-			return
+	} else {
+		if isStrictEnvironment(ctx, env) {
+			consentMessage := fmt.Sprintf(constant.ConsentMessageTemplate, env)
+			util.AskForConfirmation(env, consentMessage)
 		}
 	}
 	err = componentClient.OperateComponent(&ctx, &serviceProto.OperateServiceRequest{
@@ -225,4 +241,14 @@ func applyColorToLines(value string, colorFunc func(format string, a ...interfac
 		lines[i] = colorFunc(line)
 	}
 	return lines
+}
+
+func isStrictEnvironment(ctx context.Context, env string) bool {
+	envTypeResp, err := envClient.IsStrictEnvironment(&ctx, &envProto.IsStrictEnvironmentRequest{
+		EnvName: env,
+	})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	return envTypeResp.IsEnvStrict
 }

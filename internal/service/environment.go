@@ -179,3 +179,20 @@ func (e *Environment) EnvironmentStatus(ctx *context.Context, request *environme
 	spinnerInstance.Stop()
 	return prevResponse, nil
 }
+
+func (e *Environment) IsStrictEnvironment(ctx *context.Context, request *environment.IsStrictEnvironmentRequest) (*environment.IsStrictEnvironmentResponse, error) {
+	conn, requestCtx, err := grpcClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	client := environment.NewEnvironmentServiceClient(conn)
+	response, err := client.IsStrictEnvironment(*requestCtx, request)
+
+	if err != nil {
+		log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
+		return nil, err
+	}
+
+	return response, nil
+}

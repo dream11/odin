@@ -2,9 +2,12 @@ package operate
 
 import (
 	"encoding/json"
+	"fmt"
 
+	util "github.com/dream11/odin/cmd/util"
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/config"
+	"github.com/dream11/odin/pkg/constant"
 	fileUtil "github.com/dream11/odin/pkg/util"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
@@ -71,6 +74,12 @@ func executeOperateService(cmd *cobra.Command) {
 	if err != nil {
 		log.Fatal("error converting JSON to structpb.Struct: ", err)
 	}
+
+	if isStrictEnvironment(ctx, env) {
+		consentMessage := fmt.Sprintf(constant.ConsentMessageTemplate, env)
+		util.AskForConfirmation(env, consentMessage)
+	}
+
 	//call operate service client
 	err = serviceClient.OperateService(&ctx, &serviceProto.OperateServiceRequest{
 		EnvName:              env,

@@ -4,12 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"regexp"
 
+	util "github.com/dream11/odin/cmd/util"
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/config"
+	"github.com/dream11/odin/pkg/constant"
 	serviceDto "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1"
+	envProto "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -22,6 +26,7 @@ var serviceName string
 var serviceVersion string
 var serviceClient = service.Service{}
 var labels string
+var envClient = service.Environment{}
 var serviceCmd = &cobra.Command{
 	Use:   "service",
 	Short: "Deploy service",
@@ -48,6 +53,11 @@ func init() {
 func execute(cmd *cobra.Command) {
 	env = config.EnsureEnvPresent(env)
 	ctx := cmd.Context()
+
+	if isStrictEnvironment(ctx, env) {
+		consentMessage := fmt.Sprintf(constant.ConsentMessageTemplate, env)
+		util.AskForConfirmation(env, consentMessage)
+	}
 
 	if (serviceName == "" && serviceVersion == "" && labels == "") && (definitionFile != "" && provisioningFile != "") {
 		deployUsingFiles(ctx)
@@ -136,4 +146,13 @@ func validateLabels(labels string) error {
 		return errors.New("labels must be in format key1=value1,key2=value2")
 	}
 	return nil
+}
+func isStrictEnvironment(ctx context.Context, env string) bool {
+	envTypeResp, err := envClient.IsStrictEnvironment(&ctx, &envProto.IsStrictEnvironmentRequest{
+		EnvName: env,
+	})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	return envTypeResp.IsEnvStrict
 }
