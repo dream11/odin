@@ -27,7 +27,7 @@ var operation string
 var options string
 var file string
 var componentClient = service.Component{}
-var envTypeClient = service.Environment{}
+var envClient = service.Environment{}
 var operateComponentCmd = &cobra.Command{
 	Use:   "component",
 	Short: "operate component",
@@ -240,7 +240,7 @@ func applyColorToLines(value string, colorFunc func(format string, a ...interfac
 }
 
 func isStrictEnvironment(ctx context.Context, env string) bool {
-	envTypeResp, err := envTypeClient.StrictEnvironment(&ctx, &envProto.IsStrictEnvironmentRequest{
+	envTypeResp, err := envClient.StrictEnvironment(&ctx, &envProto.IsStrictEnvironmentRequest{
 		EnvName: env,
 	})
 	if err != nil {
