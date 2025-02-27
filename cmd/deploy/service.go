@@ -4,12 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"os"
 	"regexp"
 
+	"github.com/dream11/odin/cmd/util"
 	"github.com/dream11/odin/internal/service"
-	"github.com/dream11/odin/internal/ui"
 	"github.com/dream11/odin/pkg/config"
 	serviceDto "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1"
 	envProto "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
@@ -25,7 +24,7 @@ var serviceName string
 var serviceVersion string
 var serviceClient = service.Service{}
 var labels string
-var envTypeClient = service.Environment{}
+var envClient = service.Environment{}
 var serviceCmd = &cobra.Command{
 	Use:   "service",
 	Short: "Deploy service",
@@ -54,7 +53,8 @@ func execute(cmd *cobra.Command) {
 	ctx := cmd.Context()
 
 	if isStrictEnvironment(ctx, env) {
-		askForConfirmation(env)
+
+		util.AskForConfirmation(env)
 	}
 
 	if (serviceName == "" && serviceVersion == "" && labels == "") && (definitionFile != "" && provisioningFile != "") {
@@ -146,23 +146,11 @@ func validateLabels(labels string) error {
 	return nil
 }
 func isStrictEnvironment(ctx context.Context, env string) bool {
-	envTypeResp, err := envTypeClient.StrictEnvironment(&ctx, &envProto.IsStrictEnvironmentRequest{
+	envTypeResp, err := envClient.IsStrictEnvironment(&ctx, &envProto.IsStrictEnvironmentRequest{
 		EnvName: env,
 	})
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	return envTypeResp.IsEnvStrict
-}
-
-func askForConfirmation(env string) {
-	consentMessage := fmt.Sprintf("\nYou are executing the above command on a restricted environment. Are you sure? Enter \033[1m%s\033[0m to continue:", env)
-	inputHandler := ui.Input{}
-	val, err := inputHandler.Ask(consentMessage)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	if val != env {
-		log.Fatal(fmt.Errorf("aborting the operation"))
-	}
 }

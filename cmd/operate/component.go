@@ -240,7 +240,7 @@ func applyColorToLines(value string, colorFunc func(format string, a ...interfac
 }
 
 func isStrictEnvironment(ctx context.Context, env string) bool {
-	envTypeResp, err := envClient.StrictEnvironment(&ctx, &envProto.IsStrictEnvironmentRequest{
+	envTypeResp, err := envClient.IsStrictEnvironment(&ctx, &envProto.IsStrictEnvironmentRequest{
 		EnvName: env,
 	})
 	if err != nil {

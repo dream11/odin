@@ -3,6 +3,7 @@ package operate
 import (
 	"encoding/json"
 
+	"github.com/dream11/odin/cmd/util"
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/config"
 	fileUtil "github.com/dream11/odin/pkg/util"
@@ -73,7 +74,7 @@ func executeOperateService(cmd *cobra.Command) {
 	}
 
 	if isStrictEnvironment(ctx, env) {
-		askForConfirmation(env)
+		util.AskForConfirmation(env)
 	}
 
 	//call operate service client
