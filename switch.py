@@ -43,6 +43,17 @@ checkMigrationStatusUri = "/api/integration/cli/v2/deployerint/migrationstatus"
 
 
 def is_dreampay():
+    config_path = os.path.expanduser("~/.odin/config")
+    try:
+        with open(config_path, "r") as file:
+            for line in file:
+                if line.strip().startswith("backend_addr:"):
+                    backend_address = line.split(":", 1)[1].strip()
+                    return "dreampay" in backend_address
+    except FileNotFoundError as e:
+        print("Config file not found, reading from env variables")
+        return None
+
     return os.getenv("ODIN_BACKEND_ADDRESS") and "dreampay" in os.getenv("ODIN_BACKEND_ADDRESS")
 
 
