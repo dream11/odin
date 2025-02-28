@@ -27,10 +27,12 @@ message AccountInformation {
   string provider_account_name = 1;
   dream11.oam.provideraccount.v1.GetProviderAccountResponse service_accounts_snapshot = 2;
   string status = 3;
+  string provisioning_type = 4;
 }
 
 message EnvironmentSummary {
   string name = 1;
   string account = 2;
   string state = 3;
+  string provisioning_type = 4;
 }
