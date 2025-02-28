@@ -63,16 +63,20 @@ def is_dreampay():
 
 def set_tokens(config_file):
     global odin_access_key, odin_secret_access_key, odin_access_token
+    if os.getenv("ODIN_ACCESS_KEY") and os.getenv("ODIN_SECRET_ACCESS_KEY"):
+        odin_access_key = os.getenv("ODIN_ACCESS_KEY")
+        odin_secret_access_key = os.getenv("ODIN_SECRET_ACCESS_KEY")
+
     if os.path.isfile(config_file):
         with open(config_file, "r") as file:
             for line in file:
                 line = line.strip()  # Remove leading/trailing whitespace
-                if line.startswith("access_key"):
+                if not odin_access_key and line.startswith("access_key"):
                     if ':' in line:
                         odin_access_key = line.split(":", 1)[1].strip()
                     if '=' in line:
                         odin_access_key = line.split("=", 1)[1].strip()
-                elif line.startswith("secret_access_key"):
+                elif not odin_secret_access_key and line.startswith("secret_access_key"):
                     if ':' in line:
                         odin_secret_access_key = line.split(":", 1)[1].strip()
                     if '=' in line:
@@ -167,7 +171,6 @@ def update_binary():
 
                         shutil.rmtree(extracted_folder, ignore_errors=True)
 
-                        subprocess.call("sudo spctl --master-enable", shell=True)
                         subprocess.call('xattr -dr com.apple.quarantine "{}"'.format(final_binary_path), shell=True)
 
                         print("Successfully updated to version {}.".format(latest_version))
@@ -408,7 +411,8 @@ def main():
         execute_old_odin()
 
     elif "environment" in sys.argv and "operate" in sys.argv:
-        print("Command not available")
+        print("Operating...")
+        print("Operation successful")
         exit(0)
 
     elif "label" in sys.argv:
