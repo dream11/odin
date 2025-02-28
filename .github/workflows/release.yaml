@@ -24,7 +24,7 @@ jobs:
         with:
           version: ${{ steps.commit.outputs.version }}
           message: ${{ steps.commit.outputs.version }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.COMMIT_ACCESS_TOKEN }}
       - uses: actions/setup-go@v4
         with:
           go-version: "1.20.2"
