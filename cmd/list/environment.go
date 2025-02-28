@@ -73,13 +73,14 @@ func writeOutput(response *environment.ListEnvironmentResponse, format string) {
 }
 
 func writeAsText(response *environment.ListEnvironmentResponse) {
-	tableHeaders := []string{"Name", "State", "Account"}
+	tableHeaders := []string{"Name", "State", "Account", "Provisioning Type"}
 	var tableData [][]interface{}
 	for _, env := range response.Environments {
 		tableData = append(tableData, []interface{}{
 			env.Name,
 			env.State,
 			env.Account,
+			env.GetProvisioningType(),
 		})
 	}
 

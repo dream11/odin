@@ -33,4 +33,5 @@ message EnvironmentSummary {
   string name = 1;
   string account = 2;
   string state = 3;
+  optional string provisioning_type = 4;
 }
