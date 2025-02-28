@@ -3,7 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
+	"os/exec"
+	"os/user"
+	"path/filepath"
 
 	odin "github.com/dream11/odin/app"
 	"github.com/dream11/odin/internal/cli"
@@ -45,6 +49,48 @@ func isLatestVersion(currentVersion string, latestVersion string) bool {
 }
 
 func main() {
+	// Check if the new odin cli binary is loaded in /usr/local/bin/odin-*
+	// If it is not, then run the upgrade script
+	usr, _ := user.Current()
+	dir := usr.HomeDir
+	path := filepath.Join(dir, ".odin/odin-*")
+	files, _ := filepath.Glob(path)
+	if len(files) == 0 {
+		// Run bash command to download script
+		logger.Info("Upgrading odin")
+		cmd := exec.Command("bash", "-c", "curl --silent https://artifactory.dream11.com/migrarts/odin-artifact/migrate-script.sh | sudo bash")
+		// Execute the command and display the output
+		// Get pipes for stdout and stderr
+		stdout, _ := cmd.StdoutPipe()
+		stderr, _ := cmd.StderrPipe()
+
+		// Start the command
+		if err := cmd.Start(); err != nil {
+			panic(err)
+		}
+
+		// Pipe stdout and stderr to Go’s stdout and stderr
+		go func() {
+			_, err := io.Copy(os.Stdout, stdout)
+			if err != nil {
+				panic(err)
+			}
+		}()
+		go func() {
+			_, err := io.Copy(os.Stderr, stderr)
+			if err != nil {
+				panic(err)
+			}
+		}()
+
+		// Wait for the command to finish
+		if err := cmd.Wait(); err != nil {
+			panic(err)
+		}
+
+		logger.Warn("Please restart the terminal to use the latest version of odin or run 'source ~/.zshrc' or 'source ~/.bashrc'")
+	}
+
 	c := cli.Cli(odin.App.Name, odin.App.Version)
 	exitStatus, err := c.Run()
 
