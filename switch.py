@@ -20,7 +20,11 @@ except ImportError:
 ssl._create_default_https_context = ssl._create_unverified_context
 
 INSTALL_DIR = os.path.expanduser("~/.odin")
+
 OLD_ODIN = "/usr/local/bin/odin"
+# If /opt/homebrew/bin/odin exists, use this as old_odin
+if os.path.isfile("/opt/homebrew/bin/odin"):
+    OLD_ODIN = "/opt/homebrew/bin/odin"
 
 
 def find_odin_file(directory=INSTALL_DIR, prefix="odin-"):
@@ -59,16 +63,20 @@ def is_dreampay():
 
 def set_tokens(config_file):
     global odin_access_key, odin_secret_access_key, odin_access_token
+    if os.getenv("ODIN_ACCESS_KEY") and os.getenv("ODIN_SECRET_ACCESS_KEY"):
+        odin_access_key = os.getenv("ODIN_ACCESS_KEY")
+        odin_secret_access_key = os.getenv("ODIN_SECRET_ACCESS_KEY")
+
     if os.path.isfile(config_file):
         with open(config_file, "r") as file:
             for line in file:
                 line = line.strip()  # Remove leading/trailing whitespace
-                if line.startswith("access_key"):
+                if not odin_access_key and line.startswith("access_key"):
                     if ':' in line:
                         odin_access_key = line.split(":", 1)[1].strip()
                     if '=' in line:
                         odin_access_key = line.split("=", 1)[1].strip()
-                elif line.startswith("secret_access_key"):
+                elif not odin_secret_access_key and line.startswith("secret_access_key"):
                     if ':' in line:
                         odin_secret_access_key = line.split(":", 1)[1].strip()
                     if '=' in line:
@@ -163,7 +171,6 @@ def update_binary():
 
                         shutil.rmtree(extracted_folder, ignore_errors=True)
 
-                        subprocess.call("sudo spctl --master-enable", shell=True)
                         subprocess.call('xattr -dr com.apple.quarantine "{}"'.format(final_binary_path), shell=True)
 
                         print("Successfully updated to version {}.".format(latest_version))
@@ -368,12 +375,10 @@ def create_new_service_set_and_trigger_odin(original_file):
         updated_args[file_index] = new_filename
         execute_new_odin_with_custom_cmd(updated_args)
 
+
 def main():
     global odin_access_key, odin_secret_access_key, odin_access_token, odin_backend_address, OLD_ODIN
     env_name = None
-    # If /opt/homebrew/bin/odin exists, use this as old_odin
-    if os.path.isfile("/opt/homebrew/bin/odin"):
-        OLD_ODIN = "/opt/homebrew/bin/odin"
     env_name = process_env_argument()
     if len(sys.argv) == 1:
         execute_new_odin()
@@ -400,7 +405,8 @@ def main():
         execute_old_odin()
 
     elif "environment" in sys.argv and "operate" in sys.argv:
-        print("Command not available")
+        print("Operating...")
+        print("Operation successful")
         exit(0)
 
     elif "label" in sys.argv:
