@@ -80,8 +80,7 @@ func writeAsText(response *environment.ListEnvironmentResponse) {
 			env.Name,
 			env.State,
 			env.Account,
-			env.ProvisioningType,
-
+			env.GetProvisioningType(),
 		})
 	}
 
