@@ -20,7 +20,11 @@ except ImportError:
 ssl._create_default_https_context = ssl._create_unverified_context
 
 INSTALL_DIR = os.path.expanduser("~/.odin")
+
 OLD_ODIN = "/usr/local/bin/odin"
+# If /opt/homebrew/bin/odin exists, use this as old_odin
+if os.path.isfile("/opt/homebrew/bin/odin"):
+    OLD_ODIN = "/opt/homebrew/bin/odin"
 
 
 def find_odin_file(directory=INSTALL_DIR, prefix="odin-"):
@@ -374,12 +378,10 @@ def create_new_service_set_and_trigger_odin(original_file):
         updated_args[file_index] = new_filename
         execute_new_odin_with_custom_cmd(updated_args)
 
+
 def main():
     global odin_access_key, odin_secret_access_key, odin_access_token, odin_backend_address, OLD_ODIN
     env_name = None
-    # If /opt/homebrew/bin/odin exists, use this as old_odin
-    if os.path.isfile("/opt/homebrew/bin/odin"):
-        OLD_ODIN = "/opt/homebrew/bin/odin"
     env_name = process_env_argument()
     if len(sys.argv) == 1:
         execute_new_odin()
