@@ -3,15 +3,16 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	odin "github.com/dream11/odin/app"
-	"github.com/dream11/odin/internal/cli"
-	"github.com/dream11/odin/internal/ui"
-	"github.com/dream11/odin/pkg/request"
 	"io"
 	"os"
 	"os/exec"
 	"os/user"
 	"path/filepath"
+
+	odin "github.com/dream11/odin/app"
+	"github.com/dream11/odin/internal/cli"
+	"github.com/dream11/odin/internal/ui"
+	"github.com/dream11/odin/pkg/request"
 )
 
 var logger ui.Logger
@@ -53,7 +54,7 @@ func main() {
 	usr, _ := user.Current()
 	dir := usr.HomeDir
 	path := filepath.Join(dir, ".odin/odin-*")
-	files, err := filepath.Glob(path)
+	files, _ := filepath.Glob(path)
 	if len(files) == 0 {
 		// Run bash command to download script
 		logger.Info("Upgrading odin")
@@ -69,8 +70,18 @@ func main() {
 		}
 
 		// Pipe stdout and stderr to Go’s stdout and stderr
-		go io.Copy(os.Stdout, stdout)
-		go io.Copy(os.Stderr, stderr)
+		go func() {
+			_, err := io.Copy(os.Stdout, stdout)
+			if err != nil {
+				panic(err)
+			}
+		}()
+		go func() {
+			_, err := io.Copy(os.Stderr, stderr)
+			if err != nil {
+				panic(err)
+			}
+		}()
 
 		// Wait for the command to finish
 		if err := cmd.Wait(); err != nil {
