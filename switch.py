@@ -263,11 +263,9 @@ def display_all_envs(old_env_list, new_env_list):
     for row in rows:
         env_data = row.split("|")
         if len(env_data) > 4:
-            name, team, created_by, env_type, state, account = env_data[0], env_data[1], env_data[2], env_data[3], env_data[4], env_data[5]
+            name, env_type, state, account = env_data[0], env_data[3], env_data[4], env_data[5]
             envs.append({
-                "name":  name.strip(),
-                "team": team.strip(),
-                "created_by": created_by.strip(),
+                "name": name.strip(),
                 "env_type": env_type.strip(),
                 "state": state.strip(),
                 "account": account.strip(),
@@ -288,12 +286,10 @@ def display_all_envs(old_env_list, new_env_list):
 
     # merge envs with same name but different accounts
     # Group by name and combine accounts
-    grouped_envs = defaultdict(lambda: {"team": "", "created_by": "", "env_type": "", "state": "", "accounts": set()})
+    grouped_envs = defaultdict(lambda: {"env_type": "", "state": "", "accounts": set()})
 
     for env in envs:
         key = env["name"].strip() or "N/A"
-        grouped_envs[key]["team"] = env.get("team", "").strip() or "N/A"
-        grouped_envs[key]["created_by"] = env.get("created_by", "").strip() or "N/A"
         grouped_envs[key]["env_type"] = env.get("env_type", "").strip() or "N/A"
         grouped_envs[key]["state"] = env.get("state", "").strip() or "N/A"
         if env["account"].strip():
@@ -304,16 +300,14 @@ def display_all_envs(old_env_list, new_env_list):
         grouped_envs[key]["accounts"] = ", ".join(sorted(grouped_envs[key]["accounts"])) if grouped_envs[key]["accounts"] else "N/A"
 
     # Define column headers
-    headers = ["NAME", "TEAM", "CREATED BY", "ENV TYPE", "STATE", "ACCOUNTS"]
+    headers = ["NAME", "ENV TYPE", "STATE", "ACCOUNTS"]
 
     # Determine column widths dynamically
     col_widths = [
         max(len(key) for key in list(grouped_envs.keys()) + [headers[0]]),
-        max(len(row["team"]) for row in list(grouped_envs.values()) + [{"team": headers[1]}]),
-        max(len(row["created_by"]) for row in list(grouped_envs.values()) + [{"created_by": headers[2]}]),
-        max(len(row["env_type"]) for row in list(grouped_envs.values()) + [{"env_type": headers[3]}]),
-        max(len(row["state"]) for row in list(grouped_envs.values()) + [{"state": headers[4]}]),
-        max(len(row["accounts"]) for row in list(grouped_envs.values()) + [{"accounts": headers[5]}]),
+        max(len(row["env_type"]) for row in list(grouped_envs.values()) + [{"env_type": headers[1]}]),
+        max(len(row["state"]) for row in list(grouped_envs.values()) + [{"state": headers[2]}]),
+        max(len(row["accounts"]) for row in list(grouped_envs.values()) + [{"accounts": headers[3]}]),
     ]
 
     # Print the header row
@@ -323,7 +317,7 @@ def display_all_envs(old_env_list, new_env_list):
 
     # Print each grouped row
     for name, details in grouped_envs.items():
-        print(header_format.format(name, details["team"], details["created_by"], details["env_type"], details["state"], details["accounts"]))
+        print(header_format.format(name, details["env_type"], details["state"], details["accounts"]))
 
 
 def transform_service_set_file(content):
