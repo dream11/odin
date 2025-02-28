@@ -3,10 +3,11 @@ set -e
 
 # Check if Python is installed
 if ! command -v python &>/dev/null; then
-
-    if command -v python3 &>/dev/null; then
-      path=$(command -v python3)
-      sudo ln -s "$path" /usr/local/bin/python
+    if command -v /Library/Developer/CommandLineTools/usr/bin/python3 &>/dev/null; then
+        sudo ln -s /Library/Developer/CommandLineTools/usr/bin/python3 /usr/local/bin/python
+    elif command -v python3 &>/dev/null; then
+        path=$(command -v python3)
+        sudo ln -s "$path" /usr/local/bin/python
     else
       echo "Python is not installed. Installing via Homebrew..."
 
