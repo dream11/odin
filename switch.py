@@ -179,7 +179,7 @@ def update_binary():
                 else:
                     print("Error: Failed to download the binary zip. Status code: {}".format(zip_response.getcode()))
             else:
-                print("Binary up-to-date with version {}".format(current_version))
+                pass
         else:
             print("Error: Failed to fetch version file from Artifactory. Status code: {}".format(response.getcode()))
 
