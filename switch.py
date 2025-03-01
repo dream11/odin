@@ -287,9 +287,9 @@ def display_all_envs(old_env_list, new_env_list):
     # Parse name, state, and account
     for row in rows:
         env_data = row.split("|")
-        if len(env_data) > 2:
-            name, state, account = env_data[0], env_data[1], env_data[2]
-            envs.append({"name": name.strip(), "state": state.strip(), "account": account.strip()})
+        if len(env_data) > 3:
+            name, state, account,provisioning_type = env_data[0], env_data[1], env_data[2], env_data[3]
+            envs.append({"name": name.strip(), "state": state.strip(), "account": account.strip(), "env_type": provisioning_type.strip()})
 
     # merge envs with same name but different accounts
     # Group by name and combine accounts
