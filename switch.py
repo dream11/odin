@@ -104,6 +104,7 @@ def get_current_bin_version():
     except FileNotFoundError:
         return None
 
+
 def get_env_from_config(config_path):
     try:
         with open(config_path, "r") as file:
@@ -113,6 +114,7 @@ def get_env_from_config(config_path):
     except FileNotFoundError as e:
         print(f"Error reading config file {config_path}: {e}")
         return None
+
 
 def process_env_argument():
     excluded_verbs = {"configure", "list", "create", "set", "version", "update"}
@@ -194,6 +196,8 @@ def execute_new_odin():
 
 def execute_new_odin_with_custom_cmd(arg_list):
     subprocess.call([NEW_ODIN] + arg_list)
+    exit(0)
+
 
 def execute_old_odin():
     subprocess.call([OLD_ODIN] + sys.argv[1:])
@@ -357,6 +361,7 @@ def transform_service_set_file(content):
 
     return json.dumps(data, indent=2)
 
+
 def create_new_service_set_and_trigger_odin(original_file):
     if os.path.exists(original_file):
         with open(original_file, "r") as f:
@@ -415,7 +420,8 @@ def main():
 
     elif "service-set" in sys.argv:
         if "list" in sys.argv or "describe" in sys.argv:
-            print("Command deprecated, refer to the service set file on https://github.com/dream11/service-sets to learn more about it")
+            print("Command deprecated, refer to the service set file on https://github.com/dream11/service-sets to "
+                  "learn more about it")
             exit(0)
         elif "create" in sys.argv or "delete" in sys.argv:
             print("Command deprecated, use file to deploy")
@@ -451,14 +457,42 @@ def main():
             execute_new_odin()
     # If env or --env is present
     elif "env" in sys.argv or "--env" in sys.argv:
+        if "env" in sys.argv and "create" in sys.argv:
+            accounts = set()
+            if "--account" in sys.argv:
+                print("Please use flag --accounts instead of --account")
+                exit(1)
+            # Handle accounts
+            if "--accounts" not in sys.argv:
+                accounts.add("staging")
+                accounts.add("staging_gcp")
+                sys.argv.append("--accounts")
+                sys.argv.append(",".join(accounts))
+            else:
+                account_index = sys.argv.index("--accounts")
+                provided_accounts_str = sys.argv[account_index + 1]
+                accounts = set(provided_accounts_str.split(","))
+                if "stag" in provided_accounts_str:
+                    accounts.add("staging")
+                    accounts.add("staging_gcp")
+                elif "load" in provided_accounts_str:
+                    accounts.add("load")
+                    accounts.add("load_gcp")
+                sys.argv[account_index + 1] = ",".join(accounts)
+
+            # Handle prov type
+            if "--provisioning-type" not in sys.argv:
+                sys.argv.append("--provisioning-type")
+                sys.argv.append("dev")
+
+            execute_new_odin()
+
         if "set" in sys.argv and "env" in sys.argv:
             if "--name" in sys.argv:
                 env_name = sys.argv[sys.argv.index("--name") + 1]
                 custom_cmd = "set env " + env_name
                 arg_list = shlex.split(custom_cmd)
                 execute_new_odin_with_custom_cmd(arg_list)
-                execute_old_odin()
-                return
             else:
                 print("name not provided in set env command")
                 exit(0)
