@@ -514,17 +514,18 @@ def main():
 
         if env_name is not None and check_env_exists_in_old_odin(env_name):
             if service_name is not None and is_service_migrated_to_new_odin(service_name, env_name):
-                execute_new_odin()                
+                execute_new_odin()
             else:
                 execute_old_odin()
         else:
             if service_name is not None:
-                version = sys.argv[sys.argv.index("--version") + 1]
-                label = get_label_from_version(version)
-                if label is not None:
-                    sys.argv[sys.argv.index("--version") + 1] = label
-                    sys.argv[sys.argv.index("--version")] = "--labels"
-            execute_new_odin()                
+                if "--version" in sys.argv:
+                    version = sys.argv[sys.argv.index("--version") + 1]
+                    label = get_label_from_version(version)
+                    if label is not None:
+                        sys.argv[sys.argv.index("--version") + 1] = label
+                        sys.argv[sys.argv.index("--version")] = "--labels"
+            execute_new_odin()    
     else:
         execute_new_odin()
 
