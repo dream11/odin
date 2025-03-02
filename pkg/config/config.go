@@ -124,7 +124,7 @@ func EnsureEnvPresent(inputEnv string) string {
 	}
 	env := GetActiveProfileEnvName()
 	if env == "" {
-		log.Fatal("Please provide the environment name using --env, or set the default environment using `odin set environment <env-name>`")
+		log.Fatal("Please provide the environment name using --env, or set the default environment using `odin set env <env-name>`")
 	}
 	return env
 }
