@@ -12,8 +12,7 @@ var statusCmd = &cobra.Command{
 	Long: `This command is accessed by using one of the subcommands below:
 
 Subcommands:
-    env          Fetch deployment status of the environment
-    service      Get status of a service version`,
+    env          Fetch deployment status of the environment`,
 }
 
 func init() {

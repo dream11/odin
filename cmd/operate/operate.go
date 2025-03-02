@@ -13,8 +13,7 @@ var operateCmd = &cobra.Command{
 
 Subcommands:
     component    Operate on a component
-    env          Operate an environment
-    service      Perform operations on a service`,
+    service      Operate on a service`,
 }
 
 func init() {
