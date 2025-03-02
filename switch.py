@@ -196,7 +196,6 @@ def execute_new_odin():
 
 def execute_new_odin_with_custom_cmd(arg_list):
     subprocess.call([NEW_ODIN] + arg_list)
-    exit(0)
 
 
 def execute_old_odin():
@@ -493,6 +492,8 @@ def main():
                 custom_cmd = "set env " + env_name
                 arg_list = shlex.split(custom_cmd)
                 execute_new_odin_with_custom_cmd(arg_list)
+                execute_old_odin()
+                return
             else:
                 print("name not provided in set env command")
                 exit(0)
