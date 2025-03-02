@@ -8,11 +8,11 @@ import (
 // updateCmd represents the update command
 var updateCmd = &cobra.Command{
 	Use:   "update",
-	Short: "This command is accessed by using one of the subcommands env.",
-	Long: `This command is accessed by using one of the subcommands below.
+	Short: "This command is accessed by using one of the subcommands: [env]",
+	Long: `This command is accessed by using one of the subcommands below:
 
 Subcommands:
-    env          update an environment`,
+    env          Update an environment`,
 }
 
 func init() {

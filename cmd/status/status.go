@@ -8,8 +8,12 @@ import (
 // statusCmd represents the status command
 var statusCmd = &cobra.Command{
 	Use:   "status",
-	Short: "This command is accessed by using one of the subcommands below.",
-	Long:  `This command is accessed by using one of the subcommands below.`,
+	Short: "This command is accessed by using one of the subcommands: [env, service]",
+	Long: `This command is accessed by using one of the subcommands below:
+
+Subcommands:
+    env          Fetch deployment status of the environment
+    service      Get status of a service version`,
 }
 
 func init() {
