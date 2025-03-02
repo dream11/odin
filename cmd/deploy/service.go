@@ -46,7 +46,7 @@ func init() {
 	serviceCmd.Flags().StringVar(&serviceName, "name", "", "released service name")
 	serviceCmd.Flags().StringVar(&serviceVersion, "version", "", "released service version")
 	serviceCmd.Flags().StringVar(&labels, "labels", "", "comma separated labels for the service version ex key1=value1,key2=value2")
-
+	_ = serviceCmd.Flags().MarkHidden("labels")
 	deployCmd.AddCommand(serviceCmd)
 }
 

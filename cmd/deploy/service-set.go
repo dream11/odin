@@ -26,8 +26,10 @@ var serviceSetDeployCmd = &cobra.Command{
 }
 
 const (
+	// Yes represents the affirmative response for deployment confirmation.
 	Yes = "y"
-	No  = "n"
+	// No represents the negative response for deployment confirmation.
+	No = "n"
 )
 
 func init() {

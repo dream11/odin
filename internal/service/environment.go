@@ -180,6 +180,7 @@ func (e *Environment) EnvironmentStatus(ctx *context.Context, request *environme
 	return prevResponse, nil
 }
 
+// IsStrictEnvironment checks if the given environment is a strict environment
 func (e *Environment) IsStrictEnvironment(ctx *context.Context, request *environment.IsStrictEnvironmentRequest) (*environment.IsStrictEnvironmentResponse, error) {
 	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {
