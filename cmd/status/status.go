@@ -8,7 +8,7 @@ import (
 // statusCmd represents the status command
 var statusCmd = &cobra.Command{
 	Use:   "status",
-	Short: "This command is accessed by using one of the subcommands: [env, service]",
+	Short: "This command is accessed by using one of the subcommands: [env]",
 	Long: `This command is accessed by using one of the subcommands below:
 
 Subcommands:

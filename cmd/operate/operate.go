@@ -8,7 +8,7 @@ import (
 // operateCmd represents the operate command
 var operateCmd = &cobra.Command{
 	Use:   "operate",
-	Short: "This command is accessed by using one of the subcommands: [env, service, component]",
+	Short: "This command is accessed by using one of the subcommands: [service, component]",
 	Long: `This command is accessed by using one of the subcommands below:
 
 Subcommands:
