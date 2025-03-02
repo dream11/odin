@@ -379,6 +379,16 @@ def create_new_service_set_and_trigger_odin(original_file):
         updated_args[file_index] = new_filename
         execute_new_odin_with_custom_cmd(updated_args)
 
+def get_label_from_version(version):
+    match version:
+        case 'stable':
+            return 'isStable=true'
+        case 'dev-stable':
+            return 'isDevStable=true'
+        case 'load-stable':
+            return 'isLoadStable=true'
+        case _:
+            return None
 
 def main():
     global odin_access_key, odin_secret_access_key, odin_access_token, odin_backend_address, OLD_ODIN
@@ -543,7 +553,14 @@ def main():
             else:
                 execute_old_odin()
         else:
-            execute_new_odin()
+            if service_name is not None:
+                if "--version" in sys.argv:
+                    version = sys.argv[sys.argv.index("--version") + 1]
+                    label = get_label_from_version(version)
+                    if label is not None:
+                        sys.argv[sys.argv.index("--version") + 1] = label
+                        sys.argv[sys.argv.index("--version")] = "--labels"
+            execute_new_odin()    
     else:
         execute_new_odin()
 
