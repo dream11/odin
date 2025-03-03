@@ -34,6 +34,15 @@ def find_odin_file(directory=INSTALL_DIR, prefix="odin-"):
         return files[0]
     return OLD_ODIN
 
+def cleanup_odin_file(directory=INSTALL_DIR, prefix="odin-"):
+    pattern = os.path.join(directory, f"{prefix}*")  # Match files like 'odin-*'
+    files = glob.glob(pattern)
+    for file in files:
+        try:
+            os.remove(file)
+        except Exception as e:
+            print(f"Error deleting {file}: {e}")
+    return OLD_ODIN
 
 NEW_ODIN = find_odin_file()
 
@@ -152,6 +161,7 @@ def update_binary():
                 return
 
             if current_version is None or current_version < latest_version:
+                cleanup_odin_file()
                 print("Updating odin binary to version {}".format(latest_version))
 
                 # Step 3: Download the binary zip from Artifactory
