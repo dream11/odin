@@ -69,7 +69,7 @@ func execute(cmd *cobra.Command) {
 		}
 		deployUsingServiceNameAndLabels(ctx)
 	} else {
-		log.Fatal("Invalid combination of flags. Use either (service name and version) or (service name and labels) or (definitionFile and provisioningFile).")
+		log.Fatal("Invalid combination of flags. Use either (service name and version) or (definitionFile and provisioningFile).")
 	}
 }
 
