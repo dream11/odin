@@ -34,10 +34,12 @@ def find_odin_file(directory=INSTALL_DIR, prefix="odin-"):
         return files[0]
     return OLD_ODIN
 
-def cleanup_odin_file(directory=INSTALL_DIR, prefix="odin-"):
+def cleanup_odin_file(latest_version,directory=INSTALL_DIR, prefix="odin-"):
     pattern = os.path.join(directory, f"{prefix}*")  # Match files like 'odin-*'
     files = glob.glob(pattern)
     for file in files:
+        if latest_version in os.path.basename(file):  # Skip file if it contains latest_version
+            continue
         try:
             os.remove(file)
         except Exception as e:
@@ -146,6 +148,7 @@ def process_env_argument():
 
 
 def update_binary():
+    global NEW_ODIN
     version_url = "https://artifactory.dream11.com/migrarts/odin-artifact/odin-version.txt"
 
     try:
@@ -161,7 +164,6 @@ def update_binary():
                 return
 
             if current_version is None or current_version < latest_version:
-                cleanup_odin_file()
                 print("Updating odin binary to version {}".format(latest_version))
 
                 # Step 3: Download the binary zip from Artifactory
@@ -176,7 +178,8 @@ def update_binary():
                     extracted_folder = os.path.join(INSTALL_DIR, "cli-migration")
                     binary_filepath = os.path.join(extracted_folder, "odin-{}".format(latest_version))
                     final_binary_path = os.path.join(INSTALL_DIR, "odin-{}".format(latest_version))
-
+                    cleanup_odin_file(latest_version,INSTALL_DIR,"odin-")
+                    NEW_ODIN = find_odin_file()
                     if os.path.exists(binary_filepath):
                         os.rename(binary_filepath, final_binary_path)
                         os.chmod(final_binary_path, 0o755)
