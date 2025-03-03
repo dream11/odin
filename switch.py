@@ -178,7 +178,7 @@ def update_binary():
                     extracted_folder = os.path.join(INSTALL_DIR, "cli-migration")
                     binary_filepath = os.path.join(extracted_folder, "odin-{}".format(latest_version))
                     final_binary_path = os.path.join(INSTALL_DIR, "odin-{}".format(latest_version))
-                    
+
                     if os.path.exists(binary_filepath):
                         os.rename(binary_filepath, final_binary_path)
                         os.chmod(final_binary_path, 0o755)
