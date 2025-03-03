@@ -19,6 +19,7 @@ bin
 *.code-workspace
 *.idea/
 .DS_Store
+.vscode/
 
 # Service definition files
 service.yaml
