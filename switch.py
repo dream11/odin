@@ -178,8 +178,6 @@ def update_binary():
                     extracted_folder = os.path.join(INSTALL_DIR, "cli-migration")
                     binary_filepath = os.path.join(extracted_folder, "odin-{}".format(latest_version))
                     final_binary_path = os.path.join(INSTALL_DIR, "odin-{}".format(latest_version))
-                    cleanup_odin_file(latest_version,INSTALL_DIR,"odin-")
-                    NEW_ODIN = find_odin_file()
                     if os.path.exists(binary_filepath):
                         os.rename(binary_filepath, final_binary_path)
                         os.chmod(final_binary_path, 0o755)
@@ -187,7 +185,8 @@ def update_binary():
                         shutil.rmtree(extracted_folder, ignore_errors=True)
 
                         subprocess.call('xattr -dr com.apple.quarantine "{}"'.format(final_binary_path), shell=True)
-
+                        cleanup_odin_file(latest_version,INSTALL_DIR,"odin-")
+                        NEW_ODIN = find_odin_file()
                         print("Successfully updated to version {}.".format(latest_version))
                     else:
                         print("Error: The binary {} was not found after extraction.".format(binary_filepath))
