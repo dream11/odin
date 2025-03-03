@@ -396,11 +396,8 @@ def main():
     if len(sys.argv) == 1:
         execute_new_odin()
 
-    elif len(sys.argv) == 2 and "--version" in sys.argv:
-        execute_old_odin()
-
-    elif len(sys.argv) == 2 and "version" in sys.argv:
-        execute_new_odin()
+    elif len(sys.argv) == 2 and ("--version" in sys.argv or "version" in sys.argv):
+        print(get_current_bin_version())
 
     elif "configure" in sys.argv:
         config_file = os.path.expanduser("~/.odin/config")
