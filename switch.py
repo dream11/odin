@@ -257,7 +257,7 @@ def is_service_migrated_to_new_odin(service_name, env_name):
     url = odin_backend_address + checkMigrationStatusUri + "/" + env_name + "/" + service_name
     req = Request(url)
     req.add_header('Authorization', 'Bearer ' + odin_access_token)
-    req.add_header('App-Version', '1.4.1')
+    req.add_header('App-Version', '1.4.3')
     req.add_header('Accept', 'application/json')
     try:
         content = urlopen(req).read()
