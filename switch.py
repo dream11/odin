@@ -34,6 +34,17 @@ def find_odin_file(directory=INSTALL_DIR, prefix="odin-"):
         return files[0]
     return OLD_ODIN
 
+def cleanup_odin_file(latest_version,directory=INSTALL_DIR, prefix="odin-"):
+    pattern = os.path.join(directory, f"{prefix}*")  # Match files like 'odin-*'
+    files = glob.glob(pattern)
+    for file in files:
+        if latest_version in os.path.basename(file):  # Skip file if it contains latest_version
+            continue
+        try:
+            os.remove(file)
+        except Exception as e:
+            print(f"Error deleting {file}: {e}")
+    return OLD_ODIN
 
 NEW_ODIN = find_odin_file()
 
@@ -137,6 +148,7 @@ def process_env_argument():
 
 
 def update_binary():
+    global NEW_ODIN
     version_url = "https://artifactory.dream11.com/migrarts/odin-artifact/odin-version.txt"
 
     try:
@@ -174,7 +186,10 @@ def update_binary():
                         shutil.rmtree(extracted_folder, ignore_errors=True)
 
                         subprocess.call('xattr -dr com.apple.quarantine "{}"'.format(final_binary_path), shell=True)
-
+                        
+                        cleanup_odin_file(latest_version,INSTALL_DIR,"odin-")
+                        NEW_ODIN = find_odin_file()
+                        
                         print("Successfully updated to version {}.".format(latest_version))
                     else:
                         print("Error: The binary {} was not found after extraction.".format(binary_filepath))
