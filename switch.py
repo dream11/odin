@@ -11,10 +11,10 @@ import shlex
 from collections import defaultdict
 
 try:
-    from urllib.request import Request, urlopen, urlretrieve
+    from urllib.request import Request, urlopen
     from io import BytesIO # Python 3
 except ImportError:
-    from urllib2 import Request, urlopen, urlretrieve
+    from urllib2 import Request, urlopen
     from StringIO import StringIO as BytesIO # Python 2
 
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -28,14 +28,14 @@ if os.path.isfile("/opt/homebrew/bin/odin"):
 
 
 def find_odin_file(directory=INSTALL_DIR, prefix="odin-"):
-    pattern = os.path.join(directory, f"{prefix}*")  # Match files like 'odin-*'
+    pattern = os.path.join(directory, "{}*".format(prefix))  # Match files like 'odin-*'
     files = glob.glob(pattern)
     if files:
         return files[0]
     return OLD_ODIN
 
 def cleanup_odin_file(latest_version,directory=INSTALL_DIR, prefix="odin-"):
-    pattern = os.path.join(directory, f"{prefix}*")  # Match files like 'odin-*'
+    pattern = os.path.join(directory, "{}*".format(prefix))  # Match files like 'odin-*'
     files = glob.glob(pattern)
     for file in files:
         if latest_version in os.path.basename(file):  # Skip file if it contains latest_version
@@ -43,7 +43,7 @@ def cleanup_odin_file(latest_version,directory=INSTALL_DIR, prefix="odin-"):
         try:
             os.remove(file)
         except Exception as e:
-            print(f"Error deleting {file}: {e}")
+            print("Error deleting {}: {}".format(file, e))
     return OLD_ODIN
 
 NEW_ODIN = find_odin_file()
@@ -123,7 +123,7 @@ def get_env_from_config(config_path):
                 if line.strip().startswith("envName:"):
                     return line.split(":", 1)[1].strip()
     except FileNotFoundError as e:
-        print(f"Error reading config file {config_path}: {e}")
+        print("Error reading config file {}: {}".format(config_path, e))
         return None
 
 
@@ -186,10 +186,9 @@ def update_binary():
                         shutil.rmtree(extracted_folder, ignore_errors=True)
 
                         subprocess.call('xattr -dr com.apple.quarantine "{}"'.format(final_binary_path), shell=True)
-                        
+
                         cleanup_odin_file(latest_version,INSTALL_DIR,"odin-")
                         NEW_ODIN = find_odin_file()
-                        
                         print("Successfully updated to version {}.".format(latest_version))
                     else:
                         print("Error: The binary {} was not found after extraction.".format(binary_filepath))
@@ -243,7 +242,7 @@ def check_env_exists_in_old_odin(env_name):
     url = odin_backend_address + envCheckUri + "/?env_name=" + env_name
     req = Request(url)
     req.add_header('Authorization', 'Bearer ' + odin_access_token)
-    req.add_header('App-Version', '1.4.1')
+    req.add_header('App-Version', '1.4.3')
     req.add_header('Accept', 'application/json')
     try:
         content = urlopen(req).read()
@@ -273,7 +272,7 @@ def get_service_name_from_file(file_path):
             data = json.load(f)
             return data.get("name")
     except (FileNotFoundError, json.JSONDecodeError) as e:
-        print(f"Error reading file {file_path}: {e}")
+        print("Error reading file {}: {}".format(file_path, e))
         sys.exit(1)
 
 def display_all_envs(old_env_list, new_env_list):
@@ -336,7 +335,7 @@ def display_all_envs(old_env_list, new_env_list):
     ]
 
     # Print the header row
-    header_format = " | ".join(f"{{:<{w}}}" for w in col_widths)
+    header_format = " | ".join("{{:<{}}}".format(w) for w in col_widths)
     print(header_format.format(*headers))
     print("-" * (sum(col_widths) + len(col_widths) * 3 - 3))  # Print separator
 
