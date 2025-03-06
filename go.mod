@@ -23,15 +23,17 @@ require (
 	github.com/r3labs/sse v0.0.0-20210224172625-26fe804710bc
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 	golang.org/x/sys v0.0.0-20211004093028-2c5d950f24ef // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 v3.0.0
 )
 
-require github.com/olekukonko/tablewriter v0.0.5
+require (
+	github.com/apoorvam/goterminal v0.0.0-20180523175556-614d345c47e5
+	github.com/briandowns/spinner v1.18.1
+	github.com/olekukonko/tablewriter v0.0.5
+)
 
 require (
-	github.com/apoorvam/goterminal v0.0.0-20180523175556-614d345c47e5 // indirect
-	github.com/briandowns/spinner v1.18.1 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/stretchr/testify v1.7.0 // indirect
 	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110 // indirect
