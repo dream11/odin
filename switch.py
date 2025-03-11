@@ -556,7 +556,15 @@ def main():
 
             # Check if env exists in old Odin first
             if check_env_exists_in_old_odin(env_name):
-                execute_old_odin()
+                if "--service" in sys.argv:
+                    service_name = sys.argv[sys.argv.index("--service") + 1]
+
+                    if is_service_migrated_to_new_odin(service_name, env_name):
+                        execute_new_odin()
+                    else:
+                        execute_old_odin()
+                else:
+                    execute_old_odin()
             else:
                 execute_new_odin()
 
