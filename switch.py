@@ -576,6 +576,8 @@ def main():
                 file_index = sys.argv.index("--file") + 1
                 file_path = sys.argv[file_index]
                 service_name = get_service_name_from_file(file_path)
+                if "add_component" in sys.argv:
+                    service_name = sys.argv[sys.argv.index("--name") + 1]
             elif "--service" in sys.argv:
                 # need to check for --service strictly before --name for operate
                 service_name = sys.argv[sys.argv.index("--service") + 1]
