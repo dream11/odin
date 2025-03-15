@@ -3,6 +3,8 @@ package util
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dream11/odin/internal/ui"
+	log "github.com/sirupsen/logrus"
 	"net"
 	"os"
 	"strconv"
@@ -137,7 +139,9 @@ func GenerateResponseMessageComponentSpecific(response *v1.ServiceResponse, comp
 
 // GenerateTraceID generates a trace id
 func GenerateTraceID() string {
-	return uuid.New().String()
+	traceID := uuid.New().String()
+	log.Infof("Generated trace ID: %s", traceID)
+	return traceID
 }
 
 // GetEnvOrDefault returns the value of an environment variable or a fallback value
@@ -165,4 +169,16 @@ func ConvertJSONToYAML(jsonStr string) (string, error) {
 
 	// Return the YAML string
 	return string(yamlData), nil
+}
+
+// AskForConfirmation asks for confirmation before proceeding with the operation
+func AskForConfirmation(expectedValue, consentMessage string) {
+	inputHandler := ui.Input{}
+	val, err := inputHandler.Ask(consentMessage)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	if val != expectedValue {
+		log.Fatal(fmt.Errorf("aborting the operation"))
+	}
 }
