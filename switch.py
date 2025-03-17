@@ -12,6 +12,7 @@ from collections import defaultdict
 
 try:
     from urllib.request import Request, urlopen
+    from urllib.error import HTTPError
     from io import BytesIO # Python 3
 except ImportError:
     from urllib2 import Request, urlopen
@@ -266,6 +267,26 @@ def is_service_migrated_to_new_odin(service_name, env_name):
     except Exception:
         return False
 
+def does_service_exist_in_old_odin_env(service_name, env_name):
+    global odin_access_token, odin_backend_address, checkMigrationStatusUri
+    url = odin_backend_address + checkMigrationStatusUri + "/" + env_name + "/" + service_name
+    req = Request(url)
+    req.add_header('Authorization', 'Bearer ' + odin_access_token)
+    req.add_header('App-Version', '1.4.3')
+    req.add_header('Accept', 'application/json')
+    try:
+        response = urlopen(req)
+        return True
+    except HTTPError as e:
+        if e.code == 404:
+            try:
+                content = e.read()
+                if b'SERVICE_CONFIG_NOT_FOUND' in content:
+                    return False
+            except Exception:
+                pass
+        return False
+
 def get_service_name_from_file(file_path):
     try:
         with open(file_path, 'r') as f:
@@ -452,6 +473,10 @@ def main():
             else:
                 if "--file" in sys.argv:
                     create_new_service_set_and_trigger_odin(sys.argv[sys.argv.index("--file") + 1])
+                else:
+                    print("Command deprecated, use file to deploy. Refer to the service set file on https://github.com/dream11/service-sets to "
+                  "learn more about it")
+                    exit(0)
         else:
             execute_new_odin()
 
@@ -535,7 +560,15 @@ def main():
 
             # Check if env exists in old Odin first
             if check_env_exists_in_old_odin(env_name):
-                execute_old_odin()
+                if "--service" in sys.argv:
+                    service_name = sys.argv[sys.argv.index("--service") + 1]
+
+                    if is_service_migrated_to_new_odin(service_name, env_name):
+                        execute_new_odin()
+                    else:
+                        execute_old_odin()
+                else:
+                    execute_old_odin()
             else:
                 execute_new_odin()
 
@@ -547,6 +580,8 @@ def main():
                 file_index = sys.argv.index("--file") + 1
                 file_path = sys.argv[file_index]
                 service_name = get_service_name_from_file(file_path)
+                if "add_component" in sys.argv:
+                    service_name = sys.argv[sys.argv.index("--name") + 1]
             elif "--service" in sys.argv:
                 # need to check for --service strictly before --name for operate
                 service_name = sys.argv[sys.argv.index("--service") + 1]
@@ -559,6 +594,8 @@ def main():
 
         if env_name is not None and check_env_exists_in_old_odin(env_name):
             if service_name is not None and is_service_migrated_to_new_odin(service_name, env_name):
+                execute_new_odin()
+            elif service_name is not None and not does_service_exist_in_old_odin_env(service_name, env_name) and env_name in ["prod", "auth-bom", "auth-nv", "uat"]:
                 execute_new_odin()
             else:
                 execute_old_odin()
