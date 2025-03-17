@@ -1,14 +1,13 @@
 package operate
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-
-	util "github.com/dream11/odin/cmd/util"
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/config"
 	"github.com/dream11/odin/pkg/constant"
-	fileUtil "github.com/dream11/odin/pkg/util"
+	"github.com/dream11/odin/pkg/util"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -47,6 +46,8 @@ func executeOperateService(cmd *cobra.Command) {
 	env = config.EnsureEnvPresent(env)
 
 	ctx := cmd.Context()
+	traceID := util.GenerateTraceID()
+	contextWithTrace := context.WithValue(ctx, constant.TraceIDKey, traceID)
 	//validate the variables
 	var optionsData map[string]interface{}
 
@@ -58,7 +59,7 @@ func executeOperateService(cmd *cobra.Command) {
 	}
 
 	if isFilePresent {
-		parsedConfig, err := fileUtil.ParseFile(file)
+		parsedConfig, err := util.ParseFile(file)
 		if err != nil {
 			log.Fatal("Error while parsing file " + file + " : " + err.Error())
 		}
@@ -75,13 +76,13 @@ func executeOperateService(cmd *cobra.Command) {
 		log.Fatal("error converting JSON to structpb.Struct: ", err)
 	}
 
-	if isStrictEnvironment(ctx, env) {
+	if isStrictEnvironment(contextWithTrace, env) {
 		consentMessage := fmt.Sprintf(constant.ConsentMessageTemplate, env)
 		util.AskForConfirmation(env, consentMessage)
 	}
 
 	//call operate service client
-	err = serviceClient.OperateService(&ctx, &serviceProto.OperateServiceRequest{
+	err = serviceClient.OperateService(&contextWithTrace, &serviceProto.OperateServiceRequest{
 		EnvName:              env,
 		ServiceName:          name,
 		IsComponentOperation: false,

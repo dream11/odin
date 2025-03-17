@@ -7,13 +7,12 @@ import (
 	"sort"
 	"strings"
 
-	util "github.com/dream11/odin/cmd/util"
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/internal/ui"
 	"github.com/dream11/odin/pkg/config"
 	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/table"
-	fileUtil "github.com/dream11/odin/pkg/util"
+	"github.com/dream11/odin/pkg/util"
 	envProto "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	"github.com/fatih/color"
@@ -87,6 +86,9 @@ func execute(cmd *cobra.Command) {
 	env = config.EnsureEnvPresent(env)
 
 	ctx := cmd.Context()
+	traceID := util.GenerateTraceID()
+	contextWithTrace := context.WithValue(ctx, constant.TraceIDKey, traceID)
+
 	//validate the variables
 	var optionsData map[string]interface{}
 
@@ -98,7 +100,7 @@ func execute(cmd *cobra.Command) {
 	}
 
 	if isFilePresent {
-		parsedConfig, err := fileUtil.ParseFile(file)
+		parsedConfig, err := util.ParseFile(file)
 		if err != nil {
 			log.Fatal("Error while parsing file " + file + " : " + err.Error())
 		}
@@ -116,7 +118,7 @@ func execute(cmd *cobra.Command) {
 	}
 	//call operate component client
 	if operation == "redeploy" {
-		diffValues, err := componentClient.CompareOperationChanges(&ctx, &serviceProto.OperateComponentDiffRequest{
+		diffValues, err := componentClient.CompareOperationChanges(&contextWithTrace, &serviceProto.OperateComponentDiffRequest{
 			EnvName:       env,
 			ServiceName:   serviceName,
 			ComponentName: name,
@@ -164,7 +166,7 @@ func execute(cmd *cobra.Command) {
 		}
 
 		var message string
-		if isStrictEnvironment(ctx, env) {
+		if isStrictEnvironment(contextWithTrace, env) {
 			consentMessage := fmt.Sprintf(constant.ConsentMessageTemplate, env)
 			util.AskForConfirmation(env, consentMessage)
 		} else {
@@ -193,12 +195,12 @@ func execute(cmd *cobra.Command) {
 		}
 
 	} else {
-		if isStrictEnvironment(ctx, env) {
+		if isStrictEnvironment(contextWithTrace, env) {
 			consentMessage := fmt.Sprintf(constant.ConsentMessageTemplate, env)
 			util.AskForConfirmation(env, consentMessage)
 		}
 	}
-	err = componentClient.OperateComponent(&ctx, &serviceProto.OperateServiceRequest{
+	err = componentClient.OperateComponent(&contextWithTrace, &serviceProto.OperateServiceRequest{
 		EnvName:              env,
 		ServiceName:          serviceName,
 		ComponentName:        name,
