@@ -473,6 +473,10 @@ def main():
             else:
                 if "--file" in sys.argv:
                     create_new_service_set_and_trigger_odin(sys.argv[sys.argv.index("--file") + 1])
+                else:
+                    print("Command deprecated, use file to deploy. Refer to the service set file on https://github.com/dream11/service-sets to "
+                  "learn more about it")
+                    exit(0)
         else:
             execute_new_odin()
 
