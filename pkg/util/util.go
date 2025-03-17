@@ -144,14 +144,6 @@ func GenerateTraceID() string {
 	return traceID
 }
 
-// GetEnvOrDefault returns the value of an environment variable or a fallback value
-func GetEnvOrDefault(key, defaultValue string) string {
-	if value, ok := os.LookupEnv(key); ok {
-		return value
-	}
-	return defaultValue
-}
-
 // ConvertJSONToYAML takes a JSON string as input and returns a formatted YAML string
 func ConvertJSONToYAML(jsonStr string) (string, error) {
 	// Unmarshal the JSON into a generic structure
