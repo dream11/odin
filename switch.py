@@ -476,7 +476,7 @@ def main():
                 elif "--name" in sys.argv:
                     print("--name flag is deprecated and no longer supported. Please use --file flag to deploy your service-set.To get service set definitions"
                   " please refer https://github.com/dream11/service-sets")
-                    exit(0)
+                    exit(1)
                 else:
                     execute_new_odin()
         else:
