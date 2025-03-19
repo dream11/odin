@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/dream11/odin/pkg/util"
 	"os"
 	"regexp"
 
-	util "github.com/dream11/odin/cmd/util"
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/config"
 	"github.com/dream11/odin/pkg/constant"
@@ -53,21 +53,23 @@ func init() {
 func execute(cmd *cobra.Command) {
 	env = config.EnsureEnvPresent(env)
 	ctx := cmd.Context()
+	traceID := util.GenerateTraceID()
+	contextWithTrace := context.WithValue(ctx, constant.TraceIDKey, traceID)
 
-	if isStrictEnvironment(ctx, env) {
+	if isStrictEnvironment(contextWithTrace, env) {
 		consentMessage := fmt.Sprintf(constant.ConsentMessageTemplate, env)
 		util.AskForConfirmation(env, consentMessage)
 	}
 
 	if (serviceName == "" && serviceVersion == "" && labels == "") && (definitionFile != "" && provisioningFile != "") {
-		deployUsingFiles(ctx)
+		deployUsingFiles(contextWithTrace)
 	} else if (serviceName != "" && serviceVersion != "" && labels == "") && (definitionFile == "" && provisioningFile == "") {
-		deployUsingServiceNameAndVersion(ctx)
+		deployUsingServiceNameAndVersion(contextWithTrace)
 	} else if (serviceName != "" && labels != "" && serviceVersion == "") && (definitionFile == "" && provisioningFile == "") {
 		if err := validateLabels(labels); err != nil {
 			log.Fatal("Invalid labels format: ", err)
 		}
-		deployUsingServiceNameAndLabels(ctx)
+		deployUsingServiceNameAndLabels(contextWithTrace)
 	} else {
 		log.Fatal("Invalid combination of flags. Use either (service name and version) or (definitionFile and provisioningFile).")
 	}
