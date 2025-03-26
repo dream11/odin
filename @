@@ -1,0 +1,10 @@
+profile = 'default'
+
+[default]
+backend_address = '127.0.0.1:8000'
+access_token = 'gstiWVIO1wbulz07kBurMsyPu8DkIvlqZwwpNj7h'
+insecure = true
+
+[default.Keys]
+access_key = 'nikhils'
+secret_access_key = 'nikhils'

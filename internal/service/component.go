@@ -4,14 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
-
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/util"
 	component "github.com/dream11/odin/proto/gen/go/dream11/od/component/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"io"
+	"strings"
+	"time"
 )
 
 // Component performs operation on component like operate
@@ -35,26 +38,103 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 	if err != nil {
 		return err
 	}
+
 	var message string
+	var maxRetries = 3
+	var retries = 0
+	outerLoop:
 	for {
-		response, err := stream.Recv()
-		spinnerInstance.Stop()
-		if err != nil {
-			if errors.Is(err, context.Canceled) || err == io.EOF {
-				break
+		// Create a context with timeout for each Recv call
+		recvCtx, cancel := context.WithTimeout(*requestCtx, 30*time.Second)
+
+		responseChan := make(chan *serviceProto.OperateServiceResponse)
+		errorChan := make(chan error)
+
+		go func() {
+			response, err := stream.Recv()
+			if err != nil {
+				errorChan <- err
+			} else {
+				responseChan <- response
+			}
+		}()
+
+		select {
+		case <-recvCtx.Done():
+			spinnerInstance.Stop()
+			log.Error("Operation timed out. Retry again")
+			log.Errorf("TraceID: %s, error: %v", (*requestCtx).Value(constant.TraceIDKey), recvCtx.Err())
+			cancel()
+			return recvCtx.Err()
+		case err := <-errorChan:
+			spinnerInstance.Stop()
+			cancel()
+			if err == io.EOF {
+				log.Info("Stream ended normally")
+				break outerLoop
+			}
+			if !isRetryable(err) {
+				log.Errorf("eof error: %v", err)
+				break outerLoop
+			}
+			if retries < maxRetries {
+				log.Errorf("Error: %v", err)
+				retries++
+				log.Warnf("Retrying... attempt %d", retries)
+
+				// Close the current stream
+				if err := stream.CloseSend(); err != nil {
+					log.Errorf("Failed to close stream: %v", err)
+					return err
+				}
+
+				// Create a new stream connection
+				stream, err = client.OperateService(*requestCtx, request)
+				if err != nil {
+					log.Errorf("Failed to create new stream: %v", err)
+					return err
+				}
+
+				continue outerLoop
 			}
 			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 			return err
-		}
-		if response != nil {
-			message = util.GenerateResponseMessageComponentSpecific(response.GetServiceResponse(), []string{request.GetComponentName()})
-			logFailedComponentMessagesOnceForComponents(response.GetServiceResponse(), []string{request.GetComponentName()})
-			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
-			spinnerInstance.Start()
+		case response := <-responseChan:
+			spinnerInstance.Stop()
+			cancel()
+			if response != nil {
+				message = util.GenerateResponseMessageComponentSpecific(response.GetServiceResponse(), []string{request.GetComponentName()})
+				logFailedComponentMessagesOnceForComponents(response.GetServiceResponse(), []string{request.GetComponentName()})
+				spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
+				spinnerInstance.Start()
+				time.Sleep(2 * time.Second)
+			}
+			retries = 0 // Reset retries on successful response
 		}
 	}
 	log.Info(message)
-	return err
+	return nil
+}
+
+func isRetryable(err error) bool {
+	if errors.Is(err, context.Canceled) || err == io.EOF {
+		return true
+	}
+
+	st, ok := status.FromError(err)
+	if !ok {
+		return false
+	}
+
+	if st.Code() == codes.Unavailable {
+		return true
+	}
+
+	if st.Code() == codes.Internal && strings.Contains(st.Message(), "RST_STREAM") {
+		return true
+	}
+
+	return false
 }
 
 // ListComponentType List component types

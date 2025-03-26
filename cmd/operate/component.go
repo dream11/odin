@@ -210,7 +210,7 @@ func execute(cmd *cobra.Command) {
 	})
 
 	if err != nil {
-		log.Fatal("Failed to operate on component", err)
+		log.Fatal("Failed to operate on component ", err)
 	}
 
 }
