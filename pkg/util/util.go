@@ -3,17 +3,17 @@ package util
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dream11/odin/internal/ui"
-	log "github.com/sirupsen/logrus"
 	"net"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/dream11/odin/internal/ui"
 	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	"github.com/google/uuid"
 	"github.com/olekukonko/tablewriter"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 

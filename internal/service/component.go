@@ -4,6 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
+	"strings"
+	"time"
+
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/util"
@@ -12,9 +16,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"io"
-	"strings"
-	"time"
 )
 
 // Component performs operation on component like operate
@@ -42,7 +43,7 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 	var message string
 	var maxRetries = 3
 	var retries = 0
-	outerLoop:
+outerLoop:
 	for {
 		// Create a context with timeout for each Recv call
 		recvCtx, cancel := context.WithTimeout(*requestCtx, 30*time.Second)
