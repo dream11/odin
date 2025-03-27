@@ -74,13 +74,14 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 				break outerLoop
 			}
 			if !isRetryable(err) {
-				log.Errorf("eof error: %v", err)
+				log.Errorf("non retryable error: %v", err)
 				break outerLoop
 			}
 			if retries < maxRetries {
 				log.Errorf("Error: %v", err)
 				retries++
 				log.Warnf("Retrying... attempt %d", retries)
+				time.Sleep(5 * time.Second)
 
 				// Close the current stream
 				if err := stream.CloseSend(); err != nil {
@@ -107,9 +108,7 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 				logFailedComponentMessagesOnceForComponents(response.GetServiceResponse(), []string{request.GetComponentName()})
 				spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 				spinnerInstance.Start()
-				time.Sleep(2 * time.Second)
 			}
-			retries = 0 // Reset retries on successful response
 		}
 	}
 	log.Info(message)
