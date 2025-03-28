@@ -70,18 +70,12 @@ outerLoop:
 		case err := <-errorChan:
 			spinnerInstance.Stop()
 			cancel()
-			if err == io.EOF {
-				log.Info("Stream ended normally")
-				break outerLoop
-			}
 			if !isRetryable(err) {
-				log.Errorf("non retryable error: %v", err)
 				break outerLoop
 			}
 			if retries < maxRetries {
 				log.Errorf("Error: %v", err)
 				retries++
-				log.Warnf("Retrying... attempt %d", retries)
 				time.Sleep(5 * time.Second)
 
 				// Close the current stream
@@ -117,9 +111,13 @@ outerLoop:
 }
 
 func isRetryable(err error) bool {
-	if errors.Is(err, context.Canceled) || err == io.EOF {
+	if errors.Is(err, context.Canceled)  {
 		return true
 	}
+	if err == io.EOF {
+		return false
+	}
+
 
 	st, ok := status.FromError(err)
 	if !ok {
