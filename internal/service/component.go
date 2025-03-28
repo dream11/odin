@@ -111,28 +111,15 @@ outerLoop:
 }
 
 func isRetryable(err error) bool {
-	if errors.Is(err, context.Canceled)  {
+	if errors.Is(err, context.Canceled) {
 		return true
 	}
 	if err == io.EOF {
 		return false
 	}
 
-
 	st, ok := status.FromError(err)
-	if !ok {
-		return false
-	}
-
-	if st.Code() == codes.Unavailable {
-		return true
-	}
-
-	if st.Code() == codes.Internal && strings.Contains(st.Message(), "RST_STREAM") {
-		return true
-	}
-
-	return false
+	return ok && (st.Code() == codes.Unavailable || (st.Code() == codes.Internal && strings.Contains(st.Message(), "RST_STREAM")))
 }
 
 // ListComponentType List component types
