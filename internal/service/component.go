@@ -46,7 +46,7 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 outerLoop:
 	for {
 		// Create a context with timeout for each Recv call
-		recvCtx, cancel := context.WithTimeout(*requestCtx, 30*time.Second)
+		recvCtx, cancel := context.WithTimeout(*requestCtx, 50*time.Second)
 
 		responseChan := make(chan *serviceProto.OperateServiceResponse)
 		errorChan := make(chan error)
@@ -75,6 +75,7 @@ outerLoop:
 			}
 			if retries < maxRetries {
 				log.Errorf("Error: %v", err)
+				log.Infof("Retrying ... (%d/%d)", retries+1, maxRetries)
 				retries++
 				time.Sleep(5 * time.Second)
 
