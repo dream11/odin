@@ -65,7 +65,7 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 	var message string
 	var maxRetries = 3
 	var retries = 0
-	outerLoop:
+outerLoop:
 	for {
 		// Create a context with timeout for each Recv call
 		recvCtx, cancel := context.WithTimeout(*requestCtx, 50*time.Second)
@@ -270,7 +270,7 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 	var message string
 	var maxRetries = 3
 	var retries = 0
-	outerLoop:
+outerLoop:
 	for {
 		// Create a context with timeout for each Recv call
 		recvCtx, cancel := context.WithTimeout(*requestCtx, 50*time.Second)
@@ -338,7 +338,6 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 			}
 		}
 	}
-
 
 	log.Info(message)
 	return err
