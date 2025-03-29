@@ -43,7 +43,7 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 	var message string
 	var maxRetries = 3
 	var retries = 0
-outerLoop:
+	outerLoop:
 	for {
 		// Create a context with timeout for each Recv call
 		recvCtx, cancel := context.WithTimeout(*requestCtx, 50*time.Second)
