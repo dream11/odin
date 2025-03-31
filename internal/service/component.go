@@ -39,7 +39,6 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 	}
 
 	var message string
-	var maxRetries = MaxRetries
 	var retries = 0
 	outerLoop:
 	for {
@@ -63,11 +62,11 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 			spinnerInstance.Stop()
 			cancel()
 			log.Error("Operation timed out. Retrying again")
-			if retries < maxRetries {
+			if retries < MaxRetries {
 				var err error
 				retries++
-				log.Infof("Retrying ... (%d/%d)", retries, maxRetries)
-				stream, err = retryOperateStream(client, requestCtx, request, stream)
+				log.Infof("Retrying ... (%d/%d)", retries, MaxRetries)
+				stream, err = reconnectOperateStream(client, requestCtx, request, stream)
 				if err != nil {
 					return err
 				}
@@ -81,11 +80,11 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 			if !util.IsRetryable(err) {
 				break outerLoop
 			}
-			if retries < maxRetries {
+			if retries < MaxRetries {
 				var err error
 				retries++
-				log.Infof("Retrying ... (%d/%d)", retries, maxRetries)
-				stream, err = retryOperateStream(client, requestCtx, request, stream)
+				log.Infof("Retrying ... (%d/%d)", retries, MaxRetries)
+				stream, err = reconnectOperateStream(client, requestCtx, request, stream)
 				if err != nil {
 					return err
 				}
@@ -108,7 +107,7 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 	return nil
 }
 
-func retryOperateStream(client serviceProto.ServiceServiceClient, requestCtx *context.Context, request *serviceProto.OperateServiceRequest, stream serviceProto.ServiceService_OperateServiceClient) (serviceProto.ServiceService_OperateServiceClient, error) {
+func reconnectOperateStream(client serviceProto.ServiceServiceClient, requestCtx *context.Context, request *serviceProto.OperateServiceRequest, stream serviceProto.ServiceService_OperateServiceClient) (serviceProto.ServiceService_OperateServiceClient, error) {
 
 	// Close the current stream
 	if err := stream.CloseSend(); err != nil {
