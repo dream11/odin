@@ -85,9 +85,29 @@ outerLoop:
 		select {
 		case <-recvCtx.Done():
 			spinnerInstance.Stop()
-			log.Error("Operation timed out. Retry again")
-			log.Errorf("TraceID: %s, error: %v", (*requestCtx).Value(constant.TraceIDKey), recvCtx.Err())
 			cancel()
+			log.Error("Operation timed out. Retrying again")
+			if retries < maxRetries {
+				log.Infof("Retrying ... (%d/%d)", retries+1, maxRetries)
+				retries++
+				time.Sleep(5 * time.Second)
+
+				// Close the current stream
+				if err := stream.CloseSend(); err != nil {
+					log.Errorf("Failed to close stream: %v", err)
+					return err
+				}
+
+				// Create a new stream connection
+				stream, err = client.DeployService(*requestCtx, request)
+				if err != nil {
+					log.Errorf("Failed to create new stream: %v", err)
+					return err
+				}
+
+				continue outerLoop
+			}
+			log.Errorf("TraceID: %s, error: %v", (*requestCtx).Value(constant.TraceIDKey), recvCtx.Err())
 			return recvCtx.Err()
 		case err := <-errorChan:
 			spinnerInstance.Stop()
@@ -244,33 +264,10 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 		return err
 	}
 
-	/*var message string
-	for {
-		response, err := stream.Recv()
-		spinnerInstance.Stop()
-		if err != nil {
-			if errors.Is(err, context.Canceled) || err == io.EOF {
-				break
-			}
-			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
-			return err
-		}
-
-		if response != nil {
-			message = response.GetServiceResponse().Message
-			message += fmt.Sprintf("\n Service %s %s", response.GetServiceResponse().ServiceStatus.ServiceAction, response.GetServiceResponse().ServiceStatus.ServiceStatus)
-			for _, compMessage := range response.GetServiceResponse().ComponentsStatus {
-				message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
-			}
-			logFailedComponentMessagesOnce(response.GetServiceResponse())
-			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
-			spinnerInstance.Start()
-		}
-	}*/
 	var message string
 	var maxRetries = 3
 	var retries = 0
-outerLoop:
+	outerLoop:
 	for {
 		// Create a context with timeout for each Recv call
 		recvCtx, cancel := context.WithTimeout(*requestCtx, 50*time.Second)
@@ -290,9 +287,29 @@ outerLoop:
 		select {
 		case <-recvCtx.Done():
 			spinnerInstance.Stop()
-			log.Error("Operation timed out. Retry again")
-			log.Errorf("TraceID: %s, error: %v", (*requestCtx).Value(constant.TraceIDKey), recvCtx.Err())
 			cancel()
+			log.Error("Operation timed out. Retrying again")
+			if retries < maxRetries {
+				log.Infof("Retrying ... (%d/%d)", retries+1, maxRetries)
+				retries++
+				time.Sleep(5 * time.Second)
+
+				// Close the current stream
+				if err := stream.CloseSend(); err != nil {
+					log.Errorf("Failed to close stream: %v", err)
+					return err
+				}
+
+				// Create a new stream connection
+				stream, err = client.DeployReleasedService(*requestCtx, request)
+				if err != nil {
+					log.Errorf("Failed to create new stream: %v", err)
+					return err
+				}
+
+				continue outerLoop
+			}
+			log.Errorf("TraceID: %s, error: %v", (*requestCtx).Value(constant.TraceIDKey), recvCtx.Err())
 			return recvCtx.Err()
 		case err := <-errorChan:
 			spinnerInstance.Stop()
