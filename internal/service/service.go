@@ -13,13 +13,17 @@ import (
 	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
 	"io"
+	"time"
 )
 
 // Service performs operation on service like deploy. undeploy
 type Service struct{}
 
 var responseMap = make(map[string]string)
-
+// MaxRetries is the maximum number of retries for the request
+const MaxRetries = 10
+// Timeout is the timeout for the request in case of no response
+const Timeout =20 * time.Second
 // DeployService deploys service
 func (e *Service) DeployService(ctx *context.Context, request *serviceProto.DeployServiceRequest) error {
 	conn, requestCtx, err := grpcClient(ctx)
