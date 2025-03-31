@@ -1,8 +1,13 @@
 package util
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"io"
 	"net"
 	"os"
 	"strconv"
@@ -173,4 +178,16 @@ func AskForConfirmation(expectedValue, consentMessage string) {
 	if val != expectedValue {
 		log.Fatal(fmt.Errorf("aborting the operation"))
 	}
+}
+// IsRetryable checks if the error is retryable
+func IsRetryable(err error) bool {
+	if errors.Is(err, context.Canceled) {
+		return true
+	}
+	if err == io.EOF {
+		return false
+	}
+
+	st, ok := status.FromError(err)
+	return ok && (st.Code() == codes.Unavailable || (st.Code() == codes.Internal && strings.Contains(st.Message(), "RST_STREAM")))
 }

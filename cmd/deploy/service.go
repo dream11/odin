@@ -5,9 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
-	"regexp"
-
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/config"
 	"github.com/dream11/odin/pkg/constant"
@@ -17,6 +14,8 @@ import (
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"os"
+	"regexp"
 )
 
 var env string
@@ -137,6 +136,8 @@ func deployUsingServiceNameAndLabels(ctx context.Context) {
 		log.Fatal("Failed to deploy service ", err)
 	}
 }
+
+
 
 func validateLabels(labels string) error {
 	labelPattern := `^(\w+=\w+)(,\w+=\w+)*$`

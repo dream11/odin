@@ -5,9 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
-	"time"
-
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/util"
@@ -15,6 +12,7 @@ import (
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
+	"io"
 )
 
 // Service performs operation on service like deploy. undeploy
@@ -41,34 +39,13 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 		return err
 	}
 
-	/*var message string
-	for {
-		response, err := stream.Recv()
-		spinnerInstance.Stop()
-		if err != nil {
-			if errors.Is(err, context.Canceled) || err == io.EOF {
-				break
-			}
-			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
-			return err
-		}
-
-		if response != nil {
-
-			message = util.GenerateResponseMessage(response.GetServiceResponse())
-			logFailedComponentMessagesOnce(response.GetServiceResponse())
-			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
-			spinnerInstance.Start()
-		}
-	}*/
-
 	var message string
-	var maxRetries = 3
+	var maxRetries = MaxRetries
 	var retries = 0
-outerLoop:
+	outerLoop:
 	for {
 		// Create a context with timeout for each Recv call
-		recvCtx, cancel := context.WithTimeout(*requestCtx, 50*time.Second)
+		recvCtx, cancel := context.WithTimeout(*requestCtx, Timeout)
 
 		responseChan := make(chan *serviceProto.DeployServiceResponse)
 		errorChan := make(chan error)
@@ -88,23 +65,13 @@ outerLoop:
 			cancel()
 			log.Error("Operation timed out. Retrying again")
 			if retries < maxRetries {
-				log.Infof("Retrying ... (%d/%d)", retries+1, maxRetries)
+				var err error
 				retries++
-				time.Sleep(5 * time.Second)
-
-				// Close the current stream
-				if err := stream.CloseSend(); err != nil {
-					log.Errorf("Failed to close stream: %v", err)
-					return err
-				}
-
-				// Create a new stream connection
-				stream, err = client.DeployService(*requestCtx, request)
+				log.Infof("Retrying ... (%d/%d)", retries, maxRetries)
+				stream, err = retryServiceDeployStream(client, requestCtx, request, stream)
 				if err != nil {
-					log.Errorf("Failed to create new stream: %v", err)
 					return err
 				}
-
 				continue outerLoop
 			}
 			log.Errorf("TraceID: %s, error: %v", (*requestCtx).Value(constant.TraceIDKey), recvCtx.Err())
@@ -112,28 +79,17 @@ outerLoop:
 		case err := <-errorChan:
 			spinnerInstance.Stop()
 			cancel()
-			if !isRetryable(err) {
+			if !util.IsRetryable(err) {
 				break outerLoop
 			}
 			if retries < maxRetries {
-				log.Errorf("Error: %v", err)
-				log.Infof("Retrying ... (%d/%d)", retries+1, maxRetries)
+				var err error
 				retries++
-				time.Sleep(5 * time.Second)
-
-				// Close the current stream
-				if err := stream.CloseSend(); err != nil {
-					log.Errorf("Failed to close stream: %v", err)
-					return err
-				}
-
-				// Create a new stream connection
-				stream, err = client.DeployService(*requestCtx, request)
+				log.Infof("Retrying ... (%d/%d)", retries, maxRetries)
+				stream, err = retryServiceDeployStream(client, requestCtx, request, stream)
 				if err != nil {
-					log.Errorf("Failed to create new stream: %v", err)
 					return err
 				}
-
 				continue outerLoop
 			}
 			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
@@ -153,6 +109,41 @@ outerLoop:
 	log.Info(message)
 	return err
 }
+func retryServiceDeployStream(client serviceProto.ServiceServiceClient, requestCtx *context.Context, request *serviceProto.DeployServiceRequest, stream serviceProto.ServiceService_DeployServiceClient) (serviceProto.ServiceService_DeployServiceClient, error) {
+
+	// Close the current stream
+	if err := stream.CloseSend(); err != nil {
+		log.Errorf("Failed to close stream: %v", err)
+		return nil, err
+	}
+
+	// Create a new stream connection
+	newStream, err := client.DeployService(*requestCtx, request)
+	if err != nil {
+		log.Errorf("Failed to create new stream: %v", err)
+		return nil, err
+	}
+
+	return newStream, nil
+}
+func retryReleasedServiceDeployStream(client serviceProto.ServiceServiceClient, requestCtx *context.Context, request *serviceProto.DeployReleasedServiceRequest, stream serviceProto.ServiceService_DeployReleasedServiceClient) (serviceProto.ServiceService_DeployReleasedServiceClient, error) {
+
+	// Close the current stream
+	if err := stream.CloseSend(); err != nil {
+		log.Errorf("Failed to close stream: %v", err)
+		return nil, err
+	}
+
+	// Create a new stream connection
+	newStream, err := client.DeployReleasedService(*requestCtx, request)
+	if err != nil {
+		log.Errorf("Failed to create new stream: %v", err)
+		return nil, err
+	}
+
+	return newStream, nil
+}
+
 
 func logFailedComponentMessagesOnce(response *serviceProto.ServiceResponse) {
 	for _, compMessage := range response.ComponentsStatus {
@@ -265,12 +256,11 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 	}
 
 	var message string
-	var maxRetries = 3
 	var retries = 0
 	outerLoop:
 	for {
 		// Create a context with timeout for each Recv call
-		recvCtx, cancel := context.WithTimeout(*requestCtx, 50*time.Second)
+		recvCtx, cancel := context.WithTimeout(*requestCtx, Timeout)
 
 		responseChan := make(chan *serviceProto.DeployReleasedServiceResponse)
 		errorChan := make(chan error)
@@ -289,24 +279,14 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 			spinnerInstance.Stop()
 			cancel()
 			log.Error("Operation timed out. Retrying again")
-			if retries < maxRetries {
-				log.Infof("Retrying ... (%d/%d)", retries+1, maxRetries)
+			if retries < MaxRetries {
+				var err error
 				retries++
-				time.Sleep(5 * time.Second)
-
-				// Close the current stream
-				if err := stream.CloseSend(); err != nil {
-					log.Errorf("Failed to close stream: %v", err)
-					return err
-				}
-
-				// Create a new stream connection
-				stream, err = client.DeployReleasedService(*requestCtx, request)
+				log.Infof("Retrying ... (%d/%d)", retries, MaxRetries)
+				stream, err = retryReleasedServiceDeployStream(client, requestCtx, request, stream)
 				if err != nil {
-					log.Errorf("Failed to create new stream: %v", err)
 					return err
 				}
-
 				continue outerLoop
 			}
 			log.Errorf("TraceID: %s, error: %v", (*requestCtx).Value(constant.TraceIDKey), recvCtx.Err())
@@ -314,28 +294,17 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 		case err := <-errorChan:
 			spinnerInstance.Stop()
 			cancel()
-			if !isRetryable(err) {
+			if !util.IsRetryable(err) {
 				break outerLoop
 			}
-			if retries < maxRetries {
-				log.Errorf("Error: %v", err)
-				log.Infof("Retrying ... (%d/%d)", retries+1, maxRetries)
+			if retries < MaxRetries {
+				var err error
 				retries++
-				time.Sleep(5 * time.Second)
-
-				// Close the current stream
-				if err := stream.CloseSend(); err != nil {
-					log.Errorf("Failed to close stream: %v", err)
-					return err
-				}
-
-				// Create a new stream connection
-				stream, err = client.DeployReleasedService(*requestCtx, request)
+				log.Infof("Retrying ... (%d/%d)", retries, MaxRetries)
+				stream, err = retryReleasedServiceDeployStream(client, requestCtx, request, stream)
 				if err != nil {
-					log.Errorf("Failed to create new stream: %v", err)
 					return err
 				}
-
 				continue outerLoop
 			}
 			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))

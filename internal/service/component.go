@@ -2,11 +2,9 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"io"
-	"strings"
 	"time"
+
 
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
@@ -14,13 +12,13 @@ import (
 	component "github.com/dream11/odin/proto/gen/go/dream11/od/component/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+
 )
 
 // Component performs operation on component like operate
 type Component struct{}
-
+const MaxRetries = 10
+const Timeout =20 * time.Second
 // OperateComponent operate Component
 func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto.OperateServiceRequest) error {
 	conn, requestCtx, err := grpcClient(ctx)
@@ -41,12 +39,12 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 	}
 
 	var message string
-	var maxRetries = 3
+	var maxRetries = MaxRetries
 	var retries = 0
 	outerLoop:
 	for {
 		// Create a context with timeout for each Recv call
-		recvCtx, cancel := context.WithTimeout(*requestCtx, 50*time.Second)
+		recvCtx, cancel := context.WithTimeout(*requestCtx, Timeout)
 
 		responseChan := make(chan *serviceProto.OperateServiceResponse)
 		errorChan := make(chan error)
@@ -66,23 +64,13 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 			cancel()
 			log.Error("Operation timed out. Retrying again")
 			if retries < maxRetries {
-				log.Infof("Retrying ... (%d/%d)", retries+1, maxRetries)
+				var err error
 				retries++
-				time.Sleep(5 * time.Second)
-
-				// Close the current stream
-				if err := stream.CloseSend(); err != nil {
-					log.Errorf("Failed to close stream: %v", err)
-					return err
-				}
-
-				// Create a new stream connection
-				stream, err = client.OperateService(*requestCtx, request)
+				log.Infof("Retrying ... (%d/%d)", retries, maxRetries)
+				stream, err = retryOperateStream(client, requestCtx, request, stream)
 				if err != nil {
-					log.Errorf("Failed to create new stream: %v", err)
 					return err
 				}
-
 				continue outerLoop
 			}
 			log.Errorf("TraceID: %s, error: %v", (*requestCtx).Value(constant.TraceIDKey), recvCtx.Err())
@@ -90,28 +78,17 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 		case err := <-errorChan:
 			spinnerInstance.Stop()
 			cancel()
-			if !isRetryable(err) {
+			if !util.IsRetryable(err) {
 				break outerLoop
 			}
 			if retries < maxRetries {
-				log.Errorf("Error: %v", err)
-				log.Infof("Retrying ... (%d/%d)", retries+1, maxRetries)
+				var err error
 				retries++
-				time.Sleep(5 * time.Second)
-
-				// Close the current stream
-				if err := stream.CloseSend(); err != nil {
-					log.Errorf("Failed to close stream: %v", err)
-					return err
-				}
-
-				// Create a new stream connection
-				stream, err = client.OperateService(*requestCtx, request)
+				log.Infof("Retrying ... (%d/%d)", retries, maxRetries)
+				stream, err = retryOperateStream(client, requestCtx, request, stream)
 				if err != nil {
-					log.Errorf("Failed to create new stream: %v", err)
 					return err
 				}
-
 				continue outerLoop
 			}
 			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
@@ -131,17 +108,25 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 	return nil
 }
 
-func isRetryable(err error) bool {
-	if errors.Is(err, context.Canceled) {
-		return true
-	}
-	if err == io.EOF {
-		return false
+func retryOperateStream(client serviceProto.ServiceServiceClient, requestCtx *context.Context, request *serviceProto.OperateServiceRequest, stream serviceProto.ServiceService_OperateServiceClient) (serviceProto.ServiceService_OperateServiceClient, error) {
+
+	// Close the current stream
+	if err := stream.CloseSend(); err != nil {
+		log.Errorf("Failed to close stream: %v", err)
+		return nil, err
 	}
 
-	st, ok := status.FromError(err)
-	return ok && (st.Code() == codes.Unavailable || (st.Code() == codes.Internal && strings.Contains(st.Message(), "RST_STREAM")))
+	// Create a new stream connection
+	newStream, err := client.OperateService(*requestCtx, request)
+	if err != nil {
+		log.Errorf("Failed to create new stream: %v", err)
+		return nil, err
+	}
+
+	return newStream, nil
 }
+
+
 
 // ListComponentType List component types
 func (e *Component) ListComponentType(ctx *context.Context, request *component.ListComponentTypeRequest) (*component.ListComponentTypeResponse, error) {
