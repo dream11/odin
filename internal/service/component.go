@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/util"
@@ -35,10 +36,10 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 
 	var message string
 	var retries = 0
-	outerLoop:
+outerLoop:
 	for {
 		// Create a context with timeout for each Recv call
-		recvCtx, cancel := context.WithTimeout(*requestCtx, Timeout)
+		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
 
 		responseChan := make(chan *serviceProto.OperateServiceResponse)
 		errorChan := make(chan error)
@@ -56,37 +57,51 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 		case <-recvCtx.Done():
 			spinnerInstance.Stop()
 			cancel()
-			log.Error("Operation timed out. Retrying again")
-			if retries < MaxRetries {
+			if retries == constant.MaxRetries {
+				return nil
+			}
+			if retries == 0 {
+				log.Warnf(constant.RetryMessage)
+			}
+			if retries < constant.MaxRetries {
 				var err error
 				retries++
-				log.Infof("Retrying ... (%d/%d)", retries, MaxRetries)
+				if retries == constant.MaxRetries {
+					log.Errorf("%s %s", constant.MaxRetriesReached, fmt.Sprintf(constant.DescribeEnv, request.EnvName))
+				} else {
+					log.Infof(constant.RetryingMessage, retries, constant.MaxRetries)
+				}
 				stream, err = reconnectOperateStream(client, requestCtx, request, stream)
 				if err != nil {
-					return err
+					return nil
 				}
 				continue outerLoop
 			}
-			log.Errorf("TraceID: %s, error: %v", (*requestCtx).Value(constant.TraceIDKey), recvCtx.Err())
-			return recvCtx.Err()
+			//log.Errorf("TraceID: %s, error: %v", (*requestCtx).Value(constant.TraceIDKey), recvCtx.Err())
+			return nil
 		case err := <-errorChan:
 			spinnerInstance.Stop()
 			cancel()
 			if !util.IsRetryable(err) {
+				log.Errorf("%s", err.Error())
 				break outerLoop
 			}
-			if retries < MaxRetries {
+			if retries < constant.MaxRetries {
 				var err error
 				retries++
-				log.Infof("Retrying ... (%d/%d)", retries, MaxRetries)
+				if retries == constant.MaxRetries {
+					log.Errorf("%s %s", constant.MaxRetriesReached, fmt.Sprintf(constant.DescribeEnv, request.EnvName))
+				} else {
+					log.Infof(constant.RetryingMessage, retries, constant.MaxRetries)
+				}
 				stream, err = reconnectOperateStream(client, requestCtx, request, stream)
 				if err != nil {
-					return err
+					return nil
 				}
 				continue outerLoop
 			}
-			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
-			return err
+			//log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
+			return nil
 		case response := <-responseChan:
 			spinnerInstance.Stop()
 			cancel()
@@ -106,21 +121,17 @@ func reconnectOperateStream(client serviceProto.ServiceServiceClient, requestCtx
 
 	// Close the current stream
 	if err := stream.CloseSend(); err != nil {
-		log.Errorf("Failed to close stream: %v", err)
 		return nil, err
 	}
 
 	// Create a new stream connection
 	newStream, err := client.OperateService(*requestCtx, request)
 	if err != nil {
-		log.Errorf("Failed to create new stream: %v", err)
 		return nil, err
 	}
 
 	return newStream, nil
 }
-
-
 
 // ListComponentType List component types
 func (e *Component) ListComponentType(ctx *context.Context, request *component.ListComponentTypeRequest) (*component.ListComponentTypeResponse, error) {
@@ -157,15 +168,29 @@ func (e *Component) DescribeComponentType(ctx *context.Context, request *compone
 // CompareOperationChanges compares the operation changes
 func (e *Component) CompareOperationChanges(ctx *context.Context, request *serviceProto.OperateComponentDiffRequest) (*serviceProto.OperateComponentDiffResponse, error) {
 
-	conn, requestCtx, err := grpcClient(ctx)
-	if err != nil {
-		return nil, err
-	}
-	client := serviceProto.NewServiceServiceClient(conn)
-	response, err := client.OperateComponentDiff(*requestCtx, request)
-	if err != nil {
-		return nil, err
+	for retries := 0; retries < constant.MaxRetries; retries++ {
+		ctxWithTimeout, cancel := context.WithTimeout(*ctx, constant.Timeout)
+		defer cancel()
+
+		conn, requestCtx, err := grpcClient(&ctxWithTimeout)
+		if err != nil {
+			return nil, err
+		}
+
+		client := serviceProto.NewServiceServiceClient(conn)
+		response, err := client.OperateComponentDiff(*requestCtx, request)
+		if err == nil {
+			return response, nil
+		}
+
+		if !util.IsRetryable(err) {
+			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
+			return nil, err
+		}
+		log.Warnf(constant.RetryMessage)
+		log.Infof(constant.RetryingMessage, retries+1, constant.MaxRetries)
 	}
 
-	return response, nil
+	log.Fatalf(constant.MaxRetriesReached)
+	return nil, nil
 }
