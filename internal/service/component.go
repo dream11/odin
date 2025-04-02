@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"io"
 
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
@@ -36,22 +37,25 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 
 	var message string
 	var retries = 0
-outerLoop:
-	for {
-		// Create a context with timeout for each Recv call
-		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
 
-		responseChan := make(chan *serviceProto.OperateServiceResponse)
-		errorChan := make(chan error)
+	responseChan := make(chan *serviceProto.OperateServiceResponse)
+	errorChan := make(chan error)
 
-		go func() {
+	go func() {
+		for {
 			response, err := stream.Recv()
 			if err != nil {
 				errorChan <- err
 			} else {
 				responseChan <- response
 			}
-		}()
+		}
+	}()
+
+outerLoop:
+	for {
+		// Create a context with timeout for each Recv call
+		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
 
 		select {
 		case <-recvCtx.Done():
@@ -77,13 +81,14 @@ outerLoop:
 				}
 				continue outerLoop
 			}
-			//log.Errorf("TraceID: %s, error: %v", (*requestCtx).Value(constant.TraceIDKey), recvCtx.Err())
 			return nil
 		case err := <-errorChan:
 			spinnerInstance.Stop()
 			cancel()
 			if !util.IsRetryable(err) {
-				log.Errorf("%s", err.Error())
+				if err != io.EOF {
+					log.Errorf("%s", err.Error())
+				}
 				break outerLoop
 			}
 			if retries < constant.MaxRetries {
@@ -100,7 +105,6 @@ outerLoop:
 				}
 				continue outerLoop
 			}
-			//log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 			return nil
 		case response := <-responseChan:
 			spinnerInstance.Stop()
@@ -110,6 +114,7 @@ outerLoop:
 				logFailedComponentMessagesOnceForComponents(response.GetServiceResponse(), []string{request.GetComponentName()})
 				spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 				spinnerInstance.Start()
+				retries = 0
 			}
 		}
 	}

@@ -88,7 +88,9 @@ outerLoop:
 			spinnerInstance.Stop()
 			cancel()
 			if !util.IsRetryable(err) {
-				log.Errorf("%s", err.Error())
+				if err != io.EOF {
+					log.Errorf("%s", err.Error())
+				}
 				break outerLoop
 			}
 			if retries < constant.MaxRetries {
@@ -265,22 +267,25 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 
 	var message string
 	var retries = 0
-outerLoop:
-	for {
-		// Create a context with timeout for each Recv call
-		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
 
-		responseChan := make(chan *serviceProto.DeployReleasedServiceResponse)
-		errorChan := make(chan error)
+	responseChan := make(chan *serviceProto.DeployReleasedServiceResponse)
+	errorChan := make(chan error)
 
-		go func() {
+	go func() {
+		for {
 			response, err := stream.Recv()
 			if err != nil {
 				errorChan <- err
 			} else {
 				responseChan <- response
 			}
-		}()
+		}
+	}()
+
+outerLoop:
+	for {
+		// Create a context with timeout for each Recv call
+		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
 
 		select {
 		case <-recvCtx.Done():
@@ -311,7 +316,9 @@ outerLoop:
 			spinnerInstance.Stop()
 			cancel()
 			if !util.IsRetryable(err) {
-				log.Errorf("%s", err.Error())
+				if err != io.EOF {
+					log.Errorf("%s", err.Error())
+				}
 				break outerLoop
 			}
 			if retries < constant.MaxRetries {
@@ -328,7 +335,6 @@ outerLoop:
 				}
 				continue outerLoop
 			}
-			//log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 			return nil
 		case response := <-responseChan:
 			spinnerInstance.Stop()
@@ -338,6 +344,7 @@ outerLoop:
 				logFailedComponentMessagesOnce(response.GetServiceResponse())
 				spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 				spinnerInstance.Start()
+				retries = 0 // Reset retries on successful response
 			}
 		}
 	}
@@ -410,46 +417,28 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 	if err != nil {
 		return err
 	}
-	/*var message string
-	for {
-		response, err := stream.Recv()
-		spinnerInstance.Stop()
-		if err != nil {
-			if errors.Is(err, context.Canceled) || err == io.EOF {
-				break
-			}
-			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
-			return err
-		}
-		if response != nil {
-			message = response.ServiceResponse.Message
-			message += fmt.Sprintf("\n Service %s %s", response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
-			for _, compMessage := range response.ServiceResponse.ComponentsStatus {
-				message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
-			}
-			logFailedComponentMessagesOnce(response.GetServiceResponse())
-			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
-			spinnerInstance.Start()
-		}
-	}*/
+
 	var message string
 	var retries = 0
-outerLoop:
-	for {
-		// Create a context with timeout for each Recv call
-		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
 
-		responseChan := make(chan *serviceProto.OperateServiceResponse)
-		errorChan := make(chan error)
+	responseChan := make(chan *serviceProto.OperateServiceResponse)
+	errorChan := make(chan error)
 
-		go func() {
+	go func() {
+		for {
 			response, err := stream.Recv()
 			if err != nil {
 				errorChan <- err
 			} else {
 				responseChan <- response
 			}
-		}()
+		}
+	}()
+
+outerLoop:
+	for {
+		// Create a context with timeout for each Recv call
+		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
 
 		select {
 		case <-recvCtx.Done():
@@ -480,7 +469,9 @@ outerLoop:
 			spinnerInstance.Stop()
 			cancel()
 			if !util.IsRetryable(err) {
-				log.Errorf("%s", err.Error())
+				if err != io.EOF {
+					log.Errorf("%s", err.Error())
+				}
 				break outerLoop
 			}
 			if retries < constant.MaxRetries {
@@ -510,6 +501,7 @@ outerLoop:
 				logFailedComponentMessagesOnce(response.GetServiceResponse())
 				spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 				spinnerInstance.Start()
+				retries = 0 // Reset retries on successful response
 			}
 		}
 	}
