@@ -39,6 +39,18 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 	if err != nil {
 		return err
 	}
+	responseChan := make(chan *serviceProto.DeployServiceResponse)
+	errorChan := make(chan error)
+	go func() {
+		for {
+			response, err := stream.Recv()
+			if err != nil {
+				errorChan <- err
+			} else {
+				responseChan <- response
+			}
+		}
+	}()
 
 	var message string
 	var retries = 0
@@ -47,23 +59,12 @@ outerLoop:
 		// Create a context with timeout for each Recv call
 		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
 
-		responseChan := make(chan *serviceProto.DeployServiceResponse)
-		errorChan := make(chan error)
-
-		go func() {
-			response, err := stream.Recv()
-			if err != nil {
-				errorChan <- err
-			} else {
-				responseChan <- response
-			}
-		}()
-
 		select {
 		case <-recvCtx.Done():
 			spinnerInstance.Stop()
 			cancel()
 			if retries == constant.MaxRetries {
+				log.Errorf("%s %s", constant.MaxRetriesReached, fmt.Sprintf(constant.DescribeEnv, request.EnvName))
 				return nil
 			}
 			if retries == 0 {
@@ -72,18 +73,13 @@ outerLoop:
 			if retries < constant.MaxRetries {
 				var err error
 				retries++
-				if retries == constant.MaxRetries {
-					log.Errorf("%s %s", constant.MaxRetriesReached, fmt.Sprintf(constant.DescribeEnv, request.EnvName))
-				} else {
-					log.Infof(constant.RetryingMessage, retries, constant.MaxRetries)
-				}
+				log.Infof(constant.RetryingMessage, retries, constant.MaxRetries)
 				stream, err = reconnectServiceDeployStream(client, requestCtx, request, stream)
 				if err != nil {
 					return nil
 				}
 				continue outerLoop
 			}
-			return nil
 		case err := <-errorChan:
 			spinnerInstance.Stop()
 			cancel()
@@ -93,22 +89,23 @@ outerLoop:
 				}
 				break outerLoop
 			}
+			if retries == constant.MaxRetries {
+				log.Errorf("%s %s", constant.MaxRetriesReached, fmt.Sprintf(constant.DescribeEnv, request.EnvName))
+				return nil
+			}
+			if retries == 0 {
+				log.Warnf(constant.RetryMessage)
+			}
 			if retries < constant.MaxRetries {
 				var err error
 				retries++
-				if retries == constant.MaxRetries {
-					log.Errorf("%s %s", constant.MaxRetriesReached, fmt.Sprintf(constant.DescribeEnv, request.EnvName))
-				}
-				if retries < constant.MaxRetries {
-					log.Infof(constant.RetryingMessage, retries, constant.MaxRetries)
-				}
+				log.Infof(constant.RetryingMessage, retries, constant.MaxRetries)
 				stream, err = reconnectServiceDeployStream(client, requestCtx, request, stream)
 				if err != nil {
 					return nil
 				}
 				continue outerLoop
 			}
-			return nil
 		case response := <-responseChan:
 			spinnerInstance.Stop()
 			cancel()
@@ -120,7 +117,6 @@ outerLoop:
 			}
 		}
 	}
-
 	log.Info(message)
 	return err
 }
@@ -292,6 +288,7 @@ outerLoop:
 			spinnerInstance.Stop()
 			cancel()
 			if retries == constant.MaxRetries {
+				log.Errorf("%s %s", constant.MaxRetriesReached, fmt.Sprintf(constant.DescribeEnv, request.EnvName))
 				return nil
 			}
 			if retries == 0 {
@@ -300,18 +297,13 @@ outerLoop:
 			if retries < constant.MaxRetries {
 				var err error
 				retries++
-				if retries == constant.MaxRetries {
-					log.Errorf("%s %s", constant.MaxRetriesReached, fmt.Sprintf(constant.DescribeEnv, request.EnvName))
-				} else {
-					log.Infof(constant.RetryingMessage, retries, constant.MaxRetries)
-				}
+				log.Infof(constant.RetryingMessage, retries, constant.MaxRetries)
 				stream, err = reconnectReleasedServiceDeployStream(client, requestCtx, request, stream)
 				if err != nil {
 					return nil
 				}
 				continue outerLoop
 			}
-			return nil
 		case err := <-errorChan:
 			spinnerInstance.Stop()
 			cancel()
@@ -321,21 +313,23 @@ outerLoop:
 				}
 				break outerLoop
 			}
+			if retries == constant.MaxRetries {
+				log.Errorf("%s %s", constant.MaxRetriesReached, fmt.Sprintf(constant.DescribeEnv, request.EnvName))
+				return nil
+			}
+			if retries == 0 {
+				log.Warnf(constant.RetryMessage)
+			}
 			if retries < constant.MaxRetries {
 				var err error
 				retries++
-				if retries == constant.MaxRetries {
-					log.Errorf("%s %s", constant.MaxRetriesReached, fmt.Sprintf(constant.DescribeEnv, request.EnvName))
-				} else {
-					log.Infof(constant.RetryingMessage, retries, constant.MaxRetries)
-				}
+				log.Infof(constant.RetryingMessage, retries, constant.MaxRetries)
 				stream, err = reconnectReleasedServiceDeployStream(client, requestCtx, request, stream)
 				if err != nil {
 					return nil
 				}
 				continue outerLoop
 			}
-			return nil
 		case response := <-responseChan:
 			spinnerInstance.Stop()
 			cancel()
@@ -348,7 +342,6 @@ outerLoop:
 			}
 		}
 	}
-
 	log.Info(message)
 	return err
 }
