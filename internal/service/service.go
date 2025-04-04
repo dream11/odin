@@ -286,7 +286,11 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 			spinnerInstance.Stop()
 			cancel()
 			if response != nil {
-				message = util.GenerateResponseMessage(response.GetServiceResponse())
+				message = response.ServiceResponse.Message
+				message += fmt.Sprintf("\n Service %s %s", response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
+				for _, compMessage := range response.ServiceResponse.ComponentsStatus {
+					message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
+				}
 				logFailedComponentMessagesOnce(response.GetServiceResponse())
 				spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 				spinnerInstance.Start()
