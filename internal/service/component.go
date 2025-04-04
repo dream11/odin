@@ -3,122 +3,20 @@ package service
 import (
 	"context"
 	"fmt"
+	"io"
+
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/util"
 	component "github.com/dream11/odin/proto/gen/go/dream11/od/component/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
-	"io"
 )
 
 // Component performs operation on component like operate
 type Component struct{}
 
 // OperateComponent operate Component
-/*func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto.OperateServiceRequest) error {
-	conn, requestCtx, err := grpcClient(ctx)
-	if err != nil {
-		return err
-	}
-	client := serviceProto.NewServiceServiceClient(conn)
-	stream, err := client.OperateService(*requestCtx, request)
-	if err != nil {
-		return err
-	}
-
-	log.Info("Starting component operation...")
-	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
-	if err != nil {
-		return err
-	}
-
-	var message string
-	var retries = 0
-
-	responseChan := make(chan *serviceProto.OperateServiceResponse)
-	errorChan := make(chan error)
-
-	go func() {
-		for {
-			response, err := stream.Recv()
-			if err != nil {
-				errorChan <- err
-			} else {
-				responseChan <- response
-			}
-		}
-	}()
-
-outerLoop:
-	for {
-		// Create a context with timeout for each Recv call
-		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
-
-		select {
-		case <-recvCtx.Done():
-			spinnerInstance.Stop()
-			cancel()
-			if retries == constant.MaxRetries {
-				log.Errorf("%s %s", constant.MaxRetriesReached, fmt.Sprintf(constant.DescribeEnv, request.EnvName))
-				return nil
-			}
-			if retries == 0 {
-				log.Warnf(constant.RetryMessage)
-			}
-			if retries < constant.MaxRetries {
-				var err error
-				retries++
-				log.Infof(constant.RetryingMessage, retries, constant.MaxRetries)
-				stream, err = reconnectOperateStream(client, requestCtx, request, stream)
-				if err != nil {
-					return nil
-				}
-				continue outerLoop
-			}
-
-		case err := <-errorChan:
-			spinnerInstance.Stop()
-			cancel()
-			if !util.IsRetryable(err) {
-				if err != io.EOF {
-					log.Errorf("%s", err.Error())
-				}
-				break outerLoop
-			}
-			if retries == constant.MaxRetries {
-				log.Errorf("%s %s", constant.MaxRetriesReached, fmt.Sprintf(constant.DescribeEnv, request.EnvName))
-				return nil
-			}
-			if retries == 0 {
-				log.Warnf(constant.RetryMessage)
-			}
-			if retries < constant.MaxRetries {
-				var err error
-				retries++
-				log.Infof(constant.RetryingMessage, retries, constant.MaxRetries)
-				stream, err = reconnectOperateStream(client, requestCtx, request, stream)
-				if err != nil {
-					return nil
-				}
-				continue outerLoop
-			}
-		case response := <-responseChan:
-			spinnerInstance.Stop()
-			cancel()
-			if response != nil {
-				message = util.GenerateResponseMessageComponentSpecific(response.GetServiceResponse(), []string{request.GetComponentName()})
-				logFailedComponentMessagesOnceForComponents(response.GetServiceResponse(), []string{request.GetComponentName()})
-				spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
-				spinnerInstance.Start()
-				retries = 0
-			}
-		}
-	}
-	log.Info(message)
-	return nil
-}*/
 func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto.OperateServiceRequest) error {
 	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {
@@ -154,18 +52,25 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 		}
 	}()
 
+	reconnect := func() (serviceProto.ServiceService_OperateServiceClient, error) {
+		return reconnectOperateStream(client, requestCtx, request, stream)
+	}
+
 	for {
 		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
 
 		select {
 		case <-recvCtx.Done():
-			if !performRetry(retries, spinnerInstance, cancel, client, requestCtx, request, &stream) {
+			spinnerInstance.Stop()
+			cancel()
+			if !util.PerformRetry(retries, &stream, reconnect) {
 				return nil
 			}
 			retries++
 		case err := <-errorChan:
+			spinnerInstance.Stop()
 			cancel()
-			if !util.IsRetryable(err) || !performRetry(retries, spinnerInstance, cancel, client, requestCtx, request, &stream)  {
+			if !util.IsRetryable(err) || !util.PerformRetry(retries, &stream, reconnect) {
 				if err != io.EOF {
 					return err
 				} else if err == io.EOF {
@@ -188,40 +93,18 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 	}
 }
 
-func performRetry(retries int, spinnerInstance *spinner.Spinner, cancel context.CancelFunc, client serviceProto.ServiceServiceClient, requestCtx *context.Context, request *serviceProto.OperateServiceRequest, stream *serviceProto.ServiceService_OperateServiceClient) bool {
-	spinnerInstance.Stop()
-	cancel()
-	if retries == constant.MaxRetries {
-		log.Errorf("%s %s", constant.MaxRetriesReached, fmt.Sprintf(constant.DescribeEnv, request.EnvName))
-		return false
-	}
-	if retries == 0 {
-		log.Warnf(constant.RetryMessage)
-	}
-	if retries < constant.MaxRetries {
-		var err error
-		log.Infof(constant.RetryingMessage, retries+1, constant.MaxRetries)
-		*stream, err = reconnectOperateStream(client, requestCtx, request, *stream)
-		if err != nil {
-			return false
-		}
-	}
-	return true
-}
 func reconnectOperateStream(client serviceProto.ServiceServiceClient, requestCtx *context.Context, request *serviceProto.OperateServiceRequest, stream serviceProto.ServiceService_OperateServiceClient) (serviceProto.ServiceService_OperateServiceClient, error) {
-
-	// Close the current stream
 	if err := stream.CloseSend(); err != nil {
 		return nil, err
 	}
 
-	// Create a new stream connection
 	newStream, err := client.OperateService(*requestCtx, request)
 	if err != nil {
 		return nil, err
 	}
 
 	return newStream, nil
+
 }
 
 // ListComponentType List component types

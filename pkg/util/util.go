@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/dream11/odin/internal/ui"
+	"github.com/dream11/odin/pkg/constant"
 	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	"github.com/google/uuid"
 	"github.com/olekukonko/tablewriter"
@@ -179,6 +180,7 @@ func AskForConfirmation(expectedValue, consentMessage string) {
 		log.Fatal(fmt.Errorf("aborting the operation"))
 	}
 }
+
 // IsRetryable checks if the error is retryable
 func IsRetryable(err error) bool {
 	if errors.Is(err, context.Canceled) {
@@ -190,4 +192,32 @@ func IsRetryable(err error) bool {
 
 	st, ok := status.FromError(err)
 	return ok && (st.Code() == codes.Unavailable || (st.Code() == codes.Internal && strings.Contains(st.Message(), "RST_STREAM")))
+}
+
+type ReconnectFunc[S any] func() (S, error)
+
+func PerformRetry[S any](
+	retries int,
+	stream *S,
+	reconnect ReconnectFunc[S],
+) bool {
+	if retries == constant.MaxRetries {
+		log.Errorf("%s", constant.MaxRetriesReached)
+		return false
+	}
+
+	if retries == 0 {
+		log.Warnf(constant.RetryMessage)
+	}
+
+	if retries < constant.MaxRetries {
+		log.Infof(constant.RetryingMessage, retries+1, constant.MaxRetries)
+		newStream, err := reconnect()
+		if err != nil {
+			return false
+		}
+		*stream = newStream
+	}
+
+	return true
 }
