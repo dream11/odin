@@ -31,7 +31,7 @@ const (
 	// ConsentMessageTemplate is the template for the consent message
 	ConsentMessageTemplate = "\nYou are executing the above command on a restricted environment. Are you sure? Enter \033[1m%s\033[0m to continue:"
 
-	RetryMessage = "Unable to reach Odin backend."
+	InitiatingRetryMessage = "Unable to reach Odin backend."
 
 	MaxRetries        = 5
 	Timeout           = 20 * time.Second

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
@@ -40,22 +41,16 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 
 	responseChan := make(chan *serviceProto.OperateServiceResponse)
 	errorChan := make(chan error)
-
+	//go util.StreamReceiver(stream, responseChan, errorChan)
 	go func() {
 		for {
 			response, err := stream.Recv()
 			if err != nil {
 				errorChan <- err
-			} else {
-				responseChan <- response
 			}
+			responseChan <- response
 		}
 	}()
-
-	reconnect := func() (serviceProto.ServiceService_OperateServiceClient, error) {
-		return reconnectOperateStream(client, requestCtx, request, stream)
-	}
-
 	for {
 		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
 
@@ -63,20 +58,30 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 		case <-recvCtx.Done():
 			spinnerInstance.Stop()
 			cancel()
-			if !util.PerformRetry(retries, &stream, reconnect) {
+			if !util.CanPerformRetry(retries, constant.MaxRetries) {
 				return nil
+			} else {
+				stream, err = reconnectOperateStream(client, requestCtx, request, stream)
+				if err != nil {
+					return nil
+				}
 			}
 			retries++
 		case err := <-errorChan:
 			spinnerInstance.Stop()
 			cancel()
-			if !util.IsRetryable(err) || !util.PerformRetry(retries, &stream, reconnect) {
+			if !util.IsRetryable(err) || !util.CanPerformRetry(retries, constant.MaxRetries) {
 				if err != io.EOF {
 					return err
 				} else if err == io.EOF {
 					log.Info(message)
 				}
 				return nil
+			} else {
+				stream, err = reconnectOperateStream(client, requestCtx, request, stream)
+				if err != nil {
+					return nil
+				}
 			}
 			retries++
 		case response := <-responseChan:
@@ -161,7 +166,10 @@ func (e *Component) CompareOperationChanges(ctx *context.Context, request *servi
 			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 			return nil, err
 		}
-		log.Warnf(constant.RetryMessage)
+		time.Sleep(constant.Timeout)
+		if retries == 0 {
+			log.Warnf(constant.InitiatingRetryMessage)
+		}
 		log.Infof(constant.RetryingMessage, retries+1, constant.MaxRetries)
 	}
 

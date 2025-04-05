@@ -189,34 +189,27 @@ func IsRetryable(err error) bool {
 	if err == io.EOF {
 		return false
 	}
-
 	st, ok := status.FromError(err)
 	return ok && (st.Code() == codes.Unavailable || (st.Code() == codes.Internal && strings.Contains(st.Message(), "RST_STREAM")))
 }
 
 type ReconnectFunc[S any] func() (S, error)
 
-func PerformRetry[S any](
+func CanPerformRetry(
 	retries int,
-	stream *S,
-	reconnect ReconnectFunc[S],
+	maxRetries int,
 ) bool {
-	if retries == constant.MaxRetries {
+	if retries == maxRetries {
 		log.Errorf("%s", constant.MaxRetriesReached)
 		return false
 	}
 
 	if retries == 0 {
-		log.Warnf(constant.RetryMessage)
+		log.Warnf(constant.InitiatingRetryMessage)
 	}
 
 	if retries < constant.MaxRetries {
 		log.Infof(constant.RetryingMessage, retries+1, constant.MaxRetries)
-		newStream, err := reconnect()
-		if err != nil {
-			return false
-		}
-		*stream = newStream
 	}
 
 	return true
