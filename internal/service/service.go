@@ -45,15 +45,20 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 
 	responseChan := make(chan *serviceProto.DeployServiceResponse)
 	errorChan := make(chan error)
-	go func() {
+	go func(ctx context.Context) {
 		for {
-			response, err := stream.Recv()
-			if err != nil {
-				errorChan <- err
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				response, err := stream.Recv()
+				if err != nil {
+					errorChan <- err
+				}
+				responseChan <- response
 			}
-			responseChan <- response
 		}
-	}()
+	}(*requestCtx)
 
 	for {
 		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
@@ -217,15 +222,20 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 
 	responseChan := make(chan *serviceProto.DeployReleasedServiceResponse)
 	errorChan := make(chan error)
-	go func() {
+	go func(ctx context.Context) {
 		for {
-			response, err := stream.Recv()
-			if err != nil {
-				errorChan <- err
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				response, err := stream.Recv()
+				if err != nil {
+					errorChan <- err
+				}
+				responseChan <- response
 			}
-			responseChan <- response
 		}
-	}()
+	}(*requestCtx)
 	for {
 		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
 
@@ -348,15 +358,20 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 
 	responseChan := make(chan *serviceProto.OperateServiceResponse)
 	errorChan := make(chan error)
-	go func() {
+	go func(ctx context.Context) {
 		for {
-			response, err := stream.Recv()
-			if err != nil {
-				errorChan <- err
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				response, err := stream.Recv()
+				if err != nil {
+					errorChan <- err
+				}
+				responseChan <- response
 			}
-			responseChan <- response
 		}
-	}()
+	}(*requestCtx)
 	for {
 		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
 

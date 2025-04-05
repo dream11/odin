@@ -41,15 +41,20 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 
 	responseChan := make(chan *serviceProto.OperateServiceResponse)
 	errorChan := make(chan error)
-	go func() {
+	go func(ctx context.Context) {
 		for {
-			response, err := stream.Recv()
-			if err != nil {
-				errorChan <- err
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				response, err := stream.Recv()
+				if err != nil {
+					errorChan <- err
+				}
+				responseChan <- response
 			}
-			responseChan <- response
 		}
-	}()
+	}(*requestCtx)
 	for {
 		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
 
@@ -162,7 +167,6 @@ func (e *Component) CompareOperationChanges(ctx *context.Context, request *servi
 		}
 
 		if !util.IsRetryable(err) {
-			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 			return nil, err
 		}
 		time.Sleep(constant.Timeout)
