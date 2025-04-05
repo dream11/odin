@@ -41,7 +41,6 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 
 	responseChan := make(chan *serviceProto.OperateServiceResponse)
 	errorChan := make(chan error)
-	//go util.StreamReceiver(stream, responseChan, errorChan)
 	go func() {
 		for {
 			response, err := stream.Recv()

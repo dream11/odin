@@ -222,7 +222,6 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 			response, err := stream.Recv()
 			if err != nil {
 				errorChan <- err
-				return
 			}
 			responseChan <- response
 		}
@@ -354,7 +353,6 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 			response, err := stream.Recv()
 			if err != nil {
 				errorChan <- err
-				return
 			}
 			responseChan <- response
 		}

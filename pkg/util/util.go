@@ -193,8 +193,7 @@ func IsRetryable(err error) bool {
 	return ok && (st.Code() == codes.Unavailable || (st.Code() == codes.Internal && strings.Contains(st.Message(), "RST_STREAM")))
 }
 
-type ReconnectFunc[S any] func() (S, error)
-
+// CanPerformRetry checks if the operation can be retried
 func CanPerformRetry(
 	retries int,
 	maxRetries int,
