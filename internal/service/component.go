@@ -41,6 +41,7 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 
 	responseChan := make(chan *serviceProto.OperateServiceResponse)
 	errorChan := make(chan error)
+	go util.StreamReceiver(stream, responseChan, errorChan)
 	go func(ctx context.Context) {
 		for {
 			select {
@@ -55,6 +56,7 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 			}
 		}
 	}(*requestCtx)
+
 	for {
 		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
 
@@ -64,11 +66,10 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 			cancel()
 			if !util.CanPerformRetry(retries, constant.MaxRetries) {
 				return nil
-			} else {
-				stream, err = reconnectOperateStream(client, requestCtx, request, stream)
-				if err != nil {
-					return nil
-				}
+			}
+			stream, err = reconnectOperateStream(client, requestCtx, request, stream)
+			if err != nil {
+				return nil
 			}
 			retries++
 		case err := <-errorChan:
@@ -81,11 +82,10 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 					log.Info(message)
 				}
 				return nil
-			} else {
-				stream, err = reconnectOperateStream(client, requestCtx, request, stream)
-				if err != nil {
-					return nil
-				}
+			}
+			stream, err = reconnectOperateStream(client, requestCtx, request, stream)
+			if err != nil {
+				return nil
 			}
 			retries++
 		case response := <-responseChan:

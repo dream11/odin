@@ -69,11 +69,10 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 			cancel()
 			if !util.CanPerformRetry(retries, constant.MaxRetries) {
 				return nil
-			} else {
-				stream, err = reconnectDeployServiceStream(client, requestCtx, request, stream)
-				if err != nil {
-					return nil
-				}
+			}
+			stream, err = reconnectDeployServiceStream(client, requestCtx, request, stream)
+			if err != nil {
+				return nil
 			}
 			retries++
 		case err := <-errorChan:
@@ -86,11 +85,10 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 					log.Info(message)
 				}
 				return nil
-			} else {
-				stream, err = reconnectDeployServiceStream(client, requestCtx, request, stream)
-				if err != nil {
-					return nil
-				}
+			}
+			stream, err = reconnectDeployServiceStream(client, requestCtx, request, stream)
+			if err != nil {
+				return nil
 			}
 			retries++
 		case response := <-responseChan:
@@ -245,11 +243,10 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 			cancel()
 			if !util.CanPerformRetry(retries, constant.MaxRetries) {
 				return nil
-			} else {
-				stream, err = reconnectDeployReleasedServiceStream(client, requestCtx, request, stream)
-				if err != nil {
-					return nil
-				}
+			}
+			stream, err = reconnectDeployReleasedServiceStream(client, requestCtx, request, stream)
+			if err != nil {
+				return nil
 			}
 			retries++
 		case err := <-errorChan:
@@ -262,11 +259,10 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 					log.Info(message)
 				}
 				return nil
-			} else {
-				stream, err = reconnectDeployReleasedServiceStream(client, requestCtx, request, stream)
-				if err != nil {
-					return nil
-				}
+			}
+			stream, err = reconnectDeployReleasedServiceStream(client, requestCtx, request, stream)
+			if err != nil {
+				return nil
 			}
 			retries++
 		case response := <-responseChan:
@@ -381,11 +377,10 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 			cancel()
 			if !util.CanPerformRetry(retries, constant.MaxRetries) {
 				return nil
-			} else {
-				stream, err = reconnectOperateStream(client, requestCtx, request, stream)
-				if err != nil {
-					return nil
-				}
+			}
+			stream, err = reconnectOperateStream(client, requestCtx, request, stream)
+			if err != nil {
+				return nil
 			}
 			retries++
 		case err := <-errorChan:
@@ -398,11 +393,10 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 					log.Info(message)
 				}
 				return nil
-			} else {
-				stream, err = reconnectOperateStream(client, requestCtx, request, stream)
-				if err != nil {
-					return nil
-				}
+			}
+			stream, err = reconnectOperateStream(client, requestCtx, request, stream)
+			if err != nil {
+				return nil
 			}
 			retries++
 		case response := <-responseChan:
