@@ -1,9 +1,10 @@
 package ui
 
 import (
+	"os"
+
 	"github.com/dream11/odin/pkg/constant"
 	log "github.com/sirupsen/logrus"
-	"os"
 )
 
 func init() {

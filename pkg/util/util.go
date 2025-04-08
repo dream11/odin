@@ -1,19 +1,25 @@
 package util
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/dream11/odin/internal/ui"
-	log "github.com/sirupsen/logrus"
+	"io"
 	"net"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/dream11/odin/internal/ui"
+	"github.com/dream11/odin/pkg/constant"
 	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	"github.com/google/uuid"
 	"github.com/olekukonko/tablewriter"
+	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"gopkg.in/yaml.v2"
 )
 
@@ -173,4 +179,37 @@ func AskForConfirmation(expectedValue, consentMessage string) {
 	if val != expectedValue {
 		log.Fatal(fmt.Errorf("aborting the operation"))
 	}
+}
+
+// IsRetryable checks if the error is retryable
+func IsRetryable(err error) bool {
+	if errors.Is(err, context.Canceled) {
+		return true
+	}
+	if err == io.EOF {
+		return false
+	}
+	st, ok := status.FromError(err)
+	return ok && (st.Code() == codes.Unavailable || (st.Code() == codes.Internal && strings.Contains(st.Message(), "RST_STREAM")))
+}
+
+// CanPerformRetry checks if the operation can be retried
+func CanPerformRetry(
+	retries int,
+	maxRetries int,
+) bool {
+	if retries == maxRetries {
+		log.Errorf("%s", constant.MaxRetriesReached)
+		return false
+	}
+
+	if retries == 0 {
+		log.Warnf(constant.InitiatingRetryMessage)
+	}
+
+	if retries < constant.MaxRetries {
+		log.Infof(constant.RetryingMessage, retries+1, constant.MaxRetries)
+	}
+
+	return true
 }
