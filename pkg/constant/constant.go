@@ -30,7 +30,7 @@ const (
 
 	// ConsentMessageTemplate is the template for the consent message
 	ConsentMessageTemplate = "\nYou are executing the above command on a restricted environment. Are you sure? Enter \033[1m%s\033[0m to continue:"
-
+	// InitiatingRetryMessage is the message shown when retrying
 	InitiatingRetryMessage = "Unable to reach Odin backend."
 
 	MaxRetries        = 5
