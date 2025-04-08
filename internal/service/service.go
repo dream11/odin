@@ -166,7 +166,7 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 		return reconnectDeployReleasedServiceStream(client, requestCtx, request, stream)
 	}
 
-	generateResponse := func(response *serviceProto.DeployServiceResponse) string {
+	generateResponse := func(response *serviceProto.DeployReleasedServiceResponse) string {
 		message := response.ServiceResponse.Message
 		message += fmt.Sprintf("\n Service %s %s", response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
 		for _, compMessage := range response.ServiceResponse.ComponentsStatus {
