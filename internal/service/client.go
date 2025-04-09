@@ -49,6 +49,14 @@ func grpcClient(ctx *context.Context) (*grpc.ClientConn, *context.Context, error
 		opts = append(opts, grpc.WithTransportCredentials(cred))
 	}
 
+	/*opts = append(opts, grpc.WithKeepaliveParams(
+		keepalive.ClientParameters{
+			Time:                10 * time.Second, // Ping the server if idle for 10 seconds
+			Timeout:             15 * time.Second,  // Wait 5 seconds for a ping ack before considering the connection dead
+			PermitWithoutStream: true,             // Allow keepalive pings even with no active streams
+		},
+	))*/
+
 	conn, err := grpc.NewClient(appConfig.BackendAddress, opts...)
 
 	if err != nil {

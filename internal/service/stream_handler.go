@@ -1,7 +1,6 @@
 package service
 
 import (
-	"context"
 	"fmt"
 	"io"
 
@@ -23,68 +22,32 @@ type ReconnectFunc[S any] func() (S, error)
 type GenerateResponse[R any] func(response R) string
 
 // handleStreamResponse handles the stream response, retries on errors, and updates the spinner
-func handleStreamResponse[S StreamReceiverInterface[R], R any](stream S, requestCtx *context.Context, spinnerInstance *spinner.Spinner, reconnect ReconnectFunc[S], generateResponse GenerateResponse[R]) error {
+func handleStreamResponse[S StreamReceiverInterface[R], R any](stream S, spinnerInstance *spinner.Spinner, reconnect ReconnectFunc[S], generateResponse GenerateResponse[R]) error {
 	var message string
 	var retries = 0
-	errorChan := make(chan error)
-	responseChan := make(chan R)
-
-	go func(ctx context.Context) {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				response, err := stream.Recv()
-				if err != nil {
-					errorChan <- err
-				}
-				responseChan <- response
-			}
-		}
-	}(*requestCtx)
-
 	for {
-		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
-
-		select {
-		case <-recvCtx.Done():
+		response, err := stream.Recv()
+		if err != nil {
 			spinnerInstance.Stop()
-			cancel()
-			if !util.CanPerformRetry(retries, constant.MaxRetries) {
+			if err == io.EOF {
+				log.Info(message)
 				return nil
 			}
-			var er error
-			stream, er = reconnect()
-			if er != nil {
-				return nil
+			if !util.IsRetryable(err) || !util.CanPerformRetry(retries, constant.MaxRetries) {
+				return err
 			}
 			retries++
-		case err := <-errorChan:
-			spinnerInstance.Stop()
-			cancel()
-			if !util.IsRetryable(err) || !util.CanPerformRetry(retries, constant.MaxRetries) {
-				if err != io.EOF {
-					return err
-				} else if err == io.EOF {
-					log.Info(message)
-				}
-				return nil
-			}
 			stream, err = reconnect()
 			if err != nil {
 				return nil
 			}
-			retries++
-		case response := <-responseChan:
+			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
+			spinnerInstance.Start()
+		} else {
 			spinnerInstance.Stop()
-			cancel()
-			if !util.IsNil(response) {
-				message = generateResponse(response)
-				spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
-				spinnerInstance.Start()
-				retries = 0
-			}
+			message = generateResponse(response)
+			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
+			spinnerInstance.Start()
 		}
 	}
 }

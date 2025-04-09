@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
@@ -50,7 +51,7 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 		return message
 	}
 
-	return handleStreamResponse(stream, requestCtx, spinnerInstance, reconnect, generateResponse)
+	return handleStreamResponse(stream, spinnerInstance, reconnect, generateResponse)
 }
 
 func logFailedComponentMessagesOnce(response *serviceProto.ServiceResponse) {
@@ -176,7 +177,7 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 		return message
 	}
 
-	return handleStreamResponse(stream, requestCtx, spinnerInstance, reconnect, generateResponse)
+	return handleStreamResponse(stream, spinnerInstance, reconnect, generateResponse)
 
 }
 
@@ -250,12 +251,16 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 	}
 
 	generateResponse := func(response *serviceProto.OperateServiceResponse) string {
-		message := util.GenerateResponseMessageComponentSpecific(response.GetServiceResponse(), []string{request.GetComponentName()})
-		logFailedComponentMessagesOnceForComponents(response.GetServiceResponse(), []string{request.GetComponentName()})
+		message := response.ServiceResponse.Message
+		message += fmt.Sprintf("\n Service %s %s", response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
+		for _, compMessage := range response.ServiceResponse.ComponentsStatus {
+			message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
+		}
+		logFailedComponentMessagesOnce(response.GetServiceResponse())
 		return message
 	}
 
-	return handleStreamResponse(stream, requestCtx, spinnerInstance, reconnect, generateResponse)
+	return handleStreamResponse(stream, spinnerInstance, reconnect, generateResponse)
 }
 
 // ListService deploys service
@@ -372,13 +377,15 @@ func reconnectDeployServiceStream(client serviceProto.ServiceServiceClient, requ
 		return nil, err
 	}
 
-	// Create a new stream connection
-	newStream, err := client.DeployService(*requestCtx, request)
-	if err != nil {
-		return nil, err
-	}
+	for retries := 0; retries < constant.MaxRetries; retries++ {
+		newStream, err := client.DeployService(*requestCtx, request)
+		if err == nil {
+			return newStream, nil
+		}
 
-	return newStream, nil
+		time.Sleep(constant.ConnectionRetryTimeout)
+	}
+	return nil, fmt.Errorf(constant.FailedRetryMessage)
 }
 func reconnectDeployReleasedServiceStream(client serviceProto.ServiceServiceClient, requestCtx *context.Context, request *serviceProto.DeployReleasedServiceRequest, stream serviceProto.ServiceService_DeployReleasedServiceClient) (serviceProto.ServiceService_DeployReleasedServiceClient, error) {
 
@@ -387,11 +394,13 @@ func reconnectDeployReleasedServiceStream(client serviceProto.ServiceServiceClie
 		return nil, err
 	}
 
-	// Create a new stream connection
-	newStream, err := client.DeployReleasedService(*requestCtx, request)
-	if err != nil {
-		return nil, err
-	}
+	for retries := 0; retries < constant.MaxRetries; retries++ {
+		newStream, err := client.DeployReleasedService(*requestCtx, request)
+		if err == nil {
+			return newStream, nil
+		}
 
-	return newStream, nil
+		time.Sleep(constant.ConnectionRetryTimeout)
+	}
+	return nil, fmt.Errorf(constant.FailedRetryMessage)
 }

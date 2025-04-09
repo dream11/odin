@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/briandowns/spinner"
@@ -44,7 +45,7 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 		return message
 	}
 
-	return handleStreamResponse(stream, requestCtx, spinnerInstance, reconnect, generateResponse)
+	return handleStreamResponse(stream, spinnerInstance, reconnect, generateResponse)
 }
 
 func reconnectOperateStream(client serviceProto.ServiceServiceClient, requestCtx *context.Context, request *serviceProto.OperateServiceRequest, stream serviceProto.ServiceService_OperateServiceClient) (serviceProto.ServiceService_OperateServiceClient, error) {
@@ -52,12 +53,15 @@ func reconnectOperateStream(client serviceProto.ServiceServiceClient, requestCtx
 		return nil, err
 	}
 
-	newStream, err := client.OperateService(*requestCtx, request)
-	if err != nil {
-		return nil, err
+	for retries := 0; retries < constant.MaxConnectRetries; retries++ {
+		newStream, err := client.OperateService(*requestCtx, request)
+		if err == nil {
+			return newStream, nil
+		}
+		time.Sleep(constant.ConnectionRetryTimeout)
 	}
 
-	return newStream, nil
+	return nil, fmt.Errorf(constant.FailedRetryMessage)
 
 }
 
