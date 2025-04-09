@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
@@ -35,26 +35,84 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 	if err != nil {
 		return err
 	}
+
 	var message string
-	for {
-		response, err := stream.Recv()
-		spinnerInstance.Stop()
-		if err != nil {
-			if errors.Is(err, context.Canceled) || err == io.EOF {
-				break
+	var retries = 0
+
+	responseChan := make(chan *serviceProto.OperateServiceResponse)
+	errorChan := make(chan error)
+	go func(ctx context.Context) {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				response, err := stream.Recv()
+				if err != nil {
+					errorChan <- err
+				}
+				responseChan <- response
 			}
-			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
-			return err
 		}
-		if response != nil {
-			message = util.GenerateResponseMessageComponentSpecific(response.GetServiceResponse(), []string{request.GetComponentName()})
-			logFailedComponentMessagesOnceForComponents(response.GetServiceResponse(), []string{request.GetComponentName()})
-			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
-			spinnerInstance.Start()
+	}(*requestCtx)
+
+	for {
+		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
+
+		select {
+		case <-recvCtx.Done():
+			spinnerInstance.Stop()
+			cancel()
+			if !util.CanPerformRetry(retries, constant.MaxRetries) {
+				return nil
+			}
+			stream, err = reconnectOperateStream(client, requestCtx, request, stream)
+			if err != nil {
+				return nil
+			}
+			retries++
+		case err := <-errorChan:
+			spinnerInstance.Stop()
+			cancel()
+			if !util.IsRetryable(err) || !util.CanPerformRetry(retries, constant.MaxRetries) {
+				if err != io.EOF {
+					return err
+				} else if err == io.EOF {
+					log.Info(message)
+				}
+				return nil
+			}
+			stream, err = reconnectOperateStream(client, requestCtx, request, stream)
+			if err != nil {
+				return nil
+			}
+			retries++
+		case response := <-responseChan:
+			spinnerInstance.Stop()
+			cancel()
+			if response != nil {
+				message = util.GenerateResponseMessageComponentSpecific(response.GetServiceResponse(), []string{request.GetComponentName()})
+				logFailedComponentMessagesOnceForComponents(response.GetServiceResponse(), []string{request.GetComponentName()})
+				spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
+				spinnerInstance.Start()
+				retries = 0
+			}
 		}
 	}
-	log.Info(message)
-	return err
+}
+
+func reconnectOperateStream(client serviceProto.ServiceServiceClient, requestCtx *context.Context, request *serviceProto.OperateServiceRequest, stream serviceProto.ServiceService_OperateServiceClient) (serviceProto.ServiceService_OperateServiceClient, error) {
+	if err := stream.CloseSend(); err != nil {
+		return nil, err
+	}
+
+	newStream, err := client.OperateService(*requestCtx, request)
+	if err != nil {
+		return nil, err
+	}
+
+	return newStream, nil
+
 }
 
 // ListComponentType List component types
@@ -92,15 +150,31 @@ func (e *Component) DescribeComponentType(ctx *context.Context, request *compone
 // CompareOperationChanges compares the operation changes
 func (e *Component) CompareOperationChanges(ctx *context.Context, request *serviceProto.OperateComponentDiffRequest) (*serviceProto.OperateComponentDiffResponse, error) {
 
-	conn, requestCtx, err := grpcClient(ctx)
-	if err != nil {
-		return nil, err
-	}
-	client := serviceProto.NewServiceServiceClient(conn)
-	response, err := client.OperateComponentDiff(*requestCtx, request)
-	if err != nil {
-		return nil, err
+	for retries := 0; retries < constant.MaxRetries; retries++ {
+		ctxWithTimeout, cancel := context.WithTimeout(*ctx, constant.Timeout)
+		defer cancel()
+
+		conn, requestCtx, err := grpcClient(&ctxWithTimeout)
+		if err != nil {
+			return nil, err
+		}
+
+		client := serviceProto.NewServiceServiceClient(conn)
+		response, err := client.OperateComponentDiff(*requestCtx, request)
+		if err == nil {
+			return response, nil
+		}
+
+		if !util.IsRetryable(err) {
+			return nil, err
+		}
+		time.Sleep(constant.Timeout)
+		if retries == 0 {
+			log.Warnf(constant.InitiatingRetryMessage)
+		}
+		log.Infof(constant.RetryingMessage, retries+1, constant.MaxRetries)
 	}
 
-	return response, nil
+	log.Fatalf(constant.MaxRetriesReached)
+	return nil, nil
 }
