@@ -50,7 +50,7 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 		return message
 	}
 
-	return handleStreamReponse(stream, requestCtx, spinnerInstance, reconnect, generateResponse)
+	return handleStreamResponse(stream, requestCtx, spinnerInstance, reconnect, generateResponse)
 }
 
 func logFailedComponentMessagesOnce(response *serviceProto.ServiceResponse) {
@@ -176,7 +176,7 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 		return message
 	}
 
-	return handleStreamReponse(stream, requestCtx, spinnerInstance, reconnect, generateResponse)
+	return handleStreamResponse(stream, requestCtx, spinnerInstance, reconnect, generateResponse)
 
 }
 
@@ -255,7 +255,7 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 		return message
 	}
 
-	return handleStreamReponse(stream, requestCtx, spinnerInstance, reconnect, generateResponse)
+	return handleStreamResponse(stream, requestCtx, spinnerInstance, reconnect, generateResponse)
 }
 
 // ListService deploys service

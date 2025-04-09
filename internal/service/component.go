@@ -44,7 +44,7 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 		return message
 	}
 
-	return handleStreamReponse(stream, requestCtx, spinnerInstance, reconnect, generateResponse)
+	return handleStreamResponse(stream, requestCtx, spinnerInstance, reconnect, generateResponse)
 }
 
 func reconnectOperateStream(client serviceProto.ServiceServiceClient, requestCtx *context.Context, request *serviceProto.OperateServiceRequest, stream serviceProto.ServiceService_OperateServiceClient) (serviceProto.ServiceService_OperateServiceClient, error) {

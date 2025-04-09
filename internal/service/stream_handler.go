@@ -22,8 +22,8 @@ type ReconnectFunc[S any] func() (S, error)
 // GenerateResponse defines a function type for generating a response message
 type GenerateResponse[R any] func(response R) string
 
-// handleStreamReponse handles the stream response, retries on errors, and updates the spinner
-func handleStreamReponse[S StreamReceiverInterface[R], R any](stream S, requestCtx *context.Context, spinnerInstance *spinner.Spinner, reconnect ReconnectFunc[S], generateResponse GenerateResponse[R]) error {
+// handleStreamResponse handles the stream response, retries on errors, and updates the spinner
+func handleStreamResponse[S StreamReceiverInterface[R], R any](stream S, requestCtx *context.Context, spinnerInstance *spinner.Spinner, reconnect ReconnectFunc[S], generateResponse GenerateResponse[R]) error {
 	var message string
 	var retries = 0
 	errorChan := make(chan error)
