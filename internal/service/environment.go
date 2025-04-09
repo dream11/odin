@@ -186,10 +186,8 @@ func (e *Environment) EnvironmentStatus(ctx *context.Context, request *environme
 func (e *Environment) IsStrictEnvironment(ctx *context.Context, request *environment.IsStrictEnvironmentRequest) (*environment.IsStrictEnvironmentResponse, error) {
 
 	for retries := 0; retries < constant.MaxRetries; retries++ {
-		ctxWithTimeout, cancel := context.WithTimeout(*ctx, constant.Timeout)
-		defer cancel()
 
-		conn, requestCtx, err := grpcClient(&ctxWithTimeout)
+		conn, requestCtx, err := grpcClient(ctx)
 		if err != nil {
 			return nil, err
 		}

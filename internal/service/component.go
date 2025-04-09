@@ -101,10 +101,8 @@ func (e *Component) DescribeComponentType(ctx *context.Context, request *compone
 func (e *Component) CompareOperationChanges(ctx *context.Context, request *serviceProto.OperateComponentDiffRequest) (*serviceProto.OperateComponentDiffResponse, error) {
 
 	for retries := 0; retries < constant.MaxRetries; retries++ {
-		ctxWithTimeout, cancel := context.WithTimeout(*ctx, constant.Timeout)
-		defer cancel()
 
-		conn, requestCtx, err := grpcClient(&ctxWithTimeout)
+		conn, requestCtx, err := grpcClient(ctx)
 		if err != nil {
 			return nil, err
 		}
