@@ -34,75 +34,18 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 	}
 
 	log.Info("Deploying Service...")
-	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
-	if err != nil {
-		return err
+
+	reconnect := func() (serviceProto.ServiceService_DeployServiceClient, error) {
+		return reconnectDeployServiceStream(client, requestCtx, request, stream)
 	}
 
-	var message string
-	var retries = 0
-
-	responseChan := make(chan *serviceProto.DeployServiceResponse)
-	errorChan := make(chan error)
-	go func(ctx context.Context) {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				response, err := stream.Recv()
-				if err != nil {
-					errorChan <- err
-				}
-				responseChan <- response
-			}
-		}
-	}(*requestCtx)
-
-	for {
-		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
-
-		select {
-		case <-recvCtx.Done():
-			spinnerInstance.Stop()
-			cancel()
-			if !util.CanPerformRetry(retries, constant.MaxRetries) {
-				return nil
-			}
-			stream, err = reconnectDeployServiceStream(client, requestCtx, request, stream)
-			if err != nil {
-				return nil
-			}
-			retries++
-		case err := <-errorChan:
-			spinnerInstance.Stop()
-			cancel()
-			if !util.IsRetryable(err) || !util.CanPerformRetry(retries, constant.MaxRetries) {
-				if err != io.EOF {
-					return err
-				} else if err == io.EOF {
-					log.Info(message)
-				}
-				return nil
-			}
-			stream, err = reconnectDeployServiceStream(client, requestCtx, request, stream)
-			if err != nil {
-				return nil
-			}
-			retries++
-		case response := <-responseChan:
-			spinnerInstance.Stop()
-			cancel()
-			if response != nil {
-				message = util.GenerateResponseMessage(response.GetServiceResponse())
-				logFailedComponentMessagesOnce(response.GetServiceResponse())
-				spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
-				spinnerInstance.Start()
-				retries = 0 // Reset retries on successful response
-			}
-		}
+	generateResponse := func(response *serviceProto.DeployServiceResponse) string {
+		message := util.GenerateResponseMessage(response.GetServiceResponse())
+		logFailedComponentMessagesOnce(response.GetServiceResponse())
+		return message
 	}
+
+	return handleStreamResponse(stream, reconnect, generateResponse)
 }
 
 func logFailedComponentMessagesOnce(response *serviceProto.ServiceResponse) {
@@ -209,78 +152,21 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 	}
 
 	log.Info("Deploying Service...")
-	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
-	if err != nil {
-		return err
+	reconnect := func() (serviceProto.ServiceService_DeployReleasedServiceClient, error) {
+		return reconnectDeployReleasedServiceStream(client, requestCtx, request, stream)
 	}
 
-	var message string
-	var retries = 0
-
-	responseChan := make(chan *serviceProto.DeployReleasedServiceResponse)
-	errorChan := make(chan error)
-	go func(ctx context.Context) {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				response, err := stream.Recv()
-				if err != nil {
-					errorChan <- err
-				}
-				responseChan <- response
-			}
+	generateResponse := func(response *serviceProto.DeployReleasedServiceResponse) string {
+		message := response.ServiceResponse.Message
+		message += fmt.Sprintf("\n Service %s %s", response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
+		for _, compMessage := range response.ServiceResponse.ComponentsStatus {
+			message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
 		}
-	}(*requestCtx)
-	for {
-		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
-
-		select {
-		case <-recvCtx.Done():
-			spinnerInstance.Stop()
-			cancel()
-			if !util.CanPerformRetry(retries, constant.MaxRetries) {
-				return nil
-			}
-			stream, err = reconnectDeployReleasedServiceStream(client, requestCtx, request, stream)
-			if err != nil {
-				return nil
-			}
-			retries++
-		case err := <-errorChan:
-			spinnerInstance.Stop()
-			cancel()
-			if !util.IsRetryable(err) || !util.CanPerformRetry(retries, constant.MaxRetries) {
-				if err != io.EOF {
-					return err
-				} else if err == io.EOF {
-					log.Info(message)
-				}
-				return nil
-			}
-			stream, err = reconnectDeployReleasedServiceStream(client, requestCtx, request, stream)
-			if err != nil {
-				return nil
-			}
-			retries++
-		case response := <-responseChan:
-			spinnerInstance.Stop()
-			cancel()
-			if response != nil {
-				message = response.ServiceResponse.Message
-				message += fmt.Sprintf("\n Service %s %s", response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
-				for _, compMessage := range response.ServiceResponse.ComponentsStatus {
-					message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
-				}
-				logFailedComponentMessagesOnce(response.GetServiceResponse())
-				spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
-				spinnerInstance.Start()
-				retries = 0 // Reset retries on successful response
-			}
-		}
+		logFailedComponentMessagesOnce(response.GetServiceResponse())
+		return message
 	}
+
+	return handleStreamResponse(stream, reconnect, generateResponse)
 
 }
 
@@ -343,74 +229,22 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 	}
 
 	log.Info("Starting service operation...")
-	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
-	if err != nil {
-		return err
+
+	reconnect := func() (serviceProto.ServiceService_OperateServiceClient, error) {
+		return reconnectOperateStream(client, requestCtx, request, stream)
 	}
 
-	var message string
-	var retries = 0
-
-	responseChan := make(chan *serviceProto.OperateServiceResponse)
-	errorChan := make(chan error)
-	go func(ctx context.Context) {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				response, err := stream.Recv()
-				if err != nil {
-					errorChan <- err
-				}
-				responseChan <- response
-			}
+	generateResponse := func(response *serviceProto.OperateServiceResponse) string {
+		message := response.ServiceResponse.Message
+		message += fmt.Sprintf("\n Service %s %s", response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
+		for _, compMessage := range response.ServiceResponse.ComponentsStatus {
+			message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
 		}
-	}(*requestCtx)
-	for {
-		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
-
-		select {
-		case <-recvCtx.Done():
-			spinnerInstance.Stop()
-			cancel()
-			if !util.CanPerformRetry(retries, constant.MaxRetries) {
-				return nil
-			}
-			stream, err = reconnectOperateStream(client, requestCtx, request, stream)
-			if err != nil {
-				return nil
-			}
-			retries++
-		case err := <-errorChan:
-			spinnerInstance.Stop()
-			cancel()
-			if !util.IsRetryable(err) || !util.CanPerformRetry(retries, constant.MaxRetries) {
-				if err != io.EOF {
-					return err
-				} else if err == io.EOF {
-					log.Info(message)
-				}
-				return nil
-			}
-			stream, err = reconnectOperateStream(client, requestCtx, request, stream)
-			if err != nil {
-				return nil
-			}
-			retries++
-		case response := <-responseChan:
-			spinnerInstance.Stop()
-			cancel()
-			if response != nil {
-				message = util.GenerateResponseMessageComponentSpecific(response.GetServiceResponse(), []string{request.GetComponentName()})
-				logFailedComponentMessagesOnceForComponents(response.GetServiceResponse(), []string{request.GetComponentName()})
-				spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
-				spinnerInstance.Start()
-				retries = 0
-			}
-		}
+		logFailedComponentMessagesOnce(response.GetServiceResponse())
+		return message
 	}
+
+	return handleStreamResponse(stream, reconnect, generateResponse)
 }
 
 // ListService deploys service
@@ -527,13 +361,12 @@ func reconnectDeployServiceStream(client serviceProto.ServiceServiceClient, requ
 		return nil, err
 	}
 
-	// Create a new stream connection
 	newStream, err := client.DeployService(*requestCtx, request)
-	if err != nil {
-		return nil, err
+	if err == nil {
+		return newStream, nil
 	}
 
-	return newStream, nil
+	return nil, fmt.Errorf(constant.FailedRetryMessage)
 }
 func reconnectDeployReleasedServiceStream(client serviceProto.ServiceServiceClient, requestCtx *context.Context, request *serviceProto.DeployReleasedServiceRequest, stream serviceProto.ServiceService_DeployReleasedServiceClient) (serviceProto.ServiceService_DeployReleasedServiceClient, error) {
 
@@ -542,11 +375,10 @@ func reconnectDeployReleasedServiceStream(client serviceProto.ServiceServiceClie
 		return nil, err
 	}
 
-	// Create a new stream connection
 	newStream, err := client.DeployReleasedService(*requestCtx, request)
-	if err != nil {
-		return nil, err
+	if err == nil {
+		return newStream, nil
 	}
 
-	return newStream, nil
+	return nil, fmt.Errorf(constant.FailedRetryMessage)
 }

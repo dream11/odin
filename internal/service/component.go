@@ -3,10 +3,8 @@ package service
 import (
 	"context"
 	"fmt"
-	"io"
 	"time"
 
-	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/util"
 	component "github.com/dream11/odin/proto/gen/go/dream11/od/component/v1"
@@ -30,75 +28,17 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 	}
 
 	log.Info("Starting component operation...")
-	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
-	if err != nil {
-		return err
+	reconnect := func() (serviceProto.ServiceService_OperateServiceClient, error) {
+		return reconnectOperateStream(client, requestCtx, request, stream)
 	}
 
-	var message string
-	var retries = 0
-
-	responseChan := make(chan *serviceProto.OperateServiceResponse)
-	errorChan := make(chan error)
-	go func(ctx context.Context) {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				response, err := stream.Recv()
-				if err != nil {
-					errorChan <- err
-				}
-				responseChan <- response
-			}
-		}
-	}(*requestCtx)
-
-	for {
-		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
-
-		select {
-		case <-recvCtx.Done():
-			spinnerInstance.Stop()
-			cancel()
-			if !util.CanPerformRetry(retries, constant.MaxRetries) {
-				return nil
-			}
-			stream, err = reconnectOperateStream(client, requestCtx, request, stream)
-			if err != nil {
-				return nil
-			}
-			retries++
-		case err := <-errorChan:
-			spinnerInstance.Stop()
-			cancel()
-			if !util.IsRetryable(err) || !util.CanPerformRetry(retries, constant.MaxRetries) {
-				if err != io.EOF {
-					return err
-				} else if err == io.EOF {
-					log.Info(message)
-				}
-				return nil
-			}
-			stream, err = reconnectOperateStream(client, requestCtx, request, stream)
-			if err != nil {
-				return nil
-			}
-			retries++
-		case response := <-responseChan:
-			spinnerInstance.Stop()
-			cancel()
-			if response != nil {
-				message = util.GenerateResponseMessageComponentSpecific(response.GetServiceResponse(), []string{request.GetComponentName()})
-				logFailedComponentMessagesOnceForComponents(response.GetServiceResponse(), []string{request.GetComponentName()})
-				spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
-				spinnerInstance.Start()
-				retries = 0
-			}
-		}
+	generateResponse := func(response *serviceProto.OperateServiceResponse) string {
+		message := util.GenerateResponseMessageComponentSpecific(response.GetServiceResponse(), []string{request.GetComponentName()})
+		logFailedComponentMessagesOnceForComponents(response.GetServiceResponse(), []string{request.GetComponentName()})
+		return message
 	}
+
+	return handleStreamResponse(stream, reconnect, generateResponse)
 }
 
 func reconnectOperateStream(client serviceProto.ServiceServiceClient, requestCtx *context.Context, request *serviceProto.OperateServiceRequest, stream serviceProto.ServiceService_OperateServiceClient) (serviceProto.ServiceService_OperateServiceClient, error) {
@@ -107,11 +47,11 @@ func reconnectOperateStream(client serviceProto.ServiceServiceClient, requestCtx
 	}
 
 	newStream, err := client.OperateService(*requestCtx, request)
-	if err != nil {
-		return nil, err
+	if err == nil {
+		return newStream, nil
 	}
 
-	return newStream, nil
+	return nil, fmt.Errorf(constant.FailedRetryMessage)
 
 }
 
@@ -150,11 +90,9 @@ func (e *Component) DescribeComponentType(ctx *context.Context, request *compone
 // CompareOperationChanges compares the operation changes
 func (e *Component) CompareOperationChanges(ctx *context.Context, request *serviceProto.OperateComponentDiffRequest) (*serviceProto.OperateComponentDiffResponse, error) {
 
-	for retries := 0; retries < constant.MaxRetries; retries++ {
-		ctxWithTimeout, cancel := context.WithTimeout(*ctx, constant.Timeout)
-		defer cancel()
+	for retries := 0; retries < constant.MaxConnectRetries; retries++ {
 
-		conn, requestCtx, err := grpcClient(&ctxWithTimeout)
+		conn, requestCtx, err := grpcClient(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -168,11 +106,11 @@ func (e *Component) CompareOperationChanges(ctx *context.Context, request *servi
 		if !util.IsRetryable(err) {
 			return nil, err
 		}
-		time.Sleep(constant.Timeout)
+		time.Sleep(constant.ConnectionRetryTimeout)
 		if retries == 0 {
 			log.Warnf(constant.InitiatingRetryMessage)
 		}
-		log.Infof(constant.RetryingMessage, retries+1, constant.MaxRetries)
+		log.Infof(constant.RetryingMessage, retries+1, constant.MaxConnectRetries)
 	}
 
 	log.Fatalf(constant.MaxRetriesReached)

@@ -185,11 +185,9 @@ func (e *Environment) EnvironmentStatus(ctx *context.Context, request *environme
 // IsStrictEnvironment checks if the given environment is a strict environment
 func (e *Environment) IsStrictEnvironment(ctx *context.Context, request *environment.IsStrictEnvironmentRequest) (*environment.IsStrictEnvironmentResponse, error) {
 
-	for retries := 0; retries < constant.MaxRetries; retries++ {
-		ctxWithTimeout, cancel := context.WithTimeout(*ctx, constant.Timeout)
-		defer cancel()
+	for retries := 0; retries < constant.MaxConnectRetries; retries++ {
 
-		conn, requestCtx, err := grpcClient(&ctxWithTimeout)
+		conn, requestCtx, err := grpcClient(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -204,11 +202,11 @@ func (e *Environment) IsStrictEnvironment(ctx *context.Context, request *environ
 			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 			return nil, err
 		}
-		time.Sleep(constant.Timeout)
+		time.Sleep(constant.ConnectionRetryTimeout)
 		if retries == 0 {
 			log.Warnf(constant.InitiatingRetryMessage)
 		}
-		log.Infof(constant.RetryingMessage, retries+1, constant.MaxRetries)
+		log.Infof(constant.RetryingMessage, retries+1, constant.MaxConnectRetries)
 	}
 
 	log.Fatalf(constant.MaxRetriesReached)
