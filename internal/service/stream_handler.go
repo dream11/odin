@@ -42,7 +42,7 @@ func handleStreamResponse[S StreamReceiverInterface[R], R any](stream S, reconne
 			if !util.IsRetryable(err) {
 				return err
 			}
-			stream, err = retryWithReconnect(reconnect, constant.MaxConnectRetries, constant.ConnectionRetryTimeout)
+			stream, err = reconnectWithRetry(reconnect, constant.MaxConnectRetries, constant.ConnectionRetryTimeout)
 			if err != nil {
 				return err
 			}
@@ -57,7 +57,7 @@ func handleStreamResponse[S StreamReceiverInterface[R], R any](stream S, reconne
 	}
 }
 
-func retryWithReconnect[S any](reconnect ReconnectFunc[S], maxRetries int, retryTimeout time.Duration) (S, error) {
+func reconnectWithRetry[S any](reconnect ReconnectFunc[S], maxRetries int, retryTimeout time.Duration) (S, error) {
 	var stream S
 	var err error
 
