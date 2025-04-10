@@ -8,13 +8,11 @@ import (
 	"io"
 	"net"
 	"os"
-	"reflect"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/dream11/odin/internal/ui"
-	"github.com/dream11/odin/pkg/constant"
 	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	"github.com/google/uuid"
 	"github.com/olekukonko/tablewriter"
@@ -192,36 +190,4 @@ func IsRetryable(err error) bool {
 	}
 	st, ok := status.FromError(err)
 	return ok && (st.Code() == codes.Unavailable || (st.Code() == codes.Internal && strings.Contains(st.Message(), "RST_STREAM")))
-}
-
-// CanPerformRetry checks if the operation can be retried
-func CanPerformRetry(
-	retries int,
-	maxRetries int,
-) bool {
-	if retries == maxRetries {
-		log.Errorf("%s", constant.MaxRetriesReached)
-		return false
-	}
-
-	if retries == 0 {
-		log.Warnf(constant.InitiatingRetryMessage)
-	}
-
-	if retries < constant.MaxRetries {
-		log.Infof(constant.RetryingMessage, retries+1, constant.MaxRetries)
-	}
-
-	return true
-}
-
-// IsNil checks if a value is nil
-func IsNil[T any](v T) bool {
-	val := reflect.ValueOf(v)
-	switch val.Kind() {
-	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer, reflect.Slice:
-		return val.IsNil()
-	default:
-		return false
-	}
 }

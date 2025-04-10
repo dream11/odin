@@ -90,7 +90,7 @@ func (e *Component) DescribeComponentType(ctx *context.Context, request *compone
 // CompareOperationChanges compares the operation changes
 func (e *Component) CompareOperationChanges(ctx *context.Context, request *serviceProto.OperateComponentDiffRequest) (*serviceProto.OperateComponentDiffResponse, error) {
 
-	for retries := 0; retries < constant.MaxRetries; retries++ {
+	for retries := 0; retries < constant.MaxConnectRetries; retries++ {
 
 		conn, requestCtx, err := grpcClient(ctx)
 		if err != nil {
@@ -106,11 +106,11 @@ func (e *Component) CompareOperationChanges(ctx *context.Context, request *servi
 		if !util.IsRetryable(err) {
 			return nil, err
 		}
-		time.Sleep(constant.Timeout)
+		time.Sleep(constant.ConnectionRetryTimeout)
 		if retries == 0 {
 			log.Warnf(constant.InitiatingRetryMessage)
 		}
-		log.Infof(constant.RetryingMessage, retries+1, constant.MaxRetries)
+		log.Infof(constant.RetryingMessage, retries+1, constant.MaxConnectRetries)
 	}
 
 	log.Fatalf(constant.MaxRetriesReached)
