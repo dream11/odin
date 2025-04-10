@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/util"
 	component "github.com/dream11/odin/proto/gen/go/dream11/od/component/v1"
@@ -29,12 +28,6 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 	}
 
 	log.Info("Starting component operation...")
-	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
-	if err != nil {
-		return err
-	}
-
 	reconnect := func() (serviceProto.ServiceService_OperateServiceClient, error) {
 		return reconnectOperateStream(client, requestCtx, request, stream)
 	}

@@ -34,11 +34,6 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 	}
 
 	log.Info("Deploying Service...")
-	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
-	if err != nil {
-		return err
-	}
 
 	reconnect := func() (serviceProto.ServiceService_DeployServiceClient, error) {
 		return reconnectDeployServiceStream(client, requestCtx, request, stream)
@@ -157,11 +152,6 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 	}
 
 	log.Info("Deploying Service...")
-	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
-	if err != nil {
-		return err
-	}
 	reconnect := func() (serviceProto.ServiceService_DeployReleasedServiceClient, error) {
 		return reconnectDeployReleasedServiceStream(client, requestCtx, request, stream)
 	}
@@ -239,11 +229,6 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 	}
 
 	log.Info("Starting service operation...")
-	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
-	if err != nil {
-		return err
-	}
 
 	reconnect := func() (serviceProto.ServiceService_OperateServiceClient, error) {
 		return reconnectOperateStream(client, requestCtx, request, stream)
