@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"time"
 
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
@@ -51,7 +50,7 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 		return message
 	}
 
-	return handleStreamResponse(stream, spinnerInstance, reconnect, generateResponse)
+	return handleStreamResponse(stream, reconnect, generateResponse)
 }
 
 func logFailedComponentMessagesOnce(response *serviceProto.ServiceResponse) {
@@ -177,7 +176,7 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 		return message
 	}
 
-	return handleStreamResponse(stream, spinnerInstance, reconnect, generateResponse)
+	return handleStreamResponse(stream, reconnect, generateResponse)
 
 }
 
@@ -260,7 +259,7 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 		return message
 	}
 
-	return handleStreamResponse(stream, spinnerInstance, reconnect, generateResponse)
+	return handleStreamResponse(stream, reconnect, generateResponse)
 }
 
 // ListService deploys service
@@ -377,14 +376,11 @@ func reconnectDeployServiceStream(client serviceProto.ServiceServiceClient, requ
 		return nil, err
 	}
 
-	for retries := 0; retries < constant.MaxRetries; retries++ {
-		newStream, err := client.DeployService(*requestCtx, request)
-		if err == nil {
-			return newStream, nil
-		}
-
-		time.Sleep(constant.ConnectionRetryTimeout)
+	newStream, err := client.DeployService(*requestCtx, request)
+	if err == nil {
+		return newStream, nil
 	}
+
 	return nil, fmt.Errorf(constant.FailedRetryMessage)
 }
 func reconnectDeployReleasedServiceStream(client serviceProto.ServiceServiceClient, requestCtx *context.Context, request *serviceProto.DeployReleasedServiceRequest, stream serviceProto.ServiceService_DeployReleasedServiceClient) (serviceProto.ServiceService_DeployReleasedServiceClient, error) {
@@ -394,13 +390,10 @@ func reconnectDeployReleasedServiceStream(client serviceProto.ServiceServiceClie
 		return nil, err
 	}
 
-	for retries := 0; retries < constant.MaxRetries; retries++ {
-		newStream, err := client.DeployReleasedService(*requestCtx, request)
-		if err == nil {
-			return newStream, nil
-		}
-
-		time.Sleep(constant.ConnectionRetryTimeout)
+	newStream, err := client.DeployReleasedService(*requestCtx, request)
+	if err == nil {
+		return newStream, nil
 	}
+
 	return nil, fmt.Errorf(constant.FailedRetryMessage)
 }

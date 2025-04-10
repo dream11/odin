@@ -45,7 +45,7 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 		return message
 	}
 
-	return handleStreamResponse(stream, spinnerInstance, reconnect, generateResponse)
+	return handleStreamResponse(stream, reconnect, generateResponse)
 }
 
 func reconnectOperateStream(client serviceProto.ServiceServiceClient, requestCtx *context.Context, request *serviceProto.OperateServiceRequest, stream serviceProto.ServiceService_OperateServiceClient) (serviceProto.ServiceService_OperateServiceClient, error) {
@@ -53,12 +53,9 @@ func reconnectOperateStream(client serviceProto.ServiceServiceClient, requestCtx
 		return nil, err
 	}
 
-	for retries := 0; retries < constant.MaxConnectRetries; retries++ {
-		newStream, err := client.OperateService(*requestCtx, request)
-		if err == nil {
-			return newStream, nil
-		}
-		time.Sleep(constant.ConnectionRetryTimeout)
+	newStream, err := client.OperateService(*requestCtx, request)
+	if err == nil {
+		return newStream, nil
 	}
 
 	return nil, fmt.Errorf(constant.FailedRetryMessage)

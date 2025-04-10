@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
@@ -22,9 +23,14 @@ type ReconnectFunc[S any] func() (S, error)
 type GenerateResponse[R any] func(response R) string
 
 // handleStreamResponse handles the stream response, retries on errors, and updates the spinner
-func handleStreamResponse[S StreamReceiverInterface[R], R any](stream S, spinnerInstance *spinner.Spinner, reconnect ReconnectFunc[S], generateResponse GenerateResponse[R]) error {
+func handleStreamResponse[S StreamReceiverInterface[R], R any](stream S, reconnect ReconnectFunc[S], generateResponse GenerateResponse[R]) error {
+	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
+	err := spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
+	if err != nil {
+		return err
+	}
+
 	var message string
-	var retries = 0
 	for {
 		response, err := stream.Recv()
 		if err != nil {
@@ -33,13 +39,12 @@ func handleStreamResponse[S StreamReceiverInterface[R], R any](stream S, spinner
 				log.Info(message)
 				return nil
 			}
-			if !util.IsRetryable(err) || !util.CanPerformRetry(retries, constant.MaxRetries) {
+			if !util.IsRetryable(err) {
 				return err
 			}
-			retries++
-			stream, err = reconnect()
+			stream, err = retryWithReconnect(reconnect, constant.MaxConnectRetries, constant.ConnectionRetryTimeout)
 			if err != nil {
-				return nil
+				return err
 			}
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
 			spinnerInstance.Start()
@@ -50,4 +55,30 @@ func handleStreamResponse[S StreamReceiverInterface[R], R any](stream S, spinner
 			spinnerInstance.Start()
 		}
 	}
+}
+
+func retryWithReconnect[S any](reconnect ReconnectFunc[S], maxRetries int, retryTimeout time.Duration) (S, error) {
+	var stream S
+	var err error
+
+	for retries := 0; retries < maxRetries; retries++ {
+
+		if retries == 0 {
+			log.Warnf(constant.InitiatingRetryMessage)
+		}
+
+		if retries < maxRetries {
+			log.Infof(constant.RetryingMessage, retries+1, maxRetries)
+		}
+
+		stream, err = reconnect()
+		if err == nil {
+			return stream, nil
+		}
+
+		time.Sleep(retryTimeout)
+	}
+	log.Errorf("%s", constant.MaxRetriesReached)
+
+	return stream, err
 }
