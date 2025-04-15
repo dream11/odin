@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 
 	logs "github.com/dream11/odin/proto/gen/go/dream11/od/logs/v1"
 )
@@ -17,12 +18,12 @@ func (l *Logs) GetLogs(ctx *context.Context, request *logs.GetLogsRequest) (int6
 	// Get logs
 	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {
-		return 0, err
+		return request.GetStartTime(), err
 	}
 	client := logs.NewLogsServiceClient(conn)
 	stream, err := client.GetLogs(*requestCtx, request)
 	if err != nil {
-		return 0, err
+		return request.GetStartTime(), err
 	}
 
 	lastLogTime := int64(0)
@@ -40,7 +41,9 @@ func (l *Logs) GetLogs(ctx *context.Context, request *logs.GetLogsRequest) (int6
 		}
 		if response != nil {
 			for _, logMessage := range response.Logs {
-				fmt.Println(logMessage.GetMessage())
+				if !strings.Contains(logMessage.GetMessage(), "DEBUG") {
+					fmt.Println(logMessage.GetMessage())
+				}
 				lastLogTime = logMessage.GetTimestamp()
 			}
 		}

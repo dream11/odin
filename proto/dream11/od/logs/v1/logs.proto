@@ -8,7 +8,7 @@ service LogsService {
 }
 
 message GetLogsRequest {
-  optional string trace_id = 1;
+  string trace_id = 1;
   optional bool follow = 2;
   optional string service_name = 3;
   optional string component_name = 4;
