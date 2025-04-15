@@ -8,7 +8,7 @@ import (
 	"io"
 	"time"
 
-	grpc "google.golang.org/grpc"
+	"google.golang.org/grpc"
 
 	"github.com/avast/retry-go"
 	"github.com/briandowns/spinner"
@@ -114,16 +114,17 @@ func StreamServiceDeployResponse(cancelFunc context.CancelFunc, request *service
 		return err
 	}
 
+	var serviceStatus, serviceAction string
 	for {
 		response, err := stream.Recv()
 		if err != nil {
-			if err == io.EOF {
+			if isActionCompleted(serviceAction, serviceStatus) {
 				cancelFunc()
 				return nil
 			}
 
 			st, _ := status.FromError(err)
-			if slices.Contains(RetryableStatusCodes, st.Code()) {
+			if err == io.EOF || slices.Contains(RetryableStatusCodes, st.Code()) {
 				return retryable.NewRetryableError(err, true)
 			}
 
@@ -132,8 +133,8 @@ func StreamServiceDeployResponse(cancelFunc context.CancelFunc, request *service
 		}
 
 		if response != nil {
-			serviceStatus := response.GetServiceResponse().ServiceStatus.ServiceStatus
-			serviceAction := response.GetServiceResponse().ServiceStatus.ServiceAction
+			serviceStatus = response.GetServiceResponse().ServiceStatus.ServiceStatus
+			serviceAction = response.GetServiceResponse().ServiceStatus.ServiceAction
 
 			if isActionCompleted(serviceAction, serviceStatus) {
 				cancelFunc()

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	grpc "google.golang.org/grpc"
+	"google.golang.org/grpc"
 	"io"
 	"strings"
 
