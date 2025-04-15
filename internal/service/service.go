@@ -8,8 +8,6 @@ import (
 	"io"
 	"time"
 
-	"google.golang.org/grpc"
-
 	"github.com/avast/retry-go"
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
@@ -21,6 +19,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/exp/slices"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -39,6 +38,7 @@ var serviceTerminalConditions = map[string]map[string]bool{
 	"VALIDATE": {"FAILED": true},
 }
 
+// RetryableStatusCodes are the status codes that are retryable
 var RetryableStatusCodes = []codes.Code{codes.DeadlineExceeded, codes.Canceled, codes.Unavailable}
 
 // DeployService deploys service
@@ -64,12 +64,12 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 				log.Info("Connection lost, retrying...")
 				return true
 			}
-			log.Info("Connection lost, exiting...")
 			return false
 		}),
 	)
 }
 
+// StreamLogs streams logs for a service
 func StreamLogs(streamCtx context.Context, ctx *context.Context, request *serviceProto.DeployServiceRequest) {
 	var err error
 	lastLogTime := int64(0)
@@ -96,6 +96,7 @@ func StreamLogs(streamCtx context.Context, ctx *context.Context, request *servic
 	}
 }
 
+// StreamServiceDeployResponse streams the service deploy response
 func StreamServiceDeployResponse(cancelFunc context.CancelFunc, request *serviceProto.DeployServiceRequest, ctx *context.Context) error {
 	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {

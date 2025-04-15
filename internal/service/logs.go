@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"google.golang.org/grpc"
 	"io"
 	"strings"
 
 	logs "github.com/dream11/odin/proto/gen/go/dream11/od/logs/v1"
+	"google.golang.org/grpc"
 )
 
 // Logs performs operation on logs like get logs
