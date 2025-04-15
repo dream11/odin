@@ -194,10 +194,7 @@ func IsRetryable(err error) bool {
 }
 
 // CanPerformRetry checks if the operation can be retried
-func CanPerformRetry(
-	retries int,
-	maxRetries int,
-) bool {
+func CanPerformRetry(retries int, maxRetries int) bool {
 	if retries == maxRetries {
 		log.Errorf("%s", constant.MaxRetriesReached)
 		return false

@@ -5,14 +5,22 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
+	"time"
+
+	"github.com/avast/retry-go"
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
+	"github.com/dream11/odin/pkg/retryable"
 	"github.com/dream11/odin/pkg/util"
 	serviceDto "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1"
+	logs "github.com/dream11/odin/proto/gen/go/dream11/od/logs/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
-	"io"
+	"golang.org/x/exp/slices"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // Service performs operation on service like deploy. undeploy
@@ -22,8 +30,77 @@ var logsClient = Logs{}
 
 var responseMap = make(map[string]string)
 
+var serviceTerminalConditions = map[string]map[string]bool{
+	"DEPLOY":   {"SUCCESSFUL": true, "FAILED": true},
+	"UNDEPLOY": {"SUCCESSFUL": true, "FAILED": true},
+	"OPERATE":  {"SUCCESSFUL": true, "FAILED": true},
+	"VALIDATE": {"FAILED": true},
+}
+
+var RetryableStatusCodes = []codes.Code{codes.DeadlineExceeded, codes.Canceled, codes.Unavailable}
+
 // DeployService deploys service
 func (e *Service) DeployService(ctx *context.Context, request *serviceProto.DeployServiceRequest) error {
+	log.Info("Deploying Service...")
+	// Create a context with cancel
+	streamCtx, cancel := context.WithCancel(context.Background())
+	go StreamLogs(streamCtx, ctx, request)
+	err := retry.Do(
+		func() error {
+			return StreamServiceDeployResponse(cancel, request, ctx)
+		},
+		retry.Attempts(constant.MaxRetries),
+		retry.Delay(constant.Timeout),
+		retry.RetryIf(func(err error) bool {
+			var re retryable.Error
+			if errors.As(err, &re) {
+				if re.Retryable() {
+					log.Info("Connection with backend server lost. Retrying...")
+					return true
+				}
+			}
+			log.Info("Connection with backend server lost. Exiting...")
+			return false
+		}),
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func StreamLogs(streamCtx context.Context, ctx *context.Context, request *serviceProto.DeployServiceRequest) {
+	lastLogTime := int64(0)
+	attempts := 0
+	var err error
+	for {
+		if attempts == 0 {
+			log.Info("Fetching live logs...")
+		}
+		select {
+		case <-streamCtx.Done(): // Listen for cancellation signal
+			return
+		default:
+			traceID := (*ctx).Value(constant.TraceIDKey).(string)
+			follow := true
+			lastLogTime, err = logsClient.GetLogs(ctx, &logs.GetLogsRequest{
+				TraceId:     &traceID,
+				Follow:      &follow,
+				ServiceName: &request.GetServiceDefinition().Name,
+				StartTime:   &lastLogTime,
+			})
+			if err != nil {
+				if attempts > 0 && attempts%5 == 0 {
+					log.Info("Taking longer than expected to fetch logs...retrying")
+				}
+			}
+			attempts++
+			time.Sleep(5 * time.Second)
+		}
+	}
+}
+
+func StreamServiceDeployResponse(cancelFunc context.CancelFunc, request *serviceProto.DeployServiceRequest, ctx *context.Context) error {
 	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {
 		return err
@@ -33,74 +110,33 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 	if err != nil {
 		return err
 	}
-
-	log.Info("Deploying Service...")
-	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
-	if err != nil {
-		return err
-	}
-
-	var message string
-	var retries = 0
-
-	responseChan := make(chan *serviceProto.DeployServiceResponse)
-	errorChan := make(chan error)
-	go func(ctx context.Context) {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				response, err := stream.Recv()
-				if err != nil {
-					errorChan <- err
-				}
-				responseChan <- response
-			}
-		}
-	}(*requestCtx)
-
+	var serviceStatus, serviceAction string
 	for {
-		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
+		response, err := stream.Recv()
+		if err != nil {
+			if isActionCompleted(serviceAction, serviceStatus) {
+				cancelFunc()
+				log.Info("Service deployment completed successfully")
+				return nil
+			}
+			st, _ := status.FromError(err)
+			if err == io.EOF || slices.Contains(RetryableStatusCodes, st.Code()) {
+				return retryable.NewRetryableError(err, true)
+			}
+			cancelFunc()
+			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
+			return err
+		}
 
-		select {
-		case <-recvCtx.Done():
-			spinnerInstance.Stop()
-			cancel()
-			if !util.CanPerformRetry(retries, constant.MaxRetries) {
+		if response != nil {
+			serviceStatus = response.GetServiceResponse().ServiceStatus.ServiceStatus
+			serviceAction = response.GetServiceResponse().ServiceStatus.ServiceAction
+			if !isActionCompleted(serviceAction, serviceStatus) {
+				continue
+			} else {
+				cancelFunc()
+				log.Info(util.GenerateResponseMessage(response.GetServiceResponse()))
 				return nil
-			}
-			stream, err = reconnectDeployServiceStream(client, requestCtx, request, stream)
-			if err != nil {
-				return nil
-			}
-			retries++
-		case err := <-errorChan:
-			spinnerInstance.Stop()
-			cancel()
-			if !util.IsRetryable(err) || !util.CanPerformRetry(retries, constant.MaxRetries) {
-				if err != io.EOF {
-					return err
-				} else if err == io.EOF {
-					log.Info(message)
-				}
-				return nil
-			}
-			stream, err = reconnectDeployServiceStream(client, requestCtx, request, stream)
-			if err != nil {
-				return nil
-			}
-			retries++
-		case response := <-responseChan:
-			spinnerInstance.Stop()
-			cancel()
-			if response != nil {
-				message = util.GenerateResponseMessage(response.GetServiceResponse())
-				logFailedComponentMessagesOnce(response.GetServiceResponse())
-				spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
-				spinnerInstance.Start()
-				retries = 0 // Reset retries on successful response
 			}
 		}
 	}
@@ -521,21 +557,6 @@ func (e *Service) GetConflictingServices(ctx *context.Context, request *serviceP
 	return response, err
 }
 
-func reconnectDeployServiceStream(client serviceProto.ServiceServiceClient, requestCtx *context.Context, request *serviceProto.DeployServiceRequest, stream serviceProto.ServiceService_DeployServiceClient) (serviceProto.ServiceService_DeployServiceClient, error) {
-
-	// Close the current stream
-	if err := stream.CloseSend(); err != nil {
-		return nil, err
-	}
-
-	// Create a new stream connection
-	newStream, err := client.DeployService(*requestCtx, request)
-	if err != nil {
-		return nil, err
-	}
-
-	return newStream, nil
-}
 func reconnectDeployReleasedServiceStream(client serviceProto.ServiceServiceClient, requestCtx *context.Context, request *serviceProto.DeployReleasedServiceRequest, stream serviceProto.ServiceService_DeployReleasedServiceClient) (serviceProto.ServiceService_DeployReleasedServiceClient, error) {
 
 	// Close the current stream
@@ -550,4 +571,11 @@ func reconnectDeployReleasedServiceStream(client serviceProto.ServiceServiceClie
 	}
 
 	return newStream, nil
+}
+
+func isActionCompleted(serviceAction, status string) bool {
+	if serviceAction == "" || status == "" {
+		return false
+	}
+	return serviceTerminalConditions[serviceAction][status]
 }

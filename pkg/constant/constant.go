@@ -34,7 +34,7 @@ const (
 	InitiatingRetryMessage = "Unable to reach Odin backend."
 
 	MaxRetries        = 5
-	Timeout           = 20 * time.Second
+	Timeout           = 10 * time.Second
 	MaxRetriesReached = "Max retries reached. Exiting...\nPlease check:\n- Your internet connection: \n- VPN connected properly"
 	DescribeEnv       = "\n- Please use describe env command to check the status.\n \u001B[1m odin describe env --name %s\u001B[0m  "
 	RetryingMessage   = "Retrying ... (%d/%d)"
