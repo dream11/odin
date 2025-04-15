@@ -8,6 +8,8 @@ import (
 	"io"
 	"time"
 
+	grpc "google.golang.org/grpc"
+
 	"github.com/avast/retry-go"
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
@@ -42,60 +44,54 @@ var RetryableStatusCodes = []codes.Code{codes.DeadlineExceeded, codes.Canceled, 
 // DeployService deploys service
 func (e *Service) DeployService(ctx *context.Context, request *serviceProto.DeployServiceRequest) error {
 	log.Info("Deploying Service...")
-	// Create a context with cancel
+
+	// Create a context with cancel for the entire operation
 	streamCtx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Start log streaming in background
 	go StreamLogs(streamCtx, ctx, request)
-	err := retry.Do(
+
+	// Attempt deployment with retries
+	return retry.Do(
 		func() error {
 			return StreamServiceDeployResponse(cancel, request, ctx)
 		},
-		retry.Attempts(constant.MaxRetries),
 		retry.Delay(constant.Timeout),
 		retry.RetryIf(func(err error) bool {
 			var re retryable.Error
-			if errors.As(err, &re) {
-				if re.Retryable() {
-					log.Info("Connection with backend server lost. Retrying...")
-					return true
-				}
+			if errors.As(err, &re) && re.Retryable() {
+				log.Info("Connection lost, retrying...")
+				return true
 			}
-			log.Info("Connection with backend server lost. Exiting...")
+			log.Info("Connection lost, exiting...")
 			return false
 		}),
 	)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func StreamLogs(streamCtx context.Context, ctx *context.Context, request *serviceProto.DeployServiceRequest) {
-	lastLogTime := int64(0)
-	attempts := 0
 	var err error
+	lastLogTime := int64(0)
+	traceID := (*ctx).Value(constant.TraceIDKey).(string)
+	follow := true
 	for {
-		if attempts == 0 {
-			log.Info("Fetching live logs...")
-		}
 		select {
-		case <-streamCtx.Done(): // Listen for cancellation signal
+		case <-streamCtx.Done():
 			return
 		default:
-			traceID := (*ctx).Value(constant.TraceIDKey).(string)
-			follow := true
+			// Get logs with retry on error
 			lastLogTime, err = logsClient.GetLogs(ctx, &logs.GetLogsRequest{
 				TraceId:     &traceID,
 				Follow:      &follow,
 				ServiceName: &request.GetServiceDefinition().Name,
 				StartTime:   &lastLogTime,
 			})
+
 			if err != nil {
-				if attempts > 0 && attempts%5 == 0 {
-					log.Info("Taking longer than expected to fetch logs...retrying")
-				}
+				time.Sleep(5 * time.Second)
+				continue
 			}
-			attempts++
-			time.Sleep(5 * time.Second)
 		}
 	}
 }
@@ -105,35 +101,41 @@ func StreamServiceDeployResponse(cancelFunc context.CancelFunc, request *service
 	if err != nil {
 		return err
 	}
+	defer func(conn *grpc.ClientConn) {
+		err := conn.Close()
+		if err != nil {
+			log.Errorf("Error closing connection: %v\n", err)
+		}
+	}(conn)
+
 	client := serviceProto.NewServiceServiceClient(conn)
 	stream, err := client.DeployService(*requestCtx, request)
 	if err != nil {
 		return err
 	}
-	var serviceStatus, serviceAction string
+
 	for {
 		response, err := stream.Recv()
 		if err != nil {
-			if isActionCompleted(serviceAction, serviceStatus) {
+			if err == io.EOF {
 				cancelFunc()
-				log.Info("Service deployment completed successfully")
 				return nil
 			}
+
 			st, _ := status.FromError(err)
-			if err == io.EOF || slices.Contains(RetryableStatusCodes, st.Code()) {
+			if slices.Contains(RetryableStatusCodes, st.Code()) {
 				return retryable.NewRetryableError(err, true)
 			}
+
 			cancelFunc()
-			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 			return err
 		}
 
 		if response != nil {
-			serviceStatus = response.GetServiceResponse().ServiceStatus.ServiceStatus
-			serviceAction = response.GetServiceResponse().ServiceStatus.ServiceAction
-			if !isActionCompleted(serviceAction, serviceStatus) {
-				continue
-			} else {
+			serviceStatus := response.GetServiceResponse().ServiceStatus.ServiceStatus
+			serviceAction := response.GetServiceResponse().ServiceStatus.ServiceAction
+
+			if isActionCompleted(serviceAction, serviceStatus) {
 				cancelFunc()
 				log.Info(util.GenerateResponseMessage(response.GetServiceResponse()))
 				return nil

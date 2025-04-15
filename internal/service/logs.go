@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	grpc "google.golang.org/grpc"
 	"io"
 	"strings"
 
@@ -13,40 +14,47 @@ import (
 // Logs performs operation on logs like get logs
 type Logs struct{}
 
-// GetLogs Get logs
+// GetLogs retrieves and displays logs for a service
 func (l *Logs) GetLogs(ctx *context.Context, request *logs.GetLogsRequest) (int64, error) {
-	// Get logs
 	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {
 		return request.GetStartTime(), err
 	}
+	defer func(conn *grpc.ClientConn) {
+		err := conn.Close()
+		if err != nil {
+			fmt.Printf("Error closing connection: %v\n", err)
+		}
+	}(conn)
+
 	client := logs.NewLogsServiceClient(conn)
 	stream, err := client.GetLogs(*requestCtx, request)
 	if err != nil {
 		return request.GetStartTime(), err
 	}
 
-	lastLogTime := int64(0)
-	if request.GetStartTime() != 0 {
-		lastLogTime = request.GetStartTime()
-	}
+	lastLogTime := request.GetStartTime()
+
 	for {
-		response, logStreamErr := stream.Recv()
-		if logStreamErr != nil {
-			if errors.Is(logStreamErr, context.Canceled) || logStreamErr == io.EOF {
+		response, err := stream.Recv()
+		if err != nil {
+			if errors.Is(err, context.Canceled) || err == io.EOF {
 				break
-			} else {
-				return lastLogTime, logStreamErr
 			}
+			return lastLogTime, err
 		}
-		if response != nil {
-			for _, logMessage := range response.Logs {
-				if !strings.Contains(logMessage.GetMessage(), "DEBUG") {
-					fmt.Println(logMessage.GetMessage())
-				}
-				lastLogTime = logMessage.GetTimestamp()
+
+		if response == nil {
+			continue
+		}
+
+		for _, logMessage := range response.Logs {
+			if !strings.Contains(logMessage.GetMessage(), "DEBUG") {
+				fmt.Println(logMessage.GetMessage())
 			}
+			lastLogTime = logMessage.GetTimestamp()
 		}
 	}
+
 	return lastLogTime, nil
 }
