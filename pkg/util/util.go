@@ -146,7 +146,7 @@ func GenerateResponseMessageComponentSpecific(response *v1.ServiceResponse, comp
 // GenerateTraceID generates a trace id
 func GenerateTraceID() string {
 	traceID := uuid.New().String()
-	log.Infof("Generated trace ID: %s", traceID)
+	log.Infof("\033[34m"+"Generated trace ID: %s", traceID)
 	return traceID
 }
 
@@ -177,7 +177,7 @@ func AskForConfirmation(expectedValue, consentMessage string) {
 		log.Fatal(err.Error())
 	}
 	if val != expectedValue {
-		log.Fatal(fmt.Errorf("aborting the operation"))
+		log.Fatal(fmt.Errorf("Invalid input,Aborting the operation!"))
 	}
 }
 
@@ -209,4 +209,13 @@ func CanPerformRetry(retries int, maxRetries int) bool {
 	}
 
 	return true
+}
+
+func LogAndExit(err error, prefix string) {
+	st, ok := status.FromError(err)
+	if ok {
+		log.Error(prefix + st.Message())
+	} else {
+		log.Error(prefix + err.Error())
+	}
 }

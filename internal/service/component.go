@@ -29,7 +29,7 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 		return err
 	}
 
-	log.Info("Starting component operation...")
+	log.Info("Starting component operation...\n")
 	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
 	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
 	if err != nil {
