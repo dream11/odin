@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/dream11/odin/internal/ui"
-	"github.com/dream11/odin/pkg/constant"
 	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	"github.com/google/uuid"
 	"github.com/olekukonko/tablewriter"
@@ -42,6 +41,11 @@ func GenerateResponseMessage(response *v1.ServiceResponse) string {
 	message := fmt.Sprintf("\n Service: %s version: %s action: %s status: %s", response.Name, response.Version, response.ServiceStatus.ServiceAction, response.ServiceStatus.ServiceStatus)
 	for _, compMessage := range response.ComponentsStatus {
 		message += fmt.Sprintf("\n Component: %s action: %s status: %s ", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
+	}
+	for _, compMessage := range response.ComponentsStatus {
+		if compMessage.GetComponentStatus() == "FAILED" {
+			log.Error(fmt.Sprintf("Component %s %s %s %s", compMessage.GetComponentName(), compMessage.GetComponentAction(), compMessage.GetComponentStatus(), compMessage.GetError()))
+		}
 	}
 	return message
 }
@@ -191,22 +195,4 @@ func IsRetryable(err error) bool {
 	}
 	st, ok := status.FromError(err)
 	return ok && (st.Code() == codes.Unavailable || (st.Code() == codes.Internal && strings.Contains(st.Message(), "RST_STREAM")))
-}
-
-// CanPerformRetry checks if the operation can be retried
-func CanPerformRetry(retries int, maxRetries int) bool {
-	if retries == maxRetries {
-		log.Errorf("%s", constant.MaxRetriesReached)
-		return false
-	}
-
-	if retries == 0 {
-		log.Warnf(constant.InitiatingRetryMessage)
-	}
-
-	if retries < constant.MaxRetries {
-		log.Infof(constant.RetryingMessage, retries+1, constant.MaxRetries)
-	}
-
-	return true
 }

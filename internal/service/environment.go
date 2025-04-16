@@ -186,7 +186,7 @@ func (e *Environment) EnvironmentStatus(ctx *context.Context, request *environme
 func (e *Environment) IsStrictEnvironment(ctx *context.Context, request *environment.IsStrictEnvironmentRequest) (*environment.IsStrictEnvironmentResponse, error) {
 
 	for retries := 0; retries < constant.MaxRetries; retries++ {
-		ctxWithTimeout, cancel := context.WithTimeout(*ctx, constant.Timeout)
+		ctxWithTimeout, cancel := context.WithTimeout(*ctx, constant.Delay)
 		defer cancel()
 
 		conn, requestCtx, err := grpcClient(&ctxWithTimeout)
@@ -204,7 +204,7 @@ func (e *Environment) IsStrictEnvironment(ctx *context.Context, request *environ
 			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 			return nil, err
 		}
-		time.Sleep(constant.Timeout)
+		time.Sleep(constant.Delay)
 		if retries == 0 {
 			log.Warnf(constant.InitiatingRetryMessage)
 		}

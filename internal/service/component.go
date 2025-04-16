@@ -2,11 +2,9 @@ package service
 
 import (
 	"context"
-	"fmt"
-	"io"
 	"time"
 
-	"github.com/briandowns/spinner"
+	"github.com/avast/retry-go"
 	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/util"
 	component "github.com/dream11/odin/proto/gen/go/dream11/od/component/v1"
@@ -19,100 +17,47 @@ type Component struct{}
 
 // OperateComponent operate Component
 func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto.OperateServiceRequest) error {
-	conn, requestCtx, err := grpcClient(ctx)
-	if err != nil {
-		return err
-	}
-	client := serviceProto.NewServiceServiceClient(conn)
-	stream, err := client.OperateService(*requestCtx, request)
-	if err != nil {
-		return err
-	}
-
 	log.Info("Starting component operation...")
-	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
-	if err != nil {
-		return err
-	}
 
-	var message string
-	var retries = 0
+	// Create a context with cancelFunction for the entire operation
+	streamCtx, cancelFunction := context.WithCancel(context.Background())
+	defer cancelFunction()
 
-	responseChan := make(chan *serviceProto.OperateServiceResponse)
-	errorChan := make(chan error)
-	go func(ctx context.Context) {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				response, err := stream.Recv()
+	// Start log streaming in background
+	go streamLogs(streamCtx, ctx, request.GetServiceName())
+
+	// Attempt operation with retries
+	return retry.Do(
+		func() error {
+			conn, requestCtx, err := grpcClient(ctx)
+			if err != nil {
+				return err
+			}
+			defer func() {
+				err := conn.Close()
 				if err != nil {
-					errorChan <- err
+					log.Errorf("Error closing connection: %v\n", err)
 				}
-				responseChan <- response
-			}
-		}
-	}(*requestCtx)
+			}()
 
-	for {
-		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
-
-		select {
-		case <-recvCtx.Done():
-			spinnerInstance.Stop()
-			cancel()
-			if !util.CanPerformRetry(retries, constant.MaxRetries) {
-				return nil
-			}
-			stream, err = reconnectOperateStream(client, requestCtx, request, stream)
+			client := serviceProto.NewServiceServiceClient(conn)
+			stream, err := client.OperateService(*requestCtx, request)
 			if err != nil {
-				return nil
+				return err
 			}
-			retries++
-		case err := <-errorChan:
-			spinnerInstance.Stop()
-			cancel()
-			if !util.IsRetryable(err) || !util.CanPerformRetry(retries, constant.MaxRetries) {
-				if err != io.EOF {
-					return err
-				} else if err == io.EOF {
-					log.Info(message)
-				}
-				return nil
+			getMessage := func(response *serviceProto.OperateServiceResponse) string {
+				return util.GenerateResponseMessage(response.GetServiceResponse())
 			}
-			stream, err = reconnectOperateStream(client, requestCtx, request, stream)
-			if err != nil {
-				return nil
+			getStatus := func(response *serviceProto.OperateServiceResponse) (string, string) {
+				return response.GetServiceResponse().GetServiceStatus().GetServiceStatus(),
+					response.GetServiceResponse().GetServiceStatus().GetServiceAction()
 			}
-			retries++
-		case response := <-responseChan:
-			spinnerInstance.Stop()
-			cancel()
-			if response != nil {
-				message = util.GenerateResponseMessageComponentSpecific(response.GetServiceResponse(), []string{request.GetComponentName()})
-				logFailedComponentMessagesOnceForComponents(response.GetServiceResponse(), []string{request.GetComponentName()})
-				spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
-				spinnerInstance.Start()
-				retries = 0
-			}
-		}
-	}
-}
 
-func reconnectOperateStream(client serviceProto.ServiceServiceClient, requestCtx *context.Context, request *serviceProto.OperateServiceRequest, stream serviceProto.ServiceService_OperateServiceClient) (serviceProto.ServiceService_OperateServiceClient, error) {
-	if err := stream.CloseSend(); err != nil {
-		return nil, err
-	}
-
-	newStream, err := client.OperateService(*requestCtx, request)
-	if err != nil {
-		return nil, err
-	}
-
-	return newStream, nil
-
+			return handleResponse(stream, cancelFunction, getMessage, getStatus)
+		},
+		retry.Delay(constant.Delay),
+		retry.RetryIf(isRetryableError),
+	)
 }
 
 // ListComponentType List component types
@@ -151,7 +96,7 @@ func (e *Component) DescribeComponentType(ctx *context.Context, request *compone
 func (e *Component) CompareOperationChanges(ctx *context.Context, request *serviceProto.OperateComponentDiffRequest) (*serviceProto.OperateComponentDiffResponse, error) {
 
 	for retries := 0; retries < constant.MaxRetries; retries++ {
-		ctxWithTimeout, cancel := context.WithTimeout(*ctx, constant.Timeout)
+		ctxWithTimeout, cancel := context.WithTimeout(*ctx, constant.Delay)
 		defer cancel()
 
 		conn, requestCtx, err := grpcClient(&ctxWithTimeout)
@@ -168,7 +113,7 @@ func (e *Component) CompareOperationChanges(ctx *context.Context, request *servi
 		if !util.IsRetryable(err) {
 			return nil, err
 		}
-		time.Sleep(constant.Timeout)
+		time.Sleep(constant.Delay)
 		if retries == 0 {
 			log.Warnf(constant.InitiatingRetryMessage)
 		}
