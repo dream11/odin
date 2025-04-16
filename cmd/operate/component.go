@@ -210,7 +210,7 @@ func execute(cmd *cobra.Command) {
 	})
 
 	if err != nil {
-		util.LogAndExit(err, "Failed to operate on component: ")
+		util.HandleGrpcError(err, "Failed to operate on component: ")
 	}
 
 }

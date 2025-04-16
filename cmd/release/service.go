@@ -1,7 +1,10 @@
 package release
 
 import (
+	"context"
 	"encoding/json"
+	"github.com/dream11/odin/pkg/constant"
+	"github.com/dream11/odin/pkg/util"
 	"os"
 	"path/filepath"
 	"strings"
@@ -38,7 +41,8 @@ func init() {
 
 func execute(cmd *cobra.Command) {
 	ctx := cmd.Context()
-
+	traceID := util.GenerateTraceID()
+	contextWithTrace := context.WithValue(ctx, constant.TraceIDKey, traceID)
 	var err error
 
 	var serviceReleaseRequest serviceProto.ReleaseServiceRequest
@@ -102,8 +106,8 @@ func execute(cmd *cobra.Command) {
 	}
 	serviceReleaseRequest.ProvisioningConfigs = provisioningConfigMap
 	serviceReleaseRequest.ServiceDefinition = &definitionProto
-	err = serviceClient.ReleaseService(&ctx, &serviceReleaseRequest)
+	err = serviceClient.ReleaseService(&contextWithTrace, &serviceReleaseRequest)
 	if err != nil {
-		log.Fatal("Failed to release service ", err)
+		util.HandleGrpcError(err, "Failed to release service: ")
 	}
 }

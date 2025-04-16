@@ -124,7 +124,6 @@ func (e *Component) ListComponentType(ctx *context.Context, request *component.L
 	client := component.NewComponentServiceClient(conn)
 	response, err := client.ListComponentType(*requestCtx, request)
 	if err != nil {
-		log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 		return nil, err
 	}
 
@@ -140,7 +139,6 @@ func (e *Component) DescribeComponentType(ctx *context.Context, request *compone
 	client := component.NewComponentServiceClient(conn)
 	response, err := client.DescribeComponentType(*requestCtx, request)
 	if err != nil {
-		log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 		return nil, err
 	}
 

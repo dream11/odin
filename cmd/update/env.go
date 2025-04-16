@@ -1,8 +1,10 @@
 package update
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/constant"
@@ -44,6 +46,10 @@ func init() {
 func executeupdate(cmd *cobra.Command) {
 
 	ctx := cmd.Context()
+
+	traceID := fileUtil.GenerateTraceID()
+	contextWithTrace := context.WithValue(ctx, constant.TraceIDKey, traceID)
+
 	var optionsData map[string]interface{}
 
 	isOptionsPresent := data != "{}"
@@ -74,13 +80,14 @@ func executeupdate(cmd *cobra.Command) {
 		log.Fatal("error converting JSON to structpb.Struct: ", err)
 	}
 	//call update env client
-	response, err := updateEnvClient.UpdateEnvironment(&ctx, &environment.UpdateEnvironmentRequest{
+	response, err := updateEnvClient.UpdateEnvironment(&contextWithTrace, &environment.UpdateEnvironmentRequest{
 		EnvName: envName,
 		Data:    dataStruct,
 	})
 
 	if err != nil {
-		log.Fatal("Failed to update environment ", err.Error())
+		fileUtil.HandleGrpcError(err, "Failed to update environment: ")
+		os.Exit(1)
 	}
 
 	outputFormat, err := cmd.Flags().GetString("output")

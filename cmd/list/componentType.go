@@ -3,6 +3,8 @@ package list
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dream11/odin/pkg/util"
+	"os"
 
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/constant"
@@ -51,7 +53,8 @@ func componentExecute(cmd *cobra.Command) {
 		Params: params,
 	})
 	if err != nil {
-		log.Fatal("Failed to list component types ", err)
+		util.HandleGrpcError(err, "\nFailed to list component types: ")
+		os.Exit(1)
 	}
 
 	outputFormat, err := cmd.Flags().GetString("output")

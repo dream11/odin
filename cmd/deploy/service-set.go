@@ -3,6 +3,7 @@ package deploy
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dream11/odin/pkg/util"
 	"os"
 
 	"github.com/dream11/odin/internal/ui"
@@ -101,6 +102,6 @@ func executeDeployServiceSet(cmd *cobra.Command) {
 
 	err := serviceClient.DeployServiceSet(&ctx, &deployServiceSetRequest)
 	if err != nil {
-		log.Fatal("Failed to deploy service set. ", err)
+		util.HandleGrpcError(err, "Failed to deploy service set. ")
 	}
 }

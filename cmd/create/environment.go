@@ -73,6 +73,6 @@ func execute(cmd *cobra.Command) {
 	})
 
 	if err != nil {
-		log.Fatal("Failed to create environment ", err)
+		util.HandleGrpcError(err, "Failed to create environment: ")
 	}
 }

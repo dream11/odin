@@ -146,7 +146,7 @@ func GenerateResponseMessageComponentSpecific(response *v1.ServiceResponse, comp
 // GenerateTraceID generates a trace id
 func GenerateTraceID() string {
 	traceID := uuid.New().String()
-	log.Infof("\033[34m"+"Generated trace ID: %s", traceID)
+	log.Infof("\033[34m"+"Generated trace ID: %s\033[0m", traceID)
 	return traceID
 }
 
@@ -211,7 +211,7 @@ func CanPerformRetry(retries int, maxRetries int) bool {
 	return true
 }
 
-func LogAndExit(err error, prefix string) {
+func HandleGrpcError(err error, prefix string) {
 	st, ok := status.FromError(err)
 	if ok {
 		log.Error(prefix + st.Message())
