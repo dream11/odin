@@ -41,21 +41,50 @@ var serviceTerminalConditions = map[string]map[string]bool{
 // RetryableStatusCodes are the status codes that are retryable
 var RetryableStatusCodes = []codes.Code{codes.DeadlineExceeded, codes.Canceled, codes.Unavailable}
 
+// StreamReceiverInterface defines the Recv method that the stream must implement
+type StreamReceiverInterface[R any] interface {
+	Recv() (R, error)
+}
+
+type GetStatus func() (serviceAction, serviceStatus string)
+
+type GetMessage func() string
+
 // DeployService deploys service
 func (e *Service) DeployService(ctx *context.Context, request *serviceProto.DeployServiceRequest) error {
 	log.Info("Deploying Service...")
 
-	// Create a context with cancel for the entire operation
-	streamCtx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	// Create a context with cancelFunction for the entire operation
+	streamCtx, cancelFunction := context.WithCancel(context.Background())
+	defer cancelFunction()
 
 	// Start log streaming in background
-	go StreamLogs(streamCtx, ctx, request)
+	go streamLogs(streamCtx, ctx, request)
 
 	// Attempt deployment with retries
 	return retry.Do(
 		func() error {
-			return StreamServiceDeployResponse(cancel, request, ctx)
+			conn, requestCtx, err := grpcClient(ctx)
+			if err != nil {
+				return err
+			}
+			defer func(conn *grpc.ClientConn) {
+				err := conn.Close()
+				if err != nil {
+					log.Errorf("Error closing connection: %v\n", err)
+				}
+			}(conn)
+
+			client := serviceProto.NewServiceServiceClient(conn)
+			stream, err := client.DeployService(*requestCtx, request)
+			if err != nil {
+				return err
+			}
+			return streamServiceDeployResponse(stream, cancelFunction, func() string {
+				return ""
+			}, func() (serviceAction, serviceStatus string) {
+				return "", ""
+			})
 		},
 		retry.Delay(constant.Timeout),
 		retry.RetryIf(func(err error) bool {
@@ -69,53 +98,9 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 	)
 }
 
-// StreamLogs streams logs for a service
-func StreamLogs(streamCtx context.Context, ctx *context.Context, request *serviceProto.DeployServiceRequest) {
-	var err error
-	lastLogTime := int64(0)
-	traceID := (*ctx).Value(constant.TraceIDKey).(string)
-	follow := true
-	for {
-		select {
-		case <-streamCtx.Done():
-			return
-		default:
-			// Get logs with retry on error
-			lastLogTime, err = logsClient.GetLogs(ctx, &logs.GetLogsRequest{
-				TraceId:     &traceID,
-				Follow:      &follow,
-				ServiceName: &request.GetServiceDefinition().Name,
-				StartTime:   &lastLogTime,
-			})
-
-			if err != nil {
-				time.Sleep(5 * time.Second)
-				continue
-			}
-		}
-	}
-}
-
-// StreamServiceDeployResponse streams the service deploy response
-func StreamServiceDeployResponse(cancelFunc context.CancelFunc, request *serviceProto.DeployServiceRequest, ctx *context.Context) error {
-	conn, requestCtx, err := grpcClient(ctx)
-	if err != nil {
-		return err
-	}
-	defer func(conn *grpc.ClientConn) {
-		err := conn.Close()
-		if err != nil {
-			log.Errorf("Error closing connection: %v\n", err)
-		}
-	}(conn)
-
-	client := serviceProto.NewServiceServiceClient(conn)
-	stream, err := client.DeployService(*requestCtx, request)
-	if err != nil {
-		return err
-	}
-
-	var serviceStatus, serviceAction string
+// streamServiceDeployResponse streams the service deploy response and call cancel on action termination
+func streamServiceDeployResponse[R any](stream StreamReceiverInterface[R], cancelFunc context.CancelFunc, getMessage GetMessage, getStatus GetStatus) error {
+	serviceStatus, serviceAction := getStatus()
 	for {
 		response, err := stream.Recv()
 		if err != nil {
@@ -134,12 +119,11 @@ func StreamServiceDeployResponse(cancelFunc context.CancelFunc, request *service
 		}
 
 		if response != nil {
-			serviceStatus = response.GetServiceResponse().ServiceStatus.ServiceStatus
-			serviceAction = response.GetServiceResponse().ServiceStatus.ServiceAction
+			serviceStatus, serviceAction = getStatus()
 
 			if isActionCompleted(serviceAction, serviceStatus) {
 				cancelFunc()
-				log.Info(util.GenerateResponseMessage(response.GetServiceResponse()))
+				log.Info(getMessage())
 				return nil
 			}
 		}
@@ -559,6 +543,33 @@ func (e *Service) GetConflictingServices(ctx *context.Context, request *serviceP
 		log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 	}
 	return response, err
+}
+
+// streamLogs streams logs for a service
+func streamLogs(streamCtx context.Context, ctx *context.Context, request *serviceProto.DeployServiceRequest) {
+	var err error
+	lastLogTime := int64(0)
+	traceID := (*ctx).Value(constant.TraceIDKey).(string)
+	follow := true
+	for {
+		select {
+		case <-streamCtx.Done():
+			return
+		default:
+			// Get logs with retry on error
+			lastLogTime, err = logsClient.GetLogs(ctx, &logs.GetLogsRequest{
+				TraceId:     &traceID,
+				Follow:      &follow,
+				ServiceName: &request.GetServiceDefinition().Name,
+				StartTime:   &lastLogTime,
+			})
+
+			if err != nil {
+				time.Sleep(5 * time.Second)
+				continue
+			}
+		}
+	}
 }
 
 func reconnectDeployReleasedServiceStream(client serviceProto.ServiceServiceClient, requestCtx *context.Context, request *serviceProto.DeployReleasedServiceRequest, stream serviceProto.ServiceService_DeployReleasedServiceClient) (serviceProto.ServiceService_DeployReleasedServiceClient, error) {
