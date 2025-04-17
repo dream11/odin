@@ -10,7 +10,6 @@ import (
 	component "github.com/dream11/odin/proto/gen/go/dream11/od/component/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 )
 
 // Component performs operation on component like operate
@@ -20,7 +19,6 @@ type Component struct{}
 func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto.OperateServiceRequest) error {
 
 	log.Info("Starting component operation...\n")
-
 
 	// Create a context with cancelFunction for the entire operation
 	streamCtx, cancelFunction := context.WithCancel(context.Background())
