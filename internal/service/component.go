@@ -18,6 +18,7 @@ type Component struct{}
 
 // OperateComponent operate Component
 func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto.OperateServiceRequest) error {
+
 	log.Info("Starting component operation...\n")
 
 	// Create a context with cancelFunction for the entire operation
