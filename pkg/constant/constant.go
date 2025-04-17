@@ -32,9 +32,11 @@ const (
 	ConsentMessageTemplate = "\nYou are executing the above command on a restricted environment. Are you sure? Enter \033[1m%s\033[0m to continue:"
 	// InitiatingRetryMessage is the message shown when retrying
 	InitiatingRetryMessage = "Unable to reach Odin backend."
-
-	MaxRetries        = 5
-	Timeout           = 20 * time.Second
+	// MaxRetries is the maximum number of retries
+	MaxRetries = 5
+	// Timeout is the timeout duration for requests
+	Timeout = 10 * time.Second
+	// MaxRetriesReached is the message shown when max retries are reached
 	MaxRetriesReached = "Max retries reached. Exiting...\nPlease check:\n- Your internet connection: \n- VPN connected properly"
 	DescribeEnv       = "\n- Please use describe env command to check the status.\n \u001B[1m odin describe env --name %s\u001B[0m  "
 	RetryingMessage   = "Retrying ... (%d/%d)"
