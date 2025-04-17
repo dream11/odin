@@ -181,7 +181,7 @@ func AskForConfirmation(expectedValue, consentMessage string) {
 		log.Fatal(err.Error())
 	}
 	if val != expectedValue {
-		log.Fatal(fmt.Errorf("Invalid input,Aborting the operation!"))
+		log.Fatal(fmt.Errorf("invalid input, aborting the operation"))
 	}
 }
 
@@ -205,4 +205,3 @@ func HandleGrpcError(err error, prefix string) {
 		log.Error(prefix + err.Error())
 	}
 }
-
