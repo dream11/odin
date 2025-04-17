@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	logs "github.com/dream11/odin/proto/gen/go/dream11/od/logs/v1"
-	"google.golang.org/grpc"
 )
 
 // Logs performs operation on logs like get logs
@@ -20,12 +19,12 @@ func (l *Logs) GetLogs(ctx *context.Context, request *logs.GetLogsRequest) (int6
 	if err != nil {
 		return request.GetStartTime(), err
 	}
-	defer func(conn *grpc.ClientConn) {
+	defer func() {
 		err := conn.Close()
 		if err != nil {
 			fmt.Printf("Error closing connection: %v\n", err)
 		}
-	}(conn)
+	}()
 
 	client := logs.NewLogsServiceClient(conn)
 	stream, err := client.GetLogs(*requestCtx, request)
@@ -52,7 +51,10 @@ func (l *Logs) GetLogs(ctx *context.Context, request *logs.GetLogsRequest) (int6
 			if !strings.Contains(logMessage.GetMessage(), "DEBUG") {
 				fmt.Println(logMessage.GetMessage())
 			}
-			lastLogTime = logMessage.GetTimestamp()
+
+			if logMessage.GetTimestamp() > lastLogTime {
+				lastLogTime = logMessage.GetTimestamp()
+			}
 		}
 	}
 

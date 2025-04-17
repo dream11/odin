@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/dream11/odin/internal/ui"
-	"github.com/dream11/odin/pkg/constant"
 	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	"github.com/google/uuid"
 	"github.com/olekukonko/tablewriter"
@@ -198,24 +197,6 @@ func IsRetryable(err error) bool {
 	return ok && (st.Code() == codes.Unavailable || (st.Code() == codes.Internal && strings.Contains(st.Message(), "RST_STREAM")))
 }
 
-// CanPerformRetry checks if the operation can be retried
-func CanPerformRetry(retries int, maxRetries int) bool {
-	if retries == maxRetries {
-		log.Errorf("%s", constant.MaxRetriesReached)
-		return false
-	}
-
-	if retries == 0 {
-		log.Warnf(constant.InitiatingRetryMessage)
-	}
-
-	if retries < constant.MaxRetries {
-		log.Infof(constant.RetryingMessage, retries+1, constant.MaxRetries)
-	}
-
-	return true
-}
-
 func HandleGrpcError(err error, prefix string) {
 	st, ok := status.FromError(err)
 	if ok {
@@ -224,3 +205,4 @@ func HandleGrpcError(err error, prefix string) {
 		log.Error(prefix + err.Error())
 	}
 }
+

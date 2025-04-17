@@ -21,6 +21,7 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 
 	log.Info("Starting component operation...\n")
 
+
 	// Create a context with cancelFunction for the entire operation
 	streamCtx, cancelFunction := context.WithCancel(context.Background())
 	defer cancelFunction()
@@ -35,12 +36,13 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 			if err != nil {
 				return err
 			}
-			defer func(conn *grpc.ClientConn) {
+			defer func() {
 				err := conn.Close()
 				if err != nil {
 					log.Errorf("Error closing connection: %v\n", err)
 				}
-			}(conn)
+
+			}()
 
 			client := serviceProto.NewServiceServiceClient(conn)
 			stream, err := client.OperateService(*requestCtx, request)
@@ -57,7 +59,7 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 
 			return handleResponse(stream, cancelFunction, getMessage, getStatus)
 		},
-		retry.Delay(constant.Timeout),
+		retry.Delay(constant.Delay),
 		retry.RetryIf(isRetryableError),
 	)
 }
@@ -96,7 +98,7 @@ func (e *Component) DescribeComponentType(ctx *context.Context, request *compone
 func (e *Component) CompareOperationChanges(ctx *context.Context, request *serviceProto.OperateComponentDiffRequest) (*serviceProto.OperateComponentDiffResponse, error) {
 
 	for retries := 0; retries < constant.MaxRetries; retries++ {
-		ctxWithTimeout, cancel := context.WithTimeout(*ctx, constant.Timeout)
+		ctxWithTimeout, cancel := context.WithTimeout(*ctx, constant.Delay)
 		defer cancel()
 
 		conn, requestCtx, err := grpcClient(&ctxWithTimeout)
@@ -113,7 +115,7 @@ func (e *Component) CompareOperationChanges(ctx *context.Context, request *servi
 		if !util.IsRetryable(err) {
 			return nil, err
 		}
-		time.Sleep(constant.Timeout)
+		time.Sleep(constant.Delay)
 		if retries == 0 {
 			log.Warnf(constant.InitiatingRetryMessage)
 		}

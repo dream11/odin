@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 	"time"
 
 	"github.com/avast/retry-go"
@@ -19,7 +20,6 @@ import (
 	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/exp/slices"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -29,11 +29,11 @@ type Service struct{}
 
 var logsClient = Logs{}
 
-var serviceTerminalConditions = map[string]map[string]bool{
-	"DEPLOY":   {"SUCCESSFUL": true, "FAILED": true},
-	"UNDEPLOY": {"SUCCESSFUL": true, "FAILED": true},
-	"OPERATE":  {"SUCCESSFUL": true, "FAILED": true},
-	"VALIDATE": {"FAILED": true},
+var serviceTerminalConditions = map[string][]string{
+	"DEPLOY":   {"SUCCESSFUL", "FAILED"},
+	"UNDEPLOY": {"SUCCESSFUL", "FAILED"},
+	"OPERATE":  {"SUCCESSFUL", "FAILED"},
+	"VALIDATE": {"FAILED"},
 }
 
 // RetryableStatusCodes are the status codes that are retryable
@@ -44,9 +44,10 @@ type StreamReceiverInterface[R any] interface {
 	Recv() (R, error)
 }
 
-type GetStatus[R any] func(response R) (serviceAction, serviceStatus string)
 
-type GetMessage[R any] func(response R) string
+type getStatus[R any] func(response R) (serviceAction, serviceStatus string)
+
+type getMessage[R any] func(response R) string
 
 // DeployService deploys service
 func (e *Service) DeployService(ctx *context.Context, request *serviceProto.DeployServiceRequest) error {
@@ -66,13 +67,12 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 			if err != nil {
 				return err
 			}
-			defer func(conn *grpc.ClientConn) {
+			defer func() {
 				err := conn.Close()
 				if err != nil {
 					log.Errorf("Error closing connection: %v\n", err)
 				}
-			}(conn)
-
+			}()
 			client := serviceProto.NewServiceServiceClient(conn)
 			stream, err := client.DeployService(*requestCtx, request)
 			if err != nil {
@@ -88,7 +88,8 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 
 			return handleResponse(stream, cancelFunction, getMessage, getStatus)
 		},
-		retry.Delay(constant.Timeout),
+
+		retry.Delay(constant.Delay),
 		retry.RetryIf(isRetryableError),
 	)
 }
@@ -171,12 +172,14 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 			if err != nil {
 				return err
 			}
-			defer func(conn *grpc.ClientConn) {
+
+			defer func() {
 				err := conn.Close()
 				if err != nil {
 					log.Errorf("Error closing connection: %v\n", err)
 				}
-			}(conn)
+
+			}()
 
 			client := serviceProto.NewServiceServiceClient(conn)
 			stream, err := client.DeployReleasedService(*requestCtx, request)
@@ -194,7 +197,8 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 
 			return handleResponse(stream, cancelFunction, getMessage, getStatus)
 		},
-		retry.Delay(constant.Timeout),
+
+		retry.Delay(constant.Delay),
 		retry.RetryIf(isRetryableError),
 	)
 }
@@ -270,12 +274,13 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 			if err != nil {
 				return err
 			}
-			defer func(conn *grpc.ClientConn) {
+
+			defer func() {
 				err := conn.Close()
 				if err != nil {
 					log.Errorf("Error closing connection: %v\n", err)
 				}
-			}(conn)
+			}()
 
 			client := serviceProto.NewServiceServiceClient(conn)
 			stream, err := client.OperateService(*requestCtx, request)
@@ -292,7 +297,7 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 
 			return handleResponse(stream, cancelFunction, getMessage, getStatus)
 		},
-		retry.Delay(constant.Timeout),
+		retry.Delay(constant.Delay),
 		retry.RetryIf(isRetryableError),
 	)
 }
@@ -444,7 +449,7 @@ func streamLogs(streamCtx context.Context, ctx *context.Context, serviceName str
 }
 
 // handleResponse streams the service deploy response and call cancel on action termination
-func handleResponse[S StreamReceiverInterface[R], R any](stream S, cancelFunc context.CancelFunc, getMessage GetMessage[R], getStatus GetStatus[R]) error {
+func handleResponse[S StreamReceiverInterface[R], R any](stream S, cancelFunc context.CancelFunc, getMessage getMessage[R], getStatus getStatus[R]) error {
 	var serviceAction, serviceStatus string
 	for {
 		response, err := stream.Recv()
@@ -455,7 +460,9 @@ func handleResponse[S StreamReceiverInterface[R], R any](stream S, cancelFunc co
 			}
 
 			st, _ := status.FromError(err)
-			if err == io.EOF || slices.Contains(RetryableStatusCodes, st.Code()) {
+
+			if err == io.EOF || slices.Contains(RetryableStatusCodes, st.Code()) ||
+				(strings.Contains(err.Error(), "RST_STREAM") && st.Code() == codes.Internal) {
 				return retryable.NewRetryableError(err, true)
 			}
 
@@ -476,7 +483,8 @@ func isActionCompleted(serviceAction, status string) bool {
 	if serviceAction == "" || status == "" {
 		return false
 	}
-	return serviceTerminalConditions[serviceAction][status]
+
+	return slices.Contains(serviceTerminalConditions[serviceAction], status)
 }
 
 // isRetryableError checks if the error is retryable
