@@ -29,8 +29,6 @@ type Service struct{}
 
 var logsClient = Logs{}
 
-var responseMap = make(map[string]string)
-
 var serviceTerminalConditions = map[string]map[string]bool{
 	"DEPLOY":   {"SUCCESSFUL": true, "FAILED": true},
 	"UNDEPLOY": {"SUCCESSFUL": true, "FAILED": true},
@@ -46,9 +44,9 @@ type StreamReceiverInterface[R any] interface {
 	Recv() (R, error)
 }
 
-type GetStatus func() (serviceAction, serviceStatus string)
+type GetStatus[R any] func(response R) (serviceAction, serviceStatus string)
 
-type GetMessage func() string
+type GetMessage[R any] func(response R) string
 
 // DeployService deploys service
 func (e *Service) DeployService(ctx *context.Context, request *serviceProto.DeployServiceRequest) error {
@@ -59,7 +57,7 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 	defer cancelFunction()
 
 	// Start log streaming in background
-	go streamLogs(streamCtx, ctx, request)
+	go streamLogs(streamCtx, ctx, request.GetServiceDefinition().GetName())
 
 	// Attempt deployment with retries
 	return retry.Do(
@@ -80,82 +78,19 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 			if err != nil {
 				return err
 			}
-			return streamServiceDeployResponse(stream, cancelFunction, func() string {
-				return ""
-			}, func() (serviceAction, serviceStatus string) {
-				return "", ""
-			})
+			getMessage := func(response *serviceProto.DeployServiceResponse) string {
+				return util.GenerateResponseMessage(response.GetServiceResponse())
+			}
+			getStatus := func(response *serviceProto.DeployServiceResponse) (string, string) {
+				return response.GetServiceResponse().GetServiceStatus().GetServiceStatus(),
+					response.GetServiceResponse().GetServiceStatus().GetServiceAction()
+			}
+
+			return handleResponse(stream, cancelFunction, getMessage, getStatus)
 		},
 		retry.Delay(constant.Timeout),
-		retry.RetryIf(func(err error) bool {
-			var re retryable.Error
-			if errors.As(err, &re) && re.Retryable() {
-				log.Info("Connection lost, retrying...")
-				return true
-			}
-			return false
-		}),
+		retry.RetryIf(isRetryableError),
 	)
-}
-
-// streamServiceDeployResponse streams the service deploy response and call cancel on action termination
-func streamServiceDeployResponse[R any](stream StreamReceiverInterface[R], cancelFunc context.CancelFunc, getMessage GetMessage, getStatus GetStatus) error {
-	serviceStatus, serviceAction := getStatus()
-	for {
-		response, err := stream.Recv()
-		if err != nil {
-			if isActionCompleted(serviceAction, serviceStatus) {
-				cancelFunc()
-				return nil
-			}
-
-			st, _ := status.FromError(err)
-			if err == io.EOF || slices.Contains(RetryableStatusCodes, st.Code()) {
-				return retryable.NewRetryableError(err, true)
-			}
-
-			cancelFunc()
-			return err
-		}
-
-		if response != nil {
-			serviceStatus, serviceAction = getStatus()
-
-			if isActionCompleted(serviceAction, serviceStatus) {
-				cancelFunc()
-				log.Info(getMessage())
-				return nil
-			}
-		}
-	}
-}
-
-func logFailedComponentMessagesOnce(response *serviceProto.ServiceResponse) {
-	for _, compMessage := range response.ComponentsStatus {
-		componentActionKey := compMessage.GetComponentName() + compMessage.GetComponentAction() + compMessage.GetComponentStatus()
-		//code to not print the same message for component action again
-		if responseMap[componentActionKey] == "" {
-			if compMessage.GetComponentStatus() == "FAILED" {
-				log.Error(fmt.Sprintf("Component %s %s %s %s", compMessage.GetComponentName(), compMessage.GetComponentAction(), compMessage.GetComponentStatus(), compMessage.GetError()))
-			}
-			responseMap[componentActionKey] = componentActionKey
-		}
-	}
-}
-
-func logFailedComponentMessagesOnceForComponents(response *serviceProto.ServiceResponse, components []string) {
-	for _, compMessage := range response.ComponentsStatus {
-		componentActionKey := compMessage.GetComponentName() + compMessage.GetComponentAction() + compMessage.GetComponentStatus()
-		//code to not print the same message for component action again
-		if responseMap[componentActionKey] == "" {
-			if util.Contains(compMessage.ComponentName, components) {
-				if compMessage.GetComponentStatus() == "FAILED" {
-					log.Error(fmt.Sprintf("Component %s %s %s %s", compMessage.GetComponentName(), compMessage.GetComponentAction(), compMessage.GetComponentStatus(), compMessage.GetError()))
-				}
-				responseMap[componentActionKey] = componentActionKey
-			}
-		}
-	}
 }
 
 // DeployServiceSet deploys service-set
@@ -223,95 +158,63 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 
 // DeployReleasedService deploys service
 func (e *Service) DeployReleasedService(ctx *context.Context, request *serviceProto.DeployReleasedServiceRequest) error {
-	conn, requestCtx, err := grpcClient(ctx)
-	if err != nil {
-		return err
-	}
-	client := serviceProto.NewServiceServiceClient(conn)
-	stream, err := client.DeployReleasedService(*requestCtx, request)
-	if err != nil {
-		return err
-	}
-
 	log.Info("Deploying Service...")
-	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
-	if err != nil {
-		return err
-	}
+	// Create a context with cancelFunction for the entire operation
+	streamCtx, cancelFunction := context.WithCancel(context.Background())
+	defer cancelFunction()
 
-	var message string
-	var retries = 0
+	// Start log streaming in background
+	go streamLogs(streamCtx, ctx, request.GetServiceIdentifier().GetServiceName())
 
-	responseChan := make(chan *serviceProto.DeployReleasedServiceResponse)
-	errorChan := make(chan error)
-	go func(ctx context.Context) {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				response, err := stream.Recv()
+	// Attempt deployment with retries
+	return retry.Do(
+		func() error {
+			conn, requestCtx, err := grpcClient(ctx)
+			if err != nil {
+				return err
+			}
+			defer func(conn *grpc.ClientConn) {
+				err := conn.Close()
 				if err != nil {
-					errorChan <- err
+					log.Errorf("Error closing connection: %v\n", err)
 				}
-				responseChan <- response
-			}
-		}
-	}(*requestCtx)
-	for {
-		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
+			}(conn)
 
-		select {
-		case <-recvCtx.Done():
-			spinnerInstance.Stop()
-			cancel()
-			if !util.CanPerformRetry(retries, constant.MaxRetries) {
-				return nil
-			}
-			stream, err = reconnectDeployReleasedServiceStream(client, requestCtx, request, stream)
+			client := serviceProto.NewServiceServiceClient(conn)
+			stream, err := client.DeployReleasedService(*requestCtx, request)
 			if err != nil {
-				return nil
+				return err
 			}
-			retries++
-		case err := <-errorChan:
-			spinnerInstance.Stop()
-			cancel()
-			if !util.IsRetryable(err) || !util.CanPerformRetry(retries, constant.MaxRetries) {
-				if err != io.EOF {
-					return err
-				} else if err == io.EOF {
-					log.Info(message)
-				}
-				return nil
-			}
-			stream, err = reconnectDeployReleasedServiceStream(client, requestCtx, request, stream)
-			if err != nil {
-				return nil
-			}
-			retries++
-		case response := <-responseChan:
-			spinnerInstance.Stop()
-			cancel()
-			if response != nil {
-				message = response.ServiceResponse.Message
-				message += fmt.Sprintf("\n Service %s %s", response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
-				for _, compMessage := range response.ServiceResponse.ComponentsStatus {
-					message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
-				}
-				logFailedComponentMessagesOnce(response.GetServiceResponse())
-				spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
-				spinnerInstance.Start()
-				retries = 0 // Reset retries on successful response
-			}
-		}
-	}
 
+			getMessage := func(response *serviceProto.DeployReleasedServiceResponse) string {
+				return util.GenerateResponseMessage(response.GetServiceResponse())
+			}
+			getStatus := func(response *serviceProto.DeployReleasedServiceResponse) (string, string) {
+				return response.GetServiceResponse().GetServiceStatus().GetServiceStatus(),
+					response.GetServiceResponse().GetServiceStatus().GetServiceAction()
+			}
+
+			return handleResponse(stream, cancelFunction, getMessage, getStatus)
+		},
+		retry.Delay(constant.Timeout),
+		retry.RetryIf(isRetryableError),
+	)
 }
 
 // UndeployService undeploy service
 func (e *Service) UndeployService(ctx *context.Context, request *serviceProto.UndeployServiceRequest) error {
-	conn, requestCtx, err := grpcClient(ctx)
+	log.Info("Undeploying Service...")
+	traceID := util.GenerateTraceID()
+	contextWithTrace := context.WithValue(*ctx, constant.TraceIDKey, traceID)
+
+	// Create a context with cancelFunction for the entire operation
+	streamCtx, cancelFunction := context.WithCancel(context.Background())
+	defer cancelFunction()
+
+	// Start log streaming in background
+	go streamLogs(streamCtx, &contextWithTrace, request.GetServiceName())
+
+	conn, requestCtx, err := grpcClient(&contextWithTrace)
 	if err != nil {
 		return err
 	}
@@ -322,17 +225,9 @@ func (e *Service) UndeployService(ctx *context.Context, request *serviceProto.Un
 	if err != nil {
 		return err
 	}
-
-	log.Info("Undeploying Service...")
-	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
-	if err != nil {
-		return err
-	}
 	var message string
 	for {
 		response, err := stream.Recv()
-		spinnerInstance.Stop()
 		if err != nil {
 			if errors.Is(err, context.Canceled) || err == io.EOF {
 				break
@@ -341,101 +236,68 @@ func (e *Service) UndeployService(ctx *context.Context, request *serviceProto.Un
 			return err
 		}
 		if response != nil {
-			message = response.ServiceResponse.Message
-			message += fmt.Sprintf("\n Service %s %s", response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
-			for _, compMessage := range response.ServiceResponse.ComponentsStatus {
-				message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
+			if isActionCompleted(response.GetServiceResponse().GetServiceStatus().GetServiceAction(), response.GetServiceResponse().GetServiceStatus().GetServiceStatus()) {
+				cancelFunction()
+				message = response.GetServiceResponse().GetMessage()
+				message += fmt.Sprintf("\n Service %s %s", response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
+				for _, compMessage := range response.ServiceResponse.ComponentsStatus {
+					message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
+				}
+				for _, compMessage := range response.GetServiceResponse().GetComponentsStatus() {
+					if compMessage.GetComponentStatus() == "FAILED" {
+						message += fmt.Sprintf("Component %s %s %s %s", compMessage.GetComponentName(), compMessage.GetComponentAction(), compMessage.GetComponentStatus(), compMessage.GetError())
+					}
+				}
 			}
-			logFailedComponentMessagesOnce(response.GetServiceResponse())
-			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
-			spinnerInstance.Start()
 		}
 	}
 	log.Info(message)
 	return err
 }
 
-// OperateService :service operatioms
+// OperateService :service operations
 func (e *Service) OperateService(ctx *context.Context, request *serviceProto.OperateServiceRequest) error {
-	conn, requestCtx, err := grpcClient(ctx)
-	if err != nil {
-		return err
-	}
-	client := serviceProto.NewServiceServiceClient(conn)
-	stream, err := client.OperateService(*requestCtx, request)
-	if err != nil {
-		return err
-	}
-
 	log.Info("Starting service operation...")
-	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
-	if err != nil {
-		return err
-	}
 
-	var message string
-	var retries = 0
+	// Create a context with cancelFunction for the entire operation
+	streamCtx, cancelFunction := context.WithCancel(context.Background())
+	defer cancelFunction()
 
-	responseChan := make(chan *serviceProto.OperateServiceResponse)
-	errorChan := make(chan error)
-	go func(ctx context.Context) {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				response, err := stream.Recv()
+	// Start log streaming in background
+	go streamLogs(streamCtx, ctx, request.GetServiceName())
+
+	// Attempt operation with retries
+	return retry.Do(
+		func() error {
+			conn, requestCtx, err := grpcClient(ctx)
+			if err != nil {
+				return err
+			}
+			defer func(conn *grpc.ClientConn) {
+				err := conn.Close()
 				if err != nil {
-					errorChan <- err
+					log.Errorf("Error closing connection: %v\n", err)
 				}
-				responseChan <- response
-			}
-		}
-	}(*requestCtx)
-	for {
-		recvCtx, cancel := context.WithTimeout(*requestCtx, constant.Timeout)
+			}(conn)
 
-		select {
-		case <-recvCtx.Done():
-			spinnerInstance.Stop()
-			cancel()
-			if !util.CanPerformRetry(retries, constant.MaxRetries) {
-				return nil
-			}
-			stream, err = reconnectOperateStream(client, requestCtx, request, stream)
+			client := serviceProto.NewServiceServiceClient(conn)
+			stream, err := client.OperateService(*requestCtx, request)
 			if err != nil {
-				return nil
+				return err
 			}
-			retries++
-		case err := <-errorChan:
-			spinnerInstance.Stop()
-			cancel()
-			if !util.IsRetryable(err) || !util.CanPerformRetry(retries, constant.MaxRetries) {
-				if err != io.EOF {
-					return err
-				} else if err == io.EOF {
-					log.Info(message)
-				}
-				return nil
+			getMessage := func(response *serviceProto.OperateServiceResponse) string {
+				return util.GenerateResponseMessage(response.GetServiceResponse())
 			}
-			stream, err = reconnectOperateStream(client, requestCtx, request, stream)
-			if err != nil {
-				return nil
+			getStatus := func(response *serviceProto.OperateServiceResponse) (string, string) {
+				return response.GetServiceResponse().GetServiceStatus().GetServiceStatus(),
+					response.GetServiceResponse().GetServiceStatus().GetServiceAction()
 			}
-			retries++
-		case response := <-responseChan:
-			spinnerInstance.Stop()
-			cancel()
-			if response != nil {
-				message = util.GenerateResponseMessageComponentSpecific(response.GetServiceResponse(), []string{request.GetComponentName()})
-				logFailedComponentMessagesOnceForComponents(response.GetServiceResponse(), []string{request.GetComponentName()})
-				spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
-				spinnerInstance.Start()
-				retries = 0
-			}
-		}
-	}
+
+			return handleResponse(stream, cancelFunction, getMessage, getStatus)
+		},
+		retry.Delay(constant.Timeout),
+		retry.RetryIf(isRetryableError),
+	)
 }
 
 // ListService deploys service
@@ -449,7 +311,7 @@ func (e *Service) ListService(ctx *context.Context, request *serviceProto.ListSe
 	return response, err
 }
 
-// ReleaseService :service operatioms
+// ReleaseService :service operations
 func (e *Service) ReleaseService(ctx *context.Context, request *serviceProto.ReleaseServiceRequest) error {
 	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {
@@ -546,11 +408,25 @@ func (e *Service) GetConflictingServices(ctx *context.Context, request *serviceP
 }
 
 // streamLogs streams logs for a service
-func streamLogs(streamCtx context.Context, ctx *context.Context, request *serviceProto.DeployServiceRequest) {
+func streamLogs(streamCtx context.Context, ctx *context.Context, serviceName string) {
 	var err error
 	lastLogTime := int64(0)
 	traceID := (*ctx).Value(constant.TraceIDKey).(string)
 	follow := true
+	// Start the spinner in a background goroutine
+	go func() {
+		spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
+		err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
+		if err != nil {
+			spinnerInstance.Stop()
+		}
+		spinnerInstance.Prefix = fmt.Sprintf("Fetching live logs for service: %s ", serviceName)
+		spinnerInstance.Suffix = "\n"
+		spinnerInstance.Start()
+		time.Sleep(30 * time.Second)
+		spinnerInstance.Stop()
+	}()
+
 	for {
 		select {
 		case <-streamCtx.Done():
@@ -560,7 +436,7 @@ func streamLogs(streamCtx context.Context, ctx *context.Context, request *servic
 			lastLogTime, err = logsClient.GetLogs(ctx, &logs.GetLogsRequest{
 				TraceId:     &traceID,
 				Follow:      &follow,
-				ServiceName: &request.GetServiceDefinition().Name,
+				ServiceName: &serviceName,
 				StartTime:   &lastLogTime,
 			})
 
@@ -572,25 +448,48 @@ func streamLogs(streamCtx context.Context, ctx *context.Context, request *servic
 	}
 }
 
-func reconnectDeployReleasedServiceStream(client serviceProto.ServiceServiceClient, requestCtx *context.Context, request *serviceProto.DeployReleasedServiceRequest, stream serviceProto.ServiceService_DeployReleasedServiceClient) (serviceProto.ServiceService_DeployReleasedServiceClient, error) {
+// handleResponse streams the service deploy response and call cancel on action termination
+func handleResponse[S StreamReceiverInterface[R], R any](stream S, cancelFunc context.CancelFunc, getMessage GetMessage[R], getStatus GetStatus[R]) error {
+	var serviceAction, serviceStatus string
+	for {
+		response, err := stream.Recv()
+		if err != nil {
+			if isActionCompleted(serviceAction, serviceStatus) {
+				cancelFunc()
+				return nil
+			}
 
-	// Close the current stream
-	if err := stream.CloseSend(); err != nil {
-		return nil, err
+			st, _ := status.FromError(err)
+			if err == io.EOF || slices.Contains(RetryableStatusCodes, st.Code()) {
+				return retryable.NewRetryableError(err, true)
+			}
+
+			cancelFunc()
+			return err
+		}
+		serviceStatus, serviceAction = getStatus(response)
+		if isActionCompleted(serviceAction, serviceStatus) {
+			cancelFunc()
+			log.Info(getMessage(response))
+			return nil
+		}
 	}
-
-	// Create a new stream connection
-	newStream, err := client.DeployReleasedService(*requestCtx, request)
-	if err != nil {
-		return nil, err
-	}
-
-	return newStream, nil
 }
 
+// isActionCompleted checks if the action is completed based on the service action and status
 func isActionCompleted(serviceAction, status string) bool {
 	if serviceAction == "" || status == "" {
 		return false
 	}
 	return serviceTerminalConditions[serviceAction][status]
+}
+
+// isRetryableError checks if the error is retryable
+func isRetryableError(err error) bool {
+	var re retryable.Error
+	if errors.As(err, &re) && re.Retryable() {
+		log.Info("Connection lost, retrying...")
+		return true
+	}
+	return false
 }

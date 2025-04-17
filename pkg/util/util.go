@@ -43,6 +43,11 @@ func GenerateResponseMessage(response *v1.ServiceResponse) string {
 	for _, compMessage := range response.ComponentsStatus {
 		message += fmt.Sprintf("\n Component: %s action: %s status: %s ", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
 	}
+	for _, compMessage := range response.ComponentsStatus {
+		if compMessage.GetComponentStatus() == "FAILED" {
+			log.Error(fmt.Sprintf("Component %s %s %s %s", compMessage.GetComponentName(), compMessage.GetComponentAction(), compMessage.GetComponentStatus(), compMessage.GetError()))
+		}
+	}
 	return message
 }
 
