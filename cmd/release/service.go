@@ -39,7 +39,7 @@ func init() {
 
 func execute(cmd *cobra.Command) {
 	ctx := cmd.Context()
-	
+
 	var err error
 
 	var serviceReleaseRequest serviceProto.ReleaseServiceRequest

@@ -72,6 +72,7 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 					log.Errorf("Error closing connection: %v\n", err)
 				}
 			}()
+
 			client := serviceProto.NewServiceServiceClient(conn)
 			stream, err := client.DeployService(*requestCtx, request)
 			if err != nil {
@@ -175,8 +176,8 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 				if err != nil {
 					log.Errorf("Error closing connection: %v\n", err)
 				}
-
 			}()
+			
 			client := serviceProto.NewServiceServiceClient(conn)
 			stream, err := client.DeployReleasedService(*requestCtx, request)
 			if err != nil {
