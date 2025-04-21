@@ -60,8 +60,7 @@ func execute(cmd *cobra.Command) {
 		ClientSecretHash: hashKey(config.Keys.SecretAccessKey),
 	})
 	if err != nil {
-
-		util.HandleGrpcError(err, "Failed to get token ")
+		util.LogGrpcError(err, "Failed to get token ")
 	}
 
 	config.AccessToken = response.Token

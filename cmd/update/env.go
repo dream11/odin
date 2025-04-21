@@ -45,7 +45,6 @@ func init() {
 func executeupdate(cmd *cobra.Command) {
 
 	ctx := cmd.Context()
-
 	var optionsData map[string]interface{}
 
 	isOptionsPresent := data != "{}"
@@ -82,7 +81,7 @@ func executeupdate(cmd *cobra.Command) {
 	})
 
 	if err != nil {
-		fileUtil.HandleGrpcError(err, "Failed to update environment: ")
+		fileUtil.LogGrpcError(err, "Failed to update environment: ")
 		os.Exit(1)
 	}
 

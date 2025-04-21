@@ -45,7 +45,7 @@ func listService(cmd *cobra.Command) {
 	})
 
 	if err != nil {
-		util.HandleGrpcError(err, "Failed to list services: ")
+		util.LogGrpcError(err, "Failed to list services: ")
 		os.Exit(1)
 	}
 	outputFormat, err := cmd.Flags().GetString("output")

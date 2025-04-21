@@ -51,7 +51,6 @@ func (l *Logs) GetLogs(ctx *context.Context, request *logs.GetLogsRequest) (int6
 			if !strings.Contains(logMessage.GetMessage(), "DEBUG") {
 				fmt.Println(logMessage.GetMessage())
 			}
-
 			if logMessage.GetTimestamp() > lastLogTime {
 				lastLogTime = logMessage.GetTimestamp()
 			}

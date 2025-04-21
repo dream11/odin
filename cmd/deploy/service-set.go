@@ -102,6 +102,6 @@ func executeDeployServiceSet(cmd *cobra.Command) {
 
 	err := serviceClient.DeployServiceSet(&ctx, &deployServiceSetRequest)
 	if err != nil {
-		util.HandleGrpcError(err, "Failed to deploy service set. ")
+		util.LogGrpcError(err, "Failed to deploy service set. ")
 	}
 }

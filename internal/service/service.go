@@ -44,7 +44,6 @@ type StreamReceiverInterface[R any] interface {
 	Recv() (R, error)
 }
 
-
 type getStatus[R any] func(response R) (serviceAction, serviceStatus string)
 
 type getMessage[R any] func(response R) string
@@ -88,7 +87,6 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 
 			return handleResponse(stream, cancelFunction, getMessage, getStatus)
 		},
-
 		retry.Delay(constant.Delay),
 		retry.RetryIf(isRetryableError),
 	)
@@ -172,7 +170,6 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 			if err != nil {
 				return err
 			}
-
 			defer func() {
 				err := conn.Close()
 				if err != nil {
@@ -180,7 +177,6 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 				}
 
 			}()
-
 			client := serviceProto.NewServiceServiceClient(conn)
 			stream, err := client.DeployReleasedService(*requestCtx, request)
 			if err != nil {
@@ -197,7 +193,6 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 
 			return handleResponse(stream, cancelFunction, getMessage, getStatus)
 		},
-
 		retry.Delay(constant.Delay),
 		retry.RetryIf(isRetryableError),
 	)
@@ -274,7 +269,6 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 			if err != nil {
 				return err
 			}
-
 			defer func() {
 				err := conn.Close()
 				if err != nil {
@@ -460,7 +454,6 @@ func handleResponse[S StreamReceiverInterface[R], R any](stream S, cancelFunc co
 			}
 
 			st, _ := status.FromError(err)
-
 			if err == io.EOF || slices.Contains(RetryableStatusCodes, st.Code()) ||
 				(strings.Contains(err.Error(), "RST_STREAM") && st.Code() == codes.Internal) {
 				return retryable.NewRetryableError(err, true)
@@ -483,7 +476,6 @@ func isActionCompleted(serviceAction, status string) bool {
 	if serviceAction == "" || status == "" {
 		return false
 	}
-
 	return slices.Contains(serviceTerminalConditions[serviceAction], status)
 }
 

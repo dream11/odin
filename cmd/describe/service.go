@@ -66,7 +66,7 @@ func execute(cmd *cobra.Command) {
 	})
 
 	if err != nil {
-		util.HandleGrpcError(err, "Failed to describe service: ")
+		util.LogGrpcError(err, "Failed to describe service: ")
 		os.Exit(1)
 	}
 

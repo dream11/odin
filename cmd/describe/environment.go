@@ -53,7 +53,7 @@ func executeEnv(cmd *cobra.Command) {
 	})
 
 	if err != nil {
-		util.HandleGrpcError(err, "\nFailed to describe environment: ")
+		util.LogGrpcError(err, "\nFailed to describe environment: ")
 		os.Exit(1)
 	}
 

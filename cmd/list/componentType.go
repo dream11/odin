@@ -53,7 +53,7 @@ func componentExecute(cmd *cobra.Command) {
 		Params: params,
 	})
 	if err != nil {
-		util.HandleGrpcError(err, "\nFailed to list component types: ")
+		util.LogGrpcError(err, "\nFailed to list component types: ")
 		os.Exit(1)
 	}
 

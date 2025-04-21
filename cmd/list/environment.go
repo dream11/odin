@@ -52,7 +52,7 @@ func execute(cmd *cobra.Command) {
 	})
 
 	if err != nil {
-		util.HandleGrpcError(err, "Failed to list environments: ")
+		util.LogGrpcError(err, "Failed to list environments: ")
 		os.Exit(1)
 	}
 

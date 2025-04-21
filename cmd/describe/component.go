@@ -52,7 +52,7 @@ func executeDescribeComponentType(cmd *cobra.Command) {
 	})
 
 	if err != nil {
-		util.HandleGrpcError(err, "\nFailed to describe component type: ")
+		util.LogGrpcError(err, "\nFailed to describe component type: ")
 		os.Exit(1)
 	}
 

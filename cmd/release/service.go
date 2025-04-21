@@ -39,6 +39,7 @@ func init() {
 
 func execute(cmd *cobra.Command) {
 	ctx := cmd.Context()
+	
 	var err error
 
 	var serviceReleaseRequest serviceProto.ReleaseServiceRequest
@@ -104,6 +105,6 @@ func execute(cmd *cobra.Command) {
 	serviceReleaseRequest.ServiceDefinition = &definitionProto
 	err = serviceClient.ReleaseService(&ctx, &serviceReleaseRequest)
 	if err != nil {
-		util.HandleGrpcError(err, "Failed to release service: ")
+		util.LogGrpcError(err, "Failed to release service: ")
 	}
 }

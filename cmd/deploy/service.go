@@ -104,8 +104,7 @@ func deployUsingFiles(ctx context.Context) {
 	})
 
 	if err != nil {
-
-		util.HandleGrpcError(err, "Failed to deploy service: ")
+		util.LogGrpcError(err, "Failed to deploy service: ")
 	}
 }
 
@@ -120,7 +119,7 @@ func deployUsingServiceNameAndVersion(ctx context.Context) {
 	})
 
 	if err != nil {
-		util.HandleGrpcError(err, "Failed to deploy service: ")
+		util.LogGrpcError(err, "Failed to deploy service: ")
 	}
 }
 
@@ -135,7 +134,7 @@ func deployUsingServiceNameAndLabels(ctx context.Context) {
 	})
 
 	if err != nil {
-		util.HandleGrpcError(err, "Failed to deploy service: ")
+		util.LogGrpcError(err, "Failed to deploy service: ")
 	}
 }
 

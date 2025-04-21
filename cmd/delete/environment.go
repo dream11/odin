@@ -40,6 +40,6 @@ func execute(cmd *cobra.Command) {
 	})
 
 	if err != nil {
-		util.HandleGrpcError(err, "Failed to delete environment:")
+		util.LogGrpcError(err, "Failed to delete environment:")
 	}
 }

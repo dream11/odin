@@ -39,7 +39,6 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 				if err != nil {
 					log.Errorf("Error closing connection: %v\n", err)
 				}
-
 			}()
 
 			client := serviceProto.NewServiceServiceClient(conn)

@@ -92,7 +92,7 @@ func executeOperateService(cmd *cobra.Command) {
 	})
 
 	if err != nil {
-		util.HandleGrpcError(err, "\nFailed to operate on service: ")
+		util.LogGrpcError(err, "\nFailed to operate on service: ")
 	}
 
 }

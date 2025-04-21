@@ -47,6 +47,6 @@ func execute(cmd *cobra.Command) {
 	})
 
 	if err != nil {
-		util.HandleGrpcError(err, "Failed to undeploy service: ")
+		util.LogGrpcError(err, "Failed to undeploy service: ")
 	}
 }
