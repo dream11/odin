@@ -177,7 +177,7 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 					log.Errorf("Error closing connection: %v\n", err)
 				}
 			}()
-			
+
 			client := serviceProto.NewServiceServiceClient(conn)
 			stream, err := client.DeployReleasedService(*requestCtx, request)
 			if err != nil {
