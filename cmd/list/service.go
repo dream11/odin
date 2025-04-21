@@ -3,6 +3,8 @@ package list
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dream11/odin/pkg/util"
+	"os"
 
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/constant"
@@ -43,7 +45,8 @@ func listService(cmd *cobra.Command) {
 	})
 
 	if err != nil {
-		log.Fatal("Failed to list services ", err)
+		util.LogGrpcError(err, "Failed to list services: ")
+		os.Exit(1)
 	}
 	outputFormat, err := cmd.Flags().GetString("output")
 	if err != nil {

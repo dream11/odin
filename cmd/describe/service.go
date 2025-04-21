@@ -3,6 +3,8 @@ package describe
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dream11/odin/pkg/util"
+	"os"
 	"strconv"
 
 	serviceBackend "github.com/dream11/odin/internal/service"
@@ -64,7 +66,8 @@ func execute(cmd *cobra.Command) {
 	})
 
 	if err != nil {
-		log.Fatal("Failed to describe service: ", err)
+		util.LogGrpcError(err, "Failed to describe service: ")
+		os.Exit(1)
 	}
 
 	writeAsJSON(response)

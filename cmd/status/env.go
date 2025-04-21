@@ -44,7 +44,7 @@ func getStatus(cmd *cobra.Command) {
 		ServiceName: serviceName,
 	})
 	if err != nil {
-		log.Fatal("Failed to get environment status: ", err)
+		util.LogGrpcError(err, "Failed to get environment status: ")
 	}
 	outputFormat, err := cmd.Flags().GetString("output")
 	if err != nil {

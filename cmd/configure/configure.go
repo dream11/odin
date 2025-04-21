@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"github.com/dream11/odin/pkg/util"
 	"os"
 	"path"
 
@@ -59,12 +60,12 @@ func execute(cmd *cobra.Command) {
 		ClientSecretHash: hashKey(config.Keys.SecretAccessKey),
 	})
 	if err != nil {
-		log.Fatal("Failed to get token ", err)
+		util.LogGrpcError(err, "Failed to get token ")
 	}
 
 	config.AccessToken = response.Token
 	appConfig.WriteConfig(config)
-	fmt.Println("Configured!")
+	fmt.Println("\n\033[32mConfigured!\033[0m")
 }
 
 func createConfigFileIfNotExist() {

@@ -3,6 +3,8 @@ package list
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dream11/odin/pkg/util"
+	"os"
 	"strconv"
 
 	"github.com/dream11/odin/internal/service"
@@ -50,7 +52,8 @@ func execute(cmd *cobra.Command) {
 	})
 
 	if err != nil {
-		log.Fatal("Failed to list environments ", err)
+		util.LogGrpcError(err, "Failed to list environments: ")
+		os.Exit(1)
 	}
 
 	outputFormat, err := cmd.Flags().GetString("output")

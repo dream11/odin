@@ -2,6 +2,7 @@ package release
 
 import (
 	"encoding/json"
+	"github.com/dream11/odin/pkg/util"
 	"os"
 	"path/filepath"
 	"strings"
@@ -104,6 +105,6 @@ func execute(cmd *cobra.Command) {
 	serviceReleaseRequest.ServiceDefinition = &definitionProto
 	err = serviceClient.ReleaseService(&ctx, &serviceReleaseRequest)
 	if err != nil {
-		log.Fatal("Failed to release service ", err)
+		util.LogGrpcError(err, "Failed to release service: ")
 	}
 }

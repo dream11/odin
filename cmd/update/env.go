@@ -3,6 +3,7 @@ package update
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/constant"
@@ -80,7 +81,8 @@ func executeupdate(cmd *cobra.Command) {
 	})
 
 	if err != nil {
-		log.Fatal("Failed to update environment ", err.Error())
+		fileUtil.LogGrpcError(err, "Failed to update environment: ")
+		os.Exit(1)
 	}
 
 	outputFormat, err := cmd.Flags().GetString("output")
