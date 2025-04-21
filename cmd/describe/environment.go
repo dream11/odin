@@ -3,6 +3,7 @@ package describe
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/dream11/odin/internal/service"
@@ -52,7 +53,8 @@ func executeEnv(cmd *cobra.Command) {
 	})
 
 	if err != nil {
-		log.Fatal("Failed to describe environment ", err)
+		util.LogGrpcError(err, "\nFailed to describe environment: ")
+		os.Exit(1)
 	}
 
 	outputFormat, err := cmd.Flags().GetString("output")

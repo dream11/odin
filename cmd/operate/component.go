@@ -132,7 +132,7 @@ func execute(cmd *cobra.Command) {
 		newComponentValues := diffValues.NewValues
 
 		if oldComponentValues != nil && len(oldComponentValues.Fields) > 0 {
-			log.Info("\nBelow changes will happen after this operation:")
+			log.Info("\nBelow changes will happen after this operation:\n")
 			tableHeaders := []string{"Component Name", "Config", "Old Value", "New Value"}
 			var tableData [][]interface{}
 
@@ -210,7 +210,7 @@ func execute(cmd *cobra.Command) {
 	})
 
 	if err != nil {
-		log.Fatal("Failed to operate on component ", err)
+		util.LogGrpcError(err, "Failed to operate on component: ")
 	}
 
 }

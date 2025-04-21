@@ -26,7 +26,6 @@ func (e *Environment) ListEnvironments(ctx *context.Context, request *environmen
 	client := environment.NewEnvironmentServiceClient(conn)
 	response, err := client.ListEnvironment(*requestCtx, request)
 	if err != nil {
-		log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 		return nil, err
 	}
 
@@ -45,7 +44,7 @@ func (e *Environment) CreateEnvironment(ctx *context.Context, request *environme
 		return err
 	}
 
-	log.Info("Creating environment...")
+	log.Info("\nCreating environment...\n")
 	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
 	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
 	if err != nil {
@@ -59,7 +58,6 @@ func (e *Environment) CreateEnvironment(ctx *context.Context, request *environme
 			if errors.Is(err, context.Canceled) || err == io.EOF {
 				break
 			}
-			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 			return err
 		}
 		if response != nil {
@@ -86,7 +84,7 @@ func (e *Environment) DeleteEnvironment(ctx *context.Context, request *environme
 		return err
 	}
 
-	log.Info("Deleting environment...")
+	log.Info("\nDeleting environment...\n")
 	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
 	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
 	if err != nil {
@@ -100,7 +98,6 @@ func (e *Environment) DeleteEnvironment(ctx *context.Context, request *environme
 			if errors.Is(err, context.Canceled) || err == io.EOF {
 				break
 			}
-			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 			return err
 		}
 		if response != nil {
@@ -124,7 +121,6 @@ func (e *Environment) UpdateEnvironment(ctx *context.Context, request *environme
 	response, err := client.UpdateEnvironment(*requestCtx, request)
 
 	if err != nil {
-		log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 		return nil, err
 	}
 
@@ -142,7 +138,6 @@ func (e *Environment) DescribeEnvironment(ctx *context.Context, request *environ
 	response, err := client.DescribeEnvironment(*requestCtx, request)
 
 	if err != nil {
-		log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 		return nil, err
 	}
 
@@ -186,7 +181,7 @@ func (e *Environment) EnvironmentStatus(ctx *context.Context, request *environme
 func (e *Environment) IsStrictEnvironment(ctx *context.Context, request *environment.IsStrictEnvironmentRequest) (*environment.IsStrictEnvironmentResponse, error) {
 
 	for retries := 0; retries < constant.MaxRetries; retries++ {
-		ctxWithTimeout, cancel := context.WithTimeout(*ctx, constant.Timeout)
+		ctxWithTimeout, cancel := context.WithTimeout(*ctx, constant.Delay)
 		defer cancel()
 
 		conn, requestCtx, err := grpcClient(&ctxWithTimeout)
@@ -201,10 +196,9 @@ func (e *Environment) IsStrictEnvironment(ctx *context.Context, request *environ
 		}
 
 		if !util.IsRetryable(err) {
-			log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
 			return nil, err
 		}
-		time.Sleep(constant.Timeout)
+		time.Sleep(constant.Delay)
 		if retries == 0 {
 			log.Warnf(constant.InitiatingRetryMessage)
 		}

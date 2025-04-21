@@ -3,11 +3,12 @@ package describe
 import (
 	"encoding/json"
 	"fmt"
-
 	serviceBackend "github.com/dream11/odin/internal/service"
+	"github.com/dream11/odin/pkg/util"
 	comp "github.com/dream11/odin/proto/gen/go/dream11/od/component/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 var componentName string
@@ -51,7 +52,8 @@ func executeDescribeComponentType(cmd *cobra.Command) {
 	})
 
 	if err != nil {
-		log.Fatal("Failed to describe service: ", err)
+		util.LogGrpcError(err, "\nFailed to describe component type: ")
+		os.Exit(1)
 	}
 
 	writeAsJSONDescribeComponentType(response)

@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/dream11/odin/pkg/config"
 	"github.com/dream11/odin/pkg/constant"
@@ -13,6 +14,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -48,6 +50,14 @@ func grpcClient(ctx *context.Context) (*grpc.ClientConn, *context.Context, error
 		cred := credentials.NewTLS(&tls.Config{})
 		opts = append(opts, grpc.WithTransportCredentials(cred))
 	}
+
+	opts = append(opts, grpc.WithKeepaliveParams(
+		keepalive.ClientParameters{
+			Time:                10 * time.Second,
+			Timeout:             20 * time.Second,
+			PermitWithoutStream: true,
+		},
+	))
 
 	conn, err := grpc.NewClient(appConfig.BackendAddress, opts...)
 
