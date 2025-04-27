@@ -21,7 +21,8 @@ import (
 var odinAccessKey string
 var odinSecretAccessKey string
 var odinBackendAddress string
-var odinInsecure bool
+var insecure bool
+var plainText bool
 
 // default backend address
 const defaultBackendAddress = "odin-backend.d11dev.com:443"
@@ -40,7 +41,8 @@ func init() {
 	configureCmd.Flags().StringVar(&odinAccessKey, "access-key", "", "odin access key")
 	configureCmd.Flags().StringVar(&odinSecretAccessKey, "secret-access-key", "", "odin secret access key")
 	configureCmd.Flags().StringVar(&odinBackendAddress, "backend-address", "", "odin backend address with port")
-	configureCmd.Flags().BoolVarP(&odinInsecure, "insecure", "I", true, "odin insecure")
+	configureCmd.Flags().BoolVarP(&insecure, "insecure", "I", true, "odin insecure")
+	configureCmd.Flags().BoolVarP(&plainText, "plaintext", "P", false, "use plaintext grpc calls")
 	cmd.RootCmd.AddCommand(configureCmd)
 }
 
@@ -50,13 +52,14 @@ func execute(cmd *cobra.Command) {
 	config := appConfig.GetConfig()
 
 	config.BackendAddress = getConfigKey("backend-address", odinBackendAddress, "ODIN_BACKEND_ADDRESS", config.BackendAddress, defaultBackendAddress)
-	config.Insecure = odinInsecure
+	config.Insecure = insecure
+	config.Plaintext = plainText
 	config.Keys.AccessKey = getConfigKey("access-key", odinAccessKey, "ODIN_ACCESS_KEY", config.Keys.AccessKey, "")
 	config.Keys.SecretAccessKey = getConfigKey("secret-access-key", odinSecretAccessKey, "ODIN_SECRET_ACCESS_KEY", config.Keys.SecretAccessKey, "")
 
 	ctx := cmd.Context()
 	response, err := configureClient.GetUserToken(&ctx, &auth.GetUserTokenRequest{
-		ClientId:         string(config.Keys.AccessKey),
+		ClientId:         config.Keys.AccessKey,
 		ClientSecretHash: hashKey(config.Keys.SecretAccessKey),
 	})
 	if err != nil {
