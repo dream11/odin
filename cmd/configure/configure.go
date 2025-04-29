@@ -42,7 +42,7 @@ func init() {
 	configureCmd.Flags().StringVar(&odinSecretAccessKey, "secret-access-key", "", "odin secret access key")
 	configureCmd.Flags().StringVar(&odinBackendAddress, "backend-address", "", "odin backend address with port")
 	configureCmd.Flags().BoolVarP(&insecure, "insecure", "I", true, "odin insecure")
-	configureCmd.Flags().BoolVarP(&plainText, "plaintext", "P", false, "use plaintext grpc calls")
+	configureCmd.Flags().BoolVarP(&plainText, "plaintext", "P", false, "skip tls verification")
 	cmd.RootCmd.AddCommand(configureCmd)
 }
 

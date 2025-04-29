@@ -7,10 +7,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// CustomTextFormatter custom text formatter for logging
 type CustomTextFormatter struct {
 	BaseFormatter *log.TextFormatter
 }
 
+// Format Configure log format
 func (f *CustomTextFormatter) Format(entry *log.Entry) ([]byte, error) {
 	var colorStart, colorEnd string
 	colorEnd = "\033[0m"
