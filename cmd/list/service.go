@@ -100,5 +100,5 @@ func writeListServiceAsJSON(response *serviceProto.ListServiceResponse) {
 		}
 	}
 	output, _ := json.MarshalIndent(services, "", "  ")
-	fmt.Print(string(output))
+	fmt.Println(string(output))
 }
