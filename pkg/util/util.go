@@ -197,6 +197,7 @@ func IsRetryable(err error) bool {
 	return ok && (st.Code() == codes.Unavailable || (st.Code() == codes.Internal && strings.Contains(st.Message(), "RST_STREAM")))
 }
 
+// LogGrpcError log grpc error
 func LogGrpcError(err error, prefix string) {
 	st, ok := status.FromError(err)
 	if ok {
