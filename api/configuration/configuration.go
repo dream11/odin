@@ -13,4 +13,5 @@ type Configuration struct {
 	AccessToken    string `toml:"access_token,omitempty" mapstructure:"access_token,omitempty"`
 	EnvName        string `toml:"envName,omitempty" mapstructure:"envName,omitempty"`
 	Insecure       bool   `toml:"insecure,omitempty" mapstructure:"insecure,omitempty"`
+	Plaintext      bool   `toml:"plaintext,omitempty" mapstructure:"plaintext,omitempty"`
 }
