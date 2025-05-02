@@ -7,14 +7,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// CustomTextFormatter is a logrus formatter that adds ANSI color codes
-// to log messages based on their log level.
+// CustomTextFormatter custom text formatter for logging
 type CustomTextFormatter struct {
 	BaseFormatter *log.TextFormatter
 }
 
-// Format formats the log entry with ANSI color codes based on the log level.
-// It implements the logrus.Formatter interface for CustomTextFormatter.
+// Format Configure log format
 func (f *CustomTextFormatter) Format(entry *log.Entry) ([]byte, error) {
 	var colorStart, colorEnd string
 	colorEnd = "\033[0m"

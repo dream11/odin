@@ -197,9 +197,7 @@ func IsRetryable(err error) bool {
 	return ok && (st.Code() == codes.Unavailable || (st.Code() == codes.Internal && strings.Contains(st.Message(), "RST_STREAM")))
 }
 
-// LogGrpcError logs the given gRPC error with an optional prefix.
-// If the error contains a gRPC status, the status message is logged.
-// Otherwise, the standard error message is logged.
+// LogGrpcError log grpc error
 func LogGrpcError(err error, prefix string) {
 	st, ok := status.FromError(err)
 	if ok {
