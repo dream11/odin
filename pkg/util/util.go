@@ -150,7 +150,7 @@ func GenerateResponseMessageComponentSpecific(response *v1.ServiceResponse, comp
 // GenerateTraceID generates a trace id
 func GenerateTraceID() string {
 	traceID := uuid.New().String()
-	log.Infof("\033[34m"+"Generated trace ID: %s\033[0m", traceID)
+	log.Infof("Generated trace ID: %s\n", traceID)
 	return traceID
 }
 
