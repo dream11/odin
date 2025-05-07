@@ -406,7 +406,7 @@ func (e *Service) GetConflictingServices(ctx *context.Context, request *serviceP
 func streamLogs(streamCtx context.Context, ctx *context.Context, serviceName string) {
 	var err error
 	lastLogTime := int64(0)
-	traceID := (*ctx).Value(constant.TraceIDKey).(string)
+	//traceID := (*ctx).Value(constant.TraceIDKey).(string)
 	follow := true
 	// Start the spinner in a background goroutine
 	go func() {
@@ -429,7 +429,7 @@ func streamLogs(streamCtx context.Context, ctx *context.Context, serviceName str
 		default:
 			// Get logs with retry on error
 			lastLogTime, err = logsClient.GetLogs(ctx, &logs.GetLogsRequest{
-				TraceId:     &traceID,
+				//TraceId:     &traceID,
 				Follow:      &follow,
 				ServiceName: &serviceName,
 				StartTime:   &lastLogTime,

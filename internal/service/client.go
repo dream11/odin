@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/dream11/odin/pkg/config"
-	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/util"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -21,19 +20,10 @@ import (
 func grpcClient(ctx *context.Context) (*grpc.ClientConn, *context.Context, error) {
 	appConfig := config.GetConfig()
 
-	var traceID string
-	var contextWithTrace context.Context
-	if (*ctx).Value(constant.TraceIDKey) == nil {
-		traceID = util.GenerateTraceID()
-		contextWithTrace = context.WithValue(*ctx, constant.TraceIDKey, traceID)
-	} else {
-		traceID = (*ctx).Value(constant.TraceIDKey).(string)
-		contextWithTrace = *ctx
-	}
-
 	if appConfig.BackendAddress == "" {
 		log.Fatal("Cannot create grpc client: Backend address is empty in config! Run `odin configure` to set backend address")
 	}
+
 	var opts []grpc.DialOption
 	if appConfig.Insecure {
 		if util.IsIPAddress(strings.Split(appConfig.BackendAddress, ":")[0]) {
@@ -45,7 +35,6 @@ func grpcClient(ctx *context.Context) (*grpc.ClientConn, *context.Context, error
 			tlsConf.InsecureSkipVerify = true
 			opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(&tlsConf)))
 		}
-
 	} else {
 		cred := credentials.NewTLS(&tls.Config{})
 		opts = append(opts, grpc.WithTransportCredentials(cred))
@@ -60,11 +49,11 @@ func grpcClient(ctx *context.Context) (*grpc.ClientConn, *context.Context, error
 	))
 
 	conn, err := grpc.NewClient(appConfig.BackendAddress, opts...)
-
 	if err != nil {
 		return nil, nil, err
 	}
-	// Enrich context with authorisation metadata
-	requestCtx := metadata.AppendToOutgoingContext(contextWithTrace, "Authorization", fmt.Sprintf("Bearer %s", appConfig.AccessToken), string(constant.TraceIDKey), traceID)
+
+	// Enrich context with authorization metadata only
+	requestCtx := metadata.AppendToOutgoingContext(*ctx, "Authorization", fmt.Sprintf("Bearer %s", appConfig.AccessToken))
 	return conn, &requestCtx, nil
 }

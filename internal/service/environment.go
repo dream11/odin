@@ -51,6 +51,7 @@ func (e *Environment) CreateEnvironment(ctx *context.Context, request *environme
 		return err
 	}
 	var message string
+	var traceID string
 	for {
 		response, err := stream.Recv()
 		spinnerInstance.Stop()
@@ -61,6 +62,12 @@ func (e *Environment) CreateEnvironment(ctx *context.Context, request *environme
 			return err
 		}
 		if response != nil {
+			// Print Trace ID only once, when it first arrives
+			if traceID == "" && response.TraceId != "" {
+				traceID = response.TraceId
+				log.Infof("Generated Trace Id for env creation: %s", traceID)
+			}
+
 			message = response.Message
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", response.Message)
 			spinnerInstance.Start()
