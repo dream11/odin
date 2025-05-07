@@ -420,6 +420,7 @@ func streamLogs(streamCtx context.Context, ctx *context.Context, serviceName str
 		spinnerInstance.Start()
 		time.Sleep(30 * time.Second)
 		spinnerInstance.Stop()
+		fmt.Printf("Fetching live logs for service: %s \n", serviceName)
 	}()
 
 	for {

@@ -150,7 +150,7 @@ func GenerateResponseMessageComponentSpecific(response *v1.ServiceResponse, comp
 // GenerateTraceID generates a trace id
 func GenerateTraceID() string {
 	traceID := uuid.New().String()
-	log.Infof("\033[34m"+"Generated trace ID: %s\033[0m", traceID)
+	log.Infof("Generated trace ID: %s\n", traceID)
 	return traceID
 }
 
@@ -197,6 +197,7 @@ func IsRetryable(err error) bool {
 	return ok && (st.Code() == codes.Unavailable || (st.Code() == codes.Internal && strings.Contains(st.Message(), "RST_STREAM")))
 }
 
+// LogGrpcError log grpc error
 func LogGrpcError(err error, prefix string) {
 	st, ok := status.FromError(err)
 	if ok {

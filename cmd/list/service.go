@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/dream11/odin/pkg/util"
 	"os"
+	"strings"
 
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/constant"
@@ -81,14 +82,23 @@ func writeListServiceAsText(response *serviceProto.ListServiceResponse) {
 }
 
 func writeListServiceAsJSON(response *serviceProto.ListServiceResponse) {
-	var services []map[string]interface{}
-	for _, serviceEntity := range response.Services {
-		services = append(services, map[string]interface{}{
-			"name":    serviceEntity.Name,
-			"version": serviceEntity.Version,
-			"Tags":    serviceEntity.Tags,
-		})
+	services := make([]map[string]interface{}, 0)
+	if response != nil {
+		for _, serviceEntity := range response.Services {
+			var tags []string
+			if serviceEntity.Tags != "" {
+				tags = strings.Split(serviceEntity.Tags, ",")
+				for i, tag := range tags {
+					tags[i] = strings.TrimSpace(tag)
+				}
+			}
+			services = append(services, map[string]interface{}{
+				"name":    serviceEntity.Name,
+				"version": serviceEntity.Version,
+				"tags":    tags,
+			})
+		}
 	}
 	output, _ := json.MarshalIndent(services, "", "  ")
-	fmt.Print(string(output))
+	fmt.Println(string(output))
 }

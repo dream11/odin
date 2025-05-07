@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"github.com/dream11/odin/api/configuration"
 	"strings"
 	"time"
 
@@ -17,37 +18,42 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+func getTLSOpts(appConfig *configuration.Configuration) grpc.DialOption {
+	tlsConf := tls.Config{
+		ServerName: strings.Split(appConfig.BackendAddress, ":")[0],
+	}
+	if appConfig.Plaintext {
+		// Disable TLS
+		return grpc.WithTransportCredentials(insecure.NewCredentials())
+	}
+	if appConfig.Insecure {
+		// Perform TLS handshake but skip certificate verification
+		tlsConf.InsecureSkipVerify = true
+	}
+
+	return grpc.WithTransportCredentials(credentials.NewTLS(&tlsConf))
+
+}
+
 func grpcClient(ctx *context.Context) (*grpc.ClientConn, *context.Context, error) {
 	appConfig := config.GetConfig()
+
+
 
 	if appConfig.BackendAddress == "" {
 		log.Fatal("Cannot create grpc client: Backend address is empty in config! Run `odin configure` to set backend address")
 	}
 
-	var opts []grpc.DialOption
-	if appConfig.Insecure {
-		if util.IsIPAddress(strings.Split(appConfig.BackendAddress, ":")[0]) {
-			// Disable TLS
-			opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		} else {
-			// Perform TLS handshake but skip certificate verification
-			var tlsConf tls.Config
-			tlsConf.InsecureSkipVerify = true
-			opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(&tlsConf)))
-		}
-	} else {
-		cred := credentials.NewTLS(&tls.Config{})
-		opts = append(opts, grpc.WithTransportCredentials(cred))
+	opts := []grpc.DialOption{
+		grpc.WithKeepaliveParams(
+			keepalive.ClientParameters{
+				Time:                10 * time.Second,
+				Timeout:             20 * time.Second,
+				PermitWithoutStream: true,
+			}),
+		getTLSOpts(appConfig),
+
 	}
-
-	opts = append(opts, grpc.WithKeepaliveParams(
-		keepalive.ClientParameters{
-			Time:                10 * time.Second,
-			Timeout:             20 * time.Second,
-			PermitWithoutStream: true,
-		},
-	))
-
 	conn, err := grpc.NewClient(appConfig.BackendAddress, opts...)
 	if err != nil {
 		return nil, nil, err
