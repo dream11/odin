@@ -5,10 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"strings"
 
+	"github.com/dream11/odin/pkg/util"
 	logs "github.com/dream11/odin/proto/gen/go/dream11/od/logs/v1"
 )
+
+var restrictedLogLevels = []string{"DEBUG"}
 
 // Logs performs operation on logs like get logs
 type Logs struct{}
@@ -48,7 +50,7 @@ func (l *Logs) GetLogs(ctx *context.Context, request *logs.GetLogsRequest) (int6
 		}
 
 		for _, logMessage := range response.Logs {
-			if !strings.Contains(logMessage.GetMessage(), "DEBUG") {
+			if !util.Contains(logMessage.GetLevel(), restrictedLogLevels) {
 				fmt.Println(logMessage.GetMessage())
 			}
 			if logMessage.GetTimestamp() > lastLogTime {
