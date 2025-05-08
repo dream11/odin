@@ -38,6 +38,7 @@ const (
 	Delay = 10 * time.Second
 	// MaxRetriesReached is the message shown when max retries are reached
 	MaxRetriesReached = "Max retries reached. Exiting...\nPlease check:\n- Your internet connection: \n- VPN connected properly"
+
 	// RetryingMessage is the message shown when retrying
 	RetryingMessage = "Retrying ... (%d/%d)"
 )
