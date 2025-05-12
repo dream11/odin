@@ -49,7 +49,7 @@ func executeOperateService(cmd *cobra.Command) {
 	ctx := cmd.Context()
 	traceID := util.GenerateTraceID()
 	contextWithTrace := context.WithValue(ctx, constant.TraceIDKey, traceID)
-	verboseEnabled, err := cmd.Flags().GetBool("verbose")
+	verboseEnabled, err := cmd.Flags().GetBool(constant.VerboseFlag)
 	if err != nil {
 		log.Fatal(err)
 	}

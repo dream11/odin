@@ -26,7 +26,9 @@ const (
 	// TraceIDKey is the key used to store traceID in context
 	TraceIDKey TraceID = "trace-id"
 
+	// VerboseEnabledKey is the key used to store verbose value in context
 	VerboseEnabledKey VerboseEnabled = "verbose"
+	VerboseFlag                      = "verbose"
 
 	// LogLevelKey is the key used to set log level
 	LogLevelKey = "ODIN_LOG_LEVEL"

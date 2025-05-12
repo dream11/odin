@@ -2,7 +2,7 @@ package undeploy
 
 import (
 	"context"
-	
+
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/config"
 	"github.com/dream11/odin/pkg/constant"
@@ -43,7 +43,7 @@ func execute(cmd *cobra.Command) {
 	envName = config.EnsureEnvPresent(envName)
 
 	ctx := cmd.Context()
-	verboseEnabled, err := cmd.Flags().GetBool("verbose")
+	verboseEnabled, err := cmd.Flags().GetBool(constant.VerboseFlag)
 	if err != nil {
 		log.Fatal(err)
 	}

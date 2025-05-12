@@ -11,7 +11,7 @@ import (
 	logs "github.com/dream11/odin/proto/gen/go/dream11/od/logs/v1"
 )
 
-var restrictedLogLevels = []string{"DEBUG"}
+var restrictedLogLevels []string
 
 // Logs performs operation on logs like get logs
 type Logs struct{}
@@ -53,11 +53,13 @@ func (l *Logs) GetLogs(ctx *context.Context, request *logs.GetLogsRequest) (int6
 		verboseEnabled := false
 		if (*ctx).Value(constant.VerboseEnabledKey) != nil {
 			verboseEnabled = (*ctx).Value(constant.VerboseEnabledKey).(bool)
+			if !verboseEnabled {
+				restrictedLogLevels = append(restrictedLogLevels, "DEBUG", "WARN")
+			}
 		}
 
 		for _, logMessage := range response.Logs {
-			if !util.Contains(logMessage.GetLevel(), restrictedLogLevels) ||
-				(verboseEnabled == true && logMessage.GetLevel() == "DEBUG") {
+			if !util.Contains(logMessage.GetLevel(), restrictedLogLevels) {
 				fmt.Println(logMessage.GetMessage())
 			}
 			if logMessage.GetTimestamp() > lastLogTime {
