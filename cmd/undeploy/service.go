@@ -1,8 +1,10 @@
 package undeploy
 
 import (
+	"context"
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/config"
+	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/util"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
@@ -40,8 +42,14 @@ func execute(cmd *cobra.Command) {
 	envName = config.EnsureEnvPresent(envName)
 
 	ctx := cmd.Context()
+	verboseEnabled, err := cmd.Flags().GetBool("verbose")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	err := serviceClient.UndeployService(&ctx, &serviceProto.UndeployServiceRequest{
+	ctx = context.WithValue(ctx, constant.VerboseEnabledKey, verboseEnabled)
+
+	err = serviceClient.UndeployService(&ctx, &serviceProto.UndeployServiceRequest{
 		EnvName:     envName,
 		ServiceName: name,
 	})

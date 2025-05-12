@@ -4,6 +4,7 @@ import "time"
 
 // TraceID is the type for trace ID
 type TraceID string
+type VerboseEnabled string
 
 const (
 	// TEXT type output format
@@ -24,6 +25,8 @@ const (
 
 	// TraceIDKey is the key used to store traceID in context
 	TraceIDKey TraceID = "trace-id"
+
+	VerboseEnabledKey VerboseEnabled = "verbose"
 
 	// LogLevelKey is the key used to set log level
 	LogLevelKey = "ODIN_LOG_LEVEL"

@@ -49,6 +49,13 @@ func executeOperateService(cmd *cobra.Command) {
 	ctx := cmd.Context()
 	traceID := util.GenerateTraceID()
 	contextWithTrace := context.WithValue(ctx, constant.TraceIDKey, traceID)
+	verboseEnabled, err := cmd.Flags().GetBool("verbose")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	contextWithTrace = context.WithValue(contextWithTrace, constant.VerboseEnabledKey, verboseEnabled)
+
 	//validate the variables
 	var optionsData map[string]interface{}
 

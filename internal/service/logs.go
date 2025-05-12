@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/dream11/odin/pkg/constant"
 	"io"
 
 	"github.com/dream11/odin/pkg/util"
@@ -49,8 +50,14 @@ func (l *Logs) GetLogs(ctx *context.Context, request *logs.GetLogsRequest) (int6
 			continue
 		}
 
+		verboseEnabled := false
+		if (*ctx).Value(constant.VerboseEnabledKey) != nil {
+			verboseEnabled = (*ctx).Value(constant.VerboseEnabledKey).(bool)
+		}
+
 		for _, logMessage := range response.Logs {
-			if !util.Contains(logMessage.GetLevel(), restrictedLogLevels) {
+			if !util.Contains(logMessage.GetLevel(), restrictedLogLevels) ||
+				(verboseEnabled == true && logMessage.GetLevel() == "DEBUG") {
 				fmt.Println(logMessage.GetMessage())
 			}
 			if logMessage.GetTimestamp() > lastLogTime {
