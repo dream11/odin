@@ -24,7 +24,7 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 	defer cancelFunction()
 
 	// Start log streaming in background
-	go streamLogs(streamCtx, ctx, request.GetServiceName())
+	go streamLogs(streamCtx, ctx, request.GetServiceName(), request.GetEnvName())
 
 	// Attempt operation with retries
 	return retry.Do(

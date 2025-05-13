@@ -67,7 +67,7 @@ message DeployServiceSetServiceResponse {
 
 message DeployServiceResponse {
   ServiceResponse service_response = 1;
-  string trace_id = 4;
+  string trace_id = 2;
 }
 
 message ServiceStatus {

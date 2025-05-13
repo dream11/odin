@@ -21,14 +21,8 @@ func getTLSOpts(appConfig *configuration.Configuration) grpc.DialOption {
 	tlsConf := tls.Config{
 		ServerName: strings.Split(appConfig.BackendAddress, ":")[0],
 	}
-	if appConfig.Plaintext {
-		// Disable TLS
-		return grpc.WithTransportCredentials(insecure.NewCredentials())
-	}
-	if appConfig.Insecure {
-		// Perform TLS handshake but skip certificate verification
-		tlsConf.InsecureSkipVerify = true
-	}
+	// Disable TLS
+	return grpc.WithTransportCredentials(insecure.NewCredentials())
 
 	return grpc.WithTransportCredentials(credentials.NewTLS(&tlsConf))
 

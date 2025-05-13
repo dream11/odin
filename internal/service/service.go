@@ -57,7 +57,7 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 	defer cancelFunction()
 
 	// Start log streaming in background
-	go streamLogs(streamCtx, ctx, request.GetServiceDefinition().GetName())
+	go streamLogs(streamCtx, ctx, request.GetServiceDefinition().GetName(), request.GetEnvName())
 
 	// Attempt deployment with retries
 	return retry.Do(
@@ -162,7 +162,7 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 	defer cancelFunction()
 
 	// Start log streaming in background
-	go streamLogs(streamCtx, ctx, request.GetServiceIdentifier().GetServiceName())
+	go streamLogs(streamCtx, ctx, request.GetServiceIdentifier().GetServiceName(), request.GetEnvName())
 
 	// Attempt deployment with retries
 	return retry.Do(
@@ -210,7 +210,7 @@ func (e *Service) UndeployService(ctx *context.Context, request *serviceProto.Un
 	defer cancelFunction()
 
 	// Start log streaming in background
-	go streamLogs(streamCtx, &contextWithTrace, request.GetServiceName())
+	go streamLogs(streamCtx, &contextWithTrace, request.GetServiceName(), request.GetEnvName())
 
 	conn, requestCtx, err := grpcClient(&contextWithTrace)
 	if err != nil {
@@ -261,7 +261,7 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 	defer cancelFunction()
 
 	// Start log streaming in background
-	go streamLogs(streamCtx, ctx, request.GetServiceName())
+	go streamLogs(streamCtx, ctx, request.GetServiceName(), request.GetEnvName())
 
 	// Attempt operation with retries
 	return retry.Do(
@@ -403,7 +403,7 @@ func (e *Service) GetConflictingServices(ctx *context.Context, request *serviceP
 }
 
 // streamLogs streams logs for a service
-func streamLogs(streamCtx context.Context, ctx *context.Context, serviceName string) {
+func streamLogs(streamCtx context.Context, ctx *context.Context, serviceName string, envName string) {
 	var err error
 	lastLogTime := int64(0)
 	//traceID := (*ctx).Value(constant.TraceIDKey).(string)
@@ -430,10 +430,10 @@ func streamLogs(streamCtx context.Context, ctx *context.Context, serviceName str
 		default:
 			// Get logs with retry on error
 			lastLogTime, err = logsClient.GetLogs(ctx, &logs.GetLogsRequest{
-				//TraceId:     &traceID,
 				Follow:      &follow,
 				ServiceName: &serviceName,
 				StartTime:   &lastLogTime,
+				EnvName:     &envName,
 			})
 
 			if err != nil {
