@@ -28,7 +28,9 @@ const (
 
 	// VerboseEnabledKey is the key used to store verbose value in context
 	VerboseEnabledKey VerboseEnabled = "verbose"
-	VerboseFlag       string         = "verbose"
+
+	// VerboseFlag is the key used to store verbose value
+	VerboseFlag string = "verbose"
 
 	// LogLevelKey is the key used to set log level
 	LogLevelKey = "ODIN_LOG_LEVEL"
