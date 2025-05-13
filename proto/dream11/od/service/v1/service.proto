@@ -23,6 +23,7 @@ message DeployServiceRequest {
   string env_name = 1;
   dto.v1.ServiceDefinition service_definition = 2;
   dto.v1.ProvisioningConfig provisioning_config = 3;
+  optional string trace_id = 4;
 }
 
 message ServiceResponse {
@@ -66,6 +67,7 @@ message DeployServiceSetServiceResponse {
 
 message DeployServiceResponse {
   ServiceResponse service_response = 1;
+  string trace_id = 4;
 }
 
 message ServiceStatus {
