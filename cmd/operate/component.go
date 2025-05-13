@@ -88,6 +88,12 @@ func execute(cmd *cobra.Command) {
 	ctx := cmd.Context()
 	traceID := util.GenerateTraceID()
 	contextWithTrace := context.WithValue(ctx, constant.TraceIDKey, traceID)
+	verboseEnabled, err := cmd.Flags().GetBool(constant.VerboseFlag)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	contextWithTrace = context.WithValue(contextWithTrace, constant.VerboseEnabledKey, verboseEnabled)
 
 	//validate the variables
 	var optionsData map[string]interface{}
