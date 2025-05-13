@@ -36,6 +36,7 @@ message ServiceResponse {
 
 message DeployReleasedServiceResponse {
   ServiceResponse service_response = 1;
+  string trace_id = 2;
 }
 
 message ServiceIdentifier {
@@ -48,6 +49,7 @@ message ServiceIdentifier {
 message DeployReleasedServiceRequest {
   ServiceIdentifier service_identifier = 1;
   string env_name = 3;
+  optional string trace_id = 4;
 }
 
 message DeployServiceSetRequest {
@@ -102,10 +104,12 @@ message OperateServiceRequest {
   bool is_component_operation = 4;
   string operation = 5;
   optional google.protobuf.Struct config = 6;
+  optional string trace_id = 7;
 }
 
 message OperateServiceResponse {
   ServiceResponse service_response = 1;
+  string trace_id = 2;
 }
 
 message UndeployServiceRequest {

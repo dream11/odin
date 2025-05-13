@@ -48,6 +48,8 @@ type getStatus[R any] func(response R) (serviceAction, serviceStatus string)
 
 type getMessage[R any] func(response R) string
 
+type getTraceId[R any] func(response R) string
+
 // DeployService deploys service
 func (e *Service) DeployService(ctx *context.Context, request *serviceProto.DeployServiceRequest) error {
 	log.Info("Deploying Service...")
@@ -86,7 +88,11 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 					response.GetServiceResponse().GetServiceStatus().GetServiceAction()
 			}
 
-			return handleResponse(stream, cancelFunction, getMessage, getStatus)
+			getTraceId := func(response *serviceProto.DeployServiceResponse) string {
+				return response.GetTraceId()
+			}
+
+			return handleResponse(stream, cancelFunction, getMessage, getStatus, getTraceId)
 		},
 		retry.Delay(constant.Delay),
 		retry.RetryIf(isRetryableError),
@@ -192,7 +198,11 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 					response.GetServiceResponse().GetServiceStatus().GetServiceAction()
 			}
 
-			return handleResponse(stream, cancelFunction, getMessage, getStatus)
+			getTraceId := func(response *serviceProto.DeployReleasedServiceResponse) string {
+				return response.GetTraceId()
+			}
+
+			return handleResponse(stream, cancelFunction, getMessage, getStatus, getTraceId)
 		},
 		retry.Delay(constant.Delay),
 		retry.RetryIf(isRetryableError),
@@ -290,7 +300,11 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 					response.GetServiceResponse().GetServiceStatus().GetServiceAction()
 			}
 
-			return handleResponse(stream, cancelFunction, getMessage, getStatus)
+			getTraceId := func(response *serviceProto.OperateServiceResponse) string {
+				return response.GetTraceId()
+			}
+
+			return handleResponse(stream, cancelFunction, getMessage, getStatus, getTraceId)
 		},
 		retry.Delay(constant.Delay),
 		retry.RetryIf(isRetryableError),
@@ -445,10 +459,21 @@ func streamLogs(streamCtx context.Context, ctx *context.Context, serviceName str
 }
 
 // handleResponse streams the service deploy response and call cancel on action termination
-func handleResponse[S StreamReceiverInterface[R], R any](stream S, cancelFunc context.CancelFunc, getMessage getMessage[R], getStatus getStatus[R]) error {
+func handleResponse[S StreamReceiverInterface[R], R any](stream S, cancelFunc context.CancelFunc, getMessage getMessage[R], getStatus getStatus[R], getTraceId getTraceId[R]) error {
 	var serviceAction, serviceStatus string
+	var traceID string
 	for {
 		response, err := stream.Recv()
+		// Log the raw response for debugging
+		log.Infof("Received deploy service response: %+v", response)
+
+		// Extract and log trace ID if available and not already set
+		trace := getTraceId(response)
+		if traceID == "" && trace != "" {
+			traceID = trace
+			log.Infof("Generated Trace Id for deploy service: %s", traceID)
+		}
+
 		if err != nil {
 			if isActionCompleted(serviceAction, serviceStatus) {
 				cancelFunc()
