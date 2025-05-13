@@ -4,6 +4,8 @@ import "time"
 
 // TraceID is the type for trace ID
 type TraceID string
+
+// VerboseEnabled is the type for verboseEnabledKey
 type VerboseEnabled string
 
 const (
