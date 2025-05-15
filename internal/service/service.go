@@ -48,6 +48,8 @@ type getStatus[R any] func(response R) (serviceAction, serviceStatus string)
 
 type getMessage[R any] func(response R) string
 
+type getTraceId[R any] func(response R) string
+
 // DeployService deploys service
 func (e *Service) DeployService(ctx *context.Context, request *serviceProto.DeployServiceRequest) error {
 	log.Info("Deploying Service...")
@@ -57,7 +59,7 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 	defer cancelFunction()
 
 	// Start log streaming in background
-	go streamLogs(streamCtx, ctx, request.GetServiceDefinition().GetName())
+	go streamLogs(streamCtx, ctx, request.GetServiceDefinition().GetName(), request.GetEnvName())
 
 	// Attempt deployment with retries
 	return retry.Do(
@@ -86,7 +88,11 @@ func (e *Service) DeployService(ctx *context.Context, request *serviceProto.Depl
 					response.GetServiceResponse().GetServiceStatus().GetServiceAction()
 			}
 
-			return handleResponse(stream, cancelFunction, getMessage, getStatus)
+			getTraceId := func(response *serviceProto.DeployServiceResponse) string {
+				return response.GetTraceId()
+			}
+
+			return handleResponse(stream, cancelFunction, getMessage, getStatus, getTraceId)
 		},
 		retry.Delay(constant.Delay),
 		retry.RetryIf(isRetryableError),
@@ -162,7 +168,7 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 	defer cancelFunction()
 
 	// Start log streaming in background
-	go streamLogs(streamCtx, ctx, request.GetServiceIdentifier().GetServiceName())
+	go streamLogs(streamCtx, ctx, request.GetServiceIdentifier().GetServiceName(), request.GetEnvName())
 
 	// Attempt deployment with retries
 	return retry.Do(
@@ -192,7 +198,11 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 					response.GetServiceResponse().GetServiceStatus().GetServiceAction()
 			}
 
-			return handleResponse(stream, cancelFunction, getMessage, getStatus)
+			getTraceId := func(response *serviceProto.DeployReleasedServiceResponse) string {
+				return response.GetTraceId()
+			}
+
+			return handleResponse(stream, cancelFunction, getMessage, getStatus, getTraceId)
 		},
 		retry.Delay(constant.Delay),
 		retry.RetryIf(isRetryableError),
@@ -210,7 +220,7 @@ func (e *Service) UndeployService(ctx *context.Context, request *serviceProto.Un
 	defer cancelFunction()
 
 	// Start log streaming in background
-	go streamLogs(streamCtx, &contextWithTrace, request.GetServiceName())
+	go streamLogs(streamCtx, &contextWithTrace, request.GetServiceName(), request.GetEnvName())
 
 	conn, requestCtx, err := grpcClient(&contextWithTrace)
 	if err != nil {
@@ -261,7 +271,7 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 	defer cancelFunction()
 
 	// Start log streaming in background
-	go streamLogs(streamCtx, ctx, request.GetServiceName())
+	go streamLogs(streamCtx, ctx, request.GetServiceName(), request.GetEnvName())
 
 	// Attempt operation with retries
 	return retry.Do(
@@ -290,7 +300,11 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 					response.GetServiceResponse().GetServiceStatus().GetServiceAction()
 			}
 
-			return handleResponse(stream, cancelFunction, getMessage, getStatus)
+			getTraceId := func(response *serviceProto.OperateServiceResponse) string {
+				return response.GetTraceId()
+			}
+
+			return handleResponse(stream, cancelFunction, getMessage, getStatus, getTraceId)
 		},
 		retry.Delay(constant.Delay),
 		retry.RetryIf(isRetryableError),
@@ -403,26 +417,26 @@ func (e *Service) GetConflictingServices(ctx *context.Context, request *serviceP
 }
 
 // streamLogs streams logs for a service
-func streamLogs(streamCtx context.Context, ctx *context.Context, serviceName string) {
+func streamLogs(streamCtx context.Context, ctx *context.Context, serviceName string, envName string) {
 	var err error
 	lastLogTime := int64(0)
-	traceID := (*ctx).Value(constant.TraceIDKey).(string)
+	//traceID := (*ctx).Value(constant.TraceIDKey).(string)
 	follow := true
 	// Start the spinner in a background goroutine
-	go func() {
-		spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-		err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
-		if err != nil {
-			spinnerInstance.Stop()
-		}
-		spinnerInstance.Prefix = fmt.Sprintf("Fetching live logs for service: %s ", serviceName)
-		spinnerInstance.Suffix = "\n"
-		spinnerInstance.Start()
-		time.Sleep(30 * time.Second)
-		spinnerInstance.Stop()
-		fmt.Printf("Fetching live logs for service: %s \n", serviceName)
-	}()
+	//go func() {
+	//spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
+	//err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
+	//if err != nil {
+	//	spinnerInstance.Stop()
+	//}
+	//spinnerInstance.Prefix = fmt.Sprintf("Fetching live logs for service: %s ", serviceName)
+	//spinnerInstance.Suffix = "\n"
+	//spinnerInstance.Start()
+	//time.Sleep(30 * time.Second)
+	//spinnerInstance.Stop()
 
+	//}()
+	fmt.Printf("Fetching live logs for service: %s \n", serviceName)
 	for {
 		select {
 		case <-streamCtx.Done():
@@ -430,10 +444,10 @@ func streamLogs(streamCtx context.Context, ctx *context.Context, serviceName str
 		default:
 			// Get logs with retry on error
 			lastLogTime, err = logsClient.GetLogs(ctx, &logs.GetLogsRequest{
-				TraceId:     &traceID,
 				Follow:      &follow,
 				ServiceName: &serviceName,
 				StartTime:   &lastLogTime,
+				EnvName:     &envName,
 			})
 
 			if err != nil {
@@ -445,10 +459,20 @@ func streamLogs(streamCtx context.Context, ctx *context.Context, serviceName str
 }
 
 // handleResponse streams the service deploy response and call cancel on action termination
-func handleResponse[S StreamReceiverInterface[R], R any](stream S, cancelFunc context.CancelFunc, getMessage getMessage[R], getStatus getStatus[R]) error {
+func handleResponse[S StreamReceiverInterface[R], R any](stream S, cancelFunc context.CancelFunc, getMessage getMessage[R], getStatus getStatus[R], getTraceId getTraceId[R]) error {
 	var serviceAction, serviceStatus string
+	var traceID string
+	traceIdLogged := false
 	for {
 		response, err := stream.Recv()
+		traceID = getTraceId(response)
+		if !traceIdLogged {
+			if traceID != "" {
+				log.Info("Generated Trace Id for deploy service: ", traceID)
+				traceIdLogged = true
+			}
+		}
+
 		if err != nil {
 			if isActionCompleted(serviceAction, serviceStatus) {
 				cancelFunc()

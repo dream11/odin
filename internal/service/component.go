@@ -24,7 +24,7 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 	defer cancelFunction()
 
 	// Start log streaming in background
-	go streamLogs(streamCtx, ctx, request.GetServiceName())
+	go streamLogs(streamCtx, ctx, request.GetServiceName(), request.GetEnvName())
 
 	// Attempt operation with retries
 	return retry.Do(
@@ -52,8 +52,11 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 				return response.GetServiceResponse().GetServiceStatus().GetServiceStatus(),
 					response.GetServiceResponse().GetServiceStatus().GetServiceAction()
 			}
+			getTraceId := func(response *serviceProto.OperateServiceResponse) string {
+				return response.GetTraceId()
+			}
 
-			return handleResponse(stream, cancelFunction, getMessage, getStatus)
+			return handleResponse(stream, cancelFunction, getMessage, getStatus, getTraceId)
 		},
 		retry.Delay(constant.Delay),
 		retry.RetryIf(isRetryableError),

@@ -69,18 +69,25 @@ message CreateEnvironmentRequest {
   string env_name = 1;
   repeated string accounts = 2;
   string provisioning_type = 3;
+  optional string trace_id = 4;
+
 }
 
 message CreateEnvironmentResponse {
   string message = 1;
+  string trace_id = 2;
+
 }
 
 message DeleteEnvironmentRequest {
   string env_name = 1;
+  optional string trace_id = 2;
 }
 
 message DeleteEnvironmentResponse {
   string message = 1;
+  string trace_id = 2;
+
 }
 
 message IsStrictEnvironmentRequest {

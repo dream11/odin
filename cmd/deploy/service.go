@@ -53,29 +53,20 @@ func init() {
 func execute(cmd *cobra.Command) {
 	env = config.EnsureEnvPresent(env)
 	ctx := cmd.Context()
-	traceID := util.GenerateTraceID()
-	contextWithTrace := context.WithValue(ctx, constant.TraceIDKey, traceID)
-	verboseEnabled, err := cmd.Flags().GetBool(constant.VerboseFlag)
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	contextWithTrace = context.WithValue(contextWithTrace, constant.VerboseEnabledKey, verboseEnabled)
-
-	if isStrictEnvironment(contextWithTrace, env) {
+	if isStrictEnvironment(ctx, env) {
 		consentMessage := fmt.Sprintf(constant.ConsentMessageTemplate, env)
 		util.AskForConfirmation(env, consentMessage)
 	}
-
 	if (serviceName == "" && serviceVersion == "" && labels == "") && (definitionFile != "" && provisioningFile != "") {
-		deployUsingFiles(contextWithTrace)
+		deployUsingFiles(ctx)
 	} else if (serviceName != "" && serviceVersion != "" && labels == "") && (definitionFile == "" && provisioningFile == "") {
-		deployUsingServiceNameAndVersion(contextWithTrace)
+		deployUsingServiceNameAndVersion(ctx)
 	} else if (serviceName != "" && labels != "" && serviceVersion == "") && (definitionFile == "" && provisioningFile == "") {
 		if err := validateLabels(labels); err != nil {
 			log.Fatal("Invalid labels format: ", err)
 		}
-		deployUsingServiceNameAndLabels(contextWithTrace)
+		deployUsingServiceNameAndLabels(ctx)
 	} else {
 		log.Fatal("Invalid combination of flags. Use either (service name and version) or (definitionFile and provisioningFile).")
 	}
