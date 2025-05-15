@@ -423,20 +423,20 @@ func streamLogs(streamCtx context.Context, ctx *context.Context, serviceName str
 	//traceID := (*ctx).Value(constant.TraceIDKey).(string)
 	follow := true
 	// Start the spinner in a background goroutine
-	go func() {
-		spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-		err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
-		if err != nil {
-			spinnerInstance.Stop()
-		}
-		spinnerInstance.Prefix = fmt.Sprintf("Fetching live logs for service: %s ", serviceName)
-		spinnerInstance.Suffix = "\n"
-		spinnerInstance.Start()
-		time.Sleep(30 * time.Second)
-		spinnerInstance.Stop()
-		fmt.Printf("Fetching live logs for service: %s \n", serviceName)
-	}()
+	//go func() {
+	//spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
+	//err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
+	//if err != nil {
+	//	spinnerInstance.Stop()
+	//}
+	//spinnerInstance.Prefix = fmt.Sprintf("Fetching live logs for service: %s ", serviceName)
+	//spinnerInstance.Suffix = "\n"
+	//spinnerInstance.Start()
+	//time.Sleep(30 * time.Second)
+	//spinnerInstance.Stop()
 
+	//}()
+	fmt.Printf("Fetching live logs for service: %s \n", serviceName)
 	for {
 		select {
 		case <-streamCtx.Done():
@@ -462,16 +462,15 @@ func streamLogs(streamCtx context.Context, ctx *context.Context, serviceName str
 func handleResponse[S StreamReceiverInterface[R], R any](stream S, cancelFunc context.CancelFunc, getMessage getMessage[R], getStatus getStatus[R], getTraceId getTraceId[R]) error {
 	var serviceAction, serviceStatus string
 	var traceID string
+	traceIdLogged := false
 	for {
 		response, err := stream.Recv()
-		// Log the raw response for debugging
-		log.Infof("Received deploy service response: %+v", response)
-
-		// Extract and log trace ID if available and not already set
-		trace := getTraceId(response)
-		if traceID == "" && trace != "" {
-			traceID = trace
-			log.Infof("Generated Trace Id for deploy service: %s", traceID)
+		traceID = getTraceId(response)
+		if !traceIdLogged {
+			if traceID != "" {
+				log.Info("Generated Trace Id for deploy service: ", traceID)
+				traceIdLogged = true
+			}
 		}
 
 		if err != nil {
