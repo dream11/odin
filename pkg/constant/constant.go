@@ -39,15 +39,22 @@ const (
 
 	// ConsentMessageTemplate is the template for the consent message
 	ConsentMessageTemplate = "\nYou are executing the above command on a restricted environment. Are you sure? Enter \033[1m%s\033[0m to continue:"
+
 	// InitiatingRetryMessage is the message shown when retrying
 	InitiatingRetryMessage = "Unable to reach Odin backend."
+
 	// MaxRetries is the maximum number of retries
 	MaxRetries = 5
+
 	// Delay is the delay between retries
 	Delay = 10 * time.Second
+
 	// MaxRetriesReached is the message shown when max retries are reached
 	MaxRetriesReached = "Max retries reached. Exiting...\nPlease check:\n- Your internet connection: \n- VPN connected properly"
 
 	// RetryingMessage is the message shown when retrying
 	RetryingMessage = "Retrying ... (%d/%d)"
+
+	// CheckingAdditionalLogsMessage is the message shown when checking for additional logs
+	CheckingAdditionalLogsMessage = "Execution completed. Checking for additional logs..."
 )
