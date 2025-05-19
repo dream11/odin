@@ -234,7 +234,6 @@ func (e *Service) UndeployService(ctx *context.Context, request *serviceProto.Un
 		}
 		if response != nil {
 			if isActionCompleted(response.GetServiceResponse().GetServiceStatus().GetServiceAction(), response.GetServiceResponse().GetServiceStatus().GetServiceStatus()) {
-				cancelFunction()
 				message = response.GetServiceResponse().GetMessage()
 				message += fmt.Sprintf("\n Service %s %s", response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
 				for _, compMessage := range response.ServiceResponse.ComponentsStatus {
@@ -245,10 +244,14 @@ func (e *Service) UndeployService(ctx *context.Context, request *serviceProto.Un
 						message += fmt.Sprintf("Component %s %s %s %s", compMessage.GetComponentName(), compMessage.GetComponentAction(), compMessage.GetComponentStatus(), compMessage.GetError())
 					}
 				}
+				log.Info(message)
+				log.Info(constant.CheckingAdditionalLogsMessage)
+				// Wait for few seconds to ensure all logs are received
+				time.Sleep(30 * time.Second)
+				cancelFunction()
 			}
 		}
 	}
-	log.Info(message)
 	return err
 }
 
@@ -405,7 +408,7 @@ func (e *Service) GetConflictingServices(ctx *context.Context, request *serviceP
 // streamLogs streams logs for a service
 func streamLogs(streamCtx context.Context, ctx *context.Context, serviceName string) {
 	var err error
-	lastLogTime := int64(0)
+	var searchAfterParams []int64
 	traceID := (*ctx).Value(constant.TraceIDKey).(string)
 	follow := true
 	// Start the spinner in a background goroutine
@@ -429,15 +432,13 @@ func streamLogs(streamCtx context.Context, ctx *context.Context, serviceName str
 			return
 		default:
 			// Get logs with retry on error
-			lastLogTime, err = logsClient.GetLogs(ctx, &logs.GetLogsRequest{
-				TraceId:     &traceID,
-				Follow:      &follow,
-				ServiceName: &serviceName,
-				StartTime:   &lastLogTime,
+			searchAfterParams, err = logsClient.GetLogs(ctx, &logs.GetLogsRequest{
+				TraceId:           traceID,
+				Follow:            &follow,
+				ServiceName:       &serviceName,
+				SearchAfterParams: searchAfterParams,
 			})
-
 			if err != nil {
-				time.Sleep(5 * time.Second)
 				continue
 			}
 		}
@@ -466,8 +467,11 @@ func handleResponse[S StreamReceiverInterface[R], R any](stream S, cancelFunc co
 		}
 		serviceStatus, serviceAction = getStatus(response)
 		if isActionCompleted(serviceAction, serviceStatus) {
-			cancelFunc()
+			// Wait for few seconds to ensure all logs are received
 			log.Info(getMessage(response))
+			log.Info(constant.CheckingAdditionalLogsMessage)
+			time.Sleep(30 * time.Second)
+			cancelFunc()
 			return nil
 		}
 	}
