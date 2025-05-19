@@ -411,21 +411,7 @@ func streamLogs(streamCtx context.Context, ctx *context.Context, serviceName str
 	var searchAfterParams []int64
 	traceID := (*ctx).Value(constant.TraceIDKey).(string)
 	follow := true
-	// Start the spinner in a background goroutine
-	go func() {
-		spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-		err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
-		if err != nil {
-			spinnerInstance.Stop()
-		}
-		spinnerInstance.Prefix = fmt.Sprintf("Fetching live logs for service: %s ", serviceName)
-		spinnerInstance.Suffix = "\n"
-		spinnerInstance.Start()
-		time.Sleep(30 * time.Second)
-		spinnerInstance.Stop()
-		fmt.Printf("Fetching live logs for service: %s \n", serviceName)
-	}()
-
+	fmt.Printf("Fetching live logs for service: %s \n", serviceName)
 	for {
 		select {
 		case <-streamCtx.Done():
