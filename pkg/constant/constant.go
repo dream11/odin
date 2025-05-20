@@ -57,4 +57,10 @@ const (
 
 	// CheckingAdditionalLogsMessage is the message shown when checking for additional logs
 	CheckingAdditionalLogsMessage = "Execution completed. Checking for additional logs..."
+
+	// ServiceExecutionMessageTemplate is the template for the service execution message
+	ServiceExecutionMessageTemplate = "%s service: \u001B[41m %s \u001B[0m in environment: \u001B[41m %s \u001B[0m"
+
+	// ComponentExecutionMessageTemplate is the template for the component execution message
+	ComponentExecutionMessageTemplate = "%s component: \u001B[41m %s \u001B[0m in environment: \u001B[41m %s \u001B[0m"
 )

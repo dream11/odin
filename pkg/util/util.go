@@ -6,8 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -15,7 +13,6 @@ import (
 	"github.com/dream11/odin/internal/ui"
 	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	"github.com/google/uuid"
-	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -30,45 +27,46 @@ func SplitProviderAccount(providerAccounts string) []string {
 	return strings.Split(providerAccounts, ",")
 }
 
-// IsIPAddress checks if given address is an IP address
-func IsIPAddress(address string) bool {
-	addr := net.ParseIP(address)
-	return addr != nil
-}
-
 // GenerateResponseMessage generate response message from ServiceResponse
 func GenerateResponseMessage(response *v1.ServiceResponse) string {
-	message := fmt.Sprintf("\n Service: %s version: %s action: %s status: %s", response.Name, response.Version, response.ServiceStatus.ServiceAction, response.ServiceStatus.ServiceStatus)
-	for _, compMessage := range response.ComponentsStatus {
-		message += fmt.Sprintf("\n Component: %s action: %s status: %s ", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
+	var builder strings.Builder
+
+	// Write main service status
+	builder.WriteString(fmt.Sprintf(
+		"\nService: %-15s Version: %-15s Action: %-10s Status: %-10s",
+		response.GetName(),
+		response.GetVersion(),
+		response.GetServiceStatus().GetServiceAction(),
+		response.GetServiceStatus().GetServiceStatus(),
+	))
+
+	// Header for components
+	builder.WriteString("\n  Component Name         Action     Status")
+
+	// Write each component in aligned tabular format
+	for _, comp := range response.ComponentsStatus {
+		builder.WriteString(fmt.Sprintf(
+			"\n  %-22s %-10s %-10s",
+			comp.ComponentName,
+			comp.ComponentAction,
+			comp.ComponentStatus,
+		))
 	}
-	for _, compMessage := range response.ComponentsStatus {
-		if compMessage.GetComponentStatus() == "FAILED" {
-			log.Error(fmt.Sprintf("Component %s %s %s %s", compMessage.GetComponentName(), compMessage.GetComponentAction(), compMessage.GetComponentStatus(), compMessage.GetError()))
+
+	// Log failures
+	for _, comp := range response.ComponentsStatus {
+		if comp.GetComponentStatus() == "FAILED" {
+			log.Error(fmt.Sprintf(
+				"Component %s %s %s - Error: %s\n\n",
+				comp.GetComponentName(),
+				comp.GetComponentAction(),
+				comp.GetComponentStatus(),
+				comp.GetError(),
+			))
 		}
 	}
-	return message
-}
 
-// GenerateServiceSetResponseMessage generate response message from ServiceSetResponse
-func GenerateServiceSetResponseMessage(response *v1.DeployServiceSetServiceResponse) string {
-
-	message := fmt.Sprintf("\n Service %s %s %s %s", response.ServiceIdentifier.ServiceName, response.ServiceIdentifier.ServiceVersion, response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
-	var tableData [][]string
-	row := []string{
-		response.ServiceIdentifier.ServiceName,
-		response.ServiceIdentifier.ServiceVersion,
-		response.ServiceResponse.ServiceStatus.ServiceAction,
-		response.ServiceResponse.ServiceStatus.ServiceStatus,
-	}
-	tableData = append(tableData, row)
-
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Service Name", "Version", "Action", "Status", "Error"})
-	table.AppendBulk(tableData)
-	table.Render()
-	return message
-
+	return builder.String()
 }
 
 // FormatToHumanReadableDuration takes a date-time string representing the last deployment time, and returns a human-readable string representing the duration since the last deployment
