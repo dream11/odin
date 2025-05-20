@@ -115,7 +115,6 @@ func deployUsingFiles(ctx context.Context) {
 }
 
 func deployUsingServiceNameAndVersion(ctx context.Context) {
-	log.Info("deploying service :", serviceName, ":", serviceVersion, " in env :", env)
 	err := serviceClient.DeployReleasedService(&ctx, &serviceProto.DeployReleasedServiceRequest{
 		EnvName: env,
 		ServiceIdentifier: &serviceProto.ServiceIdentifier{
@@ -130,7 +129,6 @@ func deployUsingServiceNameAndVersion(ctx context.Context) {
 }
 
 func deployUsingServiceNameAndLabels(ctx context.Context) {
-	log.Info("deploying service :", serviceName, " with labels: ", labels, " in env :", env)
 	err := serviceClient.DeployReleasedService(&ctx, &serviceProto.DeployReleasedServiceRequest{
 		EnvName: env,
 		ServiceIdentifier: &serviceProto.ServiceIdentifier{
