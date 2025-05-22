@@ -12,7 +12,7 @@ message GetLogsRequest {
   optional bool follow = 2;
   optional string service_name = 3;
   optional string component_name = 4;
-  optional int64 start_time = 5;
+  repeated int64 search_after_params = 5;
 }
 
 message GetLogsResponse {
@@ -23,4 +23,5 @@ message Log {
   string message = 1;
   optional string level = 2;
   optional int64 timestamp = 3;
+  repeated int64 search_after_params = 4;
 }

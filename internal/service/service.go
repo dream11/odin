@@ -50,7 +50,7 @@ type getMessage[R any] func(response R) string
 
 // DeployService deploys service
 func (e *Service) DeployService(ctx *context.Context, request *serviceProto.DeployServiceRequest) error {
-	log.Info("Deploying Service...")
+	log.Infof(constant.ServiceExecutionMessageTemplate, "Deploying", request.GetServiceDefinition().GetName(), request.GetEnvName())
 
 	// Create a context with cancelFunction for the entire operation
 	streamCtx, cancelFunction := context.WithCancel(context.Background())
@@ -156,7 +156,7 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 
 // DeployReleasedService deploys service
 func (e *Service) DeployReleasedService(ctx *context.Context, request *serviceProto.DeployReleasedServiceRequest) error {
-	log.Info("Deploying Service...")
+	log.Infof(constant.ServiceExecutionMessageTemplate, "Deploying", request.GetServiceIdentifier().GetServiceName(), request.GetEnvName())
 	// Create a context with cancelFunction for the entire operation
 	streamCtx, cancelFunction := context.WithCancel(context.Background())
 	defer cancelFunction()
@@ -201,7 +201,7 @@ func (e *Service) DeployReleasedService(ctx *context.Context, request *servicePr
 
 // UndeployService undeploy service
 func (e *Service) UndeployService(ctx *context.Context, request *serviceProto.UndeployServiceRequest) error {
-	log.Info("Undeploying Service...")
+	log.Infof(constant.ServiceExecutionMessageTemplate, "Undeploying", request.GetServiceName(), request.GetEnvName())
 	traceID := util.GenerateTraceID()
 	contextWithTrace := context.WithValue(*ctx, constant.TraceIDKey, traceID)
 
@@ -223,38 +223,21 @@ func (e *Service) UndeployService(ctx *context.Context, request *serviceProto.Un
 	if err != nil {
 		return err
 	}
-	var message string
-	for {
-		response, err := stream.Recv()
-		if err != nil {
-			if errors.Is(err, context.Canceled) || err == io.EOF {
-				break
-			}
-			return err
-		}
-		if response != nil {
-			if isActionCompleted(response.GetServiceResponse().GetServiceStatus().GetServiceAction(), response.GetServiceResponse().GetServiceStatus().GetServiceStatus()) {
-				cancelFunction()
-				message = response.GetServiceResponse().GetMessage()
-				message += fmt.Sprintf("\n Service %s %s", response.ServiceResponse.ServiceStatus.ServiceAction, response.ServiceResponse.ServiceStatus)
-				for _, compMessage := range response.ServiceResponse.ComponentsStatus {
-					message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
-				}
-				for _, compMessage := range response.GetServiceResponse().GetComponentsStatus() {
-					if compMessage.GetComponentStatus() == "FAILED" {
-						message += fmt.Sprintf("Component %s %s %s %s", compMessage.GetComponentName(), compMessage.GetComponentAction(), compMessage.GetComponentStatus(), compMessage.GetError())
-					}
-				}
-			}
-		}
+
+	getMessage := func(response *serviceProto.UndeployServiceResponse) string {
+		return util.GenerateResponseMessage(response.GetServiceResponse())
 	}
-	log.Info(message)
-	return err
+	getStatus := func(response *serviceProto.UndeployServiceResponse) (string, string) {
+		return response.GetServiceResponse().GetServiceStatus().GetServiceStatus(),
+			response.GetServiceResponse().GetServiceStatus().GetServiceAction()
+	}
+
+	return handleResponse(stream, cancelFunction, getMessage, getStatus)
 }
 
 // OperateService :service operations
 func (e *Service) OperateService(ctx *context.Context, request *serviceProto.OperateServiceRequest) error {
-	log.Info("Starting service operation...")
+	log.Infof(constant.ServiceExecutionMessageTemplate, "Operating", request.GetServiceName(), request.GetEnvName())
 
 	// Create a context with cancelFunction for the entire operation
 	streamCtx, cancelFunction := context.WithCancel(context.Background())
@@ -405,39 +388,23 @@ func (e *Service) GetConflictingServices(ctx *context.Context, request *serviceP
 // streamLogs streams logs for a service
 func streamLogs(streamCtx context.Context, ctx *context.Context, serviceName string) {
 	var err error
-	lastLogTime := int64(0)
+	var searchAfterParams []int64
 	traceID := (*ctx).Value(constant.TraceIDKey).(string)
 	follow := true
-	// Start the spinner in a background goroutine
-	go func() {
-		spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
-		err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
-		if err != nil {
-			spinnerInstance.Stop()
-		}
-		spinnerInstance.Prefix = fmt.Sprintf("Fetching live logs for service: %s ", serviceName)
-		spinnerInstance.Suffix = "\n"
-		spinnerInstance.Start()
-		time.Sleep(30 * time.Second)
-		spinnerInstance.Stop()
-		fmt.Printf("Fetching live logs for service: %s \n", serviceName)
-	}()
-
+	fmt.Printf("Fetching live logs for service: %s \n", serviceName)
 	for {
 		select {
 		case <-streamCtx.Done():
 			return
 		default:
 			// Get logs with retry on error
-			lastLogTime, err = logsClient.GetLogs(ctx, &logs.GetLogsRequest{
-				TraceId:     &traceID,
-				Follow:      &follow,
-				ServiceName: &serviceName,
-				StartTime:   &lastLogTime,
+			searchAfterParams, err = logsClient.GetLogs(ctx, &logs.GetLogsRequest{
+				TraceId:           traceID,
+				Follow:            &follow,
+				ServiceName:       &serviceName,
+				SearchAfterParams: searchAfterParams,
 			})
-
 			if err != nil {
-				time.Sleep(5 * time.Second)
 				continue
 			}
 		}
@@ -466,8 +433,11 @@ func handleResponse[S StreamReceiverInterface[R], R any](stream S, cancelFunc co
 		}
 		serviceStatus, serviceAction = getStatus(response)
 		if isActionCompleted(serviceAction, serviceStatus) {
-			cancelFunc()
+			// Wait for few seconds to ensure all logs are received
 			log.Info(getMessage(response))
+			log.Info(constant.CheckingAdditionalLogsMessage)
+			time.Sleep(30 * time.Second)
+			cancelFunc()
 			return nil
 		}
 	}

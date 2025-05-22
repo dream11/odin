@@ -55,6 +55,12 @@ func execute(cmd *cobra.Command) {
 	ctx := cmd.Context()
 	traceID := util.GenerateTraceID()
 	contextWithTrace := context.WithValue(ctx, constant.TraceIDKey, traceID)
+	verboseEnabled, err := cmd.Flags().GetBool(constant.VerboseFlag)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	contextWithTrace = context.WithValue(contextWithTrace, constant.VerboseEnabledKey, verboseEnabled)
 
 	if isStrictEnvironment(contextWithTrace, env) {
 		consentMessage := fmt.Sprintf(constant.ConsentMessageTemplate, env)
@@ -109,7 +115,6 @@ func deployUsingFiles(ctx context.Context) {
 }
 
 func deployUsingServiceNameAndVersion(ctx context.Context) {
-	log.Info("deploying service :", serviceName, ":", serviceVersion, " in env :", env)
 	err := serviceClient.DeployReleasedService(&ctx, &serviceProto.DeployReleasedServiceRequest{
 		EnvName: env,
 		ServiceIdentifier: &serviceProto.ServiceIdentifier{
@@ -124,7 +129,6 @@ func deployUsingServiceNameAndVersion(ctx context.Context) {
 }
 
 func deployUsingServiceNameAndLabels(ctx context.Context) {
-	log.Info("deploying service :", serviceName, " with labels: ", labels, " in env :", env)
 	err := serviceClient.DeployReleasedService(&ctx, &serviceProto.DeployReleasedServiceRequest{
 		EnvName: env,
 		ServiceIdentifier: &serviceProto.ServiceIdentifier{

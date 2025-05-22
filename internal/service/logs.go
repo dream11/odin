@@ -5,19 +5,22 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"strings"
 
+	"github.com/dream11/odin/pkg/constant"
+	"github.com/dream11/odin/pkg/util"
 	logs "github.com/dream11/odin/proto/gen/go/dream11/od/logs/v1"
 )
+
+var restrictedLogLevels = []string{"DEBUG", "WARN"}
 
 // Logs performs operation on logs like get logs
 type Logs struct{}
 
 // GetLogs retrieves and displays logs for a service
-func (l *Logs) GetLogs(ctx *context.Context, request *logs.GetLogsRequest) (int64, error) {
+func (l *Logs) GetLogs(ctx *context.Context, request *logs.GetLogsRequest) ([]int64, error) {
 	conn, requestCtx, err := grpcClient(ctx)
 	if err != nil {
-		return request.GetStartTime(), err
+		return request.GetSearchAfterParams(), err
 	}
 	defer func() {
 		err := conn.Close()
@@ -29,10 +32,10 @@ func (l *Logs) GetLogs(ctx *context.Context, request *logs.GetLogsRequest) (int6
 	client := logs.NewLogsServiceClient(conn)
 	stream, err := client.GetLogs(*requestCtx, request)
 	if err != nil {
-		return request.GetStartTime(), err
+		return request.GetSearchAfterParams(), err
 	}
 
-	lastLogTime := request.GetStartTime()
+	searchAfterParams := request.GetSearchAfterParams()
 
 	for {
 		response, err := stream.Recv()
@@ -40,22 +43,28 @@ func (l *Logs) GetLogs(ctx *context.Context, request *logs.GetLogsRequest) (int6
 			if errors.Is(err, context.Canceled) || err == io.EOF {
 				break
 			}
-			return lastLogTime, err
+			return searchAfterParams, err
 		}
 
 		if response == nil {
 			continue
 		}
 
-		for _, logMessage := range response.Logs {
-			if !strings.Contains(logMessage.GetMessage(), "DEBUG") {
-				fmt.Println(logMessage.GetMessage())
+		verboseEnabled := false
+		if (*ctx).Value(constant.VerboseEnabledKey) != nil {
+			verboseEnabled = (*ctx).Value(constant.VerboseEnabledKey).(bool)
+			if verboseEnabled {
+				restrictedLogLevels = []string{}
 			}
-			if logMessage.GetTimestamp() > lastLogTime {
-				lastLogTime = logMessage.GetTimestamp()
+		}
+
+		for _, logMessage := range response.Logs {
+			if !util.Contains(logMessage.GetLevel(), restrictedLogLevels) {
+				fmt.Println(logMessage.GetMessage())
+				searchAfterParams = logMessage.GetSearchAfterParams()
 			}
 		}
 	}
 
-	return lastLogTime, nil
+	return searchAfterParams, nil
 }
