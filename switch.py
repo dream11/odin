@@ -473,10 +473,12 @@ def main():
             else:
                 if "--file" in sys.argv:
                     create_new_service_set_and_trigger_odin(sys.argv[sys.argv.index("--file") + 1])
+                elif "--name" in sys.argv:
+                    print("--name flag is deprecated and no longer supported. Please use --file flag to deploy your service-set.To get service set definitions"
+                  " please refer https://github.com/dream11/service-sets")
+                    exit(1)
                 else:
-                    print("Command deprecated, use file to deploy. Refer to the service set file on https://github.com/dream11/service-sets to "
-                  "learn more about it")
-                    exit(0)
+                    execute_new_odin()
         else:
             execute_new_odin()
 
@@ -595,7 +597,7 @@ def main():
         if env_name is not None and check_env_exists_in_old_odin(env_name):
             if service_name is not None and is_service_migrated_to_new_odin(service_name, env_name):
                 execute_new_odin()
-            elif service_name is not None and not does_service_exist_in_old_odin_env(service_name, env_name) and env_name in ["prod", "auth-bom", "auth-nv", "uat"]:
+            elif service_name is not None and not does_service_exist_in_old_odin_env(service_name, env_name) and env_name in ["prod", "auth-bom", "auth-nv", "uat", "sandbox"]:
                 execute_new_odin()
             else:
                 execute_old_odin()
