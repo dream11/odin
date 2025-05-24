@@ -164,7 +164,7 @@ def update_binary():
                 print("Error: The version fetched from {} is empty.".format(version_url))
                 return
 
-            if current_version != latest_version:
+            if current_version is None or current_version != latest_version:
                 print("Updating odin binary to version {}".format(latest_version))
 
                 # Step 3: Download the binary zip from Artifactory
