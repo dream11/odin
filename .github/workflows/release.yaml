@@ -81,9 +81,10 @@ jobs:
 
       - name: Prepare CLI Migration Zip
         run: |
+          VERSION=${{ steps.commit.outputs.version }}
           mkdir cli-migration
           tar -xzf bin/odin_darwin_arm64.tar.gz --directory=cli-migration
-          mv cli-migration/odin* cli-migration/odin-version
+          mv cli-migration/odin* "cli-migration/odin-${VERSION}"
           zip -r cli-migration.zip cli-migration
 
       - name: Upload to JFrog Artifactory
