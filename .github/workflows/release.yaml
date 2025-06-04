@@ -5,11 +5,13 @@ on:
 jobs:
   release:
     name: odin-release
-    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && (github.event.pull_request.base.ref == 'main' || github.event.pull_request.base.ref == '2.x.x')
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
+      - name: Print branch
+        run: echo "Branch name is ${GITHUB_REF##*/}"
       - name: Checkout code
         uses: actions/checkout@v2
       - id: changed_files
@@ -17,8 +19,22 @@ jobs:
       - name: Check commit details
         id: commit
         run: |
-          echo "::set-output name=version::$(go run cmd/getVersion.go)"
+          if [[ "${GITHUB_REF##*/}" == "2.x.x" ]]; then
+            echo "::set-output name=version::$(go run main.go version)"
+          else
+            echo "::set-output name=version::$(go run cmd/getVersion.go)"
+          fi
+          
           echo "::set-output name=changelog::$(git log --pretty='- %s')"
+
+      - name: Set Go version based on branch
+        id: go-version
+        run: |
+          if [[ "${GITHUB_REF##*/}" == "2.x.x" ]]; then
+            echo "go_version=1.22.0" >> $GITHUB_OUTPUT
+          else
+            echo "go_version=1.17.1" >> $GITHUB_OUTPUT
+          fi
       - name: Create Tag
         uses: negz/create-tag@v1
         with:
@@ -27,7 +43,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-go@v2
         with:
-          go-version: '1.17.1'
+          go-version: ${{ steps.go-version.outputs.go_version }}
       - name: Create Release Asset
         run: |
           make compressed-builds
@@ -62,3 +78,32 @@ jobs:
             - SHA Checksum: `${{ steps.sha256.outputs.linux_amd64 }}`
 
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare CLI Migration Zip
+        run: |
+          VERSION=${{ steps.commit.outputs.version }}
+          mkdir cli-migration
+          tar -xzf bin/odin_darwin_arm64.tar.gz --directory=cli-migration
+          mv cli-migration/odin* "cli-migration/odin-${VERSION}"
+          zip -r cli-migration.zip cli-migration
+
+      - name: Upload to JFrog Artifactory
+        run: |
+          VERSION=${{ steps.commit.outputs.version }}
+
+          # Upload cli-migration.zip
+          curl --location -v \
+            -u "${{ secrets.JFROG_USERNAME }}:${{ secrets.JFROG_PASSWORD }}" \
+            --request PUT \
+            "https://dreamsports.jfrog.io/artifactory/d11-repo/com/dream11/cli-migration/${VERSION}/cli-migration.zip" \
+            -T "./cli-migration.zip"
+
+          # Create version.txt
+          echo "$VERSION" > version.txt
+          
+          # Upload version.txt
+          curl --location -v \
+            -u "${{ secrets.JFROG_USERNAME }}:${{ secrets.JFROG_PASSWORD }}" \
+            --request PUT \
+            "https://dreamsports.jfrog.io/artifactory/d11-repo/com/dream11/odin-version/${VERSION}/version.txt" \
+            -T "./version.txt"
