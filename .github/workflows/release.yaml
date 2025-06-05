@@ -78,69 +78,72 @@ jobs:
             - SHA Checksum: `${{ steps.sha256.outputs.linux_amd64 }}`
 
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Install odin
-        shell: bash
-        run: |
-          echo "Installing Odin 1.4.3..."
-          wget -i - https://github.com/dream11/odin/releases/download/1.4.3/odin_linux_amd64.tar.gz 
-          tar -xzf odin_linux_amd64.tar.gz
-          sudo mv odin /usr/bin/odin && rm odin_linux_amd64.tar.gz
 
-      - name: Configure odin
-        env:
-          ODIN_SECRET_ACCESS_KEY: ${{ secrets.ODIN_SECRET_ACCESS_KEY}}
-          ODIN_ACCESS_KEY: ${{ secrets.ODIN_ACCESS_KEY}}
-          ODIN_BACKEND_ADDRESS: ${{ vars.ODIN_BACKEND_ADDRESS }}
-        shell: bash
-        run: odin configure
+#          Below steps cannot be run due to public runners
 
-      - name: Prepare CLI Migration Zip
-        run: |
-          VERSION=${{ steps.commit.outputs.version }}
-          mkdir cli-migration
-          tar -xzf bin/odin_darwin_arm64.tar.gz --directory=cli-migration
-          mv cli-migration/odin* "cli-migration/odin-${VERSION}"
-          zip -r cli-migration.zip cli-migration
-
-      - name: Upload to JFrog Artifactory
-        run: |
-          VERSION=${{ steps.commit.outputs.version }}
-
-          # Upload cli-migration.zip
-          curl --location -v \
-            -u "${{ secrets.JFROG_USERNAME }}:${{ secrets.JFROG_PASSWORD }}" \
-            --request PUT \
-            "https://dreamsports.jfrog.io/artifactory/d11-repo/com/dream11/cli-migration/${VERSION}/cli-migration.zip" \
-            -T "./cli-migration.zip"
-
-          # Create version.txt
-          echo "$VERSION" > version.txt
-          
-          # Upload version.txt
-          curl --location -v \
-            -u "${{ secrets.JFROG_USERNAME }}:${{ secrets.JFROG_PASSWORD }}" \
-            --request PUT \
-            "https://dreamsports.jfrog.io/artifactory/d11-repo/com/dream11/odin-version/${VERSION}/version.txt" \
-            -T "./version.txt"
-
-      - name: Redeploy Odin Artifact
-        run: |
-          VERSION=${{ steps.commit.outputs.version }}
-          
-          echo Y| odin operate component \
-            --name odin-artifact \
-            --service odin-artifact \
-            --operation redeploy \
-            --options="{\"artifact_version\": \"${VERSION}\"}" \
-            --env migrarts
-
-      - name: Redeploy Odin-version Artifact
-        run: |
-          VERSION=${{ steps.commit.outputs.version }}
-
-          echo Y| odin operate component \
-            --name odin-version \
-            --service odin-artifact \
-            --operation redeploy \
-            --options="{\"artifact_version\": \"${VERSION}\"}" \
-            --env migrarts
+#      - name: Install odin
+#        shell: bash
+#        run: |
+#          echo "Installing Odin 1.4.3..."
+#          wget -i - https://github.com/dream11/odin/releases/download/1.4.3/odin_linux_amd64.tar.gz
+#          tar -xzf odin_linux_amd64.tar.gz
+#          sudo mv odin /usr/bin/odin && rm odin_linux_amd64.tar.gz
+#
+#      - name: Configure odin
+#        env:
+#          ODIN_SECRET_ACCESS_KEY: ${{ secrets.ODIN_SECRET_ACCESS_KEY}}
+#          ODIN_ACCESS_KEY: ${{ secrets.ODIN_ACCESS_KEY}}
+#          ODIN_BACKEND_ADDRESS: ${{ vars.ODIN_BACKEND_ADDRESS }}
+#        shell: bash
+#        run: odin configure
+#
+#      - name: Prepare CLI Migration Zip
+#        run: |
+#          VERSION=${{ steps.commit.outputs.version }}
+#          mkdir cli-migration
+#          tar -xzf bin/odin_darwin_arm64.tar.gz --directory=cli-migration
+#          mv cli-migration/odin* "cli-migration/odin-${VERSION}"
+#          zip -r cli-migration.zip cli-migration
+#
+#      - name: Upload to JFrog Artifactory
+#        run: |
+#          VERSION=${{ steps.commit.outputs.version }}
+#
+#          # Upload cli-migration.zip
+#          curl --location -v \
+#            -u "${{ secrets.JFROG_USERNAME }}:${{ secrets.JFROG_PASSWORD }}" \
+#            --request PUT \
+#            "https://dreamsports.jfrog.io/artifactory/d11-repo/com/dream11/cli-migration/${VERSION}/cli-migration.zip" \
+#            -T "./cli-migration.zip"
+#
+#          # Create version.txt
+#          echo "$VERSION" > version.txt
+#
+#          # Upload version.txt
+#          curl --location -v \
+#            -u "${{ secrets.JFROG_USERNAME }}:${{ secrets.JFROG_PASSWORD }}" \
+#            --request PUT \
+#            "https://dreamsports.jfrog.io/artifactory/d11-repo/com/dream11/odin-version/${VERSION}/version.txt" \
+#            -T "./version.txt"
+#
+#      - name: Redeploy Odin Artifact
+#        run: |
+#          VERSION=${{ steps.commit.outputs.version }}
+#
+#          echo Y| odin operate component \
+#            --name odin-artifact \
+#            --service odin-artifact \
+#            --operation redeploy \
+#            --options="{\"artifact_version\": \"${VERSION}\"}" \
+#            --env migrarts
+#
+#      - name: Redeploy Odin-version Artifact
+#        run: |
+#          VERSION=${{ steps.commit.outputs.version }}
+#
+#          echo Y| odin operate component \
+#            --name odin-version \
+#            --service odin-artifact \
+#            --operation redeploy \
+#            --options="{\"artifact_version\": \"${VERSION}\"}" \
+#            --env migrarts
