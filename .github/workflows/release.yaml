@@ -94,6 +94,12 @@ jobs:
         shell: bash
         run: odin configure
 
+      - name: Setup Odin
+        uses: dream11/d11-github-actions/setup-odin@v1
+        with:
+          odin_access_key: ${{ secrets.ODIN_ACCESS_KEY}}
+          odin_secret_access_key: ${{ secrets.ODIN_SECRET_ACCESS_KEY}}
+
       - name: Prepare CLI Migration Zip
         run: |
           VERSION=${{ steps.commit.outputs.version }}
