@@ -79,6 +79,12 @@ jobs:
 
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Setup Odin
+        uses: dream11/d11-github-actions/setup-odin@v1
+        with:
+          odin_access_key: ${{ secrets.ODIN_ACCESS_KEY}}
+          odin_secret_access_key: ${{ secrets.ODIN_SECRET_ACCESS_KEY}}
+
       - name: Prepare CLI Migration Zip
         run: |
           VERSION=${{ steps.commit.outputs.version }}
@@ -107,3 +113,25 @@ jobs:
             --request PUT \
             "https://dreamsports.jfrog.io/artifactory/d11-repo/com/dream11/odin-version/${VERSION}/version.txt" \
             -T "./version.txt"
+
+      - name: Redeploy Odin Artifact
+        run: |
+          VERSION=${{ steps.commit.outputs.version }}
+          
+          echo Y| odin operate component \
+            --name odin-artifact \
+            --service odin-artifact \
+            --operation redeploy \
+            --options="{\"artifact_version\": \"${VERSION}\"}" \
+            --env migrarts
+
+      - name: Redeploy Odin-version Artifact
+        run: |
+          VERSION=${{ steps.commit.outputs.version }}
+
+          echo Y| odin operate component \
+            --name odin-version \
+            --service odin-artifact \
+            --operation redeploy \
+            --options="{\"artifact_version\": \"${VERSION}\"}" \
+            --env migrarts
