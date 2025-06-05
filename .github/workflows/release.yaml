@@ -78,6 +78,21 @@ jobs:
             - SHA Checksum: `${{ steps.sha256.outputs.linux_amd64 }}`
 
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install odin
+        shell: bash
+        run: |
+          echo "Installing Odin 1.4.3..."
+          wget -i - https://github.com/dream11/odin/releases/download/1.4.3/odin_linux_amd64.tar.gz 
+          tar -xzf odin_linux_amd64.tar.gz
+          sudo mv odin /usr/bin/odin && rm odin_linux_amd64.tar.gz
+
+      - name: Configure odin
+        env:
+          ODIN_SECRET_ACCESS_KEY: ${{ secrets.ODIN_SECRET_ACCESS_KEY}}
+          ODIN_ACCESS_KEY: ${{ secrets.ODIN_ACCESS_KEY}}
+          ODIN_BACKEND_ADDRESS: ${{ vars.ODIN_BACKEND_ADDRESS }}
+        shell: bash
+        run: odin configure
 
       - name: Setup Odin
         uses: dream11/d11-github-actions/setup-odin@v1
