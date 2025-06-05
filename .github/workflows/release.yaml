@@ -125,7 +125,7 @@ jobs:
             --options="{\"artifact_version\": \"${VERSION}\"}" \
             --env migrarts
 
-      - name: Redeploy Odin Artifact
+      - name: Redeploy Odin-version Artifact
         run: |
           VERSION=${{ steps.commit.outputs.version }}
 
