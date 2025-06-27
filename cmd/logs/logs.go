@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var traceId string
+var traceID string
 var logsClient = service.Logs{}
 
 var logsCmd = &cobra.Command{
@@ -23,21 +23,21 @@ var logsCmd = &cobra.Command{
 }
 
 func init() {
-	logsCmd.Flags().StringVar(&traceId, "traceid", "", "Trace Id to fetch logs")
+	logsCmd.Flags().StringVar(&traceID, "traceid", "", "Trace Id to fetch logs")
 	cmd.RootCmd.AddCommand(logsCmd)
 }
 
 func execute(cmd *cobra.Command) {
 	ctx := cmd.Context()
 
-	contextWithTrace := context.WithValue(ctx, constant.TraceIDKey, traceId)
+	contextWithTrace := context.WithValue(ctx, constant.TraceIDKey, traceID)
 
 	streamCtx, cancelFunction := context.WithCancel(context.Background())
 	defer cancelFunction()
 
 	var searchAfterParams []int64
 	var err error
-	fmt.Printf("Fetching logs for traceId: %s\n", traceId)
+	fmt.Printf("Fetching logs for traceID: %s\n", traceID)
 	for {
 		select {
 		case <-streamCtx.Done():
@@ -46,7 +46,7 @@ func execute(cmd *cobra.Command) {
 			// Get logs with retry on error
 			follow := true
 			searchAfterParams, err = logsClient.GetLogs(&contextWithTrace, &logs.GetLogsRequest{
-				TraceId:           traceId,
+				TraceId:           traceID,
 				Follow:            &follow,
 				SearchAfterParams: searchAfterParams,
 			})
