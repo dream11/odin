@@ -2,6 +2,7 @@ package undeploy
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/config"
@@ -40,6 +41,11 @@ func init() {
 }
 
 func execute(cmd *cobra.Command) {
+	if envName == "prod" {
+		log.Infof("Undeploying service %s in production environment enter PROD to confirm", name)
+		consentMessage := fmt.Sprintf(constant.ConsentMessageTemplate, "PROD")
+		util.AskForConfirmation("PROD", consentMessage)
+	}
 	envName = config.EnsureEnvPresent(envName)
 
 	ctx := cmd.Context()
