@@ -8,5 +8,5 @@ type application struct {
 // App (Application) interface
 var App application = application{
 	Name:    "odin",
-	Version: "2.1.1",
+	Version: "2.1.2",
 }
