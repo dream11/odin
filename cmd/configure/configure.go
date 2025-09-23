@@ -1,31 +1,28 @@
 package configure
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
-	"github.com/dream11/odin/pkg/util"
 	"os"
 	"path"
+	"strconv"
+
+	"github.com/dream11/odin/internal/auth"
 
 	"github.com/dream11/odin/app"
 	"github.com/dream11/odin/cmd"
 	"github.com/dream11/odin/internal/service"
 	appConfig "github.com/dream11/odin/pkg/config"
 	"github.com/dream11/odin/pkg/dir"
-	auth "github.com/dream11/odin/proto/gen/go/dream11/od/auth/v1"
+	"github.com/dream11/odin/pkg/util"
+	pb "github.com/dream11/odin/proto/gen/go/dream11/od/auth/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
-var odinAccessKey string
-var odinSecretAccessKey string
 var odinBackendAddress string
 var insecure bool
 var plainText bool
-
-// default backend address
-const defaultBackendAddress = "odin-backend.d11dev.com:443"
+var orgId int64
 
 var configureClient = service.Configure{}
 var configureCmd = &cobra.Command{
@@ -38,11 +35,10 @@ var configureCmd = &cobra.Command{
 }
 
 func init() {
-	configureCmd.Flags().StringVar(&odinAccessKey, "access-key", "", "odin access key")
-	configureCmd.Flags().StringVar(&odinSecretAccessKey, "secret-access-key", "", "odin secret access key")
 	configureCmd.Flags().StringVar(&odinBackendAddress, "backend-address", "", "odin backend address with port")
 	configureCmd.Flags().BoolVarP(&insecure, "insecure", "I", true, "odin insecure")
 	configureCmd.Flags().BoolVarP(&plainText, "plaintext", "P", false, "skip tls verification")
+	configureCmd.Flags().Int64Var(&orgId, "org-id", 0, "organisation id")
 	cmd.RootCmd.AddCommand(configureCmd)
 }
 
@@ -51,22 +47,38 @@ func execute(cmd *cobra.Command) {
 
 	config := appConfig.GetConfig()
 
-	config.BackendAddress = getConfigKey("backend-address", odinBackendAddress, "ODIN_BACKEND_ADDRESS", config.BackendAddress, defaultBackendAddress)
+	config.BackendAddress = getConfigKey("backend-address", odinBackendAddress, "ODIN_BACKEND_ADDRESS", config.BackendAddress)
 	config.Insecure = insecure
 	config.Plaintext = plainText
-	config.Keys.AccessKey = getConfigKey("access-key", odinAccessKey, "ODIN_ACCESS_KEY", config.Keys.AccessKey, "")
-	config.Keys.SecretAccessKey = getConfigKey("secret-access-key", odinSecretAccessKey, "ODIN_SECRET_ACCESS_KEY", config.Keys.SecretAccessKey, "")
+	config.OrgId = getConfigKey("org-id", orgId, "ODIN_ORG_ID", config.OrgId)
 
 	ctx := cmd.Context()
-	response, err := configureClient.GetUserToken(&ctx, &auth.GetUserTokenRequest{
-		ClientId:         config.Keys.AccessKey,
-		ClientSecretHash: hashKey(config.Keys.SecretAccessKey),
+	authProviderResponse, err := configureClient.GetAuthProvider(&ctx, &pb.GetAuthProviderRequest{
+		OrgId: &config.OrgId,
+	})
+	if err != nil {
+		util.LogGrpcError(err, "Failed to get auth provider ")
+	}
+
+	provider, err := auth.GetProvider(authProviderResponse.Type)
+	if err != nil {
+		log.Fatalf("Error getting auth provider: %v", err)
+	}
+
+	authData, err := provider.Authenticate(authProviderResponse.Data)
+	if err != nil {
+		log.Fatalf("Error authenticating: %v", err)
+	}
+
+	tokenResponse, err := configureClient.GetUserToken(&ctx, &pb.GetUserTokenRequest{
+		OrgId: &config.OrgId,
+		Data:  authData,
 	})
 	if err != nil {
 		util.LogGrpcError(err, "Failed to get token ")
 	}
 
-	config.AccessToken = response.Token
+	config.AccessToken = tokenResponse.Token
 	appConfig.WriteConfig(config)
 	fmt.Println("\n\033[32mConfigured!\033[0m")
 }
@@ -82,23 +94,34 @@ func createConfigFileIfNotExist() {
 	}
 }
 
-func getConfigKey(flagKey string, flagValue string, envVariableName string, configValue string, defaultValue string) string {
-	if flagValue != "" {
+func getConfigKey[T comparable](flagKey string, flagValue T, envVariableName string, configValue T) T {
+	var zero T
+	if flagValue != zero {
 		return flagValue
-	} else if os.Getenv(envVariableName) != "" {
-		return os.Getenv(envVariableName)
-	} else if configValue != "" {
-		return configValue
-	} else if defaultValue != "" {
-		return defaultValue
 	}
-	log.Fatalf("Please pass %s flag nor set environment variable %s to configure", flagKey, envVariableName)
-	return ""
-}
 
-func hashKey(key string) string {
-	hash := sha256.New()
-	hash.Write([]byte(key))
-	hashedResult := hash.Sum(nil)
-	return hex.EncodeToString(hashedResult)
+	if envValStr := os.Getenv(envVariableName); envValStr != "" {
+		var result T
+		var a any = &result
+		switch p := a.(type) {
+		case *string:
+			*p = envValStr
+		case *int64:
+			val, err := strconv.ParseInt(envValStr, 10, 64)
+			if err != nil {
+				log.Fatalf("Invalid value for environment variable %s: %v", envVariableName, err)
+			}
+			*p = val
+		default:
+			log.Fatalf("Unsupported type for getConfigKey: %T", zero)
+		}
+		return result
+	}
+
+	if configValue != zero {
+		return configValue
+	}
+
+	log.Fatalf("Required configuration not found. Please pass --%s flag or set environment variable %s", flagKey, envVariableName)
+	return zero // Unreachable
 }
