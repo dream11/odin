@@ -11,9 +11,8 @@ service ProviderAccountService {
 }
 
 message GetProviderAccountRequest {
-  map<string, string> headers = 1;
-  string name = 2;
-  bool fetch_linked_account_details = 3;
+  string name = 1;
+  bool fetch_linked_account_details = 2;
 }
 
 message GetProviderAccountResponse {
@@ -22,9 +21,8 @@ message GetProviderAccountResponse {
 }
 
 message GetProviderAccountsRequest {
-  map<string, string> headers = 1;
-  repeated string name = 2;
-  bool fetch_linked_account_details = 3;
+  repeated string name = 1;
+  bool fetch_linked_account_details = 2;
 }
 
 message GetProviderAccountsResponse {

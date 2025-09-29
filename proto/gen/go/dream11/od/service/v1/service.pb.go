@@ -556,7 +556,7 @@ type ServiceStatus struct {
 
 	ServiceStatus string `protobuf:"bytes,1,opt,name=service_status,json=serviceStatus,proto3" json:"service_status,omitempty"`
 	ServiceAction string `protobuf:"bytes,2,opt,name=service_action,json=serviceAction,proto3" json:"service_action,omitempty"`
-	Error         string `protobuf:"bytes,3,opt,name=retryable,proto3" json:"retryable,omitempty"`
+	Error         string `protobuf:"bytes,3,opt,name=error,proto3" json:"error,omitempty"`
 }
 
 func (x *ServiceStatus) Reset() {
@@ -620,7 +620,7 @@ type ComponentStatus struct {
 	ComponentName   string `protobuf:"bytes,1,opt,name=component_name,json=componentName,proto3" json:"component_name,omitempty"`
 	ComponentStatus string `protobuf:"bytes,2,opt,name=component_status,json=componentStatus,proto3" json:"component_status,omitempty"`
 	ComponentAction string `protobuf:"bytes,3,opt,name=component_action,json=componentAction,proto3" json:"component_action,omitempty"`
-	Error           string `protobuf:"bytes,4,opt,name=retryable,proto3" json:"retryable,omitempty"`
+	Error           string `protobuf:"bytes,4,opt,name=error,proto3" json:"error,omitempty"`
 }
 
 func (x *ComponentStatus) Reset() {
