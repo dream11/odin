@@ -22,7 +22,7 @@ import (
 var odinBackendAddress string
 var insecure bool
 var plainText bool
-var orgId int64
+var orgID int64
 
 var configureClient = service.Configure{}
 var configureCmd = &cobra.Command{
@@ -38,7 +38,7 @@ func init() {
 	configureCmd.Flags().StringVar(&odinBackendAddress, "backend-address", "", "odin backend address with port")
 	configureCmd.Flags().BoolVarP(&insecure, "insecure", "I", true, "odin insecure")
 	configureCmd.Flags().BoolVarP(&plainText, "plaintext", "P", false, "skip tls verification")
-	configureCmd.Flags().Int64Var(&orgId, "org-id", 0, "organisation id")
+	configureCmd.Flags().Int64Var(&orgID, "org-id", 0, "organisation id")
 	cmd.RootCmd.AddCommand(configureCmd)
 }
 
@@ -50,7 +50,7 @@ func execute(cmd *cobra.Command) {
 	config.BackendAddress = getConfigKey("backend-address", odinBackendAddress, "ODIN_BACKEND_ADDRESS", config.BackendAddress)
 	config.Insecure = insecure
 	config.Plaintext = plainText
-	config.OrgId = getConfigKey("org-id", orgId, "ODIN_ORG_ID", config.OrgId)
+	config.OrgId = getConfigKey("org-id", orgID, "ODIN_ORG_ID", config.OrgId)
 
 	ctx := cmd.Context()
 	authProviderResponse, err := configureClient.GetAuthProvider(&ctx, &pb.GetAuthProviderRequest{
