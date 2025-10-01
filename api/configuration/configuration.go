@@ -1,7 +1,5 @@
 package configuration
 
-//lint:file-ignore ST1003 Keep OrgId naming to match protobuf and persisted config schema
-
 // Configuration interface
 type Configuration struct {
 	BackendAddress string `toml:"backend_address,omitempty" mapstructure:"backend_address,omitempty"`
