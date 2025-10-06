@@ -57,7 +57,7 @@ func execute(cmd *cobra.Command) {
 		OrgId: &config.OrgId,
 	})
 	if err != nil {
-		util.LogGrpcError(err, "Failed to get auth provider ")
+		log.Fatalf("Failed to get auth provider: %v ", err)
 	}
 
 	provider, err := auth.GetProvider(authProviderResponse.Type)
