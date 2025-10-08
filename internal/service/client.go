@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
 	"strings"
 	"time"
 
@@ -67,6 +66,6 @@ func grpcClient(ctx *context.Context) (*grpc.ClientConn, *context.Context, error
 		return nil, nil, err
 	}
 	// Enrich context with authorisation metadata
-	requestCtx := metadata.AppendToOutgoingContext(contextWithTrace, "Authorization", fmt.Sprintf("%s", appConfig.AccessToken), string(constant.TraceIDKey), traceID)
+	requestCtx := metadata.AppendToOutgoingContext(contextWithTrace, "Authorization", appConfig.AccessToken, string(constant.TraceIDKey), traceID)
 	return conn, &requestCtx, nil
 }

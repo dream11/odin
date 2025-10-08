@@ -1,0 +1,3 @@
+linters-settings:
+  staticcheck:
+    checks: ["all", "-SA1019", "-ST1000", "-ST1016"]

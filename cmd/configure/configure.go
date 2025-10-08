@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"strconv"
 
 	"github.com/dream11/odin/internal/auth"
 
@@ -17,12 +16,8 @@ import (
 	pb "github.com/dream11/odin/proto/gen/go/dream11/od/auth/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
-
-var odinBackendAddress string
-var insecure bool
-var plainText bool
-var orgID int64
 
 var configureClient = service.Configure{}
 var configureCmd = &cobra.Command{
@@ -35,10 +30,17 @@ var configureCmd = &cobra.Command{
 }
 
 func init() {
-	configureCmd.Flags().StringVar(&odinBackendAddress, "backend-address", "", "odin backend address with port")
-	configureCmd.Flags().BoolVarP(&insecure, "insecure", "I", true, "odin insecure")
-	configureCmd.Flags().BoolVarP(&plainText, "plaintext", "P", false, "skip tls verification")
-	configureCmd.Flags().Int64Var(&orgID, "org-id", 0, "organisation id")
+	configureCmd.Flags().String("backend-address", "", "odin backend address with port")
+	configureCmd.Flags().BoolP("insecure", "I", true, "odin insecure")
+	configureCmd.Flags().BoolP("plaintext", "P", false, "skip tls verification")
+	configureCmd.Flags().Int64("org-id", 0, "organisation id")
+
+	// Bind flags to viper for automatic precedence handling
+	viper.BindPFlag("backend_address", configureCmd.Flags().Lookup("backend-address"))
+	viper.BindPFlag("insecure", configureCmd.Flags().Lookup("insecure"))
+	viper.BindPFlag("plaintext", configureCmd.Flags().Lookup("plaintext"))
+	viper.BindPFlag("org_id", configureCmd.Flags().Lookup("org-id"))
+
 	cmd.RootCmd.AddCommand(configureCmd)
 }
 
@@ -47,10 +49,18 @@ func execute(cmd *cobra.Command) {
 
 	config := appConfig.GetConfig()
 
-	config.BackendAddress = getConfigKey("backend-address", odinBackendAddress, "ODIN_BACKEND_ADDRESS", config.BackendAddress)
-	config.Insecure = insecure
-	config.Plaintext = plainText
-	config.OrgId = getConfigKey("org-id", orgID, "ODIN_ORG_ID", config.OrgId)
+	if !viper.IsSet("backend_address") || viper.GetString("backend_address") == "" {
+		log.Fatalf("Required configuration not found. Please pass --backend-address flag or set environment variable ODIN_BACKEND_ADDRESS")
+	}
+	if !viper.IsSet("org_id") {
+		log.Fatalf("Required configuration not found. Please pass --org-id flag or set environment variable ODIN_ORG_ID")
+	}
+
+	// Set resolved values
+	config.BackendAddress = viper.GetString("backend_address")
+	config.OrgId = viper.GetInt64("org_id")
+	config.Insecure = viper.GetBool("insecure")
+	config.Plaintext = viper.GetBool("plaintext")
 
 	ctx := cmd.Context()
 	authProviderResponse, err := configureClient.GetAuthProvider(&ctx, &pb.GetAuthProviderRequest{
@@ -92,36 +102,4 @@ func createConfigFileIfNotExist() {
 	if err := dir.CreateFileIfNotExist(configPath); err != nil {
 		log.Fatal("Error creating the config file")
 	}
-}
-
-func getConfigKey[T comparable](flagKey string, flagValue T, envVariableName string, configValue T) T {
-	var zero T
-	if flagValue != zero {
-		return flagValue
-	}
-
-	if envValStr := os.Getenv(envVariableName); envValStr != "" {
-		var result T
-		var a any = &result
-		switch p := a.(type) {
-		case *string:
-			*p = envValStr
-		case *int64:
-			val, err := strconv.ParseInt(envValStr, 10, 64)
-			if err != nil {
-				log.Fatalf("Invalid value for environment variable %s: %v", envVariableName, err)
-			}
-			*p = val
-		default:
-			log.Fatalf("Unsupported type for getConfigKey: %T", zero)
-		}
-		return result
-	}
-
-	if configValue != zero {
-		return configValue
-	}
-
-	log.Fatalf("Required configuration not found. Please pass --%s flag or set environment variable %s", flagKey, envVariableName)
-	return zero // Unreachable
 }
