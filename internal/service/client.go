@@ -3,10 +3,10 @@ package service
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
-	"github.com/dream11/odin/api/configuration"
 	"strings"
 	"time"
+
+	"github.com/dream11/odin/api/configuration"
 
 	"github.com/dream11/odin/pkg/config"
 	"github.com/dream11/odin/pkg/constant"
@@ -66,6 +66,6 @@ func grpcClient(ctx *context.Context) (*grpc.ClientConn, *context.Context, error
 		return nil, nil, err
 	}
 	// Enrich context with authorisation metadata
-	requestCtx := metadata.AppendToOutgoingContext(contextWithTrace, "Authorization", fmt.Sprintf("Bearer %s", appConfig.AccessToken), string(constant.TraceIDKey), traceID)
+	requestCtx := metadata.AppendToOutgoingContext(contextWithTrace, "Authorization", appConfig.AccessToken, string(constant.TraceIDKey), traceID)
 	return conn, &requestCtx, nil
 }

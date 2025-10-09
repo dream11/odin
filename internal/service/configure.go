@@ -11,6 +11,22 @@ import (
 // Configure used to perform odin congigure
 type Configure struct{}
 
+// GetAuthProvider Get Auth Provider
+func (c *Configure) GetAuthProvider(ctx *context.Context, request *auth.GetAuthProviderRequest) (*auth.GetAuthProviderResponse, error) {
+	conn, requestCtx, err := grpcClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+	client := auth.NewAuthServiceClient(conn)
+	response, err := client.GetAuthProvider(*requestCtx, request)
+	if err != nil {
+		log.Errorf("TraceID: %s", (*requestCtx).Value(constant.TraceIDKey))
+		return nil, err
+	}
+
+	return response, nil
+}
+
 // GetUserToken Get User Token
 func (c *Configure) GetUserToken(ctx *context.Context, request *auth.GetUserTokenRequest) (*auth.GetUserTokenResponse, error) {
 	conn, requestCtx, err := grpcClient(ctx)

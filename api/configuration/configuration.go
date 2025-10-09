@@ -1,17 +1,12 @@
 package configuration
 
-// SecretKeys interface
-type SecretKeys struct {
-	AccessKey       string `toml:"access_key,omitempty" mapstructure:"access_key,omitempty"`
-	SecretAccessKey string `toml:"secret_access_key,omitempty" mapstructure:"secret_access_key,omitempty"`
-}
-
 // Configuration interface
 type Configuration struct {
 	BackendAddress string `toml:"backend_address,omitempty" mapstructure:"backend_address,omitempty"`
-	Keys           SecretKeys
 	AccessToken    string `toml:"access_token,omitempty" mapstructure:"access_token,omitempty"`
-	EnvName        string `toml:"envName,omitempty" mapstructure:"envName,omitempty"`
-	Insecure       bool   `toml:"insecure,omitempty" mapstructure:"insecure,omitempty"`
-	Plaintext      bool   `toml:"plaintext,omitempty" mapstructure:"plaintext,omitempty"`
+	//lint:ignore ST1003 Keep OrgId to match generated protobuf and existing config schema
+	OrgId     int64  `toml:"org_id,omitempty" mapstructure:"org_id,omitempty"`
+	EnvName   string `toml:"envName,omitempty" mapstructure:"envName,omitempty"`
+	Insecure  bool   `toml:"insecure,omitempty" mapstructure:"insecure,omitempty"`
+	Plaintext bool   `toml:"plaintext,omitempty" mapstructure:"plaintext,omitempty"`
 }
