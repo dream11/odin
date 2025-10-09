@@ -3,9 +3,10 @@ package describe
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dream11/odin/pkg/util"
 	"os"
 	"strconv"
+
+	"github.com/dream11/odin/pkg/util"
 
 	serviceBackend "github.com/dream11/odin/internal/service"
 	service "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
@@ -21,27 +22,21 @@ var verbose bool
 
 var serviceClient = serviceBackend.Service{}
 var serviceCmd = &cobra.Command{
-	Use:   "service",
+	Use:   "service <name>",
 	Short: "Describe service",
-	Args: func(cmd *cobra.Command, args []string) error {
-		return cobra.NoArgs(cmd, args)
-	},
-	Long: `Describe definition and provisionig files of a service`,
+	Args:  cobra.ExactArgs(1),
+	Long:  `Describe definition and provisionig files of a service`,
 	Run: func(cmd *cobra.Command, args []string) {
+		serviceName = args[0]
 		execute(cmd)
 	},
 }
 
 func init() {
-	serviceCmd.Flags().StringVar(&serviceName, "name", "", "name of the service")
 	serviceCmd.Flags().StringVar(&serviceVersion, "version", "", "version of the service")
 	serviceCmd.Flags().StringVar(&component, "component", "", "Display the config of a specific component only")
 	serviceCmd.Flags().BoolVarP(&verbose, "verbose", "V", false, "display provisioning files data")
-	err := componentCmd.MarkFlagRequired("name")
-	if err != nil {
-		log.Fatal("Error marking 'name' flag as required:", err)
-	}
-	err = componentCmd.MarkFlagRequired("version")
+	err := componentCmd.MarkFlagRequired("version")
 	if err != nil {
 		log.Fatal("Error marking 'version' flag as required:", err)
 	}

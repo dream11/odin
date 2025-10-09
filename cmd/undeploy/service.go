@@ -19,19 +19,17 @@ var envName string
 var serviceClient = service.Service{}
 
 var serviceCmd = &cobra.Command{
-	Use:   "service",
+	Use:   "service <name>",
 	Short: "Undeploy service",
 	Long:  `Undeploy service`,
-	Args: func(cmd *cobra.Command, args []string) error {
-		return cobra.NoArgs(cmd, args)
-	},
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		name = args[0]
 		execute(cmd)
 	},
 }
 
 func init() {
-	serviceCmd.Flags().StringVar(&name, "name", "", "name of the service")
 	serviceCmd.Flags().StringVar(&envName, "env", "", "name of the env")
 	err := serviceCmd.MarkFlagRequired("name")
 	if err != nil {

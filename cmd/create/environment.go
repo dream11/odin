@@ -12,19 +12,17 @@ import (
 )
 
 var envName string
-var provisioningType string
 var accounts string
 
 var environmentClient service.Environment
 
 // environmentCmd represents the environment command
 var environmentCmd = &cobra.Command{
-	Use:   "env",
+	Use:   "env <name>",
 	Short: "Create environment",
-	Args: func(cmd *cobra.Command, args []string) error {
-		return cobra.NoArgs(cmd, args)
-	},
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		envName = args[0]
 		execute(cmd)
 	},
 }
@@ -43,17 +41,8 @@ func validateAccounts(accounts string) error {
 }
 
 func init() {
-	environmentCmd.Flags().StringVar(&envName, "name", "", "name of the environment to be created")
 	environmentCmd.Flags().StringVar(&accounts, "accounts", "", "list of comma separated cloud provider accounts")
-	environmentCmd.Flags().StringVar(&provisioningType, "provisioning-type", "", "provisioning type of the environment")
-	err := environmentCmd.MarkFlagRequired("name")
-	if err != nil {
-		log.Fatal("Error marking 'name' flag as required:", err)
-	}
-	if err := environmentCmd.MarkFlagRequired("provisioning-type"); err != nil {
-		log.Fatal("Error marking 'provisioning-type' flag as required:", err)
-	}
-	err = environmentCmd.MarkFlagRequired("accounts")
+	err := environmentCmd.MarkFlagRequired("accounts")
 	if err != nil {
 		log.Fatal("Error marking 'accounts' flag as required:", err)
 	}
@@ -67,9 +56,8 @@ func execute(cmd *cobra.Command) {
 		log.Fatal("Invalid accounts parameter: ", err)
 	}
 	err := environmentClient.CreateEnvironment(&ctx, &environmentProto.CreateEnvironmentRequest{
-		EnvName:          envName,
-		Accounts:         util.SplitProviderAccount(accounts),
-		ProvisioningType: provisioningType,
+		EnvName:  envName,
+		Accounts: util.SplitProviderAccount(accounts),
 	})
 
 	if err != nil {

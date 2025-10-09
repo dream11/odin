@@ -3,10 +3,8 @@ package deploy
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
-	"regexp"
 
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/config"
@@ -22,31 +20,22 @@ import (
 var env string
 var definitionFile string
 var provisioningFile string
-var serviceName string
-var serviceVersion string
 var serviceClient = service.Service{}
-var labels string
 var envClient = service.Environment{}
 var serviceCmd = &cobra.Command{
-	Use:   "service",
+	Use:   "service <envName>",
 	Short: "Deploy service",
-	Args: func(cmd *cobra.Command, args []string) error {
-		return cobra.NoArgs(cmd, args)
-	},
-	Long: "Deploy service using files or service name",
+	Args:  cobra.ExactArgs(1),
+	Long:  "Deploy service using files or service name",
 	Run: func(cmd *cobra.Command, args []string) {
+		env = args[0]
 		execute(cmd)
 	},
 }
 
 func init() {
-	serviceCmd.Flags().StringVar(&env, "env", "", "environment for deploying the service")
 	serviceCmd.Flags().StringVar(&definitionFile, "file", "", "path to the service definition file")
 	serviceCmd.Flags().StringVar(&provisioningFile, "provisioning", "", "path to the provisioning file")
-	serviceCmd.Flags().StringVar(&serviceName, "name", "", "released service name")
-	serviceCmd.Flags().StringVar(&serviceVersion, "version", "", "released service version")
-	serviceCmd.Flags().StringVar(&labels, "labels", "", "comma separated labels for the service version ex key1=value1,key2=value2")
-	_ = serviceCmd.Flags().MarkHidden("labels")
 	deployCmd.AddCommand(serviceCmd)
 }
 
@@ -67,17 +56,10 @@ func execute(cmd *cobra.Command) {
 		util.AskForConfirmation(env, consentMessage)
 	}
 
-	if (serviceName == "" && serviceVersion == "" && labels == "") && (definitionFile != "" && provisioningFile != "") {
+	if definitionFile != "" && provisioningFile != "" {
 		deployUsingFiles(contextWithTrace)
-	} else if (serviceName != "" && serviceVersion != "" && labels == "") && (definitionFile == "" && provisioningFile == "") {
-		deployUsingServiceNameAndVersion(contextWithTrace)
-	} else if (serviceName != "" && labels != "" && serviceVersion == "") && (definitionFile == "" && provisioningFile == "") {
-		if err := validateLabels(labels); err != nil {
-			log.Fatal("Invalid labels format: ", err)
-		}
-		deployUsingServiceNameAndLabels(contextWithTrace)
 	} else {
-		log.Fatal("Invalid combination of flags. Use either (service name and version) or (definitionFile and provisioningFile).")
+		log.Fatal("definitionFile and provisioningFile are required.")
 	}
 }
 
@@ -114,45 +96,6 @@ func deployUsingFiles(ctx context.Context) {
 	}
 }
 
-func deployUsingServiceNameAndVersion(ctx context.Context) {
-	err := serviceClient.DeployReleasedService(&ctx, &serviceProto.DeployReleasedServiceRequest{
-		EnvName: env,
-		ServiceIdentifier: &serviceProto.ServiceIdentifier{
-			ServiceName:    serviceName,
-			ServiceVersion: serviceVersion,
-		},
-	})
-
-	if err != nil {
-		util.LogGrpcError(err, "Failed to deploy service: ")
-	}
-}
-
-func deployUsingServiceNameAndLabels(ctx context.Context) {
-	err := serviceClient.DeployReleasedService(&ctx, &serviceProto.DeployReleasedServiceRequest{
-		EnvName: env,
-		ServiceIdentifier: &serviceProto.ServiceIdentifier{
-			ServiceName: serviceName,
-			Labels:      labels,
-		},
-	})
-
-	if err != nil {
-		util.LogGrpcError(err, "Failed to deploy service: ")
-	}
-}
-
-func validateLabels(labels string) error {
-	labelPattern := `^(\w+=\w+)(,\w+=\w+)*$`
-	matched, err := regexp.MatchString(labelPattern, labels)
-	if err != nil {
-		return err
-	}
-	if !matched {
-		return errors.New("labels must be in format key1=value1,key2=value2")
-	}
-	return nil
-}
 func isStrictEnvironment(ctx context.Context, env string) bool {
 	envTypeResp, err := envClient.IsStrictEnvironment(&ctx, &envProto.IsStrictEnvironmentRequest{
 		EnvName: env,
