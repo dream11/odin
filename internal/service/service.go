@@ -280,17 +280,6 @@ func (e *Service) OperateService(ctx *context.Context, request *serviceProto.Ope
 	)
 }
 
-// ListService deploys service
-func (e *Service) ListService(ctx *context.Context, request *serviceProto.ListServiceRequest) (*serviceProto.ListServiceResponse, error) {
-	conn, requestCtx, err := grpcClient(ctx)
-	if err != nil {
-		return &serviceProto.ListServiceResponse{}, err
-	}
-	client := serviceProto.NewServiceServiceClient(conn)
-	response, err := client.ListService(*requestCtx, request)
-	return response, err
-}
-
 // ReleaseService :service operations
 func (e *Service) ReleaseService(ctx *context.Context, request *serviceProto.ReleaseServiceRequest) error {
 	conn, requestCtx, err := grpcClient(ctx)
@@ -354,21 +343,6 @@ func (e *Service) ConvertToDeployServiceSetRequest(serviceSet *serviceDto.Servic
 		Name:     serviceSet.Name,
 		Services: services,
 	}
-}
-
-// DescribeService describe service
-func (e *Service) DescribeService(ctx *context.Context, request *serviceProto.DescribeServiceRequest) (*serviceProto.DescribeServiceResponse, error) {
-	conn, requestCtx, err := grpcClient(ctx)
-	if err != nil {
-		return nil, err
-	}
-	client := serviceProto.NewServiceServiceClient(conn)
-	response, err := client.DescribeService(*requestCtx, request)
-	if err != nil {
-		return nil, err
-	}
-
-	return response, nil
 }
 
 // GetConflictingServices deploys service

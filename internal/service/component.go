@@ -7,7 +7,6 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/util"
-	component "github.com/dream11/odin/proto/gen/go/dream11/od/component/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
 )
@@ -58,36 +57,6 @@ func (e *Component) OperateComponent(ctx *context.Context, request *serviceProto
 		retry.Delay(constant.Delay),
 		retry.RetryIf(isRetryableError),
 	)
-}
-
-// ListComponentType List component types
-func (e *Component) ListComponentType(ctx *context.Context, request *component.ListComponentTypeRequest) (*component.ListComponentTypeResponse, error) {
-	conn, requestCtx, err := grpcClient(ctx)
-	if err != nil {
-		return nil, err
-	}
-	client := component.NewComponentServiceClient(conn)
-	response, err := client.ListComponentType(*requestCtx, request)
-	if err != nil {
-		return nil, err
-	}
-
-	return response, nil
-}
-
-// DescribeComponentType List component types
-func (e *Component) DescribeComponentType(ctx *context.Context, request *component.DescribeComponentTypeRequest) (*component.DescribeComponentTypeResponse, error) {
-	conn, requestCtx, err := grpcClient(ctx)
-	if err != nil {
-		return nil, err
-	}
-	client := component.NewComponentServiceClient(conn)
-	response, err := client.DescribeComponentType(*requestCtx, request)
-	if err != nil {
-		return nil, err
-	}
-
-	return response, nil
 }
 
 // CompareOperationChanges compares the operation changes
