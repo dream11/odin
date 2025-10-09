@@ -31,10 +31,6 @@ var serviceCmd = &cobra.Command{
 
 func init() {
 	serviceCmd.Flags().StringVar(&envName, "env", "", "name of the env")
-	err := serviceCmd.MarkFlagRequired("name")
-	if err != nil {
-		log.Fatal("Error marking 'name' flag as required:", err)
-	}
 	undeployCmd.AddCommand(serviceCmd)
 }
 

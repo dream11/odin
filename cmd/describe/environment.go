@@ -16,22 +16,21 @@ import (
 )
 
 var name string
-
+var serviceName string
+var component string
 var environmentClient = service.Environment{}
 var environmentCmd = &cobra.Command{
-	Use:   "env",
+	Use:   "env <name>",
 	Short: "Describe environments",
-	Args: func(cmd *cobra.Command, args []string) error {
-		return cobra.NoArgs(cmd, args)
-	},
-	Long: `Describe  environment details`,
+	Args:  cobra.ExactArgs(1),
+	Long:  `Describe  environment details`,
 	Run: func(cmd *cobra.Command, args []string) {
+		name = args[0]
 		executeEnv(cmd)
 	},
 }
 
 func init() {
-	environmentCmd.Flags().StringVar(&name, "name", "", "name of the environment")
 	environmentCmd.Flags().StringVar(&serviceName, "service", "", "service deployed in this environment")
 	environmentCmd.Flags().StringVar(&component, "component", "", "component of the service deployed in this environment")
 	describeCmd.AddCommand(environmentCmd)
