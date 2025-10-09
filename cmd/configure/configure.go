@@ -36,10 +36,18 @@ func init() {
 	configureCmd.Flags().Int64("org-id", 0, "organisation id")
 
 	// Bind flags to viper for automatic precedence handling
-	viper.BindPFlag("backend_address", configureCmd.Flags().Lookup("backend-address"))
-	viper.BindPFlag("insecure", configureCmd.Flags().Lookup("insecure"))
-	viper.BindPFlag("plaintext", configureCmd.Flags().Lookup("plaintext"))
-	viper.BindPFlag("org_id", configureCmd.Flags().Lookup("org-id"))
+	if err := viper.BindPFlag("backend_address", configureCmd.Flags().Lookup("backend-address")); err != nil {
+		panic(err)
+	}
+	if err := viper.BindPFlag("insecure", configureCmd.Flags().Lookup("insecure")); err != nil {
+		panic(err)
+	}
+	if err := viper.BindPFlag("plaintext", configureCmd.Flags().Lookup("plaintext")); err != nil {
+		panic(err)
+	}
+	if err := viper.BindPFlag("org_id", configureCmd.Flags().Lookup("org-id")); err != nil {
+		panic(err)
+	}
 
 	cmd.RootCmd.AddCommand(configureCmd)
 }
