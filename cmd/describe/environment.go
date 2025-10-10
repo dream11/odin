@@ -80,9 +80,7 @@ func printEnvInfo(response *environment.DescribeEnvironmentResponse) {
 
 	// Extracting necessary fields
 	name := env.GetName()
-	envType := env.GetProvisioningType()
 	state := env.GetStatus()
-	autoDeletionTime := env.AutoDeletionTime.AsTime().String()
 	cloudProviderAccounts := []string{}
 	providerAccountCluster := map[string][]string{}
 	for _, accountInfo := range env.AccountInformation {
@@ -126,9 +124,7 @@ func printEnvInfo(response *environment.DescribeEnvironmentResponse) {
 	// Formatting and printing the information
 	fmt.Printf("Describing Env: %s\n\n", name)
 	fmt.Printf("name: %s\n", name)
-	fmt.Printf("envType: %s\n", envType)
 	fmt.Printf("state: %s\n", state)
-	fmt.Printf("autoDeletionTime: \"%s\"\n", autoDeletionTime)
 	fmt.Printf("cloudProviderAccounts:\n")
 	for _, account := range cloudProviderAccounts {
 		fmt.Printf("    - %s\n", account)
@@ -204,7 +200,6 @@ func writeAsJSONEnvResponse(response *environment.DescribeEnvironmentResponse) {
 	environments = append(environments, map[string]interface{}{
 		"name":                  env.Name,
 		"state":                 env.Status,
-		"autoDeletionTime":      env.AutoDeletionTime.AsTime().String(),
 		"cloudProviderAccounts": accountInfoList,
 		"createdBy":             env.CreatedBy,
 		"updatedBy":             env.UpdatedBy,

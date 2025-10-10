@@ -13,7 +13,6 @@ import (
 	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/table"
 	"github.com/dream11/odin/pkg/util"
-	envProto "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	"github.com/fatih/color"
 	log "github.com/sirupsen/logrus"
@@ -172,39 +171,29 @@ func execute(cmd *cobra.Command) {
 		}
 
 		var message string
-		if isStrictEnvironment(contextWithTrace, env) {
-			consentMessage := fmt.Sprintf(constant.ConsentMessageTemplate, env)
-			util.AskForConfirmation(env, consentMessage)
+		if oldComponentValues == nil || len(oldComponentValues.Fields) == 0 {
+			message = "\nNo changes from previous deployment. Do you want to continue? [y/n]:"
 		} else {
-			if oldComponentValues == nil || len(oldComponentValues.Fields) == 0 {
-				message = "\nNo changes from previous deployment. Do you want to continue? [y/n]:"
-			} else {
-				message = "\nDo you want to proceed with the above command? [y/n]:"
-			}
-			allowedInputsSlice := []string{"y", "n"}
-			allowedInputs := make(map[string]struct{}, len(allowedInputsSlice))
-			for _, input := range allowedInputsSlice {
-				allowedInputs[input] = struct{}{}
-			}
-
-			inputHandler := ui.Input{}
-			val, err := inputHandler.AskWithConstraints(message, allowedInputs)
-
-			if err != nil {
-				log.Fatal(err.Error())
-			}
-
-			if val != "y" {
-				log.Info("Aborting the operation")
-				return
-			}
+			message = "\nDo you want to proceed with the above command? [y/n]:"
+		}
+		allowedInputsSlice := []string{"y", "n"}
+		allowedInputs := make(map[string]struct{}, len(allowedInputsSlice))
+		for _, input := range allowedInputsSlice {
+			allowedInputs[input] = struct{}{}
 		}
 
-	} else {
-		if isStrictEnvironment(contextWithTrace, env) {
-			consentMessage := fmt.Sprintf(constant.ConsentMessageTemplate, env)
-			util.AskForConfirmation(env, consentMessage)
+		inputHandler := ui.Input{}
+		val, err := inputHandler.AskWithConstraints(message, allowedInputs)
+
+		if err != nil {
+			log.Fatal(err.Error())
 		}
+
+		if val != "y" {
+			log.Info("Aborting the operation")
+			return
+		}
+
 	}
 	err = componentClient.OperateComponent(&contextWithTrace, &serviceProto.OperateServiceRequest{
 		EnvName:              env,
@@ -249,14 +238,4 @@ func applyColorToLines(value string, colorFunc func(format string, a ...interfac
 		lines[i] = colorFunc(line)
 	}
 	return lines
-}
-
-func isStrictEnvironment(ctx context.Context, env string) bool {
-	envTypeResp, err := envClient.IsStrictEnvironment(&ctx, &envProto.IsStrictEnvironmentRequest{
-		EnvName: env,
-	})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	return envTypeResp.IsEnvStrict
 }

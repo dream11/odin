@@ -2,18 +2,15 @@ syntax = "proto3";
 package dream11.od.environment.v1;
 
 import "dream11/od/dto/v1/environment.proto";
-import "google/protobuf/struct.proto";
 
 option go_package = "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1";
 
 service EnvironmentService {
   rpc ListEnvironment(ListEnvironmentRequest) returns (ListEnvironmentResponse) {}
   rpc DescribeEnvironment(DescribeEnvironmentRequest) returns (DescribeEnvironmentResponse) {}
-  rpc UpdateEnvironment(UpdateEnvironmentRequest) returns (UpdateEnvironmentResponse) {}
   rpc CreateEnvironment(CreateEnvironmentRequest) returns (stream CreateEnvironmentResponse) {}
   rpc DeleteEnvironment(DeleteEnvironmentRequest) returns (stream DeleteEnvironmentResponse) {}
   rpc StatusEnvironment(StatusEnvironmentRequest) returns (stream StatusEnvironmentResponse) {}
-  rpc IsStrictEnvironment(IsStrictEnvironmentRequest) returns (IsStrictEnvironmentResponse) {}
 }
 
 message StatusEnvironmentRequest {
@@ -40,7 +37,6 @@ message StatusEnvComponentStatus {
   string component_version = 2;
   string component_status = 3;
 }
-
 message ListEnvironmentRequest {
   map<string, string> params = 1;
 }
@@ -58,13 +54,6 @@ message DescribeEnvironmentResponse {
   dream11.od.dto.v1.Environment environment = 1;
 }
 
-message UpdateEnvironmentRequest {
-  string env_name = 1;
-  google.protobuf.Struct data = 2;
-}
-
-message UpdateEnvironmentResponse {}
-
 message CreateEnvironmentRequest {
   string env_name = 1;
   repeated string accounts = 2;
@@ -80,12 +69,4 @@ message DeleteEnvironmentRequest {
 
 message DeleteEnvironmentResponse {
   string message = 1;
-}
-
-message IsStrictEnvironmentRequest {
-  string env_name = 1;
-}
-
-message IsStrictEnvironmentResponse {
-  bool is_env_strict = 1;
 }

@@ -15,10 +15,12 @@ import (
 
 // setstatusCmd represents the env command
 var setstatusCmd = &cobra.Command{
-	Use:   "env",
+	Use:   "env <envName>",
 	Short: "Fetch status of the environment",
 	Long:  `Fetch status of the environment`,
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		envName = args[0]
 		getStatus(cmd)
 	},
 }
@@ -28,13 +30,11 @@ var envName string
 
 func init() {
 	statusCmd.AddCommand(setstatusCmd)
-	setstatusCmd.Flags().String("name", "", "Name of the environment")
 	setstatusCmd.Flags().String("service", "", "Name of the service (optional)")
 }
 
 func getStatus(cmd *cobra.Command) {
 	ctx := cmd.Context()
-	envName, _ = cmd.Flags().GetString("name")
 	serviceName, _ = cmd.Flags().GetString("service")
 	if envName == "" {
 		log.Fatal("Error: --name is required")

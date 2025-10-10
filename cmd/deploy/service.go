@@ -3,7 +3,6 @@ package deploy
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"os"
 
 	"github.com/dream11/odin/internal/service"
@@ -11,7 +10,6 @@ import (
 	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/util"
 	serviceDto "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1"
-	envProto "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -23,17 +21,19 @@ var provisioningFile string
 var serviceClient = service.Service{}
 var envClient = service.Environment{}
 var serviceCmd = &cobra.Command{
-	Use:   "service <envName>",
+	Use:   "service",
 	Short: "Deploy service",
-	Args:  cobra.ExactArgs(1),
-	Long:  "Deploy service using files or service name",
+	Args: func(cmd *cobra.Command, args []string) error {
+		return cobra.NoArgs(cmd, args)
+	},
+	Long: "Deploy service using files or service name",
 	Run: func(cmd *cobra.Command, args []string) {
-		env = args[0]
 		execute(cmd)
 	},
 }
 
 func init() {
+	serviceCmd.Flags().StringVar(&env, "env", "", "environment for deploying the service")
 	serviceCmd.Flags().StringVar(&definitionFile, "file", "", "path to the service definition file")
 	serviceCmd.Flags().StringVar(&provisioningFile, "provisioning", "", "path to the provisioning file")
 	deployCmd.AddCommand(serviceCmd)
@@ -50,11 +50,6 @@ func execute(cmd *cobra.Command) {
 	}
 
 	contextWithTrace = context.WithValue(contextWithTrace, constant.VerboseEnabledKey, verboseEnabled)
-
-	if isStrictEnvironment(contextWithTrace, env) {
-		consentMessage := fmt.Sprintf(constant.ConsentMessageTemplate, env)
-		util.AskForConfirmation(env, consentMessage)
-	}
 
 	if definitionFile != "" && provisioningFile != "" {
 		deployUsingFiles(contextWithTrace)
@@ -94,14 +89,4 @@ func deployUsingFiles(ctx context.Context) {
 	if err != nil {
 		util.LogGrpcError(err, "Failed to deploy service: ")
 	}
-}
-
-func isStrictEnvironment(ctx context.Context, env string) bool {
-	envTypeResp, err := envClient.IsStrictEnvironment(&ctx, &envProto.IsStrictEnvironmentRequest{
-		EnvName: env,
-	})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	return envTypeResp.IsEnvStrict
 }

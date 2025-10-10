@@ -20,7 +20,6 @@ message Environment {
   repeated dream11.od.dto.v1.ServiceTask services = 12;
   repeated AccountInformation account_information = 13;
   optional string updated_by = 14;
-  optional string provisioning_type = 15;
 }
 
 message AccountInformation {
@@ -33,5 +32,5 @@ message EnvironmentSummary {
   string name = 1;
   string account = 2;
   string state = 3;
-  optional string provisioning_type = 4;
+  optional string created_by = 5;
 }
