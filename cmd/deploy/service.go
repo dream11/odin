@@ -19,7 +19,6 @@ var env string
 var definitionFile string
 var provisioningFile string
 var serviceClient = service.Service{}
-var envClient = service.Environment{}
 var serviceCmd = &cobra.Command{
 	Use:   "service",
 	Short: "Deploy service",

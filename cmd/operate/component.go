@@ -27,7 +27,6 @@ var operation string
 var options string
 var file string
 var componentClient = service.Component{}
-var envClient = service.Environment{}
 var operateComponentCmd = &cobra.Command{
 	Use:   "component",
 	Short: "operate component",
