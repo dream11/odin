@@ -51,13 +51,13 @@ func execute(cmd *cobra.Command) {
 	contextWithTrace = context.WithValue(contextWithTrace, constant.VerboseEnabledKey, verboseEnabled)
 
 	if definitionFile != "" && provisioningFile != "" {
-		deployUsingFiles(contextWithTrace)
+		deploy(contextWithTrace)
 	} else {
 		log.Fatal("definitionFile and provisioningFile are required.")
 	}
 }
 
-func deployUsingFiles(ctx context.Context) {
+func deploy(ctx context.Context) {
 	definitionData, err := os.ReadFile(definitionFile)
 	if err != nil {
 		log.Fatal("Error while reading definition file ", err)
