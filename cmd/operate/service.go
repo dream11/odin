@@ -3,7 +3,6 @@ package operate
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/config"
@@ -82,11 +81,6 @@ func executeOperateService(cmd *cobra.Command) {
 	config, err := structpb.NewStruct(optionsData)
 	if err != nil {
 		log.Fatal("error converting JSON to structpb.Struct: ", err)
-	}
-
-	if isStrictEnvironment(contextWithTrace, env) {
-		consentMessage := fmt.Sprintf(constant.ConsentMessageTemplate, env)
-		util.AskForConfirmation(env, consentMessage)
 	}
 
 	//call operate service client
