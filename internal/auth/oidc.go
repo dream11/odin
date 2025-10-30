@@ -16,14 +16,27 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
+const (
+	callbackPath                = "/callback"
+	redirectScheme              = "http"
+	redirectHost                = "localhost"
+	localBindIP                 = "127.0.0.1"
+	readHeaderTimeout           = 5 * time.Second
+	closeAfterWriteDelay        = 200 * time.Millisecond
+	gracefulShutdownTimeout     = 2 * time.Second
+	defaultCallbackWaitTimeout  = 5 * time.Minute
+)
+
 type OIDCProviderConfig struct {
 	Name     string
-	AuthURL  string
+    AuthURL  *url.URL
 	ClientID string
 	Scope    string
 }
 
 type OIDCProvider struct{}
+
+
 
 func (p *OIDCProvider) Authenticate(providerData *structpb.Struct) (*structpb.Struct, error) {
 	config, err := parseProviderData(providerData)
@@ -31,26 +44,34 @@ func (p *OIDCProvider) Authenticate(providerData *structpb.Struct) (*structpb.St
 		return nil, fmt.Errorf("parse provider data: %w", err)
 	}
 
-	port, err := getFreePort()
+	ln, err := net.Listen("tcp", net.JoinHostPort(localBindIP, "0"))
 	if err != nil {
-		return nil, fmt.Errorf("find free port: %w", err)
+		return nil, fmt.Errorf("listen on callback port: %w", err)
 	}
-	redirectURI := fmt.Sprintf("http://localhost:%d/callback", port)
+	port := ln.Addr().(*net.TCPAddr).Port
+
+	redirectURL := &url.URL{
+		Scheme: redirectScheme,
+		Host:   net.JoinHostPort(redirectHost, fmt.Sprintf("%d", port)),
+		Path:   callbackPath,
+	}
+	redirectURI := redirectURL.String()
 
 	state, err := generateState()
 	if err != nil {
 		return nil, fmt.Errorf("generate state: %w", err)
 	}
 
-	authURL := buildAuthURL(config, redirectURI, state)
+    authURL := buildAuthURL(config, redirectURI, state)
 
-	if err := openBrowser(authURL); err != nil {
+    if err := openBrowser(authURL); err != nil {
 		log.Warnf("Failed to open browser automatically: %v", err)
-		log.Info("\nPlease visit the following URL to authenticate:")
-		log.Info(authURL)
 	}
 
-	authCode, err := waitForCallback(port, state, 5*time.Minute)
+    log.Info("\nPlease visit the following URL to authenticate:")
+    log.Info(authURL.String())
+
+	authCode, err := waitForCallback(ln, state, defaultCallbackWaitTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -61,19 +82,14 @@ func (p *OIDCProvider) Authenticate(providerData *structpb.Struct) (*structpb.St
 	})
 }
 
-func waitForCallback(port int, expectedState string, timeout time.Duration) (string, error) {
-	addr := fmt.Sprintf("127.0.0.1:%d", port)
-	ln, err := net.Listen("tcp", addr)
-	if err != nil {
-		return "", fmt.Errorf("listen: %w", err)
-	}
-	defer ln.Close()
+func waitForCallback(ln net.Listener, expectedState string, timeout time.Duration) (string, error) {
+    defer ln.Close()
 
 	var code string
 
-	srv := &http.Server{
-		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/callback" {
+		srv := &http.Server{
+			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.URL.Path != callbackPath {
 				http.NotFound(w, r)
 				return
 			}
@@ -81,28 +97,28 @@ func waitForCallback(port int, expectedState string, timeout time.Duration) (str
 
 			if e := q.Get("error"); e != "" {
 				sendErrorPage(w, "Authentication Failed", q.Get("error_description"))
-				go func() { time.Sleep(200 * time.Millisecond); _ = ln.Close() }()
+					go func() { time.Sleep(closeAfterWriteDelay); _ = ln.Close() }()
 				return
 			}
 
 			if q.Get("state") != expectedState {
 				sendErrorPage(w, "Security Error", "Invalid state parameter")
-				go func() { time.Sleep(200 * time.Millisecond); _ = ln.Close() }()
+					go func() { time.Sleep(closeAfterWriteDelay); _ = ln.Close() }()
 				return
 			}
 
 			c := q.Get("code")
 			if c == "" {
 				sendErrorPage(w, "Authentication Failed", "No authorization code received")
-				go func() { time.Sleep(200 * time.Millisecond); _ = ln.Close() }()
+					go func() { time.Sleep(closeAfterWriteDelay); _ = ln.Close() }()
 				return
 			}
 
 			code = c
 			sendSuccessPage(w)
-			go func() { time.Sleep(200 * time.Millisecond); _ = ln.Close() }()
+				go func() { time.Sleep(closeAfterWriteDelay); _ = ln.Close() }()
 		}),
-		ReadHeaderTimeout: 5 * time.Second,
+			ReadHeaderTimeout: readHeaderTimeout,
 	}
 
 	t := time.AfterFunc(timeout, func() { _ = ln.Close() })
@@ -110,7 +126,7 @@ func waitForCallback(port int, expectedState string, timeout time.Duration) (str
 
 	_ = srv.Serve(ln)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), gracefulShutdownTimeout)
 	_ = srv.Shutdown(ctx)
 	cancel()
 
@@ -122,7 +138,26 @@ func waitForCallback(port int, expectedState string, timeout time.Duration) (str
 
 func sendSuccessPage(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Fprint(w, `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Success</title><script>setTimeout(function(){ window.close(); }, 800);</script></head><body style="font-family:Segoe UI,Arial,sans-serif;text-align:center;padding-top:10%;background:#f5f9ff;"><div style="display:inline-block;background:#fff;border-radius:10px;padding:30px 40px;box-shadow:0 4px 12px rgba(0,0,0,0.1);"><div style="font-size:40px;color:#4CAF50;"></div><h2 style="color:#1a73e8;margin:10px 0;">Authentication Successful</h2><p style="color:#555;">You can close this window.</p></div></body></html>`)
+	fmt.Fprint(w, `<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title>Success</title>
+        <script>
+            setTimeout(function(){
+                window.close();
+            }, 800);
+        </script>
+    </head>
+    <body style="font-family:Segoe UI,Arial,sans-serif;text-align:center;padding-top:10%;background:#f5f9ff;">
+        <div style="display:inline-block;background:#fff;border-radius:10px;padding:30px 40px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+            <div style="font-size:40px;color:#4CAF50;"></div>
+            <h2 style="color:#1a73e8;margin:10px 0;">Authentication Successful</h2>
+            <p style="color:#555;">You can close this window.</p>
+        </div>
+    </body>
+    </html>`)
+
 }
 
 func sendErrorPage(w http.ResponseWriter, title, message string) {
@@ -132,18 +167,34 @@ func sendErrorPage(w http.ResponseWriter, title, message string) {
 }
 
 func parseProviderData(data *structpb.Struct) (*OIDCProviderConfig, error) {
-	fields := data.GetFields()
+    if data == nil {
+        return nil, fmt.Errorf("provider data is required")
+    }
 
-	config := &OIDCProviderConfig{
-		Name:     fields["name"].GetStringValue(),
-		AuthURL:  fields["authorization_url"].GetStringValue(),
-		ClientID: fields["client_id"].GetStringValue(),
-		Scope:    fields["scope"].GetStringValue(),
-	}
+    fields := data.GetFields()
 
-	if config.AuthURL == "" {
-		return nil, fmt.Errorf("authorization_url is required")
-	}
+    getString := func(m map[string]*structpb.Value, key string) string {
+        if v, ok := m[key]; ok && v != nil {
+            return v.GetStringValue()
+        }
+        return ""
+    }
+
+    config := &OIDCProviderConfig{
+        Name:     getString(fields, "name"),
+        ClientID: getString(fields, "client_id"),
+        Scope:    getString(fields, "scope"),
+    }
+
+    authURLStr := getString(fields, "authorization_url")
+    if authURLStr == "" {
+        return nil, fmt.Errorf("authorization_url is required")
+    }
+    u, err := url.Parse(authURLStr)
+    if err != nil {
+        return nil, fmt.Errorf("invalid authorization_url: %w", err)
+    }
+    config.AuthURL = u
 	if config.ClientID == "" {
 		return nil, fmt.Errorf("client_id is required")
 	}
@@ -151,18 +202,21 @@ func parseProviderData(data *structpb.Struct) (*OIDCProviderConfig, error) {
 		config.Scope = "email"
 	}
 
-	return config, nil
+    return config, nil
 }
 
-func buildAuthURL(config *OIDCProviderConfig, redirectURI, state string) string {
-	params := url.Values{}
-	params.Set("client_id", config.ClientID)
-	params.Set("response_type", "code")
-	params.Set("redirect_uri", redirectURI)
-	params.Set("scope", config.Scope)
-	params.Set("state", state)
+func buildAuthURL(config *OIDCProviderConfig, redirectURI, state string) *url.URL {
+    params := url.Values{}
+    params.Set("client_id", config.ClientID)
+    params.Set("response_type", "code")
+    params.Set("redirect_uri", redirectURI)
+    params.Set("scope", config.Scope)
+    params.Set("state", state)
 
-	return fmt.Sprintf("%s?%s", config.AuthURL, params.Encode())
+    // Create a shallow copy to avoid mutating the original base URL
+    built := *config.AuthURL
+    built.RawQuery = params.Encode()
+    return &built
 }
 
 func getFreePort() (int, error) {
@@ -182,13 +236,14 @@ func generateState() (string, error) {
 	return base64.RawURLEncoding.EncodeToString(b), nil
 }
 
-func openBrowser(url string) error {
+func openBrowser(u *url.URL) error {
 	var cmd *exec.Cmd
+    urlStr := u.String()
 	switch runtime.GOOS {
 	case "darwin":
-		cmd = exec.Command("open", url)
+        cmd = exec.Command("open", urlStr)
 	case "linux":
-		cmd = exec.Command("xdg-open", url)
+        cmd = exec.Command("xdg-open", urlStr)
 	default:
 		return fmt.Errorf("unsupported platform: %s", runtime.GOOS)
 	}
