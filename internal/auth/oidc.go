@@ -138,32 +138,13 @@ func waitForCallback(ln net.Listener, expectedState string, timeout time.Duratio
 
 func sendSuccessPage(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Fprint(w, `<!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <title>Success</title>
-        <script>
-            setTimeout(function(){
-                window.close();
-            }, 800);
-        </script>
-    </head>
-    <body style="font-family:Segoe UI,Arial,sans-serif;text-align:center;padding-top:10%;background:#f5f9ff;">
-        <div style="display:inline-block;background:#fff;border-radius:10px;padding:30px 40px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-            <div style="font-size:40px;color:#4CAF50;"></div>
-            <h2 style="color:#1a73e8;margin:10px 0;">Authentication Successful</h2>
-            <p style="color:#555;">You can close this window.</p>
-        </div>
-    </body>
-    </html>`)
-
+	fmt.Fprint(w, successPageTemplate)
 }
 
 func sendErrorPage(w http.ResponseWriter, title, message string) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusBadRequest)
-	fmt.Fprintf(w, `<!DOCTYPE html><html><head><meta charset="utf-8"><title>%s</title></head><body style="font-family:Segoe UI,Arial,sans-serif;text-align:center;padding-top:10%%;"><h2>✗ %s</h2><p>%s</p></body></html>`, title, title, message)
+	fmt.Fprintf(w, errorPageTemplate, title, title, message)
 }
 
 func parseProviderData(data *structpb.Struct) (*OIDCProviderConfig, error) {
