@@ -159,63 +159,19 @@ func (x *ServiceResponse) GetVersion() string {
 	return ""
 }
 
-type DeployReleasedServiceResponse struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	ServiceResponse *ServiceResponse       `protobuf:"bytes,1,opt,name=service_response,json=serviceResponse,proto3" json:"service_response,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
-}
-
-func (x *DeployReleasedServiceResponse) Reset() {
-	*x = DeployReleasedServiceResponse{}
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeployReleasedServiceResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeployReleasedServiceResponse) ProtoMessage() {}
-
-func (x *DeployReleasedServiceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeployReleasedServiceResponse.ProtoReflect.Descriptor instead.
-func (*DeployReleasedServiceResponse) Descriptor() ([]byte, []int) {
-	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *DeployReleasedServiceResponse) GetServiceResponse() *ServiceResponse {
-	if x != nil {
-		return x.ServiceResponse
-	}
-	return nil
-}
-
 type ServiceIdentifier struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	ServiceName    string                 `protobuf:"bytes,1,opt,name=service_name,json=serviceName,proto3" json:"service_name,omitempty"`
 	ServiceVersion string                 `protobuf:"bytes,2,opt,name=service_version,json=serviceVersion,proto3" json:"service_version,omitempty"`
-	Labels         string                 `protobuf:"bytes,3,opt,name=labels,proto3" json:"labels,omitempty"`
-	ForceFlag      bool                   `protobuf:"varint,4,opt,name=force_flag,json=forceFlag,proto3" json:"force_flag,omitempty"`
+	Tags           string                 `protobuf:"bytes,3,opt,name=tags,proto3" json:"tags,omitempty"`
+	ForceDeploy    bool                   `protobuf:"varint,4,opt,name=force_deploy,json=forceDeploy,proto3" json:"force_deploy,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
 
 func (x *ServiceIdentifier) Reset() {
 	*x = ServiceIdentifier{}
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[3]
+	mi := &file_dream11_od_service_v1_service_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -227,7 +183,7 @@ func (x *ServiceIdentifier) String() string {
 func (*ServiceIdentifier) ProtoMessage() {}
 
 func (x *ServiceIdentifier) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[3]
+	mi := &file_dream11_od_service_v1_service_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -240,7 +196,7 @@ func (x *ServiceIdentifier) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServiceIdentifier.ProtoReflect.Descriptor instead.
 func (*ServiceIdentifier) Descriptor() ([]byte, []int) {
-	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{3}
+	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ServiceIdentifier) GetServiceName() string {
@@ -257,226 +213,18 @@ func (x *ServiceIdentifier) GetServiceVersion() string {
 	return ""
 }
 
-func (x *ServiceIdentifier) GetLabels() string {
+func (x *ServiceIdentifier) GetTags() string {
 	if x != nil {
-		return x.Labels
+		return x.Tags
 	}
 	return ""
 }
 
-func (x *ServiceIdentifier) GetForceFlag() bool {
+func (x *ServiceIdentifier) GetForceDeploy() bool {
 	if x != nil {
-		return x.ForceFlag
+		return x.ForceDeploy
 	}
 	return false
-}
-
-type DeployReleasedServiceRequest struct {
-	state             protoimpl.MessageState `protogen:"open.v1"`
-	ServiceIdentifier *ServiceIdentifier     `protobuf:"bytes,1,opt,name=service_identifier,json=serviceIdentifier,proto3" json:"service_identifier,omitempty"`
-	EnvName           string                 `protobuf:"bytes,3,opt,name=env_name,json=envName,proto3" json:"env_name,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
-}
-
-func (x *DeployReleasedServiceRequest) Reset() {
-	*x = DeployReleasedServiceRequest{}
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeployReleasedServiceRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeployReleasedServiceRequest) ProtoMessage() {}
-
-func (x *DeployReleasedServiceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeployReleasedServiceRequest.ProtoReflect.Descriptor instead.
-func (*DeployReleasedServiceRequest) Descriptor() ([]byte, []int) {
-	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *DeployReleasedServiceRequest) GetServiceIdentifier() *ServiceIdentifier {
-	if x != nil {
-		return x.ServiceIdentifier
-	}
-	return nil
-}
-
-func (x *DeployReleasedServiceRequest) GetEnvName() string {
-	if x != nil {
-		return x.EnvName
-	}
-	return ""
-}
-
-type DeployServiceSetRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	EnvName       string                 `protobuf:"bytes,1,opt,name=env_name,json=envName,proto3" json:"env_name,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Services      []*ServiceIdentifier   `protobuf:"bytes,3,rep,name=services,proto3" json:"services,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeployServiceSetRequest) Reset() {
-	*x = DeployServiceSetRequest{}
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeployServiceSetRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeployServiceSetRequest) ProtoMessage() {}
-
-func (x *DeployServiceSetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeployServiceSetRequest.ProtoReflect.Descriptor instead.
-func (*DeployServiceSetRequest) Descriptor() ([]byte, []int) {
-	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *DeployServiceSetRequest) GetEnvName() string {
-	if x != nil {
-		return x.EnvName
-	}
-	return ""
-}
-
-func (x *DeployServiceSetRequest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *DeployServiceSetRequest) GetServices() []*ServiceIdentifier {
-	if x != nil {
-		return x.Services
-	}
-	return nil
-}
-
-type DeployServiceSetResponse struct {
-	state         protoimpl.MessageState             `protogen:"open.v1"`
-	Services      []*DeployServiceSetServiceResponse `protobuf:"bytes,1,rep,name=services,proto3" json:"services,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeployServiceSetResponse) Reset() {
-	*x = DeployServiceSetResponse{}
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeployServiceSetResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeployServiceSetResponse) ProtoMessage() {}
-
-func (x *DeployServiceSetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeployServiceSetResponse.ProtoReflect.Descriptor instead.
-func (*DeployServiceSetResponse) Descriptor() ([]byte, []int) {
-	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *DeployServiceSetResponse) GetServices() []*DeployServiceSetServiceResponse {
-	if x != nil {
-		return x.Services
-	}
-	return nil
-}
-
-type DeployServiceSetServiceResponse struct {
-	state             protoimpl.MessageState `protogen:"open.v1"`
-	ServiceIdentifier *ServiceIdentifier     `protobuf:"bytes,1,opt,name=service_identifier,json=serviceIdentifier,proto3" json:"service_identifier,omitempty"`
-	ServiceResponse   *ServiceResponse       `protobuf:"bytes,3,opt,name=service_response,json=serviceResponse,proto3" json:"service_response,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
-}
-
-func (x *DeployServiceSetServiceResponse) Reset() {
-	*x = DeployServiceSetServiceResponse{}
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeployServiceSetServiceResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeployServiceSetServiceResponse) ProtoMessage() {}
-
-func (x *DeployServiceSetServiceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeployServiceSetServiceResponse.ProtoReflect.Descriptor instead.
-func (*DeployServiceSetServiceResponse) Descriptor() ([]byte, []int) {
-	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *DeployServiceSetServiceResponse) GetServiceIdentifier() *ServiceIdentifier {
-	if x != nil {
-		return x.ServiceIdentifier
-	}
-	return nil
-}
-
-func (x *DeployServiceSetServiceResponse) GetServiceResponse() *ServiceResponse {
-	if x != nil {
-		return x.ServiceResponse
-	}
-	return nil
 }
 
 type DeployServiceResponse struct {
@@ -488,7 +236,7 @@ type DeployServiceResponse struct {
 
 func (x *DeployServiceResponse) Reset() {
 	*x = DeployServiceResponse{}
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[8]
+	mi := &file_dream11_od_service_v1_service_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -500,7 +248,7 @@ func (x *DeployServiceResponse) String() string {
 func (*DeployServiceResponse) ProtoMessage() {}
 
 func (x *DeployServiceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[8]
+	mi := &file_dream11_od_service_v1_service_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -513,7 +261,7 @@ func (x *DeployServiceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeployServiceResponse.ProtoReflect.Descriptor instead.
 func (*DeployServiceResponse) Descriptor() ([]byte, []int) {
-	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{8}
+	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *DeployServiceResponse) GetServiceResponse() *ServiceResponse {
@@ -534,7 +282,7 @@ type ServiceStatus struct {
 
 func (x *ServiceStatus) Reset() {
 	*x = ServiceStatus{}
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[9]
+	mi := &file_dream11_od_service_v1_service_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -546,7 +294,7 @@ func (x *ServiceStatus) String() string {
 func (*ServiceStatus) ProtoMessage() {}
 
 func (x *ServiceStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[9]
+	mi := &file_dream11_od_service_v1_service_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -559,7 +307,7 @@ func (x *ServiceStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServiceStatus.ProtoReflect.Descriptor instead.
 func (*ServiceStatus) Descriptor() ([]byte, []int) {
-	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{9}
+	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ServiceStatus) GetServiceStatus() string {
@@ -595,7 +343,7 @@ type ComponentStatus struct {
 
 func (x *ComponentStatus) Reset() {
 	*x = ComponentStatus{}
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[10]
+	mi := &file_dream11_od_service_v1_service_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -607,7 +355,7 @@ func (x *ComponentStatus) String() string {
 func (*ComponentStatus) ProtoMessage() {}
 
 func (x *ComponentStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[10]
+	mi := &file_dream11_od_service_v1_service_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -620,7 +368,7 @@ func (x *ComponentStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ComponentStatus.ProtoReflect.Descriptor instead.
 func (*ComponentStatus) Descriptor() ([]byte, []int) {
-	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{10}
+	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ComponentStatus) GetComponentName() string {
@@ -651,126 +399,6 @@ func (x *ComponentStatus) GetError() string {
 	return ""
 }
 
-type ReleaseServiceRequest struct {
-	state               protoimpl.MessageState            `protogen:"open.v1"`
-	ServiceDefinition   *v1.ServiceDefinition             `protobuf:"bytes,1,opt,name=service_definition,json=serviceDefinition,proto3" json:"service_definition,omitempty"`
-	ProvisioningConfigs map[string]*v1.ProvisioningConfig `protobuf:"bytes,2,rep,name=provisioning_configs,json=provisioningConfigs,proto3" json:"provisioning_configs,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
-}
-
-func (x *ReleaseServiceRequest) Reset() {
-	*x = ReleaseServiceRequest{}
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[11]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ReleaseServiceRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ReleaseServiceRequest) ProtoMessage() {}
-
-func (x *ReleaseServiceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[11]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ReleaseServiceRequest.ProtoReflect.Descriptor instead.
-func (*ReleaseServiceRequest) Descriptor() ([]byte, []int) {
-	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{11}
-}
-
-func (x *ReleaseServiceRequest) GetServiceDefinition() *v1.ServiceDefinition {
-	if x != nil {
-		return x.ServiceDefinition
-	}
-	return nil
-}
-
-func (x *ReleaseServiceRequest) GetProvisioningConfigs() map[string]*v1.ProvisioningConfig {
-	if x != nil {
-		return x.ProvisioningConfigs
-	}
-	return nil
-}
-
-type ReleaseServiceResponse struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	ProvisioningType string                 `protobuf:"bytes,1,opt,name=provisioning_type,json=provisioningType,proto3" json:"provisioning_type,omitempty"`
-	ServiceStatus    *ServiceStatus         `protobuf:"bytes,2,opt,name=service_status,json=serviceStatus,proto3" json:"service_status,omitempty"`
-	ComponentsStatus []*ComponentStatus     `protobuf:"bytes,3,rep,name=components_status,json=componentsStatus,proto3" json:"components_status,omitempty"`
-	Message          string                 `protobuf:"bytes,4,opt,name=message,proto3" json:"message,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
-}
-
-func (x *ReleaseServiceResponse) Reset() {
-	*x = ReleaseServiceResponse{}
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[12]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ReleaseServiceResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ReleaseServiceResponse) ProtoMessage() {}
-
-func (x *ReleaseServiceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[12]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ReleaseServiceResponse.ProtoReflect.Descriptor instead.
-func (*ReleaseServiceResponse) Descriptor() ([]byte, []int) {
-	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{12}
-}
-
-func (x *ReleaseServiceResponse) GetProvisioningType() string {
-	if x != nil {
-		return x.ProvisioningType
-	}
-	return ""
-}
-
-func (x *ReleaseServiceResponse) GetServiceStatus() *ServiceStatus {
-	if x != nil {
-		return x.ServiceStatus
-	}
-	return nil
-}
-
-func (x *ReleaseServiceResponse) GetComponentsStatus() []*ComponentStatus {
-	if x != nil {
-		return x.ComponentsStatus
-	}
-	return nil
-}
-
-func (x *ReleaseServiceResponse) GetMessage() string {
-	if x != nil {
-		return x.Message
-	}
-	return ""
-}
-
 type OperateServiceRequest struct {
 	state                protoimpl.MessageState `protogen:"open.v1"`
 	EnvName              string                 `protobuf:"bytes,1,opt,name=env_name,json=envName,proto3" json:"env_name,omitempty"`
@@ -785,7 +413,7 @@ type OperateServiceRequest struct {
 
 func (x *OperateServiceRequest) Reset() {
 	*x = OperateServiceRequest{}
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[13]
+	mi := &file_dream11_od_service_v1_service_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -797,7 +425,7 @@ func (x *OperateServiceRequest) String() string {
 func (*OperateServiceRequest) ProtoMessage() {}
 
 func (x *OperateServiceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[13]
+	mi := &file_dream11_od_service_v1_service_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -810,7 +438,7 @@ func (x *OperateServiceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OperateServiceRequest.ProtoReflect.Descriptor instead.
 func (*OperateServiceRequest) Descriptor() ([]byte, []int) {
-	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{13}
+	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *OperateServiceRequest) GetEnvName() string {
@@ -864,7 +492,7 @@ type OperateServiceResponse struct {
 
 func (x *OperateServiceResponse) Reset() {
 	*x = OperateServiceResponse{}
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[14]
+	mi := &file_dream11_od_service_v1_service_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -876,7 +504,7 @@ func (x *OperateServiceResponse) String() string {
 func (*OperateServiceResponse) ProtoMessage() {}
 
 func (x *OperateServiceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[14]
+	mi := &file_dream11_od_service_v1_service_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -889,7 +517,7 @@ func (x *OperateServiceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OperateServiceResponse.ProtoReflect.Descriptor instead.
 func (*OperateServiceResponse) Descriptor() ([]byte, []int) {
-	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{14}
+	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *OperateServiceResponse) GetServiceResponse() *ServiceResponse {
@@ -909,7 +537,7 @@ type UndeployServiceRequest struct {
 
 func (x *UndeployServiceRequest) Reset() {
 	*x = UndeployServiceRequest{}
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[15]
+	mi := &file_dream11_od_service_v1_service_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -921,7 +549,7 @@ func (x *UndeployServiceRequest) String() string {
 func (*UndeployServiceRequest) ProtoMessage() {}
 
 func (x *UndeployServiceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[15]
+	mi := &file_dream11_od_service_v1_service_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -934,7 +562,7 @@ func (x *UndeployServiceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UndeployServiceRequest.ProtoReflect.Descriptor instead.
 func (*UndeployServiceRequest) Descriptor() ([]byte, []int) {
-	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{15}
+	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *UndeployServiceRequest) GetEnvName() string {
@@ -960,7 +588,7 @@ type UndeployServiceResponse struct {
 
 func (x *UndeployServiceResponse) Reset() {
 	*x = UndeployServiceResponse{}
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[16]
+	mi := &file_dream11_od_service_v1_service_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -972,7 +600,7 @@ func (x *UndeployServiceResponse) String() string {
 func (*UndeployServiceResponse) ProtoMessage() {}
 
 func (x *UndeployServiceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[16]
+	mi := &file_dream11_od_service_v1_service_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -985,220 +613,12 @@ func (x *UndeployServiceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UndeployServiceResponse.ProtoReflect.Descriptor instead.
 func (*UndeployServiceResponse) Descriptor() ([]byte, []int) {
-	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{16}
+	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *UndeployServiceResponse) GetServiceResponse() *ServiceResponse {
 	if x != nil {
 		return x.ServiceResponse
-	}
-	return nil
-}
-
-type ListServiceResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Services      []*v1.ServiceMetadata  `protobuf:"bytes,1,rep,name=services,proto3" json:"services,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ListServiceResponse) Reset() {
-	*x = ListServiceResponse{}
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[17]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ListServiceResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListServiceResponse) ProtoMessage() {}
-
-func (x *ListServiceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[17]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListServiceResponse.ProtoReflect.Descriptor instead.
-func (*ListServiceResponse) Descriptor() ([]byte, []int) {
-	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{17}
-}
-
-func (x *ListServiceResponse) GetServices() []*v1.ServiceMetadata {
-	if x != nil {
-		return x.Services
-	}
-	return nil
-}
-
-type ListServiceRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Version       string                 `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
-	Tags          string                 `protobuf:"bytes,3,opt,name=tags,proto3" json:"tags,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ListServiceRequest) Reset() {
-	*x = ListServiceRequest{}
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[18]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ListServiceRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListServiceRequest) ProtoMessage() {}
-
-func (x *ListServiceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[18]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListServiceRequest.ProtoReflect.Descriptor instead.
-func (*ListServiceRequest) Descriptor() ([]byte, []int) {
-	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{18}
-}
-
-func (x *ListServiceRequest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *ListServiceRequest) GetVersion() string {
-	if x != nil {
-		return x.Version
-	}
-	return ""
-}
-
-func (x *ListServiceRequest) GetTags() string {
-	if x != nil {
-		return x.Tags
-	}
-	return ""
-}
-
-type DescribeServiceRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ServiceName   string                 `protobuf:"bytes,1,opt,name=service_name,json=serviceName,proto3" json:"service_name,omitempty"`
-	Version       string                 `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
-	Params        map[string]string      `protobuf:"bytes,4,rep,name=params,proto3" json:"params,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DescribeServiceRequest) Reset() {
-	*x = DescribeServiceRequest{}
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[19]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DescribeServiceRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DescribeServiceRequest) ProtoMessage() {}
-
-func (x *DescribeServiceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[19]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DescribeServiceRequest.ProtoReflect.Descriptor instead.
-func (*DescribeServiceRequest) Descriptor() ([]byte, []int) {
-	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{19}
-}
-
-func (x *DescribeServiceRequest) GetServiceName() string {
-	if x != nil {
-		return x.ServiceName
-	}
-	return ""
-}
-
-func (x *DescribeServiceRequest) GetVersion() string {
-	if x != nil {
-		return x.Version
-	}
-	return ""
-}
-
-func (x *DescribeServiceRequest) GetParams() map[string]string {
-	if x != nil {
-		return x.Params
-	}
-	return nil
-}
-
-type DescribeServiceResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Service       *v1.Service            `protobuf:"bytes,1,opt,name=service,proto3" json:"service,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DescribeServiceResponse) Reset() {
-	*x = DescribeServiceResponse{}
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[20]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DescribeServiceResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DescribeServiceResponse) ProtoMessage() {}
-
-func (x *DescribeServiceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[20]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DescribeServiceResponse.ProtoReflect.Descriptor instead.
-func (*DescribeServiceResponse) Descriptor() ([]byte, []int) {
-	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{20}
-}
-
-func (x *DescribeServiceResponse) GetService() *v1.Service {
-	if x != nil {
-		return x.Service
 	}
 	return nil
 }
@@ -1216,7 +636,7 @@ type OperateComponentDiffRequest struct {
 
 func (x *OperateComponentDiffRequest) Reset() {
 	*x = OperateComponentDiffRequest{}
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[21]
+	mi := &file_dream11_od_service_v1_service_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1228,7 +648,7 @@ func (x *OperateComponentDiffRequest) String() string {
 func (*OperateComponentDiffRequest) ProtoMessage() {}
 
 func (x *OperateComponentDiffRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[21]
+	mi := &file_dream11_od_service_v1_service_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1241,7 +661,7 @@ func (x *OperateComponentDiffRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OperateComponentDiffRequest.ProtoReflect.Descriptor instead.
 func (*OperateComponentDiffRequest) Descriptor() ([]byte, []int) {
-	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{21}
+	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *OperateComponentDiffRequest) GetEnvName() string {
@@ -1289,7 +709,7 @@ type OperateComponentDiffResponse struct {
 
 func (x *OperateComponentDiffResponse) Reset() {
 	*x = OperateComponentDiffResponse{}
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[22]
+	mi := &file_dream11_od_service_v1_service_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1301,7 +721,7 @@ func (x *OperateComponentDiffResponse) String() string {
 func (*OperateComponentDiffResponse) ProtoMessage() {}
 
 func (x *OperateComponentDiffResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[22]
+	mi := &file_dream11_od_service_v1_service_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1314,7 +734,7 @@ func (x *OperateComponentDiffResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OperateComponentDiffResponse.ProtoReflect.Descriptor instead.
 func (*OperateComponentDiffResponse) Descriptor() ([]byte, []int) {
-	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{22}
+	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *OperateComponentDiffResponse) GetOldValues() *structpb.Struct {
@@ -1327,110 +747,6 @@ func (x *OperateComponentDiffResponse) GetOldValues() *structpb.Struct {
 func (x *OperateComponentDiffResponse) GetNewValues() *structpb.Struct {
 	if x != nil {
 		return x.NewValues
-	}
-	return nil
-}
-
-type GetConflictingServicesRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	EnvName       string                 `protobuf:"bytes,1,opt,name=env_name,json=envName,proto3" json:"env_name,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Services      []*ServiceIdentifier   `protobuf:"bytes,3,rep,name=services,proto3" json:"services,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetConflictingServicesRequest) Reset() {
-	*x = GetConflictingServicesRequest{}
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[23]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetConflictingServicesRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetConflictingServicesRequest) ProtoMessage() {}
-
-func (x *GetConflictingServicesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[23]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetConflictingServicesRequest.ProtoReflect.Descriptor instead.
-func (*GetConflictingServicesRequest) Descriptor() ([]byte, []int) {
-	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{23}
-}
-
-func (x *GetConflictingServicesRequest) GetEnvName() string {
-	if x != nil {
-		return x.EnvName
-	}
-	return ""
-}
-
-func (x *GetConflictingServicesRequest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *GetConflictingServicesRequest) GetServices() []*ServiceIdentifier {
-	if x != nil {
-		return x.Services
-	}
-	return nil
-}
-
-type GetConflictingServicesResponse struct {
-	state         protoimpl.MessageState                 `protogen:"open.v1"`
-	Services      []*v1.ServiceVersionComparisonMetadata `protobuf:"bytes,1,rep,name=services,proto3" json:"services,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetConflictingServicesResponse) Reset() {
-	*x = GetConflictingServicesResponse{}
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[24]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetConflictingServicesResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetConflictingServicesResponse) ProtoMessage() {}
-
-func (x *GetConflictingServicesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_service_v1_service_proto_msgTypes[24]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetConflictingServicesResponse.ProtoReflect.Descriptor instead.
-func (*GetConflictingServicesResponse) Descriptor() ([]byte, []int) {
-	return file_dream11_od_service_v1_service_proto_rawDescGZIP(), []int{24}
-}
-
-func (x *GetConflictingServicesResponse) GetServices() []*v1.ServiceVersionComparisonMetadata {
-	if x != nil {
-		return x.Services
 	}
 	return nil
 }
@@ -1449,27 +765,12 @@ const file_dream11_od_service_v1_service_proto_rawDesc = "" +
 	"\x11components_status\x18\x02 \x03(\v2&.dream11.od.service.v1.ComponentStatusR\x10componentsStatus\x12\x18\n" +
 	"\amessage\x18\x03 \x01(\tR\amessage\x12\x12\n" +
 	"\x04name\x18\x04 \x01(\tR\x04name\x12\x18\n" +
-	"\aversion\x18\x05 \x01(\tR\aversion\"r\n" +
-	"\x1dDeployReleasedServiceResponse\x12Q\n" +
-	"\x10service_response\x18\x01 \x01(\v2&.dream11.od.service.v1.ServiceResponseR\x0fserviceResponse\"\x96\x01\n" +
+	"\aversion\x18\x05 \x01(\tR\aversion\"\x96\x01\n" +
 	"\x11ServiceIdentifier\x12!\n" +
 	"\fservice_name\x18\x01 \x01(\tR\vserviceName\x12'\n" +
-	"\x0fservice_version\x18\x02 \x01(\tR\x0eserviceVersion\x12\x16\n" +
-	"\x06labels\x18\x03 \x01(\tR\x06labels\x12\x1d\n" +
-	"\n" +
-	"force_flag\x18\x04 \x01(\bR\tforceFlag\"\x92\x01\n" +
-	"\x1cDeployReleasedServiceRequest\x12W\n" +
-	"\x12service_identifier\x18\x01 \x01(\v2(.dream11.od.service.v1.ServiceIdentifierR\x11serviceIdentifier\x12\x19\n" +
-	"\benv_name\x18\x03 \x01(\tR\aenvName\"\x8e\x01\n" +
-	"\x17DeployServiceSetRequest\x12\x19\n" +
-	"\benv_name\x18\x01 \x01(\tR\aenvName\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12D\n" +
-	"\bservices\x18\x03 \x03(\v2(.dream11.od.service.v1.ServiceIdentifierR\bservices\"n\n" +
-	"\x18DeployServiceSetResponse\x12R\n" +
-	"\bservices\x18\x01 \x03(\v26.dream11.od.service.v1.DeployServiceSetServiceResponseR\bservices\"\xcd\x01\n" +
-	"\x1fDeployServiceSetServiceResponse\x12W\n" +
-	"\x12service_identifier\x18\x01 \x01(\v2(.dream11.od.service.v1.ServiceIdentifierR\x11serviceIdentifier\x12Q\n" +
-	"\x10service_response\x18\x03 \x01(\v2&.dream11.od.service.v1.ServiceResponseR\x0fserviceResponse\"j\n" +
+	"\x0fservice_version\x18\x02 \x01(\tR\x0eserviceVersion\x12\x12\n" +
+	"\x04tags\x18\x03 \x01(\tR\x04tags\x12!\n" +
+	"\fforce_deploy\x18\x04 \x01(\bR\vforceDeploy\"j\n" +
 	"\x15DeployServiceResponse\x12Q\n" +
 	"\x10service_response\x18\x01 \x01(\v2&.dream11.od.service.v1.ServiceResponseR\x0fserviceResponse\"s\n" +
 	"\rServiceStatus\x12%\n" +
@@ -1480,18 +781,7 @@ const file_dream11_od_service_v1_service_proto_rawDesc = "" +
 	"\x0ecomponent_name\x18\x01 \x01(\tR\rcomponentName\x12)\n" +
 	"\x10component_status\x18\x02 \x01(\tR\x0fcomponentStatus\x12)\n" +
 	"\x10component_action\x18\x03 \x01(\tR\x0fcomponentAction\x12\x14\n" +
-	"\x05error\x18\x04 \x01(\tR\x05error\"\xd5\x02\n" +
-	"\x15ReleaseServiceRequest\x12S\n" +
-	"\x12service_definition\x18\x01 \x01(\v2$.dream11.od.dto.v1.ServiceDefinitionR\x11serviceDefinition\x12x\n" +
-	"\x14provisioning_configs\x18\x02 \x03(\v2E.dream11.od.service.v1.ReleaseServiceRequest.ProvisioningConfigsEntryR\x13provisioningConfigs\x1am\n" +
-	"\x18ProvisioningConfigsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12;\n" +
-	"\x05value\x18\x02 \x01(\v2%.dream11.od.dto.v1.ProvisioningConfigR\x05value:\x028\x01\"\x81\x02\n" +
-	"\x16ReleaseServiceResponse\x12+\n" +
-	"\x11provisioning_type\x18\x01 \x01(\tR\x10provisioningType\x12K\n" +
-	"\x0eservice_status\x18\x02 \x01(\v2$.dream11.od.service.v1.ServiceStatusR\rserviceStatus\x12S\n" +
-	"\x11components_status\x18\x03 \x03(\v2&.dream11.od.service.v1.ComponentStatusR\x10componentsStatus\x12\x18\n" +
-	"\amessage\x18\x04 \x01(\tR\amessage\"\x91\x02\n" +
+	"\x05error\x18\x04 \x01(\tR\x05error\"\x91\x02\n" +
 	"\x15OperateServiceRequest\x12\x19\n" +
 	"\benv_name\x18\x01 \x01(\tR\aenvName\x12!\n" +
 	"\fservice_name\x18\x02 \x01(\tR\vserviceName\x12%\n" +
@@ -1506,22 +796,7 @@ const file_dream11_od_service_v1_service_proto_rawDesc = "" +
 	"\benv_name\x18\x01 \x01(\tR\aenvName\x12!\n" +
 	"\fservice_name\x18\x02 \x01(\tR\vserviceName\"l\n" +
 	"\x17UndeployServiceResponse\x12Q\n" +
-	"\x10service_response\x18\x01 \x01(\v2&.dream11.od.service.v1.ServiceResponseR\x0fserviceResponse\"U\n" +
-	"\x13ListServiceResponse\x12>\n" +
-	"\bservices\x18\x01 \x03(\v2\".dream11.od.dto.v1.ServiceMetadataR\bservices\"V\n" +
-	"\x12ListServiceRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
-	"\aversion\x18\x02 \x01(\tR\aversion\x12\x12\n" +
-	"\x04tags\x18\x03 \x01(\tR\x04tags\"\xe3\x01\n" +
-	"\x16DescribeServiceRequest\x12!\n" +
-	"\fservice_name\x18\x01 \x01(\tR\vserviceName\x12\x18\n" +
-	"\aversion\x18\x02 \x01(\tR\aversion\x12Q\n" +
-	"\x06params\x18\x04 \x03(\v29.dream11.od.service.v1.DescribeServiceRequest.ParamsEntryR\x06params\x1a9\n" +
-	"\vParamsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"O\n" +
-	"\x17DescribeServiceResponse\x124\n" +
-	"\aservice\x18\x01 \x01(\v2\x1a.dream11.od.dto.v1.ServiceR\aservice\"\xea\x01\n" +
+	"\x10service_response\x18\x01 \x01(\v2&.dream11.od.service.v1.ServiceResponseR\x0fserviceResponse\"\xea\x01\n" +
 	"\x1bOperateComponentDiffRequest\x12\x19\n" +
 	"\benv_name\x18\x01 \x01(\tR\aenvName\x12!\n" +
 	"\fservice_name\x18\x02 \x01(\tR\vserviceName\x12%\n" +
@@ -1533,24 +808,12 @@ const file_dream11_od_service_v1_service_proto_rawDesc = "" +
 	"\n" +
 	"old_values\x18\x01 \x01(\v2\x17.google.protobuf.StructR\toldValues\x126\n" +
 	"\n" +
-	"new_values\x18\x02 \x01(\v2\x17.google.protobuf.StructR\tnewValues\"\x94\x01\n" +
-	"\x1dGetConflictingServicesRequest\x12\x19\n" +
-	"\benv_name\x18\x01 \x01(\tR\aenvName\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12D\n" +
-	"\bservices\x18\x03 \x03(\v2(.dream11.od.service.v1.ServiceIdentifierR\bservices\"q\n" +
-	"\x1eGetConflictingServicesResponse\x12O\n" +
-	"\bservices\x18\x01 \x03(\v23.dream11.od.dto.v1.ServiceVersionComparisonMetadataR\bservices2\xc8\t\n" +
+	"new_values\x18\x02 \x01(\v2\x17.google.protobuf.StructR\tnewValues2\xed\x03\n" +
 	"\x0eServiceService\x12n\n" +
 	"\rDeployService\x12+.dream11.od.service.v1.DeployServiceRequest\x1a,.dream11.od.service.v1.DeployServiceResponse\"\x000\x01\x12q\n" +
-	"\x0eReleaseService\x12,.dream11.od.service.v1.ReleaseServiceRequest\x1a-.dream11.od.service.v1.ReleaseServiceResponse\"\x000\x01\x12\x86\x01\n" +
-	"\x15DeployReleasedService\x123.dream11.od.service.v1.DeployReleasedServiceRequest\x1a4.dream11.od.service.v1.DeployReleasedServiceResponse\"\x000\x01\x12w\n" +
-	"\x10DeployServiceSet\x12..dream11.od.service.v1.DeployServiceSetRequest\x1a/.dream11.od.service.v1.DeployServiceSetResponse\"\x000\x01\x12q\n" +
 	"\x0eOperateService\x12,.dream11.od.service.v1.OperateServiceRequest\x1a-.dream11.od.service.v1.OperateServiceResponse\"\x000\x01\x12t\n" +
-	"\x0fUndeployService\x12-.dream11.od.service.v1.UndeployServiceRequest\x1a..dream11.od.service.v1.UndeployServiceResponse\"\x000\x01\x12f\n" +
-	"\vListService\x12).dream11.od.service.v1.ListServiceRequest\x1a*.dream11.od.service.v1.ListServiceResponse\"\x00\x12r\n" +
-	"\x0fDescribeService\x12-.dream11.od.service.v1.DescribeServiceRequest\x1a..dream11.od.service.v1.DescribeServiceResponse\"\x00\x12\x81\x01\n" +
-	"\x14OperateComponentDiff\x122.dream11.od.service.v1.OperateComponentDiffRequest\x1a3.dream11.od.service.v1.OperateComponentDiffResponse\"\x00\x12\x87\x01\n" +
-	"\x16GetConflictingServices\x124.dream11.od.service.v1.GetConflictingServicesRequest\x1a5.dream11.od.service.v1.GetConflictingServicesResponse\"\x00B<Z:github.com/dream11/odin/proto/gen/go/dream11/od/service/v1b\x06proto3"
+	"\x0fUndeployService\x12-.dream11.od.service.v1.UndeployServiceRequest\x1a..dream11.od.service.v1.UndeployServiceResponse\"\x000\x01\x12\x81\x01\n" +
+	"\x14OperateComponentDiff\x122.dream11.od.service.v1.OperateComponentDiffRequest\x1a3.dream11.od.service.v1.OperateComponentDiffResponse\"\x00B<Z:github.com/dream11/odin/proto/gen/go/dream11/od/service/v1b\x06proto3"
 
 var (
 	file_dream11_od_service_v1_service_proto_rawDescOnce sync.Once
@@ -1564,95 +827,49 @@ func file_dream11_od_service_v1_service_proto_rawDescGZIP() []byte {
 	return file_dream11_od_service_v1_service_proto_rawDescData
 }
 
-var file_dream11_od_service_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 27)
+var file_dream11_od_service_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_dream11_od_service_v1_service_proto_goTypes = []any{
-	(*DeployServiceRequest)(nil),                // 0: dream11.od.service.v1.DeployServiceRequest
-	(*ServiceResponse)(nil),                     // 1: dream11.od.service.v1.ServiceResponse
-	(*DeployReleasedServiceResponse)(nil),       // 2: dream11.od.service.v1.DeployReleasedServiceResponse
-	(*ServiceIdentifier)(nil),                   // 3: dream11.od.service.v1.ServiceIdentifier
-	(*DeployReleasedServiceRequest)(nil),        // 4: dream11.od.service.v1.DeployReleasedServiceRequest
-	(*DeployServiceSetRequest)(nil),             // 5: dream11.od.service.v1.DeployServiceSetRequest
-	(*DeployServiceSetResponse)(nil),            // 6: dream11.od.service.v1.DeployServiceSetResponse
-	(*DeployServiceSetServiceResponse)(nil),     // 7: dream11.od.service.v1.DeployServiceSetServiceResponse
-	(*DeployServiceResponse)(nil),               // 8: dream11.od.service.v1.DeployServiceResponse
-	(*ServiceStatus)(nil),                       // 9: dream11.od.service.v1.ServiceStatus
-	(*ComponentStatus)(nil),                     // 10: dream11.od.service.v1.ComponentStatus
-	(*ReleaseServiceRequest)(nil),               // 11: dream11.od.service.v1.ReleaseServiceRequest
-	(*ReleaseServiceResponse)(nil),              // 12: dream11.od.service.v1.ReleaseServiceResponse
-	(*OperateServiceRequest)(nil),               // 13: dream11.od.service.v1.OperateServiceRequest
-	(*OperateServiceResponse)(nil),              // 14: dream11.od.service.v1.OperateServiceResponse
-	(*UndeployServiceRequest)(nil),              // 15: dream11.od.service.v1.UndeployServiceRequest
-	(*UndeployServiceResponse)(nil),             // 16: dream11.od.service.v1.UndeployServiceResponse
-	(*ListServiceResponse)(nil),                 // 17: dream11.od.service.v1.ListServiceResponse
-	(*ListServiceRequest)(nil),                  // 18: dream11.od.service.v1.ListServiceRequest
-	(*DescribeServiceRequest)(nil),              // 19: dream11.od.service.v1.DescribeServiceRequest
-	(*DescribeServiceResponse)(nil),             // 20: dream11.od.service.v1.DescribeServiceResponse
-	(*OperateComponentDiffRequest)(nil),         // 21: dream11.od.service.v1.OperateComponentDiffRequest
-	(*OperateComponentDiffResponse)(nil),        // 22: dream11.od.service.v1.OperateComponentDiffResponse
-	(*GetConflictingServicesRequest)(nil),       // 23: dream11.od.service.v1.GetConflictingServicesRequest
-	(*GetConflictingServicesResponse)(nil),      // 24: dream11.od.service.v1.GetConflictingServicesResponse
-	nil,                                         // 25: dream11.od.service.v1.ReleaseServiceRequest.ProvisioningConfigsEntry
-	nil,                                         // 26: dream11.od.service.v1.DescribeServiceRequest.ParamsEntry
-	(*v1.ServiceDefinition)(nil),                // 27: dream11.od.dto.v1.ServiceDefinition
-	(*v1.ProvisioningConfig)(nil),               // 28: dream11.od.dto.v1.ProvisioningConfig
-	(*structpb.Struct)(nil),                     // 29: google.protobuf.Struct
-	(*v1.ServiceMetadata)(nil),                  // 30: dream11.od.dto.v1.ServiceMetadata
-	(*v1.Service)(nil),                          // 31: dream11.od.dto.v1.Service
-	(*v1.ServiceVersionComparisonMetadata)(nil), // 32: dream11.od.dto.v1.ServiceVersionComparisonMetadata
+	(*DeployServiceRequest)(nil),         // 0: dream11.od.service.v1.DeployServiceRequest
+	(*ServiceResponse)(nil),              // 1: dream11.od.service.v1.ServiceResponse
+	(*ServiceIdentifier)(nil),            // 2: dream11.od.service.v1.ServiceIdentifier
+	(*DeployServiceResponse)(nil),        // 3: dream11.od.service.v1.DeployServiceResponse
+	(*ServiceStatus)(nil),                // 4: dream11.od.service.v1.ServiceStatus
+	(*ComponentStatus)(nil),              // 5: dream11.od.service.v1.ComponentStatus
+	(*OperateServiceRequest)(nil),        // 6: dream11.od.service.v1.OperateServiceRequest
+	(*OperateServiceResponse)(nil),       // 7: dream11.od.service.v1.OperateServiceResponse
+	(*UndeployServiceRequest)(nil),       // 8: dream11.od.service.v1.UndeployServiceRequest
+	(*UndeployServiceResponse)(nil),      // 9: dream11.od.service.v1.UndeployServiceResponse
+	(*OperateComponentDiffRequest)(nil),  // 10: dream11.od.service.v1.OperateComponentDiffRequest
+	(*OperateComponentDiffResponse)(nil), // 11: dream11.od.service.v1.OperateComponentDiffResponse
+	(*v1.ServiceDefinition)(nil),         // 12: dream11.od.dto.v1.ServiceDefinition
+	(*v1.ProvisioningConfig)(nil),        // 13: dream11.od.dto.v1.ProvisioningConfig
+	(*structpb.Struct)(nil),              // 14: google.protobuf.Struct
 }
 var file_dream11_od_service_v1_service_proto_depIdxs = []int32{
-	27, // 0: dream11.od.service.v1.DeployServiceRequest.service_definition:type_name -> dream11.od.dto.v1.ServiceDefinition
-	28, // 1: dream11.od.service.v1.DeployServiceRequest.provisioning_config:type_name -> dream11.od.dto.v1.ProvisioningConfig
-	9,  // 2: dream11.od.service.v1.ServiceResponse.service_status:type_name -> dream11.od.service.v1.ServiceStatus
-	10, // 3: dream11.od.service.v1.ServiceResponse.components_status:type_name -> dream11.od.service.v1.ComponentStatus
-	1,  // 4: dream11.od.service.v1.DeployReleasedServiceResponse.service_response:type_name -> dream11.od.service.v1.ServiceResponse
-	3,  // 5: dream11.od.service.v1.DeployReleasedServiceRequest.service_identifier:type_name -> dream11.od.service.v1.ServiceIdentifier
-	3,  // 6: dream11.od.service.v1.DeployServiceSetRequest.services:type_name -> dream11.od.service.v1.ServiceIdentifier
-	7,  // 7: dream11.od.service.v1.DeployServiceSetResponse.services:type_name -> dream11.od.service.v1.DeployServiceSetServiceResponse
-	3,  // 8: dream11.od.service.v1.DeployServiceSetServiceResponse.service_identifier:type_name -> dream11.od.service.v1.ServiceIdentifier
-	1,  // 9: dream11.od.service.v1.DeployServiceSetServiceResponse.service_response:type_name -> dream11.od.service.v1.ServiceResponse
-	1,  // 10: dream11.od.service.v1.DeployServiceResponse.service_response:type_name -> dream11.od.service.v1.ServiceResponse
-	27, // 11: dream11.od.service.v1.ReleaseServiceRequest.service_definition:type_name -> dream11.od.dto.v1.ServiceDefinition
-	25, // 12: dream11.od.service.v1.ReleaseServiceRequest.provisioning_configs:type_name -> dream11.od.service.v1.ReleaseServiceRequest.ProvisioningConfigsEntry
-	9,  // 13: dream11.od.service.v1.ReleaseServiceResponse.service_status:type_name -> dream11.od.service.v1.ServiceStatus
-	10, // 14: dream11.od.service.v1.ReleaseServiceResponse.components_status:type_name -> dream11.od.service.v1.ComponentStatus
-	29, // 15: dream11.od.service.v1.OperateServiceRequest.config:type_name -> google.protobuf.Struct
-	1,  // 16: dream11.od.service.v1.OperateServiceResponse.service_response:type_name -> dream11.od.service.v1.ServiceResponse
-	1,  // 17: dream11.od.service.v1.UndeployServiceResponse.service_response:type_name -> dream11.od.service.v1.ServiceResponse
-	30, // 18: dream11.od.service.v1.ListServiceResponse.services:type_name -> dream11.od.dto.v1.ServiceMetadata
-	26, // 19: dream11.od.service.v1.DescribeServiceRequest.params:type_name -> dream11.od.service.v1.DescribeServiceRequest.ParamsEntry
-	31, // 20: dream11.od.service.v1.DescribeServiceResponse.service:type_name -> dream11.od.dto.v1.Service
-	29, // 21: dream11.od.service.v1.OperateComponentDiffRequest.config:type_name -> google.protobuf.Struct
-	29, // 22: dream11.od.service.v1.OperateComponentDiffResponse.old_values:type_name -> google.protobuf.Struct
-	29, // 23: dream11.od.service.v1.OperateComponentDiffResponse.new_values:type_name -> google.protobuf.Struct
-	3,  // 24: dream11.od.service.v1.GetConflictingServicesRequest.services:type_name -> dream11.od.service.v1.ServiceIdentifier
-	32, // 25: dream11.od.service.v1.GetConflictingServicesResponse.services:type_name -> dream11.od.dto.v1.ServiceVersionComparisonMetadata
-	28, // 26: dream11.od.service.v1.ReleaseServiceRequest.ProvisioningConfigsEntry.value:type_name -> dream11.od.dto.v1.ProvisioningConfig
-	0,  // 27: dream11.od.service.v1.ServiceService.DeployService:input_type -> dream11.od.service.v1.DeployServiceRequest
-	11, // 28: dream11.od.service.v1.ServiceService.ReleaseService:input_type -> dream11.od.service.v1.ReleaseServiceRequest
-	4,  // 29: dream11.od.service.v1.ServiceService.DeployReleasedService:input_type -> dream11.od.service.v1.DeployReleasedServiceRequest
-	5,  // 30: dream11.od.service.v1.ServiceService.DeployServiceSet:input_type -> dream11.od.service.v1.DeployServiceSetRequest
-	13, // 31: dream11.od.service.v1.ServiceService.OperateService:input_type -> dream11.od.service.v1.OperateServiceRequest
-	15, // 32: dream11.od.service.v1.ServiceService.UndeployService:input_type -> dream11.od.service.v1.UndeployServiceRequest
-	18, // 33: dream11.od.service.v1.ServiceService.ListService:input_type -> dream11.od.service.v1.ListServiceRequest
-	19, // 34: dream11.od.service.v1.ServiceService.DescribeService:input_type -> dream11.od.service.v1.DescribeServiceRequest
-	21, // 35: dream11.od.service.v1.ServiceService.OperateComponentDiff:input_type -> dream11.od.service.v1.OperateComponentDiffRequest
-	23, // 36: dream11.od.service.v1.ServiceService.GetConflictingServices:input_type -> dream11.od.service.v1.GetConflictingServicesRequest
-	8,  // 37: dream11.od.service.v1.ServiceService.DeployService:output_type -> dream11.od.service.v1.DeployServiceResponse
-	12, // 38: dream11.od.service.v1.ServiceService.ReleaseService:output_type -> dream11.od.service.v1.ReleaseServiceResponse
-	2,  // 39: dream11.od.service.v1.ServiceService.DeployReleasedService:output_type -> dream11.od.service.v1.DeployReleasedServiceResponse
-	6,  // 40: dream11.od.service.v1.ServiceService.DeployServiceSet:output_type -> dream11.od.service.v1.DeployServiceSetResponse
-	14, // 41: dream11.od.service.v1.ServiceService.OperateService:output_type -> dream11.od.service.v1.OperateServiceResponse
-	16, // 42: dream11.od.service.v1.ServiceService.UndeployService:output_type -> dream11.od.service.v1.UndeployServiceResponse
-	17, // 43: dream11.od.service.v1.ServiceService.ListService:output_type -> dream11.od.service.v1.ListServiceResponse
-	20, // 44: dream11.od.service.v1.ServiceService.DescribeService:output_type -> dream11.od.service.v1.DescribeServiceResponse
-	22, // 45: dream11.od.service.v1.ServiceService.OperateComponentDiff:output_type -> dream11.od.service.v1.OperateComponentDiffResponse
-	24, // 46: dream11.od.service.v1.ServiceService.GetConflictingServices:output_type -> dream11.od.service.v1.GetConflictingServicesResponse
-	37, // [37:47] is the sub-list for method output_type
-	27, // [27:37] is the sub-list for method input_type
-	27, // [27:27] is the sub-list for extension type_name
-	27, // [27:27] is the sub-list for extension extendee
-	0,  // [0:27] is the sub-list for field type_name
+	12, // 0: dream11.od.service.v1.DeployServiceRequest.service_definition:type_name -> dream11.od.dto.v1.ServiceDefinition
+	13, // 1: dream11.od.service.v1.DeployServiceRequest.provisioning_config:type_name -> dream11.od.dto.v1.ProvisioningConfig
+	4,  // 2: dream11.od.service.v1.ServiceResponse.service_status:type_name -> dream11.od.service.v1.ServiceStatus
+	5,  // 3: dream11.od.service.v1.ServiceResponse.components_status:type_name -> dream11.od.service.v1.ComponentStatus
+	1,  // 4: dream11.od.service.v1.DeployServiceResponse.service_response:type_name -> dream11.od.service.v1.ServiceResponse
+	14, // 5: dream11.od.service.v1.OperateServiceRequest.config:type_name -> google.protobuf.Struct
+	1,  // 6: dream11.od.service.v1.OperateServiceResponse.service_response:type_name -> dream11.od.service.v1.ServiceResponse
+	1,  // 7: dream11.od.service.v1.UndeployServiceResponse.service_response:type_name -> dream11.od.service.v1.ServiceResponse
+	14, // 8: dream11.od.service.v1.OperateComponentDiffRequest.config:type_name -> google.protobuf.Struct
+	14, // 9: dream11.od.service.v1.OperateComponentDiffResponse.old_values:type_name -> google.protobuf.Struct
+	14, // 10: dream11.od.service.v1.OperateComponentDiffResponse.new_values:type_name -> google.protobuf.Struct
+	0,  // 11: dream11.od.service.v1.ServiceService.DeployService:input_type -> dream11.od.service.v1.DeployServiceRequest
+	6,  // 12: dream11.od.service.v1.ServiceService.OperateService:input_type -> dream11.od.service.v1.OperateServiceRequest
+	8,  // 13: dream11.od.service.v1.ServiceService.UndeployService:input_type -> dream11.od.service.v1.UndeployServiceRequest
+	10, // 14: dream11.od.service.v1.ServiceService.OperateComponentDiff:input_type -> dream11.od.service.v1.OperateComponentDiffRequest
+	3,  // 15: dream11.od.service.v1.ServiceService.DeployService:output_type -> dream11.od.service.v1.DeployServiceResponse
+	7,  // 16: dream11.od.service.v1.ServiceService.OperateService:output_type -> dream11.od.service.v1.OperateServiceResponse
+	9,  // 17: dream11.od.service.v1.ServiceService.UndeployService:output_type -> dream11.od.service.v1.UndeployServiceResponse
+	11, // 18: dream11.od.service.v1.ServiceService.OperateComponentDiff:output_type -> dream11.od.service.v1.OperateComponentDiffResponse
+	15, // [15:19] is the sub-list for method output_type
+	11, // [11:15] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_dream11_od_service_v1_service_proto_init() }
@@ -1660,15 +877,15 @@ func file_dream11_od_service_v1_service_proto_init() {
 	if File_dream11_od_service_v1_service_proto != nil {
 		return
 	}
-	file_dream11_od_service_v1_service_proto_msgTypes[13].OneofWrappers = []any{}
-	file_dream11_od_service_v1_service_proto_msgTypes[21].OneofWrappers = []any{}
+	file_dream11_od_service_v1_service_proto_msgTypes[6].OneofWrappers = []any{}
+	file_dream11_od_service_v1_service_proto_msgTypes[10].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_dream11_od_service_v1_service_proto_rawDesc), len(file_dream11_od_service_v1_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   27,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

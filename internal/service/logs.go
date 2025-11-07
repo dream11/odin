@@ -46,7 +46,6 @@ func (l *Logs) GetLogs(ctx *context.Context, request *logs.GetLogsRequest) ([]in
 			if errors.Is(err, context.Canceled) || err == io.EOF {
 				break
 			}
-			// If code is not found, retry after 5 seconds
 			if st, ok := status.FromError(err); ok && st.Code() == codes.NotFound {
 				time.Sleep(5 * time.Second)
 				continue
