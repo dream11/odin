@@ -19,16 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ServiceService_DeployService_FullMethodName          = "/dream11.od.service.v1.ServiceService/DeployService"
-	ServiceService_ReleaseService_FullMethodName         = "/dream11.od.service.v1.ServiceService/ReleaseService"
-	ServiceService_DeployReleasedService_FullMethodName  = "/dream11.od.service.v1.ServiceService/DeployReleasedService"
-	ServiceService_DeployServiceSet_FullMethodName       = "/dream11.od.service.v1.ServiceService/DeployServiceSet"
-	ServiceService_OperateService_FullMethodName         = "/dream11.od.service.v1.ServiceService/OperateService"
-	ServiceService_UndeployService_FullMethodName        = "/dream11.od.service.v1.ServiceService/UndeployService"
-	ServiceService_ListService_FullMethodName            = "/dream11.od.service.v1.ServiceService/ListService"
-	ServiceService_DescribeService_FullMethodName        = "/dream11.od.service.v1.ServiceService/DescribeService"
-	ServiceService_OperateComponentDiff_FullMethodName   = "/dream11.od.service.v1.ServiceService/OperateComponentDiff"
-	ServiceService_GetConflictingServices_FullMethodName = "/dream11.od.service.v1.ServiceService/GetConflictingServices"
+	ServiceService_DeployService_FullMethodName        = "/dream11.od.service.v1.ServiceService/DeployService"
+	ServiceService_OperateService_FullMethodName       = "/dream11.od.service.v1.ServiceService/OperateService"
+	ServiceService_UndeployService_FullMethodName      = "/dream11.od.service.v1.ServiceService/UndeployService"
+	ServiceService_OperateComponentDiff_FullMethodName = "/dream11.od.service.v1.ServiceService/OperateComponentDiff"
 )
 
 // ServiceServiceClient is the client API for ServiceService service.
@@ -36,15 +30,9 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServiceServiceClient interface {
 	DeployService(ctx context.Context, in *DeployServiceRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[DeployServiceResponse], error)
-	ReleaseService(ctx context.Context, in *ReleaseServiceRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ReleaseServiceResponse], error)
-	DeployReleasedService(ctx context.Context, in *DeployReleasedServiceRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[DeployReleasedServiceResponse], error)
-	DeployServiceSet(ctx context.Context, in *DeployServiceSetRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[DeployServiceSetResponse], error)
 	OperateService(ctx context.Context, in *OperateServiceRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[OperateServiceResponse], error)
 	UndeployService(ctx context.Context, in *UndeployServiceRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[UndeployServiceResponse], error)
-	ListService(ctx context.Context, in *ListServiceRequest, opts ...grpc.CallOption) (*ListServiceResponse, error)
-	DescribeService(ctx context.Context, in *DescribeServiceRequest, opts ...grpc.CallOption) (*DescribeServiceResponse, error)
 	OperateComponentDiff(ctx context.Context, in *OperateComponentDiffRequest, opts ...grpc.CallOption) (*OperateComponentDiffResponse, error)
-	GetConflictingServices(ctx context.Context, in *GetConflictingServicesRequest, opts ...grpc.CallOption) (*GetConflictingServicesResponse, error)
 }
 
 type serviceServiceClient struct {
@@ -74,66 +62,9 @@ func (c *serviceServiceClient) DeployService(ctx context.Context, in *DeployServ
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type ServiceService_DeployServiceClient = grpc.ServerStreamingClient[DeployServiceResponse]
 
-func (c *serviceServiceClient) ReleaseService(ctx context.Context, in *ReleaseServiceRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ReleaseServiceResponse], error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &ServiceService_ServiceDesc.Streams[1], ServiceService_ReleaseService_FullMethodName, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &grpc.GenericClientStream[ReleaseServiceRequest, ReleaseServiceResponse]{ClientStream: stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type ServiceService_ReleaseServiceClient = grpc.ServerStreamingClient[ReleaseServiceResponse]
-
-func (c *serviceServiceClient) DeployReleasedService(ctx context.Context, in *DeployReleasedServiceRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[DeployReleasedServiceResponse], error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &ServiceService_ServiceDesc.Streams[2], ServiceService_DeployReleasedService_FullMethodName, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &grpc.GenericClientStream[DeployReleasedServiceRequest, DeployReleasedServiceResponse]{ClientStream: stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type ServiceService_DeployReleasedServiceClient = grpc.ServerStreamingClient[DeployReleasedServiceResponse]
-
-func (c *serviceServiceClient) DeployServiceSet(ctx context.Context, in *DeployServiceSetRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[DeployServiceSetResponse], error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &ServiceService_ServiceDesc.Streams[3], ServiceService_DeployServiceSet_FullMethodName, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &grpc.GenericClientStream[DeployServiceSetRequest, DeployServiceSetResponse]{ClientStream: stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type ServiceService_DeployServiceSetClient = grpc.ServerStreamingClient[DeployServiceSetResponse]
-
 func (c *serviceServiceClient) OperateService(ctx context.Context, in *OperateServiceRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[OperateServiceResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &ServiceService_ServiceDesc.Streams[4], ServiceService_OperateService_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &ServiceService_ServiceDesc.Streams[1], ServiceService_OperateService_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +83,7 @@ type ServiceService_OperateServiceClient = grpc.ServerStreamingClient[OperateSer
 
 func (c *serviceServiceClient) UndeployService(ctx context.Context, in *UndeployServiceRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[UndeployServiceResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &ServiceService_ServiceDesc.Streams[5], ServiceService_UndeployService_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &ServiceService_ServiceDesc.Streams[2], ServiceService_UndeployService_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -169,40 +100,10 @@ func (c *serviceServiceClient) UndeployService(ctx context.Context, in *Undeploy
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type ServiceService_UndeployServiceClient = grpc.ServerStreamingClient[UndeployServiceResponse]
 
-func (c *serviceServiceClient) ListService(ctx context.Context, in *ListServiceRequest, opts ...grpc.CallOption) (*ListServiceResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListServiceResponse)
-	err := c.cc.Invoke(ctx, ServiceService_ListService_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *serviceServiceClient) DescribeService(ctx context.Context, in *DescribeServiceRequest, opts ...grpc.CallOption) (*DescribeServiceResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DescribeServiceResponse)
-	err := c.cc.Invoke(ctx, ServiceService_DescribeService_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *serviceServiceClient) OperateComponentDiff(ctx context.Context, in *OperateComponentDiffRequest, opts ...grpc.CallOption) (*OperateComponentDiffResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(OperateComponentDiffResponse)
 	err := c.cc.Invoke(ctx, ServiceService_OperateComponentDiff_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *serviceServiceClient) GetConflictingServices(ctx context.Context, in *GetConflictingServicesRequest, opts ...grpc.CallOption) (*GetConflictingServicesResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetConflictingServicesResponse)
-	err := c.cc.Invoke(ctx, ServiceService_GetConflictingServices_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -214,15 +115,9 @@ func (c *serviceServiceClient) GetConflictingServices(ctx context.Context, in *G
 // for forward compatibility.
 type ServiceServiceServer interface {
 	DeployService(*DeployServiceRequest, grpc.ServerStreamingServer[DeployServiceResponse]) error
-	ReleaseService(*ReleaseServiceRequest, grpc.ServerStreamingServer[ReleaseServiceResponse]) error
-	DeployReleasedService(*DeployReleasedServiceRequest, grpc.ServerStreamingServer[DeployReleasedServiceResponse]) error
-	DeployServiceSet(*DeployServiceSetRequest, grpc.ServerStreamingServer[DeployServiceSetResponse]) error
 	OperateService(*OperateServiceRequest, grpc.ServerStreamingServer[OperateServiceResponse]) error
 	UndeployService(*UndeployServiceRequest, grpc.ServerStreamingServer[UndeployServiceResponse]) error
-	ListService(context.Context, *ListServiceRequest) (*ListServiceResponse, error)
-	DescribeService(context.Context, *DescribeServiceRequest) (*DescribeServiceResponse, error)
 	OperateComponentDiff(context.Context, *OperateComponentDiffRequest) (*OperateComponentDiffResponse, error)
-	GetConflictingServices(context.Context, *GetConflictingServicesRequest) (*GetConflictingServicesResponse, error)
 	mustEmbedUnimplementedServiceServiceServer()
 }
 
@@ -236,32 +131,14 @@ type UnimplementedServiceServiceServer struct{}
 func (UnimplementedServiceServiceServer) DeployService(*DeployServiceRequest, grpc.ServerStreamingServer[DeployServiceResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method DeployService not implemented")
 }
-func (UnimplementedServiceServiceServer) ReleaseService(*ReleaseServiceRequest, grpc.ServerStreamingServer[ReleaseServiceResponse]) error {
-	return status.Errorf(codes.Unimplemented, "method ReleaseService not implemented")
-}
-func (UnimplementedServiceServiceServer) DeployReleasedService(*DeployReleasedServiceRequest, grpc.ServerStreamingServer[DeployReleasedServiceResponse]) error {
-	return status.Errorf(codes.Unimplemented, "method DeployReleasedService not implemented")
-}
-func (UnimplementedServiceServiceServer) DeployServiceSet(*DeployServiceSetRequest, grpc.ServerStreamingServer[DeployServiceSetResponse]) error {
-	return status.Errorf(codes.Unimplemented, "method DeployServiceSet not implemented")
-}
 func (UnimplementedServiceServiceServer) OperateService(*OperateServiceRequest, grpc.ServerStreamingServer[OperateServiceResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method OperateService not implemented")
 }
 func (UnimplementedServiceServiceServer) UndeployService(*UndeployServiceRequest, grpc.ServerStreamingServer[UndeployServiceResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method UndeployService not implemented")
 }
-func (UnimplementedServiceServiceServer) ListService(context.Context, *ListServiceRequest) (*ListServiceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListService not implemented")
-}
-func (UnimplementedServiceServiceServer) DescribeService(context.Context, *DescribeServiceRequest) (*DescribeServiceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DescribeService not implemented")
-}
 func (UnimplementedServiceServiceServer) OperateComponentDiff(context.Context, *OperateComponentDiffRequest) (*OperateComponentDiffResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OperateComponentDiff not implemented")
-}
-func (UnimplementedServiceServiceServer) GetConflictingServices(context.Context, *GetConflictingServicesRequest) (*GetConflictingServicesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetConflictingServices not implemented")
 }
 func (UnimplementedServiceServiceServer) mustEmbedUnimplementedServiceServiceServer() {}
 func (UnimplementedServiceServiceServer) testEmbeddedByValue()                        {}
@@ -295,39 +172,6 @@ func _ServiceService_DeployService_Handler(srv interface{}, stream grpc.ServerSt
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type ServiceService_DeployServiceServer = grpc.ServerStreamingServer[DeployServiceResponse]
 
-func _ServiceService_ReleaseService_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(ReleaseServiceRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(ServiceServiceServer).ReleaseService(m, &grpc.GenericServerStream[ReleaseServiceRequest, ReleaseServiceResponse]{ServerStream: stream})
-}
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type ServiceService_ReleaseServiceServer = grpc.ServerStreamingServer[ReleaseServiceResponse]
-
-func _ServiceService_DeployReleasedService_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(DeployReleasedServiceRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(ServiceServiceServer).DeployReleasedService(m, &grpc.GenericServerStream[DeployReleasedServiceRequest, DeployReleasedServiceResponse]{ServerStream: stream})
-}
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type ServiceService_DeployReleasedServiceServer = grpc.ServerStreamingServer[DeployReleasedServiceResponse]
-
-func _ServiceService_DeployServiceSet_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(DeployServiceSetRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(ServiceServiceServer).DeployServiceSet(m, &grpc.GenericServerStream[DeployServiceSetRequest, DeployServiceSetResponse]{ServerStream: stream})
-}
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type ServiceService_DeployServiceSetServer = grpc.ServerStreamingServer[DeployServiceSetResponse]
-
 func _ServiceService_OperateService_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(OperateServiceRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -350,42 +194,6 @@ func _ServiceService_UndeployService_Handler(srv interface{}, stream grpc.Server
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type ServiceService_UndeployServiceServer = grpc.ServerStreamingServer[UndeployServiceResponse]
 
-func _ServiceService_ListService_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListServiceRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ServiceServiceServer).ListService(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ServiceService_ListService_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServiceServiceServer).ListService(ctx, req.(*ListServiceRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ServiceService_DescribeService_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DescribeServiceRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ServiceServiceServer).DescribeService(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ServiceService_DescribeService_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServiceServiceServer).DescribeService(ctx, req.(*DescribeServiceRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _ServiceService_OperateComponentDiff_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(OperateComponentDiffRequest)
 	if err := dec(in); err != nil {
@@ -404,24 +212,6 @@ func _ServiceService_OperateComponentDiff_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ServiceService_GetConflictingServices_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetConflictingServicesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ServiceServiceServer).GetConflictingServices(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ServiceService_GetConflictingServices_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServiceServiceServer).GetConflictingServices(ctx, req.(*GetConflictingServicesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // ServiceService_ServiceDesc is the grpc.ServiceDesc for ServiceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -430,41 +220,14 @@ var ServiceService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*ServiceServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "ListService",
-			Handler:    _ServiceService_ListService_Handler,
-		},
-		{
-			MethodName: "DescribeService",
-			Handler:    _ServiceService_DescribeService_Handler,
-		},
-		{
 			MethodName: "OperateComponentDiff",
 			Handler:    _ServiceService_OperateComponentDiff_Handler,
-		},
-		{
-			MethodName: "GetConflictingServices",
-			Handler:    _ServiceService_GetConflictingServices_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "DeployService",
 			Handler:       _ServiceService_DeployService_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "ReleaseService",
-			Handler:       _ServiceService_ReleaseService_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "DeployReleasedService",
-			Handler:       _ServiceService_DeployReleasedService_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "DeployServiceSet",
-			Handler:       _ServiceService_DeployServiceSet_Handler,
 			ServerStreams: true,
 		},
 		{

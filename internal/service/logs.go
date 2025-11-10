@@ -5,10 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/util"
 	logs "github.com/dream11/odin/proto/gen/go/dream11/od/logs/v1"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var restrictedLogLevels = []string{"DEBUG", "WARN"}
@@ -42,6 +45,10 @@ func (l *Logs) GetLogs(ctx *context.Context, request *logs.GetLogsRequest) ([]in
 		if err != nil {
 			if errors.Is(err, context.Canceled) || err == io.EOF {
 				break
+			}
+			if st, ok := status.FromError(err); ok && st.Code() == codes.NotFound {
+				time.Sleep(5 * time.Second)
+				continue
 			}
 			return searchAfterParams, err
 		}
