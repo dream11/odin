@@ -3,7 +3,6 @@ package config
 import (
 	"errors"
 	"strings"
-	"sync"
 
 	"github.com/dream11/odin/api/configuration"
 	"github.com/dream11/odin/app"
@@ -11,19 +10,20 @@ import (
 	"github.com/spf13/viper"
 )
 
-var once sync.Once
-var appConfig *configuration.Configuration
-var err error
+// fileViper is a dedicated viper instance for reading/writing ~/.odin/config.
+// It is intentionally decoupled from the global CLI viper to avoid persisting
+// runtime flags/env at the root level of the config file.
+var fileViper = viper.New()
 
 func readConfigFile() {
-	viper.SetConfigName("config")
-	viper.SetConfigType("toml")
-	viper.AddConfigPath("$HOME/." + app.App.Name)
-	viper.SetEnvPrefix("ODIN")
-	viper.SetEnvKeyReplacer(strings.NewReplacer(`.`, `_`))
-	viper.AutomaticEnv()
+	fileViper.SetConfigName("config")
+	fileViper.SetConfigType("toml")
+	fileViper.AddConfigPath("$HOME/." + app.App.Name)
+	fileViper.SetEnvPrefix("ODIN")
+	fileViper.SetEnvKeyReplacer(strings.NewReplacer(`.`, `_`))
+	fileViper.AutomaticEnv()
 
-	if err := viper.ReadInConfig(); err != nil {
+	if err := fileViper.ReadInConfig(); err != nil {
 		var configFileNotFoundError viper.ConfigFileNotFoundError
 		if errors.As(err, &configFileNotFoundError) {
 			log.Fatal("Not configured odin yet? Run `odin configure`")
@@ -34,7 +34,7 @@ func readConfigFile() {
 
 func getConfigForProfile(profile string) (*configuration.Configuration, error) {
 	config := configuration.Configuration{}
-	if err := viper.UnmarshalKey(profile, &config); err != nil {
+	if err := fileViper.UnmarshalKey(profile, &config); err != nil {
 		log.Fatal("Configuration can't be loaded: ", err)
 	}
 	return &config, nil
@@ -42,26 +42,35 @@ func getConfigForProfile(profile string) (*configuration.Configuration, error) {
 
 func readConfig() (*configuration.Configuration, error) {
 	readConfigFile()
-	profile := viper.GetString("profile")
+	profile := fileViper.GetString("profile")
 	return getConfigForProfile(profile)
 }
 
 // GetConfig returns the reference of viper config
 func GetConfig() *configuration.Configuration {
-	once.Do(func() {
-		appConfig, err = readConfig()
-	})
+	cfg, err := readConfig()
 	if err != nil {
 		log.Fatal("Error while reading config: ", err)
 	}
-	return appConfig
+	return cfg
 }
 
 // WriteConfig writes the given config to the config file
 func WriteConfig(config *configuration.Configuration) {
-	profile := viper.GetString("profile")
-	viper.Set(profile, config)
-	if err := viper.WriteConfig(); err != nil {
+	activeProfile := viper.GetString("profile")
+	if strings.TrimSpace(activeProfile) == "" {
+		readConfigFile()
+		activeProfile = fileViper.GetString("profile")
+		if strings.TrimSpace(activeProfile) == "" {
+			activeProfile = "default"
+		}
+	}
+
+	// Ensure config file is loaded, then set only `profile` at root and the profile section.
+	readConfigFile()
+	fileViper.Set("profile", activeProfile)
+	fileViper.Set(activeProfile, config)
+	if err := fileViper.WriteConfig(); err != nil {
 		log.Fatal("Unable to write configuration: ", err)
 	}
 }
@@ -78,8 +87,8 @@ func SetProfile(profileName string) {
 		log.Fatal("Configuration for profile [", profileName, "] not found!")
 	}
 
-	viper.Set("profile", profileName)
-	if err := viper.WriteConfig(); err != nil {
+	fileViper.Set("profile", profileName)
+	if err := fileViper.WriteConfig(); err != nil {
 		log.Fatal("Unable to write configuration: ", err)
 	}
 }
@@ -87,7 +96,7 @@ func SetProfile(profileName string) {
 // UpdateEnvName updates the EnvName in the configuration for the given profile
 func UpdateEnvName(envName string) {
 	readConfigFile()
-	profile := viper.GetString("profile")
+	profile := fileViper.GetString("profile")
 
 	// Retrieve the configuration for the specified profile
 	config, err := getConfigForProfile(profile)
@@ -99,8 +108,8 @@ func UpdateEnvName(envName string) {
 	config.EnvName = envName
 
 	// Write the updated configuration back to the file
-	viper.Set(profile, config)
-	if err := viper.WriteConfig(); err != nil {
+	fileViper.Set(profile, config)
+	if err := fileViper.WriteConfig(); err != nil {
 		log.Fatal("Unable to write configuration: ", err)
 	}
 	log.Infof("EnvName updated to [%s] successfully in profile [%s]", envName, profile)
@@ -109,7 +118,7 @@ func UpdateEnvName(envName string) {
 // GetActiveProfileEnvName returns the EnvName for the active profile
 func GetActiveProfileEnvName() string {
 	readConfigFile()
-	profile := viper.GetString("profile")
+	profile := fileViper.GetString("profile")
 	config, err := getConfigForProfile(profile)
 	if err != nil {
 		log.Fatal("Error while reading config: ", err)
@@ -127,4 +136,21 @@ func EnsureEnvPresent(inputEnv string) string {
 		log.Fatal("Please provide the environment name using --env, or set the default environment using `odin set env <env-name>`")
 	}
 	return env
+}
+
+// UpdateAccessToken updates only the access token for the active profile and persists it.
+func UpdateAccessToken(token string) {
+	readConfigFile()
+	profile := fileViper.GetString("profile")
+
+	cfg, err := getConfigForProfile(profile)
+	if err != nil {
+		log.Fatal("Error while reading config: ", err)
+	}
+	cfg.AccessToken = token
+
+	fileViper.Set(profile, cfg)
+	if err := fileViper.WriteConfig(); err != nil {
+		log.Fatal("Unable to write configuration: ", err)
+	}
 }

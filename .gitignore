@@ -23,3 +23,5 @@ bin
 # Service definition files
 service.yaml
 service.json
+
+.cursor

@@ -1,16 +1,18 @@
 package configure
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path"
 
-	"github.com/dream11/odin/internal/auth"
-
+	apiConfig "github.com/dream11/odin/api/configuration"
 	"github.com/dream11/odin/app"
 	"github.com/dream11/odin/cmd"
+	"github.com/dream11/odin/internal/auth"
 	"github.com/dream11/odin/internal/service"
 	appConfig "github.com/dream11/odin/pkg/config"
+	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/dir"
 	"github.com/dream11/odin/pkg/util"
 	pb "github.com/dream11/odin/proto/gen/go/dream11/od/auth/v1"
@@ -55,8 +57,6 @@ func init() {
 func execute(cmd *cobra.Command) {
 	createConfigFileIfNotExist()
 
-	config := appConfig.GetConfig()
-
 	if !viper.IsSet("backend_address") || viper.GetString("backend_address") == "" {
 		log.Fatalf("Required configuration not found. Please pass --backend-address flag or set environment variable ODIN_BACKEND_ADDRESS")
 	}
@@ -64,15 +64,20 @@ func execute(cmd *cobra.Command) {
 		log.Fatalf("Required configuration not found. Please pass --org-id flag or set environment variable ODIN_ORG_ID")
 	}
 
-	// Set resolved values
-	config.BackendAddress = viper.GetString("backend_address")
-	config.OrgId = viper.GetInt64("org_id")
-	config.Insecure = viper.GetBool("insecure")
-	config.Plaintext = viper.GetBool("plaintext")
+	// Collect user input and write base config to file against the active profile
+	baseConfig := &apiConfig.Configuration{
+		BackendAddress: viper.GetString("backend_address"),
+		OrgId:          viper.GetInt64("org_id"),
+		Insecure:       viper.GetBool("insecure"),
+		Plaintext:      viper.GetBool("plaintext"),
+	}
+	appConfig.WriteConfig(baseConfig)
 
 	ctx := cmd.Context()
-	authProviderResponse, err := configureClient.GetAuthProvider(&ctx, &pb.GetAuthProviderRequest{
-		OrgId: &config.OrgId,
+	traceID := util.GenerateTraceID()
+	contextWithTrace := context.WithValue(ctx, constant.TraceIDKey, traceID)
+	authProviderResponse, err := configureClient.GetAuthProvider(&contextWithTrace, &pb.GetAuthProviderRequest{
+		OrgId: &baseConfig.OrgId,
 	})
 	if err != nil {
 		log.Fatalf("Failed to get auth provider: %v ", err)
@@ -88,17 +93,17 @@ func execute(cmd *cobra.Command) {
 		log.Fatalf("Error authenticating: %v", err)
 	}
 
-	tokenResponse, err := configureClient.GetUserToken(&ctx, &pb.GetUserTokenRequest{
-		OrgId: &config.OrgId,
+	tokenResponse, err := configureClient.GetUserToken(&contextWithTrace, &pb.GetUserTokenRequest{
+		OrgId: &baseConfig.OrgId,
 		Data:  authData,
 	})
 	if err != nil {
 		util.LogGrpcError(err, "Failed to get token ")
 	}
 
-	config.AccessToken = tokenResponse.Token
-	appConfig.WriteConfig(config)
-	fmt.Println("\n\033[32mConfigured!\033[0m")
+	// Persist token to config file against the active profile
+	appConfig.UpdateAccessToken(tokenResponse.Token)
+	fmt.Println("\033[32mConfigured!\033[0m")
 }
 
 func createConfigFileIfNotExist() {
