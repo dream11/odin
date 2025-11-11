@@ -5,11 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"time"
 
 	"github.com/briandowns/spinner"
 	"github.com/dream11/odin/pkg/constant"
-	"github.com/dream11/odin/pkg/util"
 	environment "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
 	log "github.com/sirupsen/logrus"
 )
@@ -110,23 +108,6 @@ func (e *Environment) DeleteEnvironment(ctx *context.Context, request *environme
 	return err
 }
 
-// UpdateEnvironment updates environment
-func (e *Environment) UpdateEnvironment(ctx *context.Context, request *environment.UpdateEnvironmentRequest) (*environment.UpdateEnvironmentResponse, error) {
-	conn, requestCtx, err := grpcClient(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	client := environment.NewEnvironmentServiceClient(conn)
-	response, err := client.UpdateEnvironment(*requestCtx, request)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return response, nil
-}
-
 // DescribeEnvironment shows environment details including services and resources in it
 func (e *Environment) DescribeEnvironment(ctx *context.Context, request *environment.DescribeEnvironmentRequest) (*environment.DescribeEnvironmentResponse, error) {
 	conn, requestCtx, err := grpcClient(ctx)
@@ -175,36 +156,4 @@ func (e *Environment) EnvironmentStatus(ctx *context.Context, request *environme
 	}
 	spinnerInstance.Stop()
 	return prevResponse, nil
-}
-
-// IsStrictEnvironment checks if the given environment is a strict environment
-func (e *Environment) IsStrictEnvironment(ctx *context.Context, request *environment.IsStrictEnvironmentRequest) (*environment.IsStrictEnvironmentResponse, error) {
-
-	for retries := 0; retries < constant.MaxRetries; retries++ {
-		ctxWithTimeout, cancel := context.WithTimeout(*ctx, constant.Delay)
-		defer cancel()
-
-		conn, requestCtx, err := grpcClient(&ctxWithTimeout)
-		if err != nil {
-			return nil, err
-		}
-
-		client := environment.NewEnvironmentServiceClient(conn)
-		response, err := client.IsStrictEnvironment(*requestCtx, request)
-		if err == nil {
-			return response, nil
-		}
-
-		if !util.IsRetryable(err) {
-			return nil, err
-		}
-		time.Sleep(constant.Delay)
-		if retries == 0 {
-			log.Warnf(constant.InitiatingRetryMessage)
-		}
-		log.Infof(constant.RetryingMessage, retries+1, constant.MaxRetries)
-	}
-
-	log.Fatalf(constant.MaxRetriesReached)
-	return nil, nil
 }

@@ -10,7 +10,6 @@ import (
 	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -455,106 +454,17 @@ func (x *DescribeEnvironmentResponse) GetEnvironment() *v1.Environment {
 	return nil
 }
 
-type UpdateEnvironmentRequest struct {
+type CreateEnvironmentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	EnvName       string                 `protobuf:"bytes,1,opt,name=env_name,json=envName,proto3" json:"env_name,omitempty"`
-	Data          *structpb.Struct       `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	Accounts      []string               `protobuf:"bytes,2,rep,name=accounts,proto3" json:"accounts,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpdateEnvironmentRequest) Reset() {
-	*x = UpdateEnvironmentRequest{}
-	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[8]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateEnvironmentRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateEnvironmentRequest) ProtoMessage() {}
-
-func (x *UpdateEnvironmentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[8]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateEnvironmentRequest.ProtoReflect.Descriptor instead.
-func (*UpdateEnvironmentRequest) Descriptor() ([]byte, []int) {
-	return file_dream11_od_environment_v1_environment_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *UpdateEnvironmentRequest) GetEnvName() string {
-	if x != nil {
-		return x.EnvName
-	}
-	return ""
-}
-
-func (x *UpdateEnvironmentRequest) GetData() *structpb.Struct {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type UpdateEnvironmentResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpdateEnvironmentResponse) Reset() {
-	*x = UpdateEnvironmentResponse{}
-	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateEnvironmentResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateEnvironmentResponse) ProtoMessage() {}
-
-func (x *UpdateEnvironmentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateEnvironmentResponse.ProtoReflect.Descriptor instead.
-func (*UpdateEnvironmentResponse) Descriptor() ([]byte, []int) {
-	return file_dream11_od_environment_v1_environment_proto_rawDescGZIP(), []int{9}
-}
-
-type CreateEnvironmentRequest struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	EnvName          string                 `protobuf:"bytes,1,opt,name=env_name,json=envName,proto3" json:"env_name,omitempty"`
-	Accounts         []string               `protobuf:"bytes,2,rep,name=accounts,proto3" json:"accounts,omitempty"`
-	ProvisioningType string                 `protobuf:"bytes,3,opt,name=provisioning_type,json=provisioningType,proto3" json:"provisioning_type,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
 }
 
 func (x *CreateEnvironmentRequest) Reset() {
 	*x = CreateEnvironmentRequest{}
-	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[10]
+	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -566,7 +476,7 @@ func (x *CreateEnvironmentRequest) String() string {
 func (*CreateEnvironmentRequest) ProtoMessage() {}
 
 func (x *CreateEnvironmentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[10]
+	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -579,7 +489,7 @@ func (x *CreateEnvironmentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateEnvironmentRequest.ProtoReflect.Descriptor instead.
 func (*CreateEnvironmentRequest) Descriptor() ([]byte, []int) {
-	return file_dream11_od_environment_v1_environment_proto_rawDescGZIP(), []int{10}
+	return file_dream11_od_environment_v1_environment_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *CreateEnvironmentRequest) GetEnvName() string {
@@ -596,13 +506,6 @@ func (x *CreateEnvironmentRequest) GetAccounts() []string {
 	return nil
 }
 
-func (x *CreateEnvironmentRequest) GetProvisioningType() string {
-	if x != nil {
-		return x.ProvisioningType
-	}
-	return ""
-}
-
 type CreateEnvironmentResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
@@ -612,7 +515,7 @@ type CreateEnvironmentResponse struct {
 
 func (x *CreateEnvironmentResponse) Reset() {
 	*x = CreateEnvironmentResponse{}
-	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[11]
+	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -624,7 +527,7 @@ func (x *CreateEnvironmentResponse) String() string {
 func (*CreateEnvironmentResponse) ProtoMessage() {}
 
 func (x *CreateEnvironmentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[11]
+	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -637,7 +540,7 @@ func (x *CreateEnvironmentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateEnvironmentResponse.ProtoReflect.Descriptor instead.
 func (*CreateEnvironmentResponse) Descriptor() ([]byte, []int) {
-	return file_dream11_od_environment_v1_environment_proto_rawDescGZIP(), []int{11}
+	return file_dream11_od_environment_v1_environment_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *CreateEnvironmentResponse) GetMessage() string {
@@ -656,7 +559,7 @@ type DeleteEnvironmentRequest struct {
 
 func (x *DeleteEnvironmentRequest) Reset() {
 	*x = DeleteEnvironmentRequest{}
-	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[12]
+	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -668,7 +571,7 @@ func (x *DeleteEnvironmentRequest) String() string {
 func (*DeleteEnvironmentRequest) ProtoMessage() {}
 
 func (x *DeleteEnvironmentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[12]
+	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -681,7 +584,7 @@ func (x *DeleteEnvironmentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteEnvironmentRequest.ProtoReflect.Descriptor instead.
 func (*DeleteEnvironmentRequest) Descriptor() ([]byte, []int) {
-	return file_dream11_od_environment_v1_environment_proto_rawDescGZIP(), []int{12}
+	return file_dream11_od_environment_v1_environment_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *DeleteEnvironmentRequest) GetEnvName() string {
@@ -700,7 +603,7 @@ type DeleteEnvironmentResponse struct {
 
 func (x *DeleteEnvironmentResponse) Reset() {
 	*x = DeleteEnvironmentResponse{}
-	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[13]
+	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -712,7 +615,7 @@ func (x *DeleteEnvironmentResponse) String() string {
 func (*DeleteEnvironmentResponse) ProtoMessage() {}
 
 func (x *DeleteEnvironmentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[13]
+	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -725,7 +628,7 @@ func (x *DeleteEnvironmentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteEnvironmentResponse.ProtoReflect.Descriptor instead.
 func (*DeleteEnvironmentResponse) Descriptor() ([]byte, []int) {
-	return file_dream11_od_environment_v1_environment_proto_rawDescGZIP(), []int{13}
+	return file_dream11_od_environment_v1_environment_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *DeleteEnvironmentResponse) GetMessage() string {
@@ -735,99 +638,11 @@ func (x *DeleteEnvironmentResponse) GetMessage() string {
 	return ""
 }
 
-type IsStrictEnvironmentRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	EnvName       string                 `protobuf:"bytes,1,opt,name=env_name,json=envName,proto3" json:"env_name,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *IsStrictEnvironmentRequest) Reset() {
-	*x = IsStrictEnvironmentRequest{}
-	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[14]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *IsStrictEnvironmentRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*IsStrictEnvironmentRequest) ProtoMessage() {}
-
-func (x *IsStrictEnvironmentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[14]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use IsStrictEnvironmentRequest.ProtoReflect.Descriptor instead.
-func (*IsStrictEnvironmentRequest) Descriptor() ([]byte, []int) {
-	return file_dream11_od_environment_v1_environment_proto_rawDescGZIP(), []int{14}
-}
-
-func (x *IsStrictEnvironmentRequest) GetEnvName() string {
-	if x != nil {
-		return x.EnvName
-	}
-	return ""
-}
-
-type IsStrictEnvironmentResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	IsEnvStrict   bool                   `protobuf:"varint,1,opt,name=is_env_strict,json=isEnvStrict,proto3" json:"is_env_strict,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *IsStrictEnvironmentResponse) Reset() {
-	*x = IsStrictEnvironmentResponse{}
-	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[15]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *IsStrictEnvironmentResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*IsStrictEnvironmentResponse) ProtoMessage() {}
-
-func (x *IsStrictEnvironmentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_dream11_od_environment_v1_environment_proto_msgTypes[15]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use IsStrictEnvironmentResponse.ProtoReflect.Descriptor instead.
-func (*IsStrictEnvironmentResponse) Descriptor() ([]byte, []int) {
-	return file_dream11_od_environment_v1_environment_proto_rawDescGZIP(), []int{15}
-}
-
-func (x *IsStrictEnvironmentResponse) GetIsEnvStrict() bool {
-	if x != nil {
-		return x.IsEnvStrict
-	}
-	return false
-}
-
 var File_dream11_od_environment_v1_environment_proto protoreflect.FileDescriptor
 
 const file_dream11_od_environment_v1_environment_proto_rawDesc = "" +
 	"\n" +
-	"+dream11/od/environment/v1/environment.proto\x12\x19dream11.od.environment.v1\x1a#dream11/od/dto/v1/environment.proto\x1a\x1cgoogle/protobuf/struct.proto\"X\n" +
+	"+dream11/od/environment/v1/environment.proto\x12\x19dream11.od.environment.v1\x1a#dream11/od/dto/v1/environment.proto\"X\n" +
 	"\x18StatusEnvironmentRequest\x12\x19\n" +
 	"\benv_name\x18\x01 \x01(\tR\aenvName\x12!\n" +
 	"\fservice_name\x18\x02 \x01(\tR\vserviceName\"\xb0\x01\n" +
@@ -860,33 +675,22 @@ const file_dream11_od_environment_v1_environment_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"_\n" +
 	"\x1bDescribeEnvironmentResponse\x12@\n" +
-	"\venvironment\x18\x01 \x01(\v2\x1e.dream11.od.dto.v1.EnvironmentR\venvironment\"b\n" +
-	"\x18UpdateEnvironmentRequest\x12\x19\n" +
-	"\benv_name\x18\x01 \x01(\tR\aenvName\x12+\n" +
-	"\x04data\x18\x02 \x01(\v2\x17.google.protobuf.StructR\x04data\"\x1b\n" +
-	"\x19UpdateEnvironmentResponse\"~\n" +
+	"\venvironment\x18\x01 \x01(\v2\x1e.dream11.od.dto.v1.EnvironmentR\venvironment\"Q\n" +
 	"\x18CreateEnvironmentRequest\x12\x19\n" +
 	"\benv_name\x18\x01 \x01(\tR\aenvName\x12\x1a\n" +
-	"\baccounts\x18\x02 \x03(\tR\baccounts\x12+\n" +
-	"\x11provisioning_type\x18\x03 \x01(\tR\x10provisioningType\"5\n" +
+	"\baccounts\x18\x02 \x03(\tR\baccounts\"5\n" +
 	"\x19CreateEnvironmentResponse\x12\x18\n" +
 	"\amessage\x18\x01 \x01(\tR\amessage\"5\n" +
 	"\x18DeleteEnvironmentRequest\x12\x19\n" +
 	"\benv_name\x18\x01 \x01(\tR\aenvName\"5\n" +
 	"\x19DeleteEnvironmentResponse\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage\"7\n" +
-	"\x1aIsStrictEnvironmentRequest\x12\x19\n" +
-	"\benv_name\x18\x01 \x01(\tR\aenvName\"A\n" +
-	"\x1bIsStrictEnvironmentResponse\x12\"\n" +
-	"\ris_env_strict\x18\x01 \x01(\bR\visEnvStrict2\xb4\a\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage2\xa8\x05\n" +
 	"\x12EnvironmentService\x12z\n" +
 	"\x0fListEnvironment\x121.dream11.od.environment.v1.ListEnvironmentRequest\x1a2.dream11.od.environment.v1.ListEnvironmentResponse\"\x00\x12\x86\x01\n" +
-	"\x13DescribeEnvironment\x125.dream11.od.environment.v1.DescribeEnvironmentRequest\x1a6.dream11.od.environment.v1.DescribeEnvironmentResponse\"\x00\x12\x80\x01\n" +
-	"\x11UpdateEnvironment\x123.dream11.od.environment.v1.UpdateEnvironmentRequest\x1a4.dream11.od.environment.v1.UpdateEnvironmentResponse\"\x00\x12\x82\x01\n" +
+	"\x13DescribeEnvironment\x125.dream11.od.environment.v1.DescribeEnvironmentRequest\x1a6.dream11.od.environment.v1.DescribeEnvironmentResponse\"\x00\x12\x82\x01\n" +
 	"\x11CreateEnvironment\x123.dream11.od.environment.v1.CreateEnvironmentRequest\x1a4.dream11.od.environment.v1.CreateEnvironmentResponse\"\x000\x01\x12\x82\x01\n" +
 	"\x11DeleteEnvironment\x123.dream11.od.environment.v1.DeleteEnvironmentRequest\x1a4.dream11.od.environment.v1.DeleteEnvironmentResponse\"\x000\x01\x12\x82\x01\n" +
-	"\x11StatusEnvironment\x123.dream11.od.environment.v1.StatusEnvironmentRequest\x1a4.dream11.od.environment.v1.StatusEnvironmentResponse\"\x000\x01\x12\x86\x01\n" +
-	"\x13IsStrictEnvironment\x125.dream11.od.environment.v1.IsStrictEnvironmentRequest\x1a6.dream11.od.environment.v1.IsStrictEnvironmentResponse\"\x00B@Z>github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1b\x06proto3"
+	"\x11StatusEnvironment\x123.dream11.od.environment.v1.StatusEnvironmentRequest\x1a4.dream11.od.environment.v1.StatusEnvironmentResponse\"\x000\x01B@Z>github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1b\x06proto3"
 
 var (
 	file_dream11_od_environment_v1_environment_proto_rawDescOnce sync.Once
@@ -900,7 +704,7 @@ func file_dream11_od_environment_v1_environment_proto_rawDescGZIP() []byte {
 	return file_dream11_od_environment_v1_environment_proto_rawDescData
 }
 
-var file_dream11_od_environment_v1_environment_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_dream11_od_environment_v1_environment_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_dream11_od_environment_v1_environment_proto_goTypes = []any{
 	(*StatusEnvironmentRequest)(nil),    // 0: dream11.od.environment.v1.StatusEnvironmentRequest
 	(*StatusEnvironmentResponse)(nil),   // 1: dream11.od.environment.v1.StatusEnvironmentResponse
@@ -910,47 +714,37 @@ var file_dream11_od_environment_v1_environment_proto_goTypes = []any{
 	(*ListEnvironmentResponse)(nil),     // 5: dream11.od.environment.v1.ListEnvironmentResponse
 	(*DescribeEnvironmentRequest)(nil),  // 6: dream11.od.environment.v1.DescribeEnvironmentRequest
 	(*DescribeEnvironmentResponse)(nil), // 7: dream11.od.environment.v1.DescribeEnvironmentResponse
-	(*UpdateEnvironmentRequest)(nil),    // 8: dream11.od.environment.v1.UpdateEnvironmentRequest
-	(*UpdateEnvironmentResponse)(nil),   // 9: dream11.od.environment.v1.UpdateEnvironmentResponse
-	(*CreateEnvironmentRequest)(nil),    // 10: dream11.od.environment.v1.CreateEnvironmentRequest
-	(*CreateEnvironmentResponse)(nil),   // 11: dream11.od.environment.v1.CreateEnvironmentResponse
-	(*DeleteEnvironmentRequest)(nil),    // 12: dream11.od.environment.v1.DeleteEnvironmentRequest
-	(*DeleteEnvironmentResponse)(nil),   // 13: dream11.od.environment.v1.DeleteEnvironmentResponse
-	(*IsStrictEnvironmentRequest)(nil),  // 14: dream11.od.environment.v1.IsStrictEnvironmentRequest
-	(*IsStrictEnvironmentResponse)(nil), // 15: dream11.od.environment.v1.IsStrictEnvironmentResponse
-	nil,                                 // 16: dream11.od.environment.v1.ListEnvironmentRequest.ParamsEntry
-	nil,                                 // 17: dream11.od.environment.v1.DescribeEnvironmentRequest.ParamsEntry
-	(*v1.EnvironmentSummary)(nil),       // 18: dream11.od.dto.v1.EnvironmentSummary
-	(*v1.Environment)(nil),              // 19: dream11.od.dto.v1.Environment
-	(*structpb.Struct)(nil),             // 20: google.protobuf.Struct
+	(*CreateEnvironmentRequest)(nil),    // 8: dream11.od.environment.v1.CreateEnvironmentRequest
+	(*CreateEnvironmentResponse)(nil),   // 9: dream11.od.environment.v1.CreateEnvironmentResponse
+	(*DeleteEnvironmentRequest)(nil),    // 10: dream11.od.environment.v1.DeleteEnvironmentRequest
+	(*DeleteEnvironmentResponse)(nil),   // 11: dream11.od.environment.v1.DeleteEnvironmentResponse
+	nil,                                 // 12: dream11.od.environment.v1.ListEnvironmentRequest.ParamsEntry
+	nil,                                 // 13: dream11.od.environment.v1.DescribeEnvironmentRequest.ParamsEntry
+	(*v1.EnvironmentSummary)(nil),       // 14: dream11.od.dto.v1.EnvironmentSummary
+	(*v1.Environment)(nil),              // 15: dream11.od.dto.v1.Environment
 }
 var file_dream11_od_environment_v1_environment_proto_depIdxs = []int32{
 	2,  // 0: dream11.od.environment.v1.StatusEnvironmentResponse.services_status:type_name -> dream11.od.environment.v1.DeployedServiceStatus
 	3,  // 1: dream11.od.environment.v1.DeployedServiceStatus.component_status:type_name -> dream11.od.environment.v1.StatusEnvComponentStatus
-	16, // 2: dream11.od.environment.v1.ListEnvironmentRequest.params:type_name -> dream11.od.environment.v1.ListEnvironmentRequest.ParamsEntry
-	18, // 3: dream11.od.environment.v1.ListEnvironmentResponse.environments:type_name -> dream11.od.dto.v1.EnvironmentSummary
-	17, // 4: dream11.od.environment.v1.DescribeEnvironmentRequest.params:type_name -> dream11.od.environment.v1.DescribeEnvironmentRequest.ParamsEntry
-	19, // 5: dream11.od.environment.v1.DescribeEnvironmentResponse.environment:type_name -> dream11.od.dto.v1.Environment
-	20, // 6: dream11.od.environment.v1.UpdateEnvironmentRequest.data:type_name -> google.protobuf.Struct
-	4,  // 7: dream11.od.environment.v1.EnvironmentService.ListEnvironment:input_type -> dream11.od.environment.v1.ListEnvironmentRequest
-	6,  // 8: dream11.od.environment.v1.EnvironmentService.DescribeEnvironment:input_type -> dream11.od.environment.v1.DescribeEnvironmentRequest
-	8,  // 9: dream11.od.environment.v1.EnvironmentService.UpdateEnvironment:input_type -> dream11.od.environment.v1.UpdateEnvironmentRequest
-	10, // 10: dream11.od.environment.v1.EnvironmentService.CreateEnvironment:input_type -> dream11.od.environment.v1.CreateEnvironmentRequest
-	12, // 11: dream11.od.environment.v1.EnvironmentService.DeleteEnvironment:input_type -> dream11.od.environment.v1.DeleteEnvironmentRequest
-	0,  // 12: dream11.od.environment.v1.EnvironmentService.StatusEnvironment:input_type -> dream11.od.environment.v1.StatusEnvironmentRequest
-	14, // 13: dream11.od.environment.v1.EnvironmentService.IsStrictEnvironment:input_type -> dream11.od.environment.v1.IsStrictEnvironmentRequest
-	5,  // 14: dream11.od.environment.v1.EnvironmentService.ListEnvironment:output_type -> dream11.od.environment.v1.ListEnvironmentResponse
-	7,  // 15: dream11.od.environment.v1.EnvironmentService.DescribeEnvironment:output_type -> dream11.od.environment.v1.DescribeEnvironmentResponse
-	9,  // 16: dream11.od.environment.v1.EnvironmentService.UpdateEnvironment:output_type -> dream11.od.environment.v1.UpdateEnvironmentResponse
-	11, // 17: dream11.od.environment.v1.EnvironmentService.CreateEnvironment:output_type -> dream11.od.environment.v1.CreateEnvironmentResponse
-	13, // 18: dream11.od.environment.v1.EnvironmentService.DeleteEnvironment:output_type -> dream11.od.environment.v1.DeleteEnvironmentResponse
-	1,  // 19: dream11.od.environment.v1.EnvironmentService.StatusEnvironment:output_type -> dream11.od.environment.v1.StatusEnvironmentResponse
-	15, // 20: dream11.od.environment.v1.EnvironmentService.IsStrictEnvironment:output_type -> dream11.od.environment.v1.IsStrictEnvironmentResponse
-	14, // [14:21] is the sub-list for method output_type
-	7,  // [7:14] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	12, // 2: dream11.od.environment.v1.ListEnvironmentRequest.params:type_name -> dream11.od.environment.v1.ListEnvironmentRequest.ParamsEntry
+	14, // 3: dream11.od.environment.v1.ListEnvironmentResponse.environments:type_name -> dream11.od.dto.v1.EnvironmentSummary
+	13, // 4: dream11.od.environment.v1.DescribeEnvironmentRequest.params:type_name -> dream11.od.environment.v1.DescribeEnvironmentRequest.ParamsEntry
+	15, // 5: dream11.od.environment.v1.DescribeEnvironmentResponse.environment:type_name -> dream11.od.dto.v1.Environment
+	4,  // 6: dream11.od.environment.v1.EnvironmentService.ListEnvironment:input_type -> dream11.od.environment.v1.ListEnvironmentRequest
+	6,  // 7: dream11.od.environment.v1.EnvironmentService.DescribeEnvironment:input_type -> dream11.od.environment.v1.DescribeEnvironmentRequest
+	8,  // 8: dream11.od.environment.v1.EnvironmentService.CreateEnvironment:input_type -> dream11.od.environment.v1.CreateEnvironmentRequest
+	10, // 9: dream11.od.environment.v1.EnvironmentService.DeleteEnvironment:input_type -> dream11.od.environment.v1.DeleteEnvironmentRequest
+	0,  // 10: dream11.od.environment.v1.EnvironmentService.StatusEnvironment:input_type -> dream11.od.environment.v1.StatusEnvironmentRequest
+	5,  // 11: dream11.od.environment.v1.EnvironmentService.ListEnvironment:output_type -> dream11.od.environment.v1.ListEnvironmentResponse
+	7,  // 12: dream11.od.environment.v1.EnvironmentService.DescribeEnvironment:output_type -> dream11.od.environment.v1.DescribeEnvironmentResponse
+	9,  // 13: dream11.od.environment.v1.EnvironmentService.CreateEnvironment:output_type -> dream11.od.environment.v1.CreateEnvironmentResponse
+	11, // 14: dream11.od.environment.v1.EnvironmentService.DeleteEnvironment:output_type -> dream11.od.environment.v1.DeleteEnvironmentResponse
+	1,  // 15: dream11.od.environment.v1.EnvironmentService.StatusEnvironment:output_type -> dream11.od.environment.v1.StatusEnvironmentResponse
+	11, // [11:16] is the sub-list for method output_type
+	6,  // [6:11] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_dream11_od_environment_v1_environment_proto_init() }
@@ -964,7 +758,7 @@ func file_dream11_od_environment_v1_environment_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_dream11_od_environment_v1_environment_proto_rawDesc), len(file_dream11_od_environment_v1_environment_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   18,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

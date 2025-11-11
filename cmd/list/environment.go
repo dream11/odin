@@ -3,20 +3,18 @@ package list
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dream11/odin/pkg/util"
 	"os"
 	"strconv"
 
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/table"
+	"github.com/dream11/odin/pkg/util"
 	environment "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
-var name string
-var provisioningType string
 var account string
 var displayAll bool
 
@@ -34,8 +32,6 @@ var environmentCmd = &cobra.Command{
 }
 
 func init() {
-	environmentCmd.Flags().StringVar(&name, "name", "", "name of the env")
-	environmentCmd.Flags().StringVar(&provisioningType, "provisioning-type", "", "provisioning type of the environment")
 	environmentCmd.Flags().StringVar(&account, "account", "", "cloud provider account name")
 	environmentCmd.Flags().BoolVarP(&displayAll, "all", "A", false, "list all environments")
 	listCmd.AddCommand(environmentCmd)
@@ -45,10 +41,8 @@ func execute(cmd *cobra.Command) {
 	ctx := cmd.Context()
 	response, err := environmentClient.ListEnvironments(&ctx, &environment.ListEnvironmentRequest{
 		Params: map[string]string{
-			"name":             name,
-			"account":          account,
-			"provisioningType": provisioningType,
-			"displayAll":       strconv.FormatBool(displayAll)},
+			"account":    account,
+			"displayAll": strconv.FormatBool(displayAll)},
 	})
 
 	if err != nil {
@@ -83,7 +77,6 @@ func writeAsText(response *environment.ListEnvironmentResponse) {
 			env.Name,
 			env.State,
 			env.Account,
-			env.GetProvisioningType(),
 		})
 	}
 

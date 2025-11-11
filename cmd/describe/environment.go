@@ -16,22 +16,21 @@ import (
 )
 
 var name string
-
+var serviceName string
+var component string
 var environmentClient = service.Environment{}
 var environmentCmd = &cobra.Command{
-	Use:   "env",
+	Use:   "env <name>",
 	Short: "Describe environments",
-	Args: func(cmd *cobra.Command, args []string) error {
-		return cobra.NoArgs(cmd, args)
-	},
-	Long: `Describe  environment details`,
+	Args:  cobra.ExactArgs(1),
+	Long:  `Describe  environment details`,
 	Run: func(cmd *cobra.Command, args []string) {
+		name = args[0]
 		executeEnv(cmd)
 	},
 }
 
 func init() {
-	environmentCmd.Flags().StringVar(&name, "name", "", "name of the environment")
 	environmentCmd.Flags().StringVar(&serviceName, "service", "", "service deployed in this environment")
 	environmentCmd.Flags().StringVar(&component, "component", "", "component of the service deployed in this environment")
 	describeCmd.AddCommand(environmentCmd)
@@ -81,9 +80,7 @@ func printEnvInfo(response *environment.DescribeEnvironmentResponse) {
 
 	// Extracting necessary fields
 	name := env.GetName()
-	envType := env.GetProvisioningType()
 	state := env.GetStatus()
-	autoDeletionTime := env.AutoDeletionTime.AsTime().String()
 	cloudProviderAccounts := []string{}
 	providerAccountCluster := map[string][]string{}
 	for _, accountInfo := range env.AccountInformation {
@@ -127,9 +124,7 @@ func printEnvInfo(response *environment.DescribeEnvironmentResponse) {
 	// Formatting and printing the information
 	fmt.Printf("Describing Env: %s\n\n", name)
 	fmt.Printf("name: %s\n", name)
-	fmt.Printf("envType: %s\n", envType)
 	fmt.Printf("state: %s\n", state)
-	fmt.Printf("autoDeletionTime: \"%s\"\n", autoDeletionTime)
 	fmt.Printf("cloudProviderAccounts:\n")
 	for _, account := range cloudProviderAccounts {
 		fmt.Printf("    - %s\n", account)
@@ -205,7 +200,6 @@ func writeAsJSONEnvResponse(response *environment.DescribeEnvironmentResponse) {
 	environments = append(environments, map[string]interface{}{
 		"name":                  env.Name,
 		"state":                 env.Status,
-		"autoDeletionTime":      env.AutoDeletionTime.AsTime().String(),
 		"cloudProviderAccounts": accountInfoList,
 		"createdBy":             env.CreatedBy,
 		"updatedBy":             env.UpdatedBy,

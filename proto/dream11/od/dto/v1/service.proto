@@ -12,7 +12,6 @@ message ComponentDefinition {
   string type = 3;
   repeated string depends_on = 4;
   google.protobuf.Struct config = 5;
-  optional google.protobuf.Struct metadata = 6;
 }
 
 message ServiceDefinition {
@@ -20,17 +19,6 @@ message ServiceDefinition {
   string version = 2;
   string team = 3;
   repeated ComponentDefinition components = 4;
-}
-
-message ServiceIdentifier {
-  string name = 1;
-  string version = 2;
-  string labels = 3;
-}
-
-message ServiceSet {
-  string name = 1;
-  repeated ServiceIdentifier services = 2;
 }
 
 message ComponentProvisioningConfig {

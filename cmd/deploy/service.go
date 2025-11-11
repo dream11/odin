@@ -3,17 +3,13 @@ package deploy
 import (
 	"context"
 	"encoding/json"
-	"errors"
-	"fmt"
 	"os"
-	"regexp"
 
 	"github.com/dream11/odin/internal/service"
 	"github.com/dream11/odin/pkg/config"
 	"github.com/dream11/odin/pkg/constant"
 	"github.com/dream11/odin/pkg/util"
 	serviceDto "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1"
-	envProto "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1"
 	serviceProto "github.com/dream11/odin/proto/gen/go/dream11/od/service/v1"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -22,11 +18,7 @@ import (
 var env string
 var definitionFile string
 var provisioningFile string
-var serviceName string
-var serviceVersion string
 var serviceClient = service.Service{}
-var labels string
-var envClient = service.Environment{}
 var serviceCmd = &cobra.Command{
 	Use:   "service",
 	Short: "Deploy service",
@@ -43,10 +35,6 @@ func init() {
 	serviceCmd.Flags().StringVar(&env, "env", "", "environment for deploying the service")
 	serviceCmd.Flags().StringVar(&definitionFile, "file", "", "path to the service definition file")
 	serviceCmd.Flags().StringVar(&provisioningFile, "provisioning", "", "path to the provisioning file")
-	serviceCmd.Flags().StringVar(&serviceName, "name", "", "released service name")
-	serviceCmd.Flags().StringVar(&serviceVersion, "version", "", "released service version")
-	serviceCmd.Flags().StringVar(&labels, "labels", "", "comma separated labels for the service version ex key1=value1,key2=value2")
-	_ = serviceCmd.Flags().MarkHidden("labels")
 	deployCmd.AddCommand(serviceCmd)
 }
 
@@ -62,26 +50,14 @@ func execute(cmd *cobra.Command) {
 
 	contextWithTrace = context.WithValue(contextWithTrace, constant.VerboseEnabledKey, verboseEnabled)
 
-	if isStrictEnvironment(contextWithTrace, env) {
-		consentMessage := fmt.Sprintf(constant.ConsentMessageTemplate, env)
-		util.AskForConfirmation(env, consentMessage)
-	}
-
-	if (serviceName == "" && serviceVersion == "" && labels == "") && (definitionFile != "" && provisioningFile != "") {
-		deployUsingFiles(contextWithTrace)
-	} else if (serviceName != "" && serviceVersion != "" && labels == "") && (definitionFile == "" && provisioningFile == "") {
-		deployUsingServiceNameAndVersion(contextWithTrace)
-	} else if (serviceName != "" && labels != "" && serviceVersion == "") && (definitionFile == "" && provisioningFile == "") {
-		if err := validateLabels(labels); err != nil {
-			log.Fatal("Invalid labels format: ", err)
-		}
-		deployUsingServiceNameAndLabels(contextWithTrace)
+	if definitionFile != "" && provisioningFile != "" {
+		deploy(contextWithTrace)
 	} else {
-		log.Fatal("Invalid combination of flags. Use either (service name and version) or (definitionFile and provisioningFile).")
+		log.Fatal("definitionFile and provisioningFile are required.")
 	}
 }
 
-func deployUsingFiles(ctx context.Context) {
+func deploy(ctx context.Context) {
 	definitionData, err := os.ReadFile(definitionFile)
 	if err != nil {
 		log.Fatal("Error while reading definition file ", err)
@@ -112,53 +88,4 @@ func deployUsingFiles(ctx context.Context) {
 	if err != nil {
 		util.LogGrpcError(err, "Failed to deploy service: ")
 	}
-}
-
-func deployUsingServiceNameAndVersion(ctx context.Context) {
-	err := serviceClient.DeployReleasedService(&ctx, &serviceProto.DeployReleasedServiceRequest{
-		EnvName: env,
-		ServiceIdentifier: &serviceProto.ServiceIdentifier{
-			ServiceName:    serviceName,
-			ServiceVersion: serviceVersion,
-		},
-	})
-
-	if err != nil {
-		util.LogGrpcError(err, "Failed to deploy service: ")
-	}
-}
-
-func deployUsingServiceNameAndLabels(ctx context.Context) {
-	err := serviceClient.DeployReleasedService(&ctx, &serviceProto.DeployReleasedServiceRequest{
-		EnvName: env,
-		ServiceIdentifier: &serviceProto.ServiceIdentifier{
-			ServiceName: serviceName,
-			Labels:      labels,
-		},
-	})
-
-	if err != nil {
-		util.LogGrpcError(err, "Failed to deploy service: ")
-	}
-}
-
-func validateLabels(labels string) error {
-	labelPattern := `^(\w+=\w+)(,\w+=\w+)*$`
-	matched, err := regexp.MatchString(labelPattern, labels)
-	if err != nil {
-		return err
-	}
-	if !matched {
-		return errors.New("labels must be in format key1=value1,key2=value2")
-	}
-	return nil
-}
-func isStrictEnvironment(ctx context.Context, env string) bool {
-	envTypeResp, err := envClient.IsStrictEnvironment(&ctx, &envProto.IsStrictEnvironmentRequest{
-		EnvName: env,
-	})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	return envTypeResp.IsEnvStrict
 }

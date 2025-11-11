@@ -6,7 +6,7 @@ type application struct {
 }
 
 // App (Application) interface
-var App application = application{
+var App = application{
 	Name:    "odin",
 	Version: "2.1.2",
 }

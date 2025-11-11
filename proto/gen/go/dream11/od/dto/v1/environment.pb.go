@@ -37,7 +37,6 @@ type Environment struct {
 	Services           []*ServiceTask         `protobuf:"bytes,12,rep,name=services,proto3" json:"services,omitempty"`
 	AccountInformation []*AccountInformation  `protobuf:"bytes,13,rep,name=account_information,json=accountInformation,proto3" json:"account_information,omitempty"`
 	UpdatedBy          *string                `protobuf:"bytes,14,opt,name=updated_by,json=updatedBy,proto3,oneof" json:"updated_by,omitempty"`
-	ProvisioningType   *string                `protobuf:"bytes,15,opt,name=provisioning_type,json=provisioningType,proto3,oneof" json:"provisioning_type,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -156,13 +155,6 @@ func (x *Environment) GetUpdatedBy() string {
 	return ""
 }
 
-func (x *Environment) GetProvisioningType() string {
-	if x != nil && x.ProvisioningType != nil {
-		return *x.ProvisioningType
-	}
-	return ""
-}
-
 type AccountInformation struct {
 	state                   protoimpl.MessageState         `protogen:"open.v1"`
 	ProviderAccountName     string                         `protobuf:"bytes,1,opt,name=provider_account_name,json=providerAccountName,proto3" json:"provider_account_name,omitempty"`
@@ -224,13 +216,13 @@ func (x *AccountInformation) GetStatus() string {
 }
 
 type EnvironmentSummary struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	Name             string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Account          string                 `protobuf:"bytes,2,opt,name=account,proto3" json:"account,omitempty"`
-	State            string                 `protobuf:"bytes,3,opt,name=state,proto3" json:"state,omitempty"`
-	ProvisioningType *string                `protobuf:"bytes,4,opt,name=provisioning_type,json=provisioningType,proto3,oneof" json:"provisioning_type,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Account       string                 `protobuf:"bytes,2,opt,name=account,proto3" json:"account,omitempty"`
+	State         string                 `protobuf:"bytes,3,opt,name=state,proto3" json:"state,omitempty"`
+	CreatedBy     *string                `protobuf:"bytes,5,opt,name=created_by,json=createdBy,proto3,oneof" json:"created_by,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *EnvironmentSummary) Reset() {
@@ -284,9 +276,9 @@ func (x *EnvironmentSummary) GetState() string {
 	return ""
 }
 
-func (x *EnvironmentSummary) GetProvisioningType() string {
-	if x != nil && x.ProvisioningType != nil {
-		return *x.ProvisioningType
+func (x *EnvironmentSummary) GetCreatedBy() string {
+	if x != nil && x.CreatedBy != nil {
+		return *x.CreatedBy
 	}
 	return ""
 }
@@ -295,7 +287,7 @@ var File_dream11_od_dto_v1_environment_proto protoreflect.FileDescriptor
 
 const file_dream11_od_dto_v1_environment_proto_rawDesc = "" +
 	"\n" +
-	"#dream11/od/dto/v1/environment.proto\x12\x11dream11.od.dto.v1\x1a5dream11/oam/provideraccount/v1/provider_account.proto\x1a$dream11/od/dto/v1/service_task.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x8b\x06\n" +
+	"#dream11/od/dto/v1/environment.proto\x12\x11dream11.od.dto.v1\x1a5dream11/oam/provideraccount/v1/provider_account.proto\x1a$dream11/od/dto/v1/service_task.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc3\x05\n" +
 	"\vEnvironment\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\x03H\x00R\x02id\x88\x01\x01\x12>\n" +
 	"\n" +
@@ -313,9 +305,7 @@ const file_dream11_od_dto_v1_environment_proto_rawDesc = "" +
 	"\bservices\x18\f \x03(\v2\x1e.dream11.od.dto.v1.ServiceTaskR\bservices\x12V\n" +
 	"\x13account_information\x18\r \x03(\v2%.dream11.od.dto.v1.AccountInformationR\x12accountInformation\x12\"\n" +
 	"\n" +
-	"updated_by\x18\x0e \x01(\tH\tR\tupdatedBy\x88\x01\x01\x120\n" +
-	"\x11provisioning_type\x18\x0f \x01(\tH\n" +
-	"R\x10provisioningType\x88\x01\x01B\x05\n" +
+	"updated_by\x18\x0e \x01(\tH\tR\tupdatedBy\x88\x01\x01B\x05\n" +
 	"\x03_idB\r\n" +
 	"\v_created_atB\r\n" +
 	"\v_updated_atB\r\n" +
@@ -326,18 +316,18 @@ const file_dream11_od_dto_v1_environment_proto_rawDesc = "" +
 	"\x05_nameB\t\n" +
 	"\a_statusB\x15\n" +
 	"\x13_auto_deletion_timeB\r\n" +
-	"\v_updated_byB\x14\n" +
-	"\x12_provisioning_type\"\xd8\x01\n" +
+	"\v_updated_by\"\xd8\x01\n" +
 	"\x12AccountInformation\x122\n" +
 	"\x15provider_account_name\x18\x01 \x01(\tR\x13providerAccountName\x12v\n" +
 	"\x19service_accounts_snapshot\x18\x02 \x01(\v2:.dream11.oam.provideraccount.v1.GetProviderAccountResponseR\x17serviceAccountsSnapshot\x12\x16\n" +
-	"\x06status\x18\x03 \x01(\tR\x06status\"\xa0\x01\n" +
+	"\x06status\x18\x03 \x01(\tR\x06status\"\x8b\x01\n" +
 	"\x12EnvironmentSummary\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
 	"\aaccount\x18\x02 \x01(\tR\aaccount\x12\x14\n" +
-	"\x05state\x18\x03 \x01(\tR\x05state\x120\n" +
-	"\x11provisioning_type\x18\x04 \x01(\tH\x00R\x10provisioningType\x88\x01\x01B\x14\n" +
-	"\x12_provisioning_typeB8Z6github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1b\x06proto3"
+	"\x05state\x18\x03 \x01(\tR\x05state\x12\"\n" +
+	"\n" +
+	"created_by\x18\x05 \x01(\tH\x00R\tcreatedBy\x88\x01\x01B\r\n" +
+	"\v_created_byB8Z6github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1b\x06proto3"
 
 var (
 	file_dream11_od_dto_v1_environment_proto_rawDescOnce sync.Once
