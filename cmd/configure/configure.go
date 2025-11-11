@@ -57,6 +57,9 @@ func init() {
 func execute(cmd *cobra.Command) {
 	createConfigFileIfNotExist()
 
+	// Read configurations from existing config file, env variables and flags in viper
+	appConfig.GetConfig()
+
 	if !viper.IsSet("backend_address") || viper.GetString("backend_address") == "" {
 		log.Fatalf("Required configuration not found. Please pass --backend-address flag or set environment variable ODIN_BACKEND_ADDRESS")
 	}
@@ -102,7 +105,9 @@ func execute(cmd *cobra.Command) {
 	}
 
 	// Persist token to config file against the active profile
-	appConfig.UpdateAccessToken(tokenResponse.Token)
+	baseConfig.AccessToken = tokenResponse.Token
+	appConfig.WriteConfig(baseConfig)
+
 	fmt.Println("\033[32mConfigured!\033[0m")
 }
 

@@ -58,16 +58,6 @@ func GetConfig() *configuration.Configuration {
 // WriteConfig writes the given config to the config file
 func WriteConfig(config *configuration.Configuration) {
 	activeProfile := viper.GetString("profile")
-	if strings.TrimSpace(activeProfile) == "" {
-		readConfigFile()
-		activeProfile = fileViper.GetString("profile")
-		if strings.TrimSpace(activeProfile) == "" {
-			activeProfile = "default"
-		}
-	}
-
-	// Ensure config file is loaded, then set only `profile` at root and the profile section.
-	readConfigFile()
 	fileViper.Set("profile", activeProfile)
 	fileViper.Set(activeProfile, config)
 	if err := fileViper.WriteConfig(); err != nil {
@@ -136,21 +126,4 @@ func EnsureEnvPresent(inputEnv string) string {
 		log.Fatal("Please provide the environment name using --env, or set the default environment using `odin set env <env-name>`")
 	}
 	return env
-}
-
-// UpdateAccessToken updates only the access token for the active profile and persists it.
-func UpdateAccessToken(token string) {
-	readConfigFile()
-	profile := fileViper.GetString("profile")
-
-	cfg, err := getConfigForProfile(profile)
-	if err != nil {
-		log.Fatal("Error while reading config: ", err)
-	}
-	cfg.AccessToken = token
-
-	fileViper.Set(profile, cfg)
-	if err := fileViper.WriteConfig(); err != nil {
-		log.Fatal("Unable to write configuration: ", err)
-	}
 }
