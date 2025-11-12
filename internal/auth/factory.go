@@ -9,6 +9,7 @@ var providers = make(map[string]Provider)
 
 func init() {
 	providers["anonymous"] = &AnonymousProvider{}
+	providers["oidc"] = &OIDCProvider{}
 }
 
 // GetProvider returns the requested authentication provider.
