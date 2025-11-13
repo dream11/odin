@@ -134,17 +134,6 @@ func Contains(str string, arr []string) bool {
 	return false
 }
 
-// GenerateResponseMessageComponentSpecific generate response message from ServiceResponse
-func GenerateResponseMessageComponentSpecific(response *v1.ServiceResponse, components []string) string {
-	message := fmt.Sprintf("\n Service %s %s", response.ServiceStatus.ServiceAction, response.ServiceStatus)
-	for _, compMessage := range response.ComponentsStatus {
-		if Contains(compMessage.ComponentName, components) {
-			message += fmt.Sprintf("\n Component %s %s %s", compMessage.ComponentName, compMessage.ComponentAction, compMessage.ComponentStatus)
-		}
-	}
-	return message
-}
-
 // GenerateTraceID generates a trace id
 func GenerateTraceID() string {
 	traceID := uuid.New().String()
