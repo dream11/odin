@@ -66,11 +66,23 @@ func execute(cmd *cobra.Command) {
 	if err := validateAccounts(accounts); err != nil {
 		log.Fatal("Invalid accounts parameter: ", err)
 	}
-	err := environmentClient.CreateEnvironment(&ctx, &environmentProto.CreateEnvironmentRequest{
+
+	// Auto-detect MAC address to use as routing key
+	macAddr, err := util.GetDefaultMACAddress()
+	if err != nil {
+		log.Fatal("Failed to auto-detect MAC address: %v", err)
+	}
+	log.Debug("Using MAC address as routing key: %s", macAddr)
+
+	// Create the request
+	req := &environmentProto.CreateEnvironmentRequest{
 		EnvName:          envName,
 		Accounts:         util.SplitProviderAccount(accounts),
 		ProvisioningType: provisioningType,
-	})
+		RoutingKey:       &macAddr,
+	}
+
+	err = environmentClient.CreateEnvironment(&ctx, req)
 
 	if err != nil {
 		util.LogGrpcError(err, "Failed to create environment: ")
