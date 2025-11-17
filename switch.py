@@ -4,7 +4,7 @@ import re
 import ssl
 import subprocess
 import sys
-import json=
+import json
 import zipfile
 import shutil
 import shlex
