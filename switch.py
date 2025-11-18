@@ -575,6 +575,9 @@ def main():
             else:
                 execute_old_odin()
         else:
+            if service_name is not None:
+                if "--version" in sys.argv:
+                    version = sys.argv[sys.argv.index("--version") + 1]
             execute_new_odin()
     else:
         execute_new_odin()
