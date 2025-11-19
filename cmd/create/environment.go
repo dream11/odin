@@ -70,9 +70,9 @@ func execute(cmd *cobra.Command) {
 	// Auto-detect MAC address to use as routing key
 	macAddr, err := util.GetDefaultMACAddress()
 	if err != nil {
-		log.Fatal("Failed to auto-detect MAC address: %v", err)
+		log.Fatalf("Failed to auto-detect MAC address: %v", err)
 	}
-	log.Debug("Using MAC address as routing key: %s", macAddr)
+	log.Debugf("Using MAC address as routing key: %s", macAddr)
 
 	// Create the request
 	req := &environmentProto.CreateEnvironmentRequest{
