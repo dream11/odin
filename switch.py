@@ -376,23 +376,6 @@ def transform_service_set_file(content):
         print("Error: JSON file must contain a 'services' array")
         sys.exit(1)
 
-    # Transform each service in the array
-    for service in data['services']:
-        if isinstance(service, dict) and 'version' in service:
-            version = service['version']
-
-            if version == 'stable':
-                del service['version']
-                service['labels'] = 'isStable=true'
-
-            elif version == 'dev-stable':
-                del service['version']
-                service['labels'] = 'isDevStable=true'
-
-            elif version == 'load-stable':
-                del service['version']
-                service['labels'] = 'isLoadStable=true'
-
     return json.dumps(data, indent=2)
 
 
@@ -413,16 +396,6 @@ def create_new_service_set_and_trigger_odin(original_file):
         file_index = updated_args.index("--file") + 1
         updated_args[file_index] = new_filename
         execute_new_odin_with_custom_cmd(updated_args)
-
-def get_label_from_version(version):
-    if version == 'stable':
-        return 'isStable=true'
-    elif version == 'dev-stable':
-        return 'isDevStable=true'
-    elif version == 'load-stable':
-        return 'isLoadStable=true'
-    else:
-        return None
 
 def main():
     global odin_access_key, odin_secret_access_key, odin_access_token, odin_backend_address, OLD_ODIN
@@ -605,11 +578,7 @@ def main():
             if service_name is not None:
                 if "--version" in sys.argv:
                     version = sys.argv[sys.argv.index("--version") + 1]
-                    label = get_label_from_version(version)
-                    if label is not None:
-                        sys.argv[sys.argv.index("--version") + 1] = label
-                        sys.argv[sys.argv.index("--version")] = "--labels"
-            execute_new_odin()    
+            execute_new_odin()
     else:
         execute_new_odin()
 
