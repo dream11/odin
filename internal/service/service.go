@@ -108,6 +108,7 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 	log.Info("Deploying Service Set..")
 	spinnerInstance := spinner.New(spinner.CharSets[constant.SpinnerType], constant.SpinnerDelay)
 	err = spinnerInstance.Color(constant.SpinnerColor, constant.SpinnerStyle)
+	spinnerInstance.Start()
 	if err != nil {
 		return err
 	}
@@ -124,7 +125,7 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 		}
 
 		if response != nil {
-			spinnerInstance.Stop()
+
 			var buf bytes.Buffer
 			table := tablewriter.NewWriter(&buf)
 			table.SetHeader([]string{"Service Name", "Version", "Action", "Status", "Error"})
@@ -147,6 +148,7 @@ func (e *Service) DeployServiceSet(ctx *context.Context, request *serviceProto.D
 			table.Render()
 			message = buf.String()
 			spinnerInstance.Prefix = fmt.Sprintf(" %s  ", message)
+			spinnerInstance.Stop()
 			spinnerInstance.Start()
 		}
 	}
