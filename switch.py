@@ -392,6 +392,10 @@ def transform_service_set_file(content):
             elif version == 'load-stable':
                 del service['version']
                 service['labels'] = 'isLoadStable=true'
+                
+            elif version == 'prod':
+                del service['version']
+                service['labels'] = 'isProdStable=true'
 
     return json.dumps(data, indent=2)
 
