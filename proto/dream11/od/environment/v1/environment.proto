@@ -2,6 +2,7 @@ syntax = "proto3";
 package dream11.od.environment.v1;
 
 import "dream11/od/dto/v1/environment.proto";
+import "dream11/oam/provideraccount/v1/provider_account.proto";
 import "google/protobuf/struct.proto";
 
 option go_package = "github.com/dream11/odin/proto/gen/go/dream11/od/environment/v1";
@@ -69,6 +70,8 @@ message CreateEnvironmentRequest {
   string env_name = 1;
   repeated string accounts = 2;
   string provisioning_type = 3;
+  optional string routing_key = 4;
+  repeated dream11.oam.provideraccount.v1.GetProviderAccountResponse account_details = 5;  // Full account data from file (bypasses OAM). Empty when using --accounts flag
 }
 
 message CreateEnvironmentResponse {
