@@ -7,6 +7,7 @@
 package v1
 
 import (
+	v11 "github.com/dream11/odin/proto/gen/go/dream11/oam/provideraccount/v1"
 	v1 "github.com/dream11/odin/proto/gen/go/dream11/od/dto/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -544,11 +545,12 @@ func (*UpdateEnvironmentResponse) Descriptor() ([]byte, []int) {
 }
 
 type CreateEnvironmentRequest struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	EnvName          string                 `protobuf:"bytes,1,opt,name=env_name,json=envName,proto3" json:"env_name,omitempty"`
-	Accounts         []string               `protobuf:"bytes,2,rep,name=accounts,proto3" json:"accounts,omitempty"`
-	ProvisioningType string                 `protobuf:"bytes,3,opt,name=provisioning_type,json=provisioningType,proto3" json:"provisioning_type,omitempty"`
-	RoutingKey       *string                `protobuf:"bytes,4,opt,name=routing_key,json=routingKey,proto3,oneof" json:"routing_key,omitempty"`
+	state            protoimpl.MessageState            `protogen:"open.v1"`
+	EnvName          string                            `protobuf:"bytes,1,opt,name=env_name,json=envName,proto3" json:"env_name,omitempty"`
+	Accounts         []string                          `protobuf:"bytes,2,rep,name=accounts,proto3" json:"accounts,omitempty"`
+	ProvisioningType string                            `protobuf:"bytes,3,opt,name=provisioning_type,json=provisioningType,proto3" json:"provisioning_type,omitempty"`
+	RoutingKey       *string                           `protobuf:"bytes,4,opt,name=routing_key,json=routingKey,proto3,oneof" json:"routing_key,omitempty"`
+	AccountDetails   []*v11.GetProviderAccountResponse `protobuf:"bytes,5,rep,name=account_details,json=accountDetails,proto3" json:"account_details,omitempty"` // Full account data from file (bypasses OAM). Empty when using --accounts flag
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -609,6 +611,13 @@ func (x *CreateEnvironmentRequest) GetRoutingKey() string {
 		return *x.RoutingKey
 	}
 	return ""
+}
+
+func (x *CreateEnvironmentRequest) GetAccountDetails() []*v11.GetProviderAccountResponse {
+	if x != nil {
+		return x.AccountDetails
+	}
+	return nil
 }
 
 type CreateEnvironmentResponse struct {
@@ -835,7 +844,7 @@ var File_dream11_od_environment_v1_environment_proto protoreflect.FileDescriptor
 
 const file_dream11_od_environment_v1_environment_proto_rawDesc = "" +
 	"\n" +
-	"+dream11/od/environment/v1/environment.proto\x12\x19dream11.od.environment.v1\x1a#dream11/od/dto/v1/environment.proto\x1a\x1cgoogle/protobuf/struct.proto\"X\n" +
+	"+dream11/od/environment/v1/environment.proto\x12\x19dream11.od.environment.v1\x1a#dream11/od/dto/v1/environment.proto\x1a5dream11/oam/provideraccount/v1/provider_account.proto\x1a\x1cgoogle/protobuf/struct.proto\"X\n" +
 	"\x18StatusEnvironmentRequest\x12\x19\n" +
 	"\benv_name\x18\x01 \x01(\tR\aenvName\x12!\n" +
 	"\fservice_name\x18\x02 \x01(\tR\vserviceName\"\xb0\x01\n" +
@@ -872,13 +881,14 @@ const file_dream11_od_environment_v1_environment_proto_rawDesc = "" +
 	"\x18UpdateEnvironmentRequest\x12\x19\n" +
 	"\benv_name\x18\x01 \x01(\tR\aenvName\x12+\n" +
 	"\x04data\x18\x02 \x01(\v2\x17.google.protobuf.StructR\x04data\"\x1b\n" +
-	"\x19UpdateEnvironmentResponse\"\xb4\x01\n" +
+	"\x19UpdateEnvironmentResponse\"\x99\x02\n" +
 	"\x18CreateEnvironmentRequest\x12\x19\n" +
 	"\benv_name\x18\x01 \x01(\tR\aenvName\x12\x1a\n" +
 	"\baccounts\x18\x02 \x03(\tR\baccounts\x12+\n" +
 	"\x11provisioning_type\x18\x03 \x01(\tR\x10provisioningType\x12$\n" +
 	"\vrouting_key\x18\x04 \x01(\tH\x00R\n" +
-	"routingKey\x88\x01\x01B\x0e\n" +
+	"routingKey\x88\x01\x01\x12c\n" +
+	"\x0faccount_details\x18\x05 \x03(\v2:.dream11.oam.provideraccount.v1.GetProviderAccountResponseR\x0eaccountDetailsB\x0e\n" +
 	"\f_routing_key\"5\n" +
 	"\x19CreateEnvironmentResponse\x12\x18\n" +
 	"\amessage\x18\x01 \x01(\tR\amessage\"5\n" +
@@ -913,27 +923,28 @@ func file_dream11_od_environment_v1_environment_proto_rawDescGZIP() []byte {
 
 var file_dream11_od_environment_v1_environment_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_dream11_od_environment_v1_environment_proto_goTypes = []any{
-	(*StatusEnvironmentRequest)(nil),    // 0: dream11.od.environment.v1.StatusEnvironmentRequest
-	(*StatusEnvironmentResponse)(nil),   // 1: dream11.od.environment.v1.StatusEnvironmentResponse
-	(*DeployedServiceStatus)(nil),       // 2: dream11.od.environment.v1.DeployedServiceStatus
-	(*StatusEnvComponentStatus)(nil),    // 3: dream11.od.environment.v1.StatusEnvComponentStatus
-	(*ListEnvironmentRequest)(nil),      // 4: dream11.od.environment.v1.ListEnvironmentRequest
-	(*ListEnvironmentResponse)(nil),     // 5: dream11.od.environment.v1.ListEnvironmentResponse
-	(*DescribeEnvironmentRequest)(nil),  // 6: dream11.od.environment.v1.DescribeEnvironmentRequest
-	(*DescribeEnvironmentResponse)(nil), // 7: dream11.od.environment.v1.DescribeEnvironmentResponse
-	(*UpdateEnvironmentRequest)(nil),    // 8: dream11.od.environment.v1.UpdateEnvironmentRequest
-	(*UpdateEnvironmentResponse)(nil),   // 9: dream11.od.environment.v1.UpdateEnvironmentResponse
-	(*CreateEnvironmentRequest)(nil),    // 10: dream11.od.environment.v1.CreateEnvironmentRequest
-	(*CreateEnvironmentResponse)(nil),   // 11: dream11.od.environment.v1.CreateEnvironmentResponse
-	(*DeleteEnvironmentRequest)(nil),    // 12: dream11.od.environment.v1.DeleteEnvironmentRequest
-	(*DeleteEnvironmentResponse)(nil),   // 13: dream11.od.environment.v1.DeleteEnvironmentResponse
-	(*IsStrictEnvironmentRequest)(nil),  // 14: dream11.od.environment.v1.IsStrictEnvironmentRequest
-	(*IsStrictEnvironmentResponse)(nil), // 15: dream11.od.environment.v1.IsStrictEnvironmentResponse
-	nil,                                 // 16: dream11.od.environment.v1.ListEnvironmentRequest.ParamsEntry
-	nil,                                 // 17: dream11.od.environment.v1.DescribeEnvironmentRequest.ParamsEntry
-	(*v1.EnvironmentSummary)(nil),       // 18: dream11.od.dto.v1.EnvironmentSummary
-	(*v1.Environment)(nil),              // 19: dream11.od.dto.v1.Environment
-	(*structpb.Struct)(nil),             // 20: google.protobuf.Struct
+	(*StatusEnvironmentRequest)(nil),       // 0: dream11.od.environment.v1.StatusEnvironmentRequest
+	(*StatusEnvironmentResponse)(nil),      // 1: dream11.od.environment.v1.StatusEnvironmentResponse
+	(*DeployedServiceStatus)(nil),          // 2: dream11.od.environment.v1.DeployedServiceStatus
+	(*StatusEnvComponentStatus)(nil),       // 3: dream11.od.environment.v1.StatusEnvComponentStatus
+	(*ListEnvironmentRequest)(nil),         // 4: dream11.od.environment.v1.ListEnvironmentRequest
+	(*ListEnvironmentResponse)(nil),        // 5: dream11.od.environment.v1.ListEnvironmentResponse
+	(*DescribeEnvironmentRequest)(nil),     // 6: dream11.od.environment.v1.DescribeEnvironmentRequest
+	(*DescribeEnvironmentResponse)(nil),    // 7: dream11.od.environment.v1.DescribeEnvironmentResponse
+	(*UpdateEnvironmentRequest)(nil),       // 8: dream11.od.environment.v1.UpdateEnvironmentRequest
+	(*UpdateEnvironmentResponse)(nil),      // 9: dream11.od.environment.v1.UpdateEnvironmentResponse
+	(*CreateEnvironmentRequest)(nil),       // 10: dream11.od.environment.v1.CreateEnvironmentRequest
+	(*CreateEnvironmentResponse)(nil),      // 11: dream11.od.environment.v1.CreateEnvironmentResponse
+	(*DeleteEnvironmentRequest)(nil),       // 12: dream11.od.environment.v1.DeleteEnvironmentRequest
+	(*DeleteEnvironmentResponse)(nil),      // 13: dream11.od.environment.v1.DeleteEnvironmentResponse
+	(*IsStrictEnvironmentRequest)(nil),     // 14: dream11.od.environment.v1.IsStrictEnvironmentRequest
+	(*IsStrictEnvironmentResponse)(nil),    // 15: dream11.od.environment.v1.IsStrictEnvironmentResponse
+	nil,                                    // 16: dream11.od.environment.v1.ListEnvironmentRequest.ParamsEntry
+	nil,                                    // 17: dream11.od.environment.v1.DescribeEnvironmentRequest.ParamsEntry
+	(*v1.EnvironmentSummary)(nil),          // 18: dream11.od.dto.v1.EnvironmentSummary
+	(*v1.Environment)(nil),                 // 19: dream11.od.dto.v1.Environment
+	(*structpb.Struct)(nil),                // 20: google.protobuf.Struct
+	(*v11.GetProviderAccountResponse)(nil), // 21: dream11.oam.provideraccount.v1.GetProviderAccountResponse
 }
 var file_dream11_od_environment_v1_environment_proto_depIdxs = []int32{
 	2,  // 0: dream11.od.environment.v1.StatusEnvironmentResponse.services_status:type_name -> dream11.od.environment.v1.DeployedServiceStatus
@@ -943,25 +954,26 @@ var file_dream11_od_environment_v1_environment_proto_depIdxs = []int32{
 	17, // 4: dream11.od.environment.v1.DescribeEnvironmentRequest.params:type_name -> dream11.od.environment.v1.DescribeEnvironmentRequest.ParamsEntry
 	19, // 5: dream11.od.environment.v1.DescribeEnvironmentResponse.environment:type_name -> dream11.od.dto.v1.Environment
 	20, // 6: dream11.od.environment.v1.UpdateEnvironmentRequest.data:type_name -> google.protobuf.Struct
-	4,  // 7: dream11.od.environment.v1.EnvironmentService.ListEnvironment:input_type -> dream11.od.environment.v1.ListEnvironmentRequest
-	6,  // 8: dream11.od.environment.v1.EnvironmentService.DescribeEnvironment:input_type -> dream11.od.environment.v1.DescribeEnvironmentRequest
-	8,  // 9: dream11.od.environment.v1.EnvironmentService.UpdateEnvironment:input_type -> dream11.od.environment.v1.UpdateEnvironmentRequest
-	10, // 10: dream11.od.environment.v1.EnvironmentService.CreateEnvironment:input_type -> dream11.od.environment.v1.CreateEnvironmentRequest
-	12, // 11: dream11.od.environment.v1.EnvironmentService.DeleteEnvironment:input_type -> dream11.od.environment.v1.DeleteEnvironmentRequest
-	0,  // 12: dream11.od.environment.v1.EnvironmentService.StatusEnvironment:input_type -> dream11.od.environment.v1.StatusEnvironmentRequest
-	14, // 13: dream11.od.environment.v1.EnvironmentService.IsStrictEnvironment:input_type -> dream11.od.environment.v1.IsStrictEnvironmentRequest
-	5,  // 14: dream11.od.environment.v1.EnvironmentService.ListEnvironment:output_type -> dream11.od.environment.v1.ListEnvironmentResponse
-	7,  // 15: dream11.od.environment.v1.EnvironmentService.DescribeEnvironment:output_type -> dream11.od.environment.v1.DescribeEnvironmentResponse
-	9,  // 16: dream11.od.environment.v1.EnvironmentService.UpdateEnvironment:output_type -> dream11.od.environment.v1.UpdateEnvironmentResponse
-	11, // 17: dream11.od.environment.v1.EnvironmentService.CreateEnvironment:output_type -> dream11.od.environment.v1.CreateEnvironmentResponse
-	13, // 18: dream11.od.environment.v1.EnvironmentService.DeleteEnvironment:output_type -> dream11.od.environment.v1.DeleteEnvironmentResponse
-	1,  // 19: dream11.od.environment.v1.EnvironmentService.StatusEnvironment:output_type -> dream11.od.environment.v1.StatusEnvironmentResponse
-	15, // 20: dream11.od.environment.v1.EnvironmentService.IsStrictEnvironment:output_type -> dream11.od.environment.v1.IsStrictEnvironmentResponse
-	14, // [14:21] is the sub-list for method output_type
-	7,  // [7:14] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	21, // 7: dream11.od.environment.v1.CreateEnvironmentRequest.account_details:type_name -> dream11.oam.provideraccount.v1.GetProviderAccountResponse
+	4,  // 8: dream11.od.environment.v1.EnvironmentService.ListEnvironment:input_type -> dream11.od.environment.v1.ListEnvironmentRequest
+	6,  // 9: dream11.od.environment.v1.EnvironmentService.DescribeEnvironment:input_type -> dream11.od.environment.v1.DescribeEnvironmentRequest
+	8,  // 10: dream11.od.environment.v1.EnvironmentService.UpdateEnvironment:input_type -> dream11.od.environment.v1.UpdateEnvironmentRequest
+	10, // 11: dream11.od.environment.v1.EnvironmentService.CreateEnvironment:input_type -> dream11.od.environment.v1.CreateEnvironmentRequest
+	12, // 12: dream11.od.environment.v1.EnvironmentService.DeleteEnvironment:input_type -> dream11.od.environment.v1.DeleteEnvironmentRequest
+	0,  // 13: dream11.od.environment.v1.EnvironmentService.StatusEnvironment:input_type -> dream11.od.environment.v1.StatusEnvironmentRequest
+	14, // 14: dream11.od.environment.v1.EnvironmentService.IsStrictEnvironment:input_type -> dream11.od.environment.v1.IsStrictEnvironmentRequest
+	5,  // 15: dream11.od.environment.v1.EnvironmentService.ListEnvironment:output_type -> dream11.od.environment.v1.ListEnvironmentResponse
+	7,  // 16: dream11.od.environment.v1.EnvironmentService.DescribeEnvironment:output_type -> dream11.od.environment.v1.DescribeEnvironmentResponse
+	9,  // 17: dream11.od.environment.v1.EnvironmentService.UpdateEnvironment:output_type -> dream11.od.environment.v1.UpdateEnvironmentResponse
+	11, // 18: dream11.od.environment.v1.EnvironmentService.CreateEnvironment:output_type -> dream11.od.environment.v1.CreateEnvironmentResponse
+	13, // 19: dream11.od.environment.v1.EnvironmentService.DeleteEnvironment:output_type -> dream11.od.environment.v1.DeleteEnvironmentResponse
+	1,  // 20: dream11.od.environment.v1.EnvironmentService.StatusEnvironment:output_type -> dream11.od.environment.v1.StatusEnvironmentResponse
+	15, // 21: dream11.od.environment.v1.EnvironmentService.IsStrictEnvironment:output_type -> dream11.od.environment.v1.IsStrictEnvironmentResponse
+	15, // [15:22] is the sub-list for method output_type
+	8,  // [8:15] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_dream11_od_environment_v1_environment_proto_init() }
