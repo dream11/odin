@@ -570,7 +570,7 @@ def main():
         if env_name is not None and check_env_exists_in_old_odin(env_name):
             if service_name is not None and is_service_migrated_to_new_odin(service_name, env_name):
                 execute_new_odin()
-            elif service_name is not None and not does_service_exist_in_old_odin_env(service_name, env_name) and env_name in ["prod", "auth-bom", "auth-nv", "uat", "sandbox", "hulk-uat1", "hulk-prod","hulkprod","obs-prod","d11prod","d11uat","dpl-prod","dpl-uat"]:
+            elif service_name is not None and not does_service_exist_in_old_odin_env(service_name, env_name) and env_name in ["prod", "auth-bom", "auth-nv", "uat", "sandbox", "hulk-uat1", "hulk-prod","hulkprod","obs-prod","d11prod","d11uat","dpl-prod","dpl-uat", "dpprod"]:
                 execute_new_odin()
             else:
                 execute_old_odin()
